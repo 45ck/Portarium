@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import {
   CommandDialog,
   CommandInput,
@@ -11,36 +11,16 @@ import {
 } from '@/components/ui/command';
 import { useTheme } from '@/hooks/use-theme';
 import { useUIStore } from '@/stores/ui-store';
-import { useAuthStore } from '@/stores/auth-store';
 import { router } from '@/router';
-import { EntityIcon } from '@/components/domain/entity-icon';
-import { useCockpitExtensionContext } from '@/hooks/queries/use-cockpit-extension-context';
-import { resolveCockpitExtensionServerAccess } from '@/lib/extensions/access-context';
-import {
-  INSTALLED_COCKPIT_ROUTE_PATHS,
-  resolveInstalledCockpitExtensionRegistry,
-} from '@/lib/extensions/installed';
-import { selectExtensionCommands } from '@/lib/extensions/registry';
+import { useCockpitExtensionRegistry } from '@/hooks/use-cockpit-extension-registry';
+import { projectCockpitShellNavigation } from '@/lib/shell/navigation';
 import { shouldEnableRoboticsDemo } from '@/lib/robotics-runtime';
-import {
-  LayoutDashboard,
-  Settings,
-  BarChart3,
-  Scale,
-  Inbox,
-  ShieldAlert,
-  Play,
-  UserPlus,
-  Palette,
-  PanelLeft,
-  Database,
-  GitBranchPlus,
-  Plug,
-} from 'lucide-react';
+import { Play, UserPlus, Palette, PanelLeft, Database, GitBranchPlus } from 'lucide-react';
 
 interface CommandItemDef {
+  id: string;
   label: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
   shortcut?: string;
   onSelect: () => void;
 }
@@ -48,25 +28,31 @@ interface CommandItemDef {
 function CommandPalette() {
   const { commandPaletteOpen, setCommandPaletteOpen, activePersona, activeWorkspaceId } =
     useUIStore();
-  const principalId = useAuthStore((state) => state.claims?.sub);
   const { theme, setTheme, themes } = useTheme();
-  const extensionContextQuery = useCockpitExtensionContext(activeWorkspaceId, principalId);
-  const extensionServerAccess = resolveCockpitExtensionServerAccess({
-    workspaceId: activeWorkspaceId,
-    principalId,
+  const { registry: extensionRegistry, serverAccess: extensionServerAccess } =
+    useCockpitExtensionRegistry({
+      workspaceId: activeWorkspaceId,
+      persona: activePersona,
+    });
+  const shellProjection = projectCockpitShellNavigation({
+    registry: extensionRegistry,
     persona: activePersona,
-    serverContext:
-      extensionContextQuery.isSuccess && !extensionContextQuery.isFetching
-        ? extensionContextQuery.data
-        : null,
+    accessContext: extensionServerAccess.accessContext,
+    roboticsEnabled: shouldEnableRoboticsDemo(),
   });
-  const extensionRegistry = resolveInstalledCockpitExtensionRegistry({
-    activePackIds: extensionServerAccess.activePackIds,
-    quarantinedExtensionIds: extensionServerAccess.quarantinedExtensionIds,
-    availableCapabilities: extensionServerAccess.accessContext.availableCapabilities,
-    availableApiScopes: extensionServerAccess.accessContext.availableApiScopes,
-    availablePrivacyClasses: extensionServerAccess.accessContext.availablePrivacyClasses,
-  });
+
+  function nav(to: string) {
+    setCommandPaletteOpen(false);
+    void router.navigate({ to: to as never });
+  }
+
+  const navigationItems: CommandItemDef[] = shellProjection.commandTargets.map((target) => ({
+    id: target.id,
+    label: target.label,
+    icon: target.icon,
+    shortcut: target.shortcut,
+    onSelect: () => nav(target.to),
+  }));
 
   // Global Ctrl+K / Cmd+K hotkey
   useEffect(() => {
@@ -81,158 +67,9 @@ function CommandPalette() {
     return () => document.removeEventListener('keydown', onKeyDown);
   }, []);
 
-  function nav(to: string) {
-    setCommandPaletteOpen(false);
-    void router.navigate({ to: to as never });
-  }
-
-  const extensionNavigationItems = selectExtensionCommands(
-    extensionRegistry,
-    activePersona,
-    extensionServerAccess.accessContext,
-  ).reduce<CommandItemDef[]>((items, command) => {
-    const routePath = command.routeId
-      ? INSTALLED_COCKPIT_ROUTE_PATHS.get(command.routeId)
-      : undefined;
-    if (!routePath || routePath.includes('$')) return items;
-
-    items.push({
-      label: command.title,
-      icon: <Plug className="h-4 w-4" />,
-      shortcut: command.shortcut,
-      onSelect: () => nav(routePath),
-    });
-    return items;
-  }, []);
-
-  const roboticsNavigationItems: CommandItemDef[] = shouldEnableRoboticsDemo()
-    ? [
-        {
-          label: 'Robots',
-          icon: <EntityIcon entityType="robot" size="sm" decorative />,
-          onSelect: () => nav('/robotics/robots'),
-        },
-        {
-          label: 'Missions',
-          icon: <EntityIcon entityType="mission" size="sm" decorative />,
-          onSelect: () => nav('/robotics/missions'),
-        },
-        {
-          label: 'Safety',
-          icon: <ShieldAlert className="h-4 w-4" />,
-          onSelect: () => nav('/robotics/safety'),
-        },
-        {
-          label: 'Gateways',
-          icon: <EntityIcon entityType="port" size="sm" decorative />,
-          onSelect: () => nav('/robotics/gateways'),
-        },
-      ]
-    : [];
-
-  const navigationItems: CommandItemDef[] = [
-    {
-      label: 'Inbox',
-      icon: <Inbox className="h-4 w-4" />,
-      shortcut: 'G I',
-      onSelect: () => nav('/inbox'),
-    },
-    {
-      label: 'Dashboard',
-      icon: <LayoutDashboard className="h-4 w-4" />,
-      shortcut: 'G D',
-      onSelect: () => nav('/dashboard'),
-    },
-    {
-      label: 'Work Items',
-      icon: <EntityIcon entityType="work-item" size="sm" decorative />,
-      shortcut: 'G W',
-      onSelect: () => nav('/work-items'),
-    },
-    {
-      label: 'Runs',
-      icon: <EntityIcon entityType="run" size="sm" decorative />,
-      shortcut: 'G R',
-      onSelect: () => nav('/runs'),
-    },
-    {
-      label: 'Workflows',
-      icon: <EntityIcon entityType="workflow" size="sm" decorative />,
-      onSelect: () => nav('/workflows'),
-    },
-    {
-      label: 'Approvals',
-      icon: <EntityIcon entityType="approval" size="sm" decorative />,
-      shortcut: 'G A',
-      onSelect: () => nav('/approvals'),
-    },
-    {
-      label: 'Evidence',
-      icon: <EntityIcon entityType="evidence" size="sm" decorative />,
-      shortcut: 'G E',
-      onSelect: () => nav('/evidence'),
-    },
-    {
-      label: 'Members',
-      icon: <EntityIcon entityType="workforce" size="sm" decorative />,
-      onSelect: () => nav('/workforce'),
-    },
-    {
-      label: 'Queues',
-      icon: <EntityIcon entityType="queue" size="sm" decorative />,
-      onSelect: () => nav('/workforce/queues'),
-    },
-    {
-      label: 'Agents',
-      icon: <EntityIcon entityType="agent" size="sm" decorative />,
-      onSelect: () => nav('/config/agents'),
-    },
-    {
-      label: 'Adapters',
-      icon: <EntityIcon entityType="adapter" size="sm" decorative />,
-      onSelect: () => nav('/config/adapters'),
-    },
-    {
-      label: 'Credentials',
-      icon: <EntityIcon entityType="credential" size="sm" decorative />,
-      onSelect: () => nav('/config/credentials'),
-    },
-    {
-      label: 'Settings',
-      icon: <Settings className="h-4 w-4" />,
-      onSelect: () => nav('/config/settings'),
-    },
-    {
-      label: 'Objects',
-      icon: <EntityIcon entityType="external-object-ref" size="sm" decorative />,
-      onSelect: () => nav('/explore/objects'),
-    },
-    {
-      label: 'Events',
-      icon: <EntityIcon entityType="event" size="sm" decorative />,
-      onSelect: () => nav('/explore/events'),
-    },
-    {
-      label: 'Observability',
-      icon: <BarChart3 className="h-4 w-4" />,
-      onSelect: () => nav('/explore/observability'),
-    },
-    {
-      label: 'Governance',
-      icon: <Scale className="h-4 w-4" />,
-      onSelect: () => nav('/explore/governance'),
-    },
-    {
-      label: 'Extensions',
-      icon: <Plug className="h-4 w-4" />,
-      onSelect: () => nav('/explore/extensions'),
-    },
-    ...roboticsNavigationItems,
-    ...extensionNavigationItems,
-  ];
-
   const actionItems: CommandItemDef[] = [
     {
+      id: 'action:new-run',
       label: 'New Run',
       icon: <Play className="h-4 w-4" />,
       onSelect: () => {
@@ -241,6 +78,7 @@ function CommandPalette() {
       },
     },
     {
+      id: 'action:plan-new-beads',
       label: 'Plan New Beads',
       icon: <GitBranchPlus className="h-4 w-4" />,
       onSelect: () => {
@@ -249,11 +87,13 @@ function CommandPalette() {
       },
     },
     {
+      id: 'action:register-agent',
       label: 'Register Agent',
       icon: <UserPlus className="h-4 w-4" />,
       onSelect: () => nav('/config/agents'),
     },
     {
+      id: 'action:toggle-theme',
       label: 'Toggle Theme',
       icon: <Palette className="h-4 w-4" />,
       onSelect: () => {
@@ -266,6 +106,7 @@ function CommandPalette() {
 
   const settingsItems: CommandItemDef[] = [
     {
+      id: 'setting:toggle-sidebar',
       label: 'Toggle Sidebar',
       icon: <PanelLeft className="h-4 w-4" />,
       onSelect: () => {
@@ -274,6 +115,7 @@ function CommandPalette() {
       },
     },
     {
+      id: 'setting:switch-dataset',
       label: 'Switch Dataset',
       icon: <Database className="h-4 w-4" />,
       onSelect: () => {
@@ -295,7 +137,7 @@ function CommandPalette() {
 
         <CommandGroup heading="Navigation">
           {navigationItems.map((item) => (
-            <CommandItem key={`${item.label}-${item.shortcut ?? ''}`} onSelect={item.onSelect}>
+            <CommandItem key={item.id} onSelect={item.onSelect}>
               {item.icon}
               <span>{item.label}</span>
               {item.shortcut && <CommandShortcut>{item.shortcut}</CommandShortcut>}
@@ -307,7 +149,7 @@ function CommandPalette() {
 
         <CommandGroup heading="Actions">
           {actionItems.map((item) => (
-            <CommandItem key={`${item.label}-${item.shortcut ?? ''}`} onSelect={item.onSelect}>
+            <CommandItem key={item.id} onSelect={item.onSelect}>
               {item.icon}
               <span>{item.label}</span>
               {item.shortcut && <CommandShortcut>{item.shortcut}</CommandShortcut>}
@@ -319,7 +161,7 @@ function CommandPalette() {
 
         <CommandGroup heading="Settings">
           {settingsItems.map((item) => (
-            <CommandItem key={`${item.label}-${item.shortcut ?? ''}`} onSelect={item.onSelect}>
+            <CommandItem key={item.id} onSelect={item.onSelect}>
               {item.icon}
               <span>{item.label}</span>
               {item.shortcut && <CommandShortcut>{item.shortcut}</CommandShortcut>}

@@ -10,13 +10,12 @@ import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useApprovals } from '@/hooks/queries/use-approvals';
 import { useApprovalEventStream } from '@/hooks/queries/use-approval-event-stream';
-import { useCockpitExtensionContext } from '@/hooks/queries/use-cockpit-extension-context';
+import { useCockpitExtensionRegistry } from '@/hooks/use-cockpit-extension-registry';
 import { useUIStore } from '@/stores/ui-store';
 import { parseApprovalNavigationTarget } from '@/lib/approval-navigation';
 import { readBearerToken } from '@/lib/auth-token';
 import { getNotificationTargetUrl, onNotificationActionPerformed } from '@/lib/push-notifications';
 import { cn } from '@/lib/utils';
-import { EntityIcon } from '@/components/domain/entity-icon';
 import { ErrorBoundary } from '@/components/cockpit/error-boundary';
 import { MobileBottomNav } from '@/components/cockpit/mobile-bottom-nav';
 import { Button } from '@/components/ui/button';
@@ -32,255 +31,16 @@ import { KeyboardCheatsheet } from '@/components/cockpit/keyboard-cheatsheet';
 import { RuntimeStatusStrip } from '@/components/cockpit/runtime-status-strip';
 import { StartRunDialog } from '@/components/cockpit/start-run-dialog';
 import { IntentPlanSheet } from '@/components/cockpit/intent-plan-sheet';
-import { resolveInstalledCockpitExtensionRegistry } from '@/lib/extensions/installed';
-import { resolveCockpitExtensionServerAccess } from '@/lib/extensions/access-context';
-import { selectExtensionNavItems } from '@/lib/extensions/registry';
+import { projectCockpitShellNavigation } from '@/lib/shell/navigation';
 import { shouldEnableRoboticsDemo } from '@/lib/robotics-runtime';
-import type { CockpitExtensionIcon } from '@/lib/extensions/types';
 import { Toaster } from 'sonner';
-import {
-  Activity,
-  LayoutDashboard,
-  Settings,
-  BarChart3,
-  Boxes,
-  ClipboardCheck,
-  ExternalLink,
-  Scale,
-  Inbox,
-  Search,
-  ShieldAlert,
-  ShieldCheck,
-  PanelLeftClose,
-  PanelLeftOpen,
-  GitBranch,
-  Map,
-  Plug,
-  Route as RouteIcon,
-  Users,
-  Sliders,
-} from 'lucide-react';
+import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import type { PersonaId } from '@/stores/ui-store';
-
-interface NavItemDef {
-  label: string;
-  to: string;
-  icon: React.ReactNode;
-  comingSoon?: boolean;
-}
-
-interface NavSectionDef {
-  label: string;
-  items?: NavItemDef[];
-  comingSoon?: boolean;
-}
+import type { CockpitShellNavigationItem } from '@/lib/shell/navigation';
 
 interface WorkspaceOption {
   workspaceId: string;
   name: string;
-}
-
-const NAV_SECTIONS: NavSectionDef[] = [
-  {
-    label: 'Workspace',
-    items: [
-      { label: 'Inbox', to: '/inbox', icon: <Inbox className="h-4 w-4" /> },
-      { label: 'Dashboard', to: '/dashboard', icon: <LayoutDashboard className="h-4 w-4" /> },
-      {
-        label: 'Work Items',
-        to: '/work-items',
-        icon: <EntityIcon entityType="work-item" size="sm" decorative />,
-      },
-    ],
-  },
-  {
-    label: 'Work',
-    items: [
-      { label: 'Runs', to: '/runs', icon: <EntityIcon entityType="run" size="sm" decorative /> },
-      {
-        label: 'Workflows',
-        to: '/workflows',
-        icon: <EntityIcon entityType="workflow" size="sm" decorative />,
-      },
-      {
-        label: 'Builder',
-        to: '/workflows/builder',
-        icon: <GitBranch className="h-4 w-4" />,
-      },
-      {
-        label: 'Approvals',
-        to: '/approvals',
-        icon: <EntityIcon entityType="approval" size="sm" decorative />,
-      },
-      {
-        label: 'Evidence',
-        to: '/evidence',
-        icon: <EntityIcon entityType="evidence" size="sm" decorative />,
-      },
-      {
-        label: 'Search',
-        to: '/search',
-        icon: <Search className="h-4 w-4" />,
-      },
-    ],
-  },
-  {
-    label: 'Engineering',
-    items: [
-      {
-        label: 'Beads',
-        to: '/engineering/beads',
-        icon: <GitBranch className="h-4 w-4" />,
-      },
-      {
-        label: 'Mission Control',
-        to: '/engineering/mission-control',
-        icon: <LayoutDashboard className="h-4 w-4" />,
-        comingSoon: true,
-      },
-      {
-        label: 'Autonomy',
-        to: '/engineering/autonomy',
-        icon: <Sliders className="h-4 w-4" />,
-        comingSoon: true,
-      },
-    ],
-  },
-  {
-    label: 'Workforce',
-    items: [
-      {
-        label: 'Members',
-        to: '/workforce',
-        icon: <EntityIcon entityType="workforce" size="sm" decorative />,
-      },
-      {
-        label: 'Queues',
-        to: '/workforce/queues',
-        icon: <EntityIcon entityType="queue" size="sm" decorative />,
-      },
-    ],
-  },
-  {
-    label: 'Config',
-    items: [
-      {
-        label: 'Machines',
-        to: '/config/machines',
-        icon: <EntityIcon entityType="machine" size="sm" decorative />,
-      },
-      {
-        label: 'Agents',
-        to: '/config/agents',
-        icon: <EntityIcon entityType="agent" size="sm" decorative />,
-      },
-      {
-        label: 'Adapters',
-        to: '/config/adapters',
-        icon: <EntityIcon entityType="adapter" size="sm" decorative />,
-      },
-      {
-        label: 'Credentials',
-        to: '/config/credentials',
-        icon: <EntityIcon entityType="credential" size="sm" decorative />,
-      },
-      {
-        label: 'Policies',
-        to: '/config/policies',
-        icon: <EntityIcon entityType="policy" size="sm" decorative />,
-      },
-      {
-        label: 'Blast Radius',
-        to: '/config/blast-radius',
-        icon: <ShieldAlert className="h-4 w-4" />,
-      },
-      {
-        label: 'Users',
-        to: '/config/users',
-        icon: <Users className="h-4 w-4" />,
-      },
-      { label: 'Settings', to: '/config/settings', icon: <Settings className="h-4 w-4" /> },
-    ],
-  },
-  {
-    label: 'Explore',
-    items: [
-      {
-        label: 'Objects',
-        to: '/explore/objects',
-        icon: <EntityIcon entityType="external-object-ref" size="sm" decorative />,
-      },
-      {
-        label: 'Events',
-        to: '/explore/events',
-        icon: <EntityIcon entityType="event" size="sm" decorative />,
-      },
-      {
-        label: 'Observability',
-        to: '/explore/observability',
-        icon: <BarChart3 className="h-4 w-4" />,
-      },
-      { label: 'Governance', to: '/explore/governance', icon: <Scale className="h-4 w-4" /> },
-      {
-        label: 'Pack Runtime',
-        to: '/explore/pack-runtime',
-        icon: <Settings className="h-4 w-4" />,
-      },
-      {
-        label: 'Extensions',
-        to: '/explore/extensions',
-        icon: <Plug className="h-4 w-4" />,
-      },
-    ],
-  },
-  {
-    label: 'Robotics',
-    items: [
-      {
-        label: 'Map',
-        to: '/robotics/map',
-        icon: <Map className="h-4 w-4" />,
-      },
-      {
-        label: 'Robots',
-        to: '/robotics/robots',
-        icon: <EntityIcon entityType="robot" size="sm" decorative />,
-      },
-      {
-        label: 'Missions',
-        to: '/robotics/missions',
-        icon: <EntityIcon entityType="mission" size="sm" decorative />,
-      },
-      { label: 'Safety', to: '/robotics/safety', icon: <ShieldAlert className="h-4 w-4" /> },
-      {
-        label: 'Gateways',
-        to: '/robotics/gateways',
-        icon: <EntityIcon entityType="port" size="sm" decorative />,
-      },
-    ],
-  },
-];
-
-function extensionIcon(icon: CockpitExtensionIcon) {
-  const className = 'h-4 w-4';
-  switch (icon) {
-    case 'activity':
-      return <Activity className={className} />;
-    case 'boxes':
-      return <Boxes className={className} />;
-    case 'clipboard-check':
-      return <ClipboardCheck className={className} />;
-    case 'external-link':
-      return <ExternalLink className={className} />;
-    case 'map':
-      return <Map className={className} />;
-    case 'plug':
-      return <Plug className={className} />;
-    case 'route':
-      return <RouteIcon className={className} />;
-    case 'shield-check':
-      return <ShieldCheck className={className} />;
-  }
 }
 
 // Wrapper to avoid TS errors while child routes are not yet registered.
@@ -352,7 +112,6 @@ function RootShell() {
   useKeyboardShortcuts();
   const isMobile = useIsMobile();
   const authStatus = useAuthStore((state) => state.status);
-  const claims = useAuthStore((state) => state.claims);
   const navigate = useNavigate();
   const {
     sidebarCollapsed,
@@ -375,45 +134,19 @@ function RootShell() {
     authStatus === 'unauthenticated' && oidcEnabled && !hasBearerToken && !isAuthRoute;
   const apiAccessReady =
     !isAuthRoute && (!oidcEnabled || authStatus === 'authenticated' || hasBearerToken);
-  const extensionContextQuery = useCockpitExtensionContext(
-    apiAccessReady ? activeWorkspaceId : '',
-    claims?.sub,
-  );
-  const extensionServerAccess = resolveCockpitExtensionServerAccess({
-    workspaceId: activeWorkspaceId,
-    principalId: claims?.sub,
+  const { registry: extensionRegistry, serverAccess: extensionServerAccess } =
+    useCockpitExtensionRegistry({
+      workspaceId: activeWorkspaceId,
+      persona: activePersona,
+      enabled: apiAccessReady,
+    });
+  const shellProjection = projectCockpitShellNavigation({
+    registry: extensionRegistry,
     persona: activePersona,
-    serverContext:
-      extensionContextQuery.isSuccess && !extensionContextQuery.isFetching
-        ? extensionContextQuery.data
-        : null,
+    accessContext: extensionServerAccess.accessContext,
+    roboticsEnabled: shouldEnableRoboticsDemo(),
   });
-  const extensionRegistry = resolveInstalledCockpitExtensionRegistry({
-    activePackIds: extensionServerAccess.activePackIds,
-    quarantinedExtensionIds: extensionServerAccess.quarantinedExtensionIds,
-    availableCapabilities: extensionServerAccess.accessContext.availableCapabilities,
-    availableApiScopes: extensionServerAccess.accessContext.availableApiScopes,
-    availablePrivacyClasses: extensionServerAccess.accessContext.availablePrivacyClasses,
-  });
-  const extensionNavItems: NavItemDef[] = selectExtensionNavItems(
-    extensionRegistry,
-    'sidebar',
-    activePersona,
-    extensionServerAccess.accessContext,
-  )
-    .filter((item) => !item.to.includes('$'))
-    .map((item) => ({
-      label: item.title,
-      to: item.to,
-      icon: extensionIcon(item.icon),
-    }));
-  const baseNavSections = shouldEnableRoboticsDemo()
-    ? NAV_SECTIONS
-    : NAV_SECTIONS.filter((section) => section.label !== 'Robotics');
-  const navSections =
-    extensionNavItems.length > 0
-      ? [...baseNavSections, { label: 'Extensions', items: extensionNavItems }]
-      : baseNavSections;
+  const navSections = shellProjection.sidebarSections;
 
   // ── Auth initialization ────────────────────────────────────────────────────
 
@@ -591,7 +324,7 @@ function RootShell() {
                         Coming soon
                       </p>
                     ) : (
-                      section.items?.map((item) =>
+                      section.items?.map((item: CockpitShellNavigationItem) =>
                         item.comingSoon ? (
                           <span
                             key={item.to}
@@ -697,6 +430,8 @@ function RootShell() {
           <MobileBottomNav
             activeWorkspaceId={activeWorkspaceId}
             activePersona={activePersona}
+            primaryItems={shellProjection.mobilePrimaryItems}
+            moreSections={shellProjection.mobileMoreSections}
             workspaceOptions={workspaceOptions}
             onWorkspaceChange={setActiveWorkspaceId}
             onPersonaChange={setActivePersona}

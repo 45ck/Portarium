@@ -50,6 +50,11 @@ runtime. Route loading remains a host decision.
 6. Run the Cockpit extension registry and route-host tests.
 7. Build Cockpit so the lazy route chunks are emitted by the host bundle.
 
+Do not add separate shell navigation or command-palette entries. Declare nav
+items, commands, surfaces, shortcuts, and guards in the manifest; Cockpit
+projects eligible sidebar, mobile-more, command palette, and shortcut surfaces
+from the resolved registry after activation and guard checks.
+
 ## Host-Owned Import Map
 
 `INSTALLED_COCKPIT_EXTENSION_MODULES` is the compile-time import map for

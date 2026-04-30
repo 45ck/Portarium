@@ -6,11 +6,17 @@ import userEvent from '@testing-library/user-event';
 import { RouterProvider, createMemoryHistory } from '@tanstack/react-router';
 import { createCockpitRouter } from '@/router';
 import { queryClient } from '@/lib/query-client';
+import { useAuthStore } from '@/stores/auth-store';
+import { useUIStore } from '@/stores/ui-store';
 import { AGENTS, APPROVALS, EVIDENCE, RUNS, WORK_ITEMS } from '@/mocks/fixtures/demo';
 import { buildMockWorkflows } from '@/mocks/fixtures/workflows';
 import { MOCK_USERS } from '@/mocks/fixtures/users';
 
 const WORKFLOWS = buildMockWorkflows(RUNS, AGENTS);
+let extensionContext = {
+  activePackIds: ['example.reference'],
+  availablePrivacyClasses: ['internal', 'restricted'],
+};
 
 function createMemoryStorage(): Storage {
   const store = new Map<string, string>();
@@ -82,6 +88,23 @@ function routeResponse(pathname: string): Response {
 
   if (/^\/v1\/workspaces\/[^/]+\/workflows$/.test(pathname)) {
     return json({ items: WORKFLOWS });
+  }
+
+  if (/^\/v1\/workspaces\/[^/]+\/cockpit\/extension-context$/.test(pathname)) {
+    return json({
+      schemaVersion: 1,
+      workspaceId: 'ws-demo',
+      principalId: 'user-1',
+      persona: 'Operator',
+      availablePersonas: ['Operator'],
+      availableCapabilities: ['extension:read', 'extension:review', 'evidence:read'],
+      availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+      availablePrivacyClasses: extensionContext.availablePrivacyClasses,
+      activePackIds: extensionContext.activePackIds,
+      quarantinedExtensionIds: [],
+      issuedAtIso: '2026-04-30T02:00:00.000Z',
+      expiresAtIso: '2999-04-30T02:05:00.000Z',
+    });
   }
 
   const workflowMatch = pathname.match(/^\/v1\/workspaces\/[^/]+\/workflows\/([^/]+)\/?$/);
@@ -164,9 +187,27 @@ beforeAll(() => {
 });
 
 beforeEach(() => {
+  extensionContext = {
+    activePackIds: ['example.reference'],
+    availablePrivacyClasses: ['internal', 'restricted'],
+  };
   queryClient.clear();
   localStorage.clear();
   document.documentElement.className = '';
+  useUIStore.setState({ activePersona: 'Operator', activeWorkspaceId: 'ws-demo' });
+  useAuthStore.setState({
+    status: 'authenticated',
+    token: 'token-1',
+    claims: {
+      sub: 'user-1',
+      workspaceId: 'ws-demo',
+      roles: ['operator'],
+      personas: ['Operator'],
+      capabilities: ['extension:read', 'extension:review', 'evidence:read'],
+      apiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+    },
+    error: null,
+  });
 });
 
 afterEach(() => {
@@ -220,6 +261,31 @@ describe('cockpit mobile shell', () => {
 
     fireEvent.click(await screen.findByRole('link', { name: 'Workflows' }));
     expect(router.state.location.pathname).toBe('/workflows');
+  });
+
+  it('projects activated extension navigation into the mobile More drawer', async () => {
+    const user = userEvent.setup();
+    await renderRoute('/runs');
+
+    await user.click(screen.getByRole('button', { name: 'Open more navigation' }));
+
+    expect(await screen.findByRole('link', { name: 'Reference Overview' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Inbox' })).toBeTruthy();
+  });
+
+  it('hides extension mobile navigation when activation or guard context denies it', async () => {
+    extensionContext = {
+      activePackIds: ['example.reference'],
+      availablePrivacyClasses: [],
+    };
+
+    const user = userEvent.setup();
+    await renderRoute('/runs');
+
+    await user.click(screen.getByRole('button', { name: 'Open more navigation' }));
+
+    expect(await screen.findByRole('link', { name: 'Inbox' })).toBeTruthy();
+    expect(screen.queryByRole('link', { name: 'Reference Overview' })).toBeNull();
   });
 
   it('keeps workflow builder entry visible on phone viewports', async () => {

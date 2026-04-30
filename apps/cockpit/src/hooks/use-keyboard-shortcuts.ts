@@ -2,54 +2,9 @@
 import { useEffect, useRef } from 'react';
 import { router } from '@/router';
 import { useUIStore } from '@/stores/ui-store';
-import { useAuthStore } from '@/stores/auth-store';
-import { useCockpitExtensionContext } from '@/hooks/queries/use-cockpit-extension-context';
-import { resolveCockpitExtensionServerAccess } from '@/lib/extensions/access-context';
-import {
-  INSTALLED_COCKPIT_ROUTE_PATHS,
-  resolveInstalledCockpitExtensionRegistry,
-} from '@/lib/extensions/installed';
-import { selectExtensionCommands } from '@/lib/extensions/registry';
-import type {
-  CockpitExtensionAccessContext,
-  ResolvedCockpitExtensionRegistry,
-} from '@/lib/extensions/types';
-
-const G_CHORD_MAP: Record<string, string> = {
-  i: '/inbox',
-  d: '/dashboard',
-  w: '/work-items',
-  r: '/runs',
-  a: '/approvals',
-  e: '/evidence',
-};
-
-function resolveGChordMap(
-  registry: ResolvedCockpitExtensionRegistry,
-  accessContext: CockpitExtensionAccessContext,
-): Record<string, string> {
-  const activePersona = useUIStore.getState().activePersona;
-  const extensionShortcuts = selectExtensionCommands(registry, activePersona, accessContext).reduce<
-    Record<string, string>
-  >((shortcuts, command) => {
-    const match = command.shortcut?.match(/^G\s+([a-z])$/i);
-    const routePath = command.routeId
-      ? INSTALLED_COCKPIT_ROUTE_PATHS.get(command.routeId)
-      : undefined;
-    if (!match?.[1] || !routePath || routePath.includes('$')) return shortcuts;
-
-    const key = match[1].toLowerCase();
-    if (!G_CHORD_MAP[key]) {
-      shortcuts[key] = routePath;
-    }
-    return shortcuts;
-  }, {});
-
-  return {
-    ...G_CHORD_MAP,
-    ...extensionShortcuts,
-  };
-}
+import { projectCockpitGChordMap, projectCockpitShellNavigation } from '@/lib/shell/navigation';
+import { shouldEnableRoboticsDemo } from '@/lib/robotics-runtime';
+import { useCockpitExtensionRegistry } from '@/hooks/use-cockpit-extension-registry';
 
 function isEditableTarget(e: Event): boolean {
   const el = e.target as HTMLElement | null;
@@ -67,24 +22,18 @@ export function useKeyboardShortcuts() {
   const gTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const activeWorkspaceId = useUIStore((state) => state.activeWorkspaceId);
   const activePersona = useUIStore((state) => state.activePersona);
-  const principalId = useAuthStore((state) => state.claims?.sub);
-  const extensionContextQuery = useCockpitExtensionContext(activeWorkspaceId, principalId);
-  const extensionServerAccess = resolveCockpitExtensionServerAccess({
-    workspaceId: activeWorkspaceId,
-    principalId,
+  const { registry: extensionRegistry, serverAccess: extensionServerAccess } =
+    useCockpitExtensionRegistry({
+      workspaceId: activeWorkspaceId,
+      persona: activePersona,
+    });
+  const shellProjection = projectCockpitShellNavigation({
+    registry: extensionRegistry,
     persona: activePersona,
-    serverContext:
-      extensionContextQuery.isSuccess && !extensionContextQuery.isFetching
-        ? extensionContextQuery.data
-        : null,
+    accessContext: extensionServerAccess.accessContext,
+    roboticsEnabled: shouldEnableRoboticsDemo(),
   });
-  const extensionRegistry = resolveInstalledCockpitExtensionRegistry({
-    activePackIds: extensionServerAccess.activePackIds,
-    quarantinedExtensionIds: extensionServerAccess.quarantinedExtensionIds,
-    availableCapabilities: extensionServerAccess.accessContext.availableCapabilities,
-    availableApiScopes: extensionServerAccess.accessContext.availableApiScopes,
-    availablePrivacyClasses: extensionServerAccess.accessContext.availablePrivacyClasses,
-  });
+  const gChordMap = projectCockpitGChordMap(shellProjection.commandTargets);
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -110,9 +59,7 @@ export function useKeyboardShortcuts() {
       }
 
       if (gPressedRef.current) {
-        const route = resolveGChordMap(extensionRegistry, extensionServerAccess.accessContext)[
-          e.key.toLowerCase()
-        ];
+        const route = gChordMap[e.key.toLowerCase()];
         if (route) {
           e.preventDefault();
           void router.navigate({ to: route as never });
@@ -130,5 +77,5 @@ export function useKeyboardShortcuts() {
       document.removeEventListener('keydown', onKeyDown);
       if (gTimerRef.current) clearTimeout(gTimerRef.current);
     };
-  }, [extensionRegistry, extensionServerAccess.accessContext]);
+  }, [gChordMap]);
 }
