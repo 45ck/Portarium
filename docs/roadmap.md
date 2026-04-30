@@ -26,6 +26,7 @@ These are core because Portarium would be unsafe, hard to run, or hard to verify
 | Release hygiene | SDK publishing, migration runner closeout, green `npm run ci:pr`, gate baseline cleanup                 |
 | Operations      | Production startup gates, clear env docs, health/readiness checks, migration commands                   |
 | Cockpit         | Reference UI for approvals, policy context, runs, evidence, operator review, and mobile decision review |
+| Pilot path      | Narrow readiness sequence for usefulness, trust calibration, recovery, policy change, and operator docs |
 
 ## Good First Areas
 
@@ -66,6 +67,8 @@ These are intentionally not release blockers for the core control plane.
 - delegated autonomy hierarchy
 - policy-learning telemetry
 - prompt-language governed coding experiments
+
+The release-critical subset is tracked in `docs/internal/governance/pilot-readiness-sequence.md`.
 
 ### Demo And Media Tooling
 
