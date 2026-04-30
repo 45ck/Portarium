@@ -601,6 +601,7 @@ function ApprovalsPage() {
           isStaleData={offlineMeta.isStaleData}
           lastSyncAtIso={offlineMeta.lastSyncAtIso}
           pendingOutboxCount={pendingCount}
+          decisionContext="approval-review"
         />
         <div className="rounded-md border border-destructive/50 bg-destructive/5 p-4 flex items-center gap-3">
           <AlertCircle className="h-5 w-5 text-destructive shrink-0" />
@@ -622,7 +623,8 @@ function ApprovalsPage() {
     notificationPendingCount > 0 &&
     (search.from === 'notification' ||
       (!policyLinkedMode && !singleCaseMode && pendingItems.length > 0));
-  const showOfflineSyncBanner = !policyLinkedMode || offlineMeta.isOffline || pendingCount > 0;
+  const showOfflineSyncBanner =
+    !policyLinkedMode || offlineMeta.isOffline || offlineMeta.isStaleData || pendingCount > 0;
 
   return (
     <div className="p-6 space-y-4">
@@ -691,6 +693,7 @@ function ApprovalsPage() {
           isStaleData={offlineMeta.isStaleData}
           lastSyncAtIso={offlineMeta.lastSyncAtIso}
           pendingOutboxCount={pendingCount}
+          decisionContext="approval-review"
         />
       ) : null}
       {showDemo && !policyLinkedMode && !singleCaseMode && (

@@ -20,6 +20,13 @@ const ALL_PENDING = APPROVALS.filter((a) => a.status === 'Pending');
 let _mockApprovals: ApprovalSummary[] = [...APPROVALS];
 let _mockIsLoading = false;
 let _mockIsError = false;
+let _mockOfflineMeta = {
+  isOffline: false,
+  isStaleData: false,
+  dataSource: 'network' as const,
+  lastSyncAtIso: undefined as string | undefined,
+};
+let _mockPendingCount = 0;
 const _mockRefetch = vi.fn();
 const _mockSubmitDecision = vi.fn().mockResolvedValue({ queued: false });
 
@@ -29,12 +36,7 @@ vi.mock('@/hooks/queries/use-approvals', () => ({
     isLoading: _mockIsLoading,
     isError: _mockIsError,
     refetch: _mockRefetch,
-    offlineMeta: {
-      isOffline: false,
-      isStaleData: false,
-      dataSource: 'network' as const,
-      lastSyncAtIso: undefined,
-    },
+    offlineMeta: _mockOfflineMeta,
   })),
   // useApproval not called by the triage page
   useApproval: vi.fn(),
@@ -44,7 +46,7 @@ vi.mock('@/hooks/queries/use-approvals', () => ({
 vi.mock('@/hooks/queries/use-approval-decision-outbox', () => ({
   useApprovalDecisionOutbox: vi.fn(() => ({
     submitDecision: _mockSubmitDecision,
-    pendingCount: 0,
+    pendingCount: _mockPendingCount,
     isFlushing: false,
     flushNow: vi.fn(),
   })),
@@ -136,6 +138,13 @@ beforeEach(() => {
   _mockApprovals = [...APPROVALS];
   _mockIsLoading = false;
   _mockIsError = false;
+  _mockOfflineMeta = {
+    isOffline: false,
+    isStaleData: false,
+    dataSource: 'network' as const,
+    lastSyncAtIso: undefined,
+  };
+  _mockPendingCount = 0;
   _mockRefetch.mockClear();
   _mockSubmitDecision.mockClear();
   queryClient.clear();
@@ -228,6 +237,74 @@ describe('Approvals triage page', () => {
     expect(href).toContain('draftTier=ManualOnly');
     expect(href).toContain('draftRationale=');
     expect(await screen.findAllByText(focused.prompt, { exact: false })).toBeTruthy();
+  });
+
+  it('keeps cached-data warnings visible in policy-studio focused review', async () => {
+    const focused = ALL_PENDING[0]!;
+    _mockOfflineMeta = {
+      isOffline: false,
+      isStaleData: true,
+      dataSource: 'cache',
+      lastSyncAtIso: '2026-04-29T23:00:00.000Z',
+    };
+
+    await renderApprovalsRoute(
+      `/approvals?focus=${encodeURIComponent(focused.approvalId)}&from=policy-studio&returnSlice=CRON-CREATE-BLOCK-001`,
+    );
+
+    expect(await screen.findByText(/showing cached data/i)).toBeTruthy();
+    expect(screen.getByText(/approval context may have changed/i)).toBeTruthy();
+    expect(await screen.findByText('1 of 1 pending')).toBeTruthy();
+    expect(await screen.findAllByText(focused.prompt, { exact: false })).toBeTruthy();
+  });
+
+  it('keeps offline warnings visible in policy-studio focused review', async () => {
+    const focused = ALL_PENDING[0]!;
+    _mockOfflineMeta = {
+      isOffline: true,
+      isStaleData: false,
+      dataSource: 'cache',
+      lastSyncAtIso: '2026-04-29T23:00:00.000Z',
+    };
+
+    await renderApprovalsRoute(
+      `/approvals?focus=${encodeURIComponent(focused.approvalId)}&from=policy-studio&returnSlice=CRON-CREATE-BLOCK-001`,
+    );
+
+    expect(await screen.findByText(/offline mode active/i)).toBeTruthy();
+    expect(screen.getByText(/approval context may have changed/i)).toBeTruthy();
+    expect(await screen.findByText('1 of 1 pending')).toBeTruthy();
+  });
+
+  it('keeps pending-sync warnings visible in policy-studio focused review', async () => {
+    const focused = ALL_PENDING[0]!;
+    _mockPendingCount = 2;
+
+    await renderApprovalsRoute(
+      `/approvals?focus=${encodeURIComponent(focused.approvalId)}&from=policy-studio&returnSlice=CRON-CREATE-BLOCK-001`,
+    );
+
+    expect(await screen.findByText(/sync pending/i)).toBeTruthy();
+    expect(screen.getByText(/2 queued approval decisions/i)).toBeTruthy();
+    expect(await screen.findByText('1 of 1 pending')).toBeTruthy();
+  });
+
+  it('keeps cached-data warnings visible in notification focused review', async () => {
+    const focused = ALL_PENDING[1]!;
+    _mockOfflineMeta = {
+      isOffline: false,
+      isStaleData: true,
+      dataSource: 'cache',
+      lastSyncAtIso: '2026-04-29T23:00:00.000Z',
+    };
+
+    await renderApprovalsRoute(
+      `/approvals?focus=${encodeURIComponent(focused.approvalId)}&from=notification`,
+    );
+
+    expect(await screen.findByText(/showing cached data/i)).toBeTruthy();
+    expect(screen.getByText(/approval context may have changed/i)).toBeTruthy();
+    expect(await screen.findByText('1 of 1 pending')).toBeTruthy();
   });
 
   it('does not advance to another approval after skipping a policy-studio focused review', async () => {

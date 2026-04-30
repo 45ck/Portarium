@@ -7,6 +7,7 @@ interface OfflineSyncBannerProps {
   isStaleData: boolean;
   lastSyncAtIso?: string;
   pendingOutboxCount?: number;
+  decisionContext?: 'approval-review';
 }
 
 function lastSyncText(lastSyncAtIso?: string): string {
@@ -20,6 +21,7 @@ export function OfflineSyncBanner({
   isStaleData,
   lastSyncAtIso,
   pendingOutboxCount = 0,
+  decisionContext,
 }: OfflineSyncBannerProps) {
   // Suppress stale-data banner in demo/MSW mode — there is no real server to
   // be out of sync with, so showing "cached data" is misleading.
@@ -48,6 +50,12 @@ export function OfflineSyncBanner({
           <p>
             {pendingOutboxCount} queued approval decision{pendingOutboxCount === 1 ? '' : 's'} will
             replay when connection returns.
+          </p>
+        ) : null}
+        {decisionContext === 'approval-review' && (isOffline || effectiveStale) ? (
+          <p>
+            Approval context may have changed since this data was synced. Reconnect or refresh
+            before approving high-impact actions.
           </p>
         ) : null}
       </AlertDescription>
