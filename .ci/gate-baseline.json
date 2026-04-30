@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-30T13:25:50.506Z",
+  "generatedAt": "2026-04-30T13:53:01.810Z",
   "files": {
     "scripts/ci/check-gate-baseline.mjs": "d0489776b30b5dd5365d238e65ab1086d4423fe5a371c656558634fbcbe099fd",
     "scripts/ci/update-gate-baseline.mjs": "7a67f2e043751cd566555388b0b2583f0d4ab26507583bc933562e7155df124b",
@@ -7,7 +7,7 @@
     ".gitattributes": "348a3107920e0ceecb4c507089618e6b76edd94a2d4baf4ea7026d61d22e6b3a",
     ".dependency-cruiser.cjs": "8b59eff5ef2835963da76522c9dbed5b47583f932750d6a83d5d0ff30e4ecba7",
     "eslint.config.mjs": "b25be25d6dbd4da608cb408984a9f2821a074442b1aa092b0e77a1008faed5c8",
-    "package.json": "2d5d8eb231eb72125380e5261e45f967a7a57105135763a2b986f7b3d4cced04",
+    "package.json": "236a0c2702cf1515b7ed6867b2ce6660b13d8da4cedc4ae11f2045a7a8dc0d1f",
     "tsconfig.json": "d2e4634ccae8fd4f7d5358709819512b342e335f509b5cc21b504808566eeea4",
     "tsconfig.eslint.json": "a7a19e65d39a5f952031ac17444972fa67b468b83e69b37a938394f85db946ae",
     "tsconfig.build.json": "ff9f797a051799dfd303017febbfa8d52186d3d3c7f61d139af7b02430c8828c",

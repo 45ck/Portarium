@@ -5,14 +5,15 @@ targets a specific area and includes pass/fail columns for sign-off.
 
 ## Checklists
 
-| Checklist                                               | Scope                                                              | Personas          |
-| ------------------------------------------------------- | ------------------------------------------------------------------ | ----------------- |
-| [UI Smoke](./ui-smoke-checklist.md)                     | All routes load, layout intact, no console errors                  | Any               |
-| [Approval Flow](./approval-flow-checklist.md)           | Approve / Deny / Request Changes with rationale validation + SoD   | Alice (approver)  |
-| [Run Management](./run-management-checklist.md)         | Start / cancel / retry runs, status badge colours                  | Bob (operator)    |
-| [RBAC](./rbac-checklist.md)                             | Alice / Bob / Carol see correct menus, data, and actions           | Alice, Bob, Carol |
-| [Responsive / Mobile](./responsive-mobile-checklist.md) | < 640 px viewport, bottom nav, filter-bar wrap                     | Any               |
-| [Error Handling](./error-handling-checklist.md)         | RFC 7807 Problem Details, form validation, error boundary, offline | Any               |
+| Checklist                                                       | Scope                                                               | Personas          |
+| --------------------------------------------------------------- | ------------------------------------------------------------------- | ----------------- |
+| [UI Smoke](./ui-smoke-checklist.md)                             | All routes load, layout intact, no console errors                   | Any               |
+| [Approval Flow](./approval-flow-checklist.md)                   | Approve / Deny / Request Changes with rationale validation + SoD    | Alice (approver)  |
+| [Run Management](./run-management-checklist.md)                 | Start / cancel / retry runs, status badge colours                   | Bob (operator)    |
+| [RBAC](./rbac-checklist.md)                                     | Alice / Bob / Carol see correct menus, data, and actions            | Alice, Bob, Carol |
+| [Responsive / Mobile](./responsive-mobile-checklist.md)         | < 640 px viewport, bottom nav, filter-bar wrap                      | Any               |
+| [Error Handling](./error-handling-checklist.md)                 | RFC 7807 Problem Details, form validation, error boundary, offline  | Any               |
+| [Live Agent-Browser](./cockpit-live-agent-browser-checklist.md) | Seeded live stack, approval write path, screenshots, trace, console | Approver          |
 
 ## How to use
 

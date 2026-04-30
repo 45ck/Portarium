@@ -1,0 +1,21 @@
+{
+  "bead": "bead-1138",
+  "artifactKind": "cockpit-live-stack-release-evidence",
+  "latestEvidencePolicy": "Replace this manifest with the latest curated release run before approving a Cockpit live-data release.",
+  "requiredCommand": "npm run ci:cockpit:live-stack-smoke:required",
+  "manualChecklist": "docs/internal/qa/cockpit-live-agent-browser-checklist.md",
+  "rawEvidenceDirectory": "qa-artifacts/manual-evidence/bead-1138/",
+  "curatedEvidenceDirectoryPattern": "docs/internal/review/artifacts/bead-1138/live-stack/<stamp>/",
+  "requiredArtifacts": [
+    "runs.png",
+    "evidence.png",
+    "approval-decision.png",
+    "agent-browser.trace.zip",
+    "console-errors.txt"
+  ],
+  "residualUnsupportedSurfaces": [
+    "Robotics routes remain gated unless live telemetry is enabled.",
+    "Workflow builder mutations are outside this smoke.",
+    "Production OIDC/JWT behaviour is covered by the production auth gate."
+  ]
+}
