@@ -28,30 +28,37 @@ curl -s http://localhost:8080/healthz
 Use the static dev token to skip IdP setup during local development:
 
 ```bash
+export NODE_ENV=development
+export ENABLE_DEV_AUTH=true
 export PORTARIUM_DEV_TOKEN=portarium-dev-token
-export PORTARIUM_DEV_WORKSPACE_ID=ws-local
+export PORTARIUM_DEV_WORKSPACE_ID=ws-local-dev
 # Optional: defaults to "dev-user"
 export PORTARIUM_DEV_USER_ID=alice
+export PORTARIUM_CORS_ALLOWED_ORIGINS=http://cockpit.localhost:1355,http://localhost:1355,http://localhost:5173
 ```
 
 ```powershell
+$env:NODE_ENV = "development"
+$env:ENABLE_DEV_AUTH = "true"
 $env:PORTARIUM_DEV_TOKEN = "portarium-dev-token"
-$env:PORTARIUM_DEV_WORKSPACE_ID = "ws-local"
+$env:PORTARIUM_DEV_WORKSPACE_ID = "ws-local-dev"
 $env:PORTARIUM_DEV_USER_ID = "alice"
+$env:PORTARIUM_CORS_ALLOWED_ORIGINS = "http://cockpit.localhost:1355,http://localhost:1355,http://localhost:5173"
 ```
 
 > **Never set `PORTARIUM_DEV_TOKEN` in staging or production.** It bypasses all
-> JWKS signature validation.
+> JWKS signature validation and is rejected unless `ENABLE_DEV_AUTH=true` and
+> `NODE_ENV` is `development` or `test`.
 
 Call a protected endpoint:
 
 ```bash
 curl -i -H "Authorization: Bearer portarium-dev-token" \
-  http://localhost:8080/v1/workspaces/ws-local
+  http://localhost:8080/v1/workspaces/ws-local-dev
 ```
 
 ```powershell
-Invoke-WebRequest http://localhost:8080/v1/workspaces/ws-local `
+Invoke-WebRequest http://localhost:8080/v1/workspaces/ws-local-dev `
   -Headers @{ Authorization = "Bearer portarium-dev-token" }
 ```
 
@@ -60,7 +67,11 @@ Invoke-WebRequest http://localhost:8080/v1/workspaces/ws-local `
 Cockpit live web uses a same-origin, server-mediated HttpOnly session cookie.
 Do not seed bearer tokens into Vite env, `localStorage`, or `sessionStorage`
 for live web QA. Keep `PORTARIUM_DEV_TOKEN` on the control-plane server only,
-then start Cockpit against the live API:
+then start Cockpit against the live API. `npm run cockpit:dev` serves the stable
+local URL `http://cockpit.localhost:1355`; because that is cross-origin from
+`http://localhost:8080`, the control plane must include it in
+`PORTARIUM_CORS_ALLOWED_ORIGINS` unless you are using a same-origin reverse
+proxy.
 
 ```bash
 VITE_PORTARIUM_API_BASE_URL=http://localhost:8080 VITE_PORTARIUM_ENABLE_MSW=false npm run cockpit:dev
@@ -190,7 +201,7 @@ npm run dev:db:reset
 ## Success Checklist
 
 - `http://localhost:8080/healthz` returns `200 {"status":"ok"}`
-- With `PORTARIUM_DEV_TOKEN=portarium-dev-token` set, `Authorization: Bearer portarium-dev-token` returns `200` on protected routes
+- With `ENABLE_DEV_AUTH=true`, `PORTARIUM_DEV_TOKEN=portarium-dev-token`, and `PORTARIUM_DEV_WORKSPACE_ID=ws-local-dev`, `Authorization: Bearer portarium-dev-token` authenticates protected local routes
 
 ---
 

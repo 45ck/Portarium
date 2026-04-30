@@ -41,6 +41,15 @@ export type ProductionGuardInput = Readonly<{
   jwtAudience?: readonly string[];
 }>;
 
+function isDevelopmentOrTestRuntime(env: Record<string, string | undefined>): boolean {
+  const deployment = env['PORTARIUM_ENVIRONMENT']?.trim().toLowerCase();
+  if (deployment && ['prod', 'production', 'stage', 'staging', 'live'].includes(deployment)) {
+    return false;
+  }
+  const nodeEnv = (env['NODE_ENV'] ?? '').trim();
+  return nodeEnv === 'development' || nodeEnv === 'test';
+}
+
 // ---------------------------------------------------------------------------
 // Guard
 // ---------------------------------------------------------------------------
@@ -66,10 +75,8 @@ const DEV_AUDIENCE_PATTERNS = [
  */
 export function checkProductionAuthGuard(input?: ProductionGuardInput): ProductionGuardResult {
   const env = input?.env ?? process.env;
-  const nodeEnv = (env['NODE_ENV'] ?? '').trim();
-
   // In dev/test environments, all dev paths are acceptable
-  if (nodeEnv === 'development' || nodeEnv === 'test') {
+  if (isDevelopmentOrTestRuntime(env)) {
     return { safe: true };
   }
 

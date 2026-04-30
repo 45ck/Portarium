@@ -33,21 +33,25 @@ curl http://localhost:8081/healthz   # Worker      → {"service":"execution-pla
 
 ## Key env vars (control plane)
 
-| Variable                        | Required   | Default  | Description                                                  |
-| ------------------------------- | ---------- | -------- | ------------------------------------------------------------ |
-| `PORTARIUM_HTTP_PORT`           | no         | `8080`   | HTTP listen port                                             |
-| `PORTARIUM_USE_POSTGRES_STORES` | yes (prod) | —        | Set `true` to use Postgres stores                            |
-| `PORTARIUM_DATABASE_URL`        | yes (prod) | —        | Postgres connection string                                   |
-| `PORTARIUM_JWKS_URI`            | no         | —        | JWKS endpoint (enables JWT auth)                             |
-| `PORTARIUM_JWT_ISSUER`          | no         | —        | Expected JWT issuer                                          |
-| `PORTARIUM_JWT_AUDIENCE`        | no         | —        | Expected JWT audience                                        |
-| `PORTARIUM_OPENFGA_API_URL`     | no         | —        | OpenFGA API URL (enables fine-grained authz)                 |
-| `PORTARIUM_OPENFGA_STORE_ID`    | no         | —        | OpenFGA store ID                                             |
-| `ENABLE_DEV_AUTH`               | dev only   | —        | Set `true` + `NODE_ENV=development` to enable dev token auth |
-| `PORTARIUM_DEV_TOKEN`           | dev only   | —        | Static bearer token for dev auth                             |
-| `PORTARIUM_DEV_WORKSPACE_ID`    | dev only   | —        | Workspace ID injected by dev token                           |
-| `RATE_LIMIT_STORE`              | no         | `memory` | `redis` to use Redis-backed rate limiting                    |
-| `REDIS_URL`                     | no         | —        | Redis URL (required when `RATE_LIMIT_STORE=redis`)           |
+| Variable                            | Required   | Default  | Description                                                            |
+| ----------------------------------- | ---------- | -------- | ---------------------------------------------------------------------- |
+| `PORTARIUM_HTTP_PORT`               | no         | `8080`   | HTTP listen port                                                       |
+| `PORTARIUM_USE_POSTGRES_STORES`     | yes (prod) | —        | Set `true` to use Postgres stores                                      |
+| `PORTARIUM_DATABASE_URL`            | yes (prod) | —        | Postgres connection string                                             |
+| `PORTARIUM_JWKS_URI`                | prod auth  | —        | JWKS endpoint; requires issuer and audience                            |
+| `PORTARIUM_JWT_ISSUER`              | prod auth  | —        | Expected JWT issuer                                                    |
+| `PORTARIUM_JWT_AUDIENCE`            | prod auth  | —        | Expected JWT audience                                                  |
+| `PORTARIUM_JWT_AUTHORIZED_PARTY`    | prod auth  | —        | Expected `azp` client id                                               |
+| `PORTARIUM_JWT_TRUSTED_ISSUERS`     | prod auth  | —        | Comma-separated exact issuer allowlist                                 |
+| `PORTARIUM_JWT_REQUIRED_TOKEN_TYPE` | prod auth  | —        | Strict JWT `typ`, normally `at+JWT`                                    |
+| `PORTARIUM_CORS_ALLOWED_ORIGINS`    | as needed  | —        | Exact browser origins for deliberate cross-origin Cockpit              |
+| `PORTARIUM_OPENFGA_API_URL`         | no         | —        | OpenFGA API URL (enables fine-grained authz)                           |
+| `PORTARIUM_OPENFGA_STORE_ID`        | no         | —        | OpenFGA store ID                                                       |
+| `ENABLE_DEV_AUTH`                   | dev only   | —        | Set `true` + `NODE_ENV=development` or `test` to enable dev token auth |
+| `PORTARIUM_DEV_TOKEN`               | dev only   | —        | Static bearer token for dev auth                                       |
+| `PORTARIUM_DEV_WORKSPACE_ID`        | dev only   | —        | Workspace ID injected by dev token                                     |
+| `RATE_LIMIT_STORE`                  | no         | `memory` | `redis` to use Redis-backed rate limiting                              |
+| `REDIS_URL`                         | no         | —        | Redis URL (required when `RATE_LIMIT_STORE=redis`)                     |
 
 ## Key env vars (worker)
 

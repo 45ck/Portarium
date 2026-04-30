@@ -14,6 +14,22 @@ describe('checkProductionAuthGuard', () => {
     expect(result.safe).toBe(true);
   });
 
+  it('treats PORTARIUM_ENVIRONMENT=production as production even when NODE_ENV is development', () => {
+    const result = checkProductionAuthGuard({
+      env: {
+        NODE_ENV: 'development',
+        PORTARIUM_ENVIRONMENT: 'production',
+        ENABLE_DEV_AUTH: 'true',
+      },
+      jwtSkipVerify: true,
+    });
+    expect(result.safe).toBe(false);
+    if (result.safe) throw new Error('expected unsafe');
+    const paths = result.violations.map((violation) => violation.path);
+    expect(paths).toContain('dev-token');
+    expect(paths).toContain('jwt-skip-verify');
+  });
+
   it('returns safe in test environment regardless of flags', () => {
     const result = checkProductionAuthGuard({
       env: { NODE_ENV: 'test', ENABLE_DEV_AUTH: 'true' },

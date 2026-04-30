@@ -45,6 +45,7 @@ declare module 'hono' {
     put(path: string, ...handlers: Handler<E>[]): this;
     patch(path: string, ...handlers: Handler<E>[]): this;
     delete(path: string, ...handlers: Handler<E>[]): this;
+    options(path: string, ...handlers: Handler<E>[]): this;
     use(path: string, ...handlers: MiddlewareHandler<E>[]): this;
     use(...handlers: MiddlewareHandler<E>[]): this;
     route(path: string, app: Hono<E>): this;

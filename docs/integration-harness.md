@@ -25,6 +25,7 @@ npm run integration:harness -- --json
 Uses a static bearer token for authentication. No external IdP required.
 
 - Profiles started: `baseline`, `runtime`, `auth`
+- Gate: `ENABLE_DEV_AUTH=true` with `NODE_ENV=development` or `test`
 - Token: `PORTARIUM_DEV_TOKEN` env var (default: `portarium-dev-token`)
 - Workspace: `PORTARIUM_DEV_WORKSPACE_ID` (default: `ws-local-dev`)
 
@@ -38,6 +39,8 @@ Uses Keycloak as an OIDC identity provider with JWKS token validation.
 - Test users: alice (approver), bob (operator), carol (auditor)
 - Client: `portarium-cockpit` (public, PKCE)
 - JWKS endpoint: `http://localhost:8180/realms/portarium/protocol/openid-connect/certs`
+- Issuer: `http://localhost:8180/realms/portarium`
+- Audience: `portarium-api`
 
 ## Seed Modes
 
@@ -86,13 +89,13 @@ Service status values: `healthy`, `unhealthy`, `skipped`.
 
 ### Auth Failures
 
-| Symptom                | Cause                     | Fix                                                                     |
-| ---------------------- | ------------------------- | ----------------------------------------------------------------------- |
-| Dev-token rejected     | Wrong token value         | Check `PORTARIUM_DEV_TOKEN` matches `docker-compose.local.yml`          |
-| Dev-token 404          | API container not running | Ensure `cockpit` profile is active if testing against containerized API |
-| JWKS fetch fails       | Keycloak not ready        | Keycloak needs 60-90s on first start; wait and retry                    |
-| JWKS returns 0 keys    | Realm not imported        | Check `infra/keycloak/realm-portarium.json` is mounted                  |
-| Token validation fails | Clock skew                | Ensure host and container clocks are synced                             |
+| Symptom                | Cause                                       | Fix                                                                                   |
+| ---------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Dev-token rejected     | Wrong token value or disabled dev-auth gate | Check `ENABLE_DEV_AUTH=true`, `PORTARIUM_DEV_TOKEN`, and `PORTARIUM_DEV_WORKSPACE_ID` |
+| Dev-token 404          | API container not running                   | Ensure `cockpit` profile is active if testing against containerized API               |
+| JWKS fetch fails       | Keycloak not ready                          | Keycloak needs 60-90s on first start; wait and retry                                  |
+| JWKS returns 0 keys    | Realm not imported                          | Check `infra/keycloak/realm-portarium.json` is mounted                                |
+| Token validation fails | Clock skew                                  | Ensure host and container clocks are synced                                           |
 
 ### Seed Failures
 
@@ -106,12 +109,17 @@ Service status values: `healthy`, `unhealthy`, `skipped`.
 
 ### Environment Variables
 
-| Variable                  | Default                 | Description                                    |
-| ------------------------- | ----------------------- | ---------------------------------------------- |
-| `HARNESS_AUTH_PROFILE`    | `dev-token`             | Auth profile: `dev-token` or `oidc`            |
-| `HARNESS_SEED_MODE`       | `baseline`              | Seed mode: `baseline` or `odoo`                |
-| `HARNESS_COMPOSE_TIMEOUT` | `120`                   | Seconds to wait for `docker compose up --wait` |
-| `LOCAL_STACK_URL`         | `http://localhost:8080` | API base URL                                   |
-| `ODOO_URL`                | `http://localhost:4000` | Odoo base URL                                  |
-| `KEYCLOAK_URL`            | `http://localhost:8180` | Keycloak base URL                              |
-| `PORTARIUM_DEV_TOKEN`     | `portarium-dev-token`   | Static dev bearer token                        |
+| Variable                     | Default                 | Description                                    |
+| ---------------------------- | ----------------------- | ---------------------------------------------- |
+| `HARNESS_AUTH_PROFILE`       | `dev-token`             | Auth profile: `dev-token` or `oidc`            |
+| `HARNESS_SEED_MODE`          | `baseline`              | Seed mode: `baseline` or `odoo`                |
+| `HARNESS_COMPOSE_TIMEOUT`    | `120`                   | Seconds to wait for `docker compose up --wait` |
+| `LOCAL_STACK_URL`            | `http://localhost:8080` | API base URL                                   |
+| `ODOO_URL`                   | `http://localhost:4000` | Odoo base URL                                  |
+| `KEYCLOAK_URL`               | `http://localhost:8180` | Keycloak base URL                              |
+| `ENABLE_DEV_AUTH`            | `true`                  | Explicit local dev-token auth gate             |
+| `PORTARIUM_DEV_TOKEN`        | `portarium-dev-token`   | Static dev bearer token                        |
+| `PORTARIUM_DEV_WORKSPACE_ID` | `ws-local-dev`          | Workspace ID injected by dev token             |
+| `PORTARIUM_JWKS_URI`         | Keycloak certs URL      | JWKS endpoint for OIDC auth                    |
+| `PORTARIUM_JWT_ISSUER`       | Keycloak realm URL      | Required token issuer for JWKS auth            |
+| `PORTARIUM_JWT_AUDIENCE`     | `portarium-api`         | Required token audience for JWKS auth          |

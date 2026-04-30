@@ -47,6 +47,7 @@ The specification uses vocabulary from `docs/glossary.md` without synonyms.
 3. Command failures must surface Problem Details fields (`type`, `title`, `status`, `detail`, `instance`).
 4. Mutations must support optional idempotency keys where appropriate.
 5. Live web Cockpit authentication must use the server-mediated `/auth/session`, `/auth/oidc/callback`, and `/auth/logout` path with an HttpOnly `SameSite=Strict` session cookie. Unsafe cookie-authenticated mutations must include `X-Portarium-Request`, and live web must not rely on browser-seeded bearer tokens in env, `localStorage`, or `sessionStorage`.
+6. Production Cockpit should use same-origin `/auth/*` and `/v1/*` routes behind one reverse proxy. Deliberate cross-origin deployments must configure exact allowed origins on the control plane; wildcard CORS or browser-side bearer-token storage is not an acceptable live topology.
 
 ## Behaviour requirements
 

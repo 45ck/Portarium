@@ -25,7 +25,6 @@ const contentTypes = new Map([
 
 function sendJson(response, statusCode, payload) {
   response.writeHead(statusCode, {
-    'access-control-allow-origin': '*',
     'cache-control': 'no-store',
     'content-type': 'application/json; charset=utf-8',
   });
@@ -84,9 +83,7 @@ async function serveStatic(request, response) {
 
   if (request.method === 'OPTIONS') {
     response.writeHead(204, {
-      'access-control-allow-origin': '*',
-      'access-control-allow-methods': 'GET,POST,PATCH,PUT,DELETE,OPTIONS',
-      'access-control-allow-headers': 'authorization,content-type,x-portarium-request',
+      'cache-control': 'no-store',
     });
     response.end();
     return;
@@ -94,7 +91,6 @@ async function serveStatic(request, response) {
 
   if (requestUrl.pathname === '/auth/logout') {
     response.writeHead(204, {
-      'access-control-allow-origin': '*',
       'cache-control': 'no-store',
       'set-cookie': 'portarium_cockpit_session=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0',
     });

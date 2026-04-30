@@ -128,6 +128,32 @@ describe('JoseJwtAuthentication', () => {
     expect(result.error.kind).toBe('Unauthorized');
   });
 
+  it('returns Unauthorized for signed tokens with malformed Portarium workspace claims', async () => {
+    const { publicKey, privateKey } = await generateKeyPair('RS256');
+    const jwk = await exportJWK(publicKey);
+    jwk.kid = 'kid-1';
+
+    const token = await new SignJWT({
+      roles: ['operator'],
+    })
+      .setProtectedHeader({ alg: 'RS256', kid: 'kid-1' })
+      .setSubject('user-1')
+      .setIssuedAt()
+      .setExpirationTime('2h')
+      .sign(privateKey);
+
+    const auth = new JoseJwtAuthentication({ jwks: { keys: [jwk] } });
+    const result = await auth.authenticateBearerToken({
+      authorizationHeader: `Bearer ${token}`,
+      correlationId: 'corr-1',
+    });
+
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('Expected unauthorized.');
+    expect(result.error.kind).toBe('Unauthorized');
+    expect(result.error.message).toMatch(/workspace authentication claims/i);
+  });
+
   it('rejects mutation-tier authentication when expectedWorkspaceId is omitted', async () => {
     const { publicKey, privateKey } = await generateKeyPair('RS256');
     const jwk = await exportJWK(publicKey);
