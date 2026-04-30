@@ -4,6 +4,7 @@ import {
   resolveCockpitExtensionRegistry,
   type ResolveCockpitExtensionRegistryInput,
 } from './registry';
+import { resolveCockpitExtensionRouteHostDefinitions } from './route-host';
 import type {
   CockpitExtensionAccessContext,
   CockpitInstalledExtension,
@@ -59,6 +60,17 @@ export const DEFAULT_COCKPIT_EXTENSION_REGISTRY = resolveCockpitExtensionRegistr
   ...DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
   routeLoaders: INSTALLED_COCKPIT_ROUTE_LOADERS,
 });
+
+const installedRouteHostResolution = resolveCockpitExtensionRouteHostDefinitions({
+  installedExtensions: INSTALLED_COCKPIT_EXTENSIONS,
+  activePackIds: DEFAULT_ACTIVE_EXTENSION_PACK_IDS,
+  ...DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
+  routeLoaders: INSTALLED_COCKPIT_ROUTE_LOADERS,
+});
+
+export const INSTALLED_COCKPIT_ROUTE_HOST_DEFINITIONS = installedRouteHostResolution.definitions;
+
+export const INSTALLED_COCKPIT_ROUTE_HOST_PROBLEMS = installedRouteHostResolution.problems;
 
 export function resolveInstalledCockpitExtensionRegistry(
   input: ResolveInstalledCockpitExtensionRegistryInput,

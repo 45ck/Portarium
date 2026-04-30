@@ -1,6 +1,6 @@
 import { Link } from '@tanstack/react-router';
-import { AlertCircle, LockKeyhole, PlugZap } from 'lucide-react';
-import { Suspense } from 'react';
+import { AlertCircle, LockKeyhole } from 'lucide-react';
+import { Suspense, type ReactNode } from 'react';
 import { PageHeader } from '@/components/cockpit/page-header';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -54,6 +54,10 @@ export function ExternalRouteHost({ pathname }: { pathname: string }) {
     );
   }
 
+  if (resolution.kind === 'active') {
+    return <ExternalRouteFallback resolution={{ kind: 'not-found', pathname }} />;
+  }
+
   return <ExternalRouteFallback resolution={resolution} />;
 }
 
@@ -75,23 +79,12 @@ function ExternalRouteLoading({ routeTitle }: { routeTitle: string }) {
   );
 }
 
-function ExternalRouteFallback({ resolution }: { resolution: ExternalRouteResolution }) {
+function ExternalRouteFallback({
+  resolution,
+}: {
+  resolution: Exclude<ExternalRouteResolution, { kind: 'active' }>;
+}) {
   switch (resolution.kind) {
-    case 'active':
-      return (
-        <FallbackShell
-          title={resolution.route.title}
-          description="This extension route is active, but this Cockpit build does not include a host-owned renderer for it."
-          icon={<PlugZap className="h-5 w-5" />}
-          badges={[
-            resolution.extension.manifest.displayName,
-            resolution.route.id,
-            'renderer missing',
-          ]}
-        >
-          <RouteContract resolution={resolution} />
-        </FallbackShell>
-      );
     case 'forbidden':
       return (
         <FallbackShell
@@ -132,9 +125,9 @@ function FallbackShell({
 }: {
   title: string;
   description: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
   badges: readonly string[];
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <div className="space-y-6 p-6">
@@ -163,60 +156,4 @@ function FallbackShell({
       </Card>
     </div>
   );
-}
-
-function RouteContract({
-  resolution,
-}: {
-  resolution: Extract<ExternalRouteResolution, { route: unknown }>;
-}) {
-  return (
-    <div className="grid gap-3 text-sm md:grid-cols-2">
-      <ContractItem label="Path" value={resolution.route.path} />
-      <ContractItem label="Extension" value={resolution.extension.manifest.id} />
-      <ContractItem
-        label="Personas"
-        value={
-          resolution.route.guard.personas.length > 0
-            ? resolution.route.guard.personas.join(', ')
-            : 'None'
-        }
-      />
-      <ContractItem
-        label="Capabilities"
-        value={
-          resolution.route.guard.requiredCapabilities.length > 0
-            ? resolution.route.guard.requiredCapabilities.join(', ')
-            : 'None'
-        }
-      />
-      <ContractItem
-        label="API scopes"
-        value={
-          resolution.route.guard.requiredApiScopes.length > 0
-            ? resolution.route.guard.requiredApiScopes.join(', ')
-            : 'None'
-        }
-      />
-      <ContractItem
-        label="Params"
-        value={formatParams('params' in resolution ? resolution.params : {})}
-      />
-    </div>
-  );
-}
-
-function ContractItem({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-md border border-border p-3">
-      <p className="text-xs font-medium uppercase text-muted-foreground">{label}</p>
-      <p className="mt-1 break-words font-mono text-xs text-foreground">{value}</p>
-    </div>
-  );
-}
-
-function formatParams(params: Readonly<Record<string, string>>): string {
-  const entries = Object.entries(params);
-  if (entries.length === 0) return 'None';
-  return entries.map(([key, value]) => `${key}=${value}`).join(', ');
 }
