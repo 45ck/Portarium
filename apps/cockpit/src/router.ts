@@ -33,6 +33,7 @@ import { Route as approvalDetailRoute } from './routes/approvals/$approvalId';
 // Evidence
 import { Route as evidenceRoute } from './routes/evidence/index';
 import { Route as engineeringRoute } from './routes/engineering/index';
+import { Route as engineeringMissionControlRoute } from './routes/engineering/mission-control';
 import { Route as engineeringBeadsRoute } from './routes/engineering/beads/index';
 import { Route as engineeringBeadRoute } from './routes/engineering/beads/$beadId/index';
 import { Route as engineeringBeadApprovalRoute } from './routes/engineering/beads/$beadId/approval';
@@ -99,6 +100,7 @@ export const routeTree = rootRoute.addChildren([
   approvalDetailRoute,
   evidenceRoute,
   engineeringRoute,
+  engineeringMissionControlRoute,
   engineeringBeadsRoute,
   engineeringBeadRoute,
   engineeringBeadApprovalRoute,

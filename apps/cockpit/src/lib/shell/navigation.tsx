@@ -162,7 +162,6 @@ const CORE_SHELL_SECTIONS: readonly CockpitShellNavigationSection[] = [
         label: 'Mission Control',
         to: '/engineering/mission-control',
         icon: <LayoutDashboard className="h-4 w-4" />,
-        comingSoon: true,
       },
       {
         id: 'engineering-autonomy',
@@ -326,12 +325,18 @@ const CORE_SHELL_SECTIONS: readonly CockpitShellNavigationSection[] = [
 ];
 
 const MOBILE_PRIMARY_ITEM_IDS = ['inbox', 'approvals', 'runs', 'dashboard'] as const;
-const MOBILE_MORE_SECTION_IDS = new Set(['workspace', 'work', 'workforce', 'config', 'explore']);
+const MOBILE_MORE_SECTION_IDS = new Set([
+  'workspace',
+  'work',
+  'engineering',
+  'workforce',
+  'config',
+  'explore',
+]);
 const COMMAND_EXCLUDED_ITEM_IDS = new Set([
   'search',
   'workflow-builder',
   'engineering-beads',
-  'engineering-mission-control',
   'engineering-autonomy',
   'config-blast-radius',
   'config-policies',
