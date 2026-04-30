@@ -11,7 +11,7 @@
 - Added shared client:
   - `apps/cockpit/src/lib/control-plane-client.ts`
   - base URL via `VITE_PORTARIUM_API_BASE_URL`
-  - bearer token injection via env/localStorage
+  - native bearer token injection via secure platform storage; live web uses HttpOnly session cookies
   - `problem+json` normalization via `CockpitApiError`
 - Migrated core hooks/routes to shared client:
   - `apps/cockpit/src/hooks/queries/use-approvals.ts`

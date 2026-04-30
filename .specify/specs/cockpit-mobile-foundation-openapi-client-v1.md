@@ -14,7 +14,8 @@ Cockpit mobile delivery needs a single API surface aligned to the OpenAPI contra
 2. Core entity hooks/routes must use the shared client instead of direct `fetch` calls.
 3. The shared client must support:
    - env-configured API base URL
-   - bearer token injection
+   - native bearer token injection from secure platform storage
+   - web session-cookie requests with `credentials: include`
    - `application/problem+json` normalization into a typed error
 4. Approvals decision endpoint must align to OpenAPI path naming (`/decide`).
 5. Work Item status typing must match OpenAPI enum values.

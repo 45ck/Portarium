@@ -8,6 +8,8 @@ apps/*/dist-live-preview
 apps/*/coverage
 apps/*/storybook-static
 apps/*/public/mockServiceWorker.js
+# Cockpit TypeScript builds can leave ignored .js sidecars next to source.
+apps/cockpit/**/*.js
 .beads
 research/sources
 domain-atlas/upstreams

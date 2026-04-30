@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { toAppContext } from '../../application/common/context.js';
 import { err, ok } from '../../application/common/result.js';
 import { createControlPlaneHandler } from './control-plane-handler.js';
+import { InMemoryCockpitWebSessionStore } from './cockpit-web-session.js';
 import type { HealthServerHandle } from './health-server.js';
 import { startHealthServer } from './health-server.js';
 
@@ -71,6 +72,111 @@ describe('createControlPlaneHandler', () => {
     const body = (await res.json()) as { type: string; status: number };
     expect(body.type).toMatch(/not-found/);
     expect(body.status).toBe(404);
+  });
+
+  it('authenticates cockpit extension context via cookie-backed web session when bearer auth is absent', async () => {
+    const cockpitWebSessionStore = new InMemoryCockpitWebSessionStore();
+    const record = cockpitWebSessionStore.create({
+      ctx: makeCtx(['operator', 'auditor'], ['extensions.read'], ['objects:read']),
+      ttlMs: 5 * 60 * 1000,
+      nowMs: Date.parse('2026-04-30T02:00:00.000Z'),
+    });
+
+    await startWith(
+      makeDeps({
+        authentication: {
+          authenticateBearerToken: async () =>
+            err({ kind: 'Unauthorized' as const, message: 'Missing token.' }),
+        },
+        cockpitWebSessionStore,
+        clock: () => new Date('2026-04-30T02:00:30.000Z'),
+      }),
+    );
+
+    const res = await fetch(
+      `http://${handle!.host}:${handle!.port}/v1/workspaces/tenant-1/cockpit/extension-context`,
+      {
+        headers: {
+          cookie: `portarium_cockpit_session=${encodeURIComponent(record.sessionId)}`,
+        },
+      },
+    );
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { principalId: string; availablePersonas: string[] };
+    expect(body.principalId).toBe('user-1');
+    expect(body.availablePersonas).toEqual(['Operator', 'Auditor']);
+  });
+
+  it('rejects cookie-authenticated mutations without the same-origin request marker', async () => {
+    const cockpitWebSessionStore = new InMemoryCockpitWebSessionStore();
+    const record = cockpitWebSessionStore.create({
+      ctx: makeCtx(['admin']),
+      ttlMs: 5 * 60 * 1000,
+      nowMs: Date.parse('2026-04-30T02:00:00.000Z'),
+    });
+
+    await startWith(
+      makeDeps({
+        authentication: {
+          authenticateBearerToken: async () =>
+            err({ kind: 'Unauthorized' as const, message: 'Missing token.' }),
+        },
+        cockpitWebSessionStore,
+        clock: () => new Date('2026-04-30T02:00:30.000Z'),
+      }),
+    );
+
+    const res = await fetch(
+      `http://${handle!.host}:${handle!.port}/v1/workspaces/tenant-1/intents:plan`,
+      {
+        method: 'POST',
+        headers: {
+          cookie: `portarium_cockpit_session=${encodeURIComponent(record.sessionId)}`,
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({ triggerText: 'Create a runbook' }),
+      },
+    );
+
+    expect(res.status).toBe(401);
+    const body = (await res.json()) as { detail: string };
+    expect(body.detail).toContain('X-Portarium-Request');
+  });
+
+  it('allows cookie-authenticated mutations when the same-origin request marker is present', async () => {
+    const cockpitWebSessionStore = new InMemoryCockpitWebSessionStore();
+    const record = cockpitWebSessionStore.create({
+      ctx: makeCtx(['admin']),
+      ttlMs: 5 * 60 * 1000,
+      nowMs: Date.parse('2026-04-30T02:00:00.000Z'),
+    });
+
+    await startWith(
+      makeDeps({
+        authentication: {
+          authenticateBearerToken: async () =>
+            err({ kind: 'Unauthorized' as const, message: 'Missing token.' }),
+        },
+        cockpitWebSessionStore,
+        clock: () => new Date('2026-04-30T02:00:30.000Z'),
+      }),
+    );
+
+    const res = await fetch(
+      `http://${handle!.host}:${handle!.port}/v1/workspaces/tenant-1/intents:plan`,
+      {
+        method: 'POST',
+        headers: {
+          cookie: `portarium_cockpit_session=${encodeURIComponent(record.sessionId)}`,
+          'content-type': 'application/json',
+          'x-portarium-request': 'true',
+        },
+        body: JSON.stringify({ triggerText: 'Create a runbook' }),
+      },
+    );
+
+    expect(res.status).toBe(200);
   });
 
   it('returns generic cockpit extension context from the authenticated principal', async () => {

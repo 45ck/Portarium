@@ -48,6 +48,10 @@ import { parsePolicyV1 } from '../../domain/policy/policy-v1.js';
 import { TenantId, WorkspaceId } from '../../domain/primitives/index.js';
 import type { PolicyStore } from '../../application/ports/policy-store.js';
 import type { ControlPlaneDeps } from './control-plane-handler.shared.js';
+import {
+  InMemoryCockpitWebSessionStore,
+  type CockpitWebSessionConfig,
+} from './cockpit-web-session.js';
 import { checkStoreBootstrapGate } from './store-bootstrap-gate.js';
 
 /** Seed a default governance policy into the given policy store. */
@@ -182,6 +186,34 @@ function buildAuthentication(): AuthenticationPort {
       'Set PORTARIUM_JWKS_URI, PORTARIUM_JWT_ISSUER, and PORTARIUM_JWT_AUDIENCE, ' +
       'or set ENABLE_DEV_AUTH=true with PORTARIUM_DEV_TOKEN and PORTARIUM_DEV_WORKSPACE_ID in development/test only.',
   );
+}
+
+function firstNonEmpty(...values: readonly (string | undefined)[]): string | undefined {
+  return values.find((value) => value !== undefined && value !== '');
+}
+
+function buildCockpitWebSessionConfig(): CockpitWebSessionConfig {
+  const ttlRaw = process.env['PORTARIUM_COCKPIT_SESSION_TTL_SECONDS']?.trim();
+  const ttlSeconds = ttlRaw ? Number(ttlRaw) : undefined;
+  const devToken = process.env['PORTARIUM_DEV_TOKEN']?.trim();
+  const devAuthEnabled = Boolean(devToken) && checkDevAuthEnvGate().allowed;
+  const cookieName = process.env['PORTARIUM_COCKPIT_SESSION_COOKIE']?.trim();
+  const oidcIssuer = firstNonEmpty(
+    process.env['PORTARIUM_COCKPIT_OIDC_ISSUER']?.trim(),
+    process.env['PORTARIUM_JWT_ISSUER']?.trim(),
+  );
+  const oidcClientId = process.env['PORTARIUM_COCKPIT_OIDC_CLIENT_ID']?.trim();
+  const oidcRedirectUri = process.env['PORTARIUM_COCKPIT_OIDC_REDIRECT_URI']?.trim();
+
+  return {
+    ...(Number.isFinite(ttlSeconds) && ttlSeconds ? { ttlSeconds } : {}),
+    ...(cookieName ? { cookieName } : {}),
+    ...(oidcIssuer ? { oidcIssuer } : {}),
+    ...(oidcClientId ? { oidcClientId } : {}),
+    ...(oidcRedirectUri ? { oidcRedirectUri } : {}),
+    allowDevelopmentSession: devAuthEnabled && Boolean(devToken),
+    ...(devAuthEnabled && devToken ? { developmentBearerToken: devToken } : {}),
+  };
 }
 
 function buildAuthorization(): AuthorizationPort {
@@ -404,6 +436,8 @@ export async function buildControlPlaneDeps(): Promise<ControlPlaneDeps> {
   const unitOfWork = buildUnitOfWork();
   const actionRunner = buildActionRunner();
   const cockpitExtensionActivationSource = buildEnvCockpitExtensionActivationSource();
+  const cockpitWebSessionStore = new InMemoryCockpitWebSessionStore();
+  const cockpitWebSessionConfig = buildCockpitWebSessionConfig();
 
   const usePostgresStores = process.env['PORTARIUM_USE_POSTGRES_STORES']?.trim() === 'true';
   const connectionString = process.env['PORTARIUM_DATABASE_URL']?.trim();
@@ -440,6 +474,8 @@ export async function buildControlPlaneDeps(): Promise<ControlPlaneDeps> {
       unitOfWork,
       actionRunner,
       cockpitExtensionActivationSource,
+      cockpitWebSessionStore,
+      cockpitWebSessionConfig,
     };
   }
 
@@ -499,5 +535,7 @@ export async function buildControlPlaneDeps(): Promise<ControlPlaneDeps> {
     unitOfWork,
     actionRunner,
     cockpitExtensionActivationSource,
+    cockpitWebSessionStore,
+    cockpitWebSessionConfig,
   };
 }

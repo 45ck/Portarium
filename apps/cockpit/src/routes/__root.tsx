@@ -13,6 +13,7 @@ import { useApprovalEventStream } from '@/hooks/queries/use-approval-event-strea
 import { useCockpitExtensionContext } from '@/hooks/queries/use-cockpit-extension-context';
 import { useUIStore } from '@/stores/ui-store';
 import { parseApprovalNavigationTarget } from '@/lib/approval-navigation';
+import { readBearerToken } from '@/lib/auth-token';
 import { getNotificationTargetUrl, onNotificationActionPerformed } from '@/lib/push-notifications';
 import { cn } from '@/lib/utils';
 import { EntityIcon } from '@/components/domain/entity-icon';
@@ -372,7 +373,17 @@ function RootShell() {
   } = useUIStore();
   const [workspaceOptions, setWorkspaceOptions] = useState<WorkspaceOption[]>([]);
   const oidcEnabled = isOidcConfigured(loadOidcConfig());
-  const extensionContextQuery = useCockpitExtensionContext(activeWorkspaceId, claims?.sub);
+  const hasBearerToken = Boolean(readBearerToken());
+  const currentPath = typeof window === 'undefined' ? '' : window.location.pathname;
+  const isAuthRoute = currentPath.startsWith('/auth/');
+  const shouldRedirectToLogin =
+    authStatus === 'unauthenticated' && oidcEnabled && !hasBearerToken && !isAuthRoute;
+  const apiAccessReady =
+    !isAuthRoute && (!oidcEnabled || authStatus === 'authenticated' || hasBearerToken);
+  const extensionContextQuery = useCockpitExtensionContext(
+    apiAccessReady ? activeWorkspaceId : '',
+    claims?.sub,
+  );
   const extensionServerAccess = resolveCockpitExtensionServerAccess({
     workspaceId: activeWorkspaceId,
     principalId: claims?.sub,
@@ -441,10 +452,10 @@ function RootShell() {
 
   // Redirect to login when unauthenticated (OIDC configured, no dev token).
   useEffect(() => {
-    if (authStatus === 'unauthenticated' && oidcEnabled && !useAuthStore.getState().getToken()) {
+    if (shouldRedirectToLogin) {
       void navigate({ to: '/auth/login' });
     }
-  }, [authStatus, oidcEnabled, navigate]);
+  }, [navigate, shouldRedirectToLogin]);
 
   // Handle web redirect callback (query params on page load).
   useEffect(() => {
@@ -462,8 +473,15 @@ function RootShell() {
     let cancelled = false;
 
     async function loadWorkspaceOptions() {
+      if (!apiAccessReady) {
+        if (!cancelled) {
+          setWorkspaceOptions([]);
+        }
+        return;
+      }
+
       try {
-        const res = await fetch('/v1/workspaces');
+        const res = await fetch('/v1/workspaces', { credentials: 'include' });
         if (!res.ok) return;
         const body = (await res.json()) as { items?: Record<string, unknown>[] };
         const items = Array.isArray(body.items)
@@ -490,7 +508,7 @@ function RootShell() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [apiAccessReady]);
 
   useEffect(() => {
     if (workspaceOptions.length === 0) return;
@@ -512,9 +530,17 @@ function RootShell() {
     );
   }
 
+  if (isAuthRoute) {
+    return <Outlet />;
+  }
+
+  if (shouldRedirectToLogin) {
+    return null;
+  }
+
   return (
     <>
-      <ApprovalEventStreamSubscriber />
+      {apiAccessReady ? <ApprovalEventStreamSubscriber /> : null}
       <TooltipProvider>
         <div className="flex h-screen bg-background text-foreground">
           <a

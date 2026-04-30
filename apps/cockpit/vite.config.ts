@@ -6,9 +6,18 @@ import { fileURLToPath } from 'url';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const capacitorStub = resolve(__dirname, 'src/lib/capacitor-stubs.ts');
+const apiBaseUrl = process.env['VITE_PORTARIUM_API_BASE_URL']?.trim();
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  server: apiBaseUrl
+    ? {
+        proxy: {
+          '/auth': { target: apiBaseUrl, changeOrigin: true },
+          '/v1': { target: apiBaseUrl, changeOrigin: true },
+        },
+      }
+    : undefined,
   resolve: {
     // Prefer TypeScript source files over pre-compiled .js artefacts that may
     // exist alongside .ts/.tsx files in src/.  Default Vite order puts .js

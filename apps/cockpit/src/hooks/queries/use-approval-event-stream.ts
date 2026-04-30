@@ -74,6 +74,7 @@ export function useApprovalEventStream(wsId: string): void {
 
       try {
         const response = await fetch(url, {
+          credentials: 'include',
           headers: { Accept: 'text/event-stream' },
           signal: controller.signal,
         });

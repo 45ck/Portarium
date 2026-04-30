@@ -97,6 +97,16 @@ import {
   handleSavePolicy,
 } from './control-plane-handler.policies.js';
 import { handleGetCockpitExtensionContext } from './control-plane-handler.cockpit-extension-context.js';
+import {
+  buildClearSessionCookie,
+  buildSessionCookie,
+  claimsFromContext,
+  createDevelopmentWebSession,
+  exchangeOidcCodeForWebSession,
+  isUnsafeSessionRequestAllowed,
+  readSessionIdFromCookie,
+  type OidcCallbackBody,
+} from './cockpit-web-session.js';
 
 // ---------------------------------------------------------------------------
 // Hono environment types
@@ -571,6 +581,206 @@ async function handleListRuns(args: WorkspaceHandlerArgs): Promise<void> {
   respondJson(res, { statusCode: 200, correlationId, traceContext, body: result.value });
 }
 
+function isOidcCallbackBody(value: unknown): value is OidcCallbackBody {
+  if (typeof value !== 'object' || value === null) return false;
+  const record = value as Record<string, unknown>;
+  return (
+    typeof record['code'] === 'string' &&
+    record['code'].trim() !== '' &&
+    typeof record['codeVerifier'] === 'string' &&
+    record['codeVerifier'].trim() !== '' &&
+    (record['state'] === undefined || typeof record['state'] === 'string')
+  );
+}
+
+function setAuthNoStoreHeaders(res: ServerResponse): void {
+  res.setHeader('cache-control', 'no-store');
+  res.setHeader('pragma', 'no-cache');
+}
+
+function rejectUnsafeAuthMutation(ctx: RequestContext): boolean {
+  const { req, res, correlationId, traceContext, pathname } = ctx;
+  if (isUnsafeSessionRequestAllowed(req)) return false;
+  setAuthNoStoreHeaders(res);
+  respondProblem(
+    res,
+    {
+      type: 'https://portarium.dev/problems/unauthorized',
+      title: 'Unauthorized',
+      status: 401,
+      detail: 'Cockpit web session mutations require X-Portarium-Request.',
+      instance: pathname,
+    },
+    correlationId,
+    traceContext,
+  );
+  return true;
+}
+
+async function handleGetCockpitWebSession(ctx: RequestContext): Promise<void> {
+  const { deps, req, res, correlationId, traceContext, pathname } = ctx;
+  setAuthNoStoreHeaders(res);
+  const store = deps.cockpitWebSessionStore;
+  const sessionId = readSessionIdFromCookie(req, deps.cockpitWebSessionConfig?.cookieName);
+  const record = sessionId
+    ? (store?.get(sessionId, (deps.clock?.() ?? new Date()).getTime()) ?? null)
+    : null;
+
+  if (!record) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/unauthorized',
+        title: 'Unauthorized',
+        status: 401,
+        detail: 'Cockpit web session is not authenticated.',
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  respondJson(res, {
+    statusCode: 200,
+    correlationId,
+    traceContext,
+    body: { authenticated: true, claims: record.claims },
+  });
+}
+
+async function handleCreateCockpitWebOidcSession(ctx: RequestContext): Promise<void> {
+  const { deps, req, res, correlationId, traceContext, pathname } = ctx;
+  if (rejectUnsafeAuthMutation(ctx)) return;
+  setAuthNoStoreHeaders(res);
+  const store = deps.cockpitWebSessionStore;
+  const config = deps.cockpitWebSessionConfig;
+  if (!store || !config) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/service-unavailable',
+        title: 'Service Unavailable',
+        status: 503,
+        detail: 'Cockpit web session support is not configured.',
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  const body = await readJsonBody(req);
+  if (!body.ok || !isOidcCallbackBody(body.value)) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/validation-failed',
+        title: 'Validation Failed',
+        status: 422,
+        detail: 'OIDC callback requires code and codeVerifier.',
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  const exchange = await exchangeOidcCodeForWebSession({
+    body: body.value,
+    authentication: deps.authentication,
+    config,
+    correlationId,
+    traceContext,
+  });
+  if (!exchange.ok) {
+    respondProblem(res, problemFromError(exchange.error, pathname), correlationId, traceContext);
+    return;
+  }
+
+  const record = store.create({
+    ctx: exchange.value.ctx,
+    ttlMs: exchange.value.ttlMs,
+    nowMs: (deps.clock?.() ?? new Date()).getTime(),
+  });
+  res.setHeader(
+    'set-cookie',
+    buildSessionCookie(req, record.sessionId, exchange.value.ttlMs, config.cookieName),
+  );
+  respondJson(res, {
+    statusCode: 200,
+    correlationId,
+    traceContext,
+    body: { authenticated: true, claims: claimsFromContext(exchange.value.ctx) },
+  });
+}
+
+async function handleCreateCockpitDevelopmentSession(ctx: RequestContext): Promise<void> {
+  const { deps, req, res, correlationId, traceContext, pathname } = ctx;
+  if (rejectUnsafeAuthMutation(ctx)) return;
+  setAuthNoStoreHeaders(res);
+  const store = deps.cockpitWebSessionStore;
+  const config = deps.cockpitWebSessionConfig;
+  if (!store || !config) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/service-unavailable',
+        title: 'Service Unavailable',
+        status: 503,
+        detail: 'Cockpit web session support is not configured.',
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+  const session = await createDevelopmentWebSession({
+    authentication: deps.authentication,
+    config,
+    correlationId,
+    traceContext,
+  });
+  if (!session.ok) {
+    respondProblem(res, problemFromError(session.error, pathname), correlationId, traceContext);
+    return;
+  }
+
+  const record = store.create({
+    ctx: session.value.ctx,
+    ttlMs: session.value.ttlMs,
+    nowMs: (deps.clock?.() ?? new Date()).getTime(),
+  });
+  res.setHeader(
+    'set-cookie',
+    buildSessionCookie(req, record.sessionId, session.value.ttlMs, config.cookieName),
+  );
+  respondJson(res, {
+    statusCode: 200,
+    correlationId,
+    traceContext,
+    body: { authenticated: true, claims: claimsFromContext(session.value.ctx) },
+  });
+}
+
+function handleLogoutCockpitWebSession(ctx: RequestContext): void {
+  const { deps, req, res } = ctx;
+  if (rejectUnsafeAuthMutation(ctx)) return;
+  setAuthNoStoreHeaders(res);
+  const sessionId = readSessionIdFromCookie(req, deps.cockpitWebSessionConfig?.cookieName);
+  if (sessionId) deps.cockpitWebSessionStore?.delete(sessionId);
+  res.statusCode = 204;
+  res.setHeader(
+    'set-cookie',
+    buildClearSessionCookie(req, deps.cockpitWebSessionConfig?.cookieName),
+  );
+  res.end();
+}
+
 // ---------------------------------------------------------------------------
 // Hono app factory
 // ---------------------------------------------------------------------------
@@ -628,10 +838,11 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
         (allowedOrigins ? allowedOrigins.includes(origin) : false)
       ) {
         outgoing.setHeader('access-control-allow-origin', origin);
+        outgoing.setHeader('access-control-allow-credentials', 'true');
         outgoing.setHeader('access-control-allow-methods', 'GET, POST, PUT, PATCH, OPTIONS');
         outgoing.setHeader(
           'access-control-allow-headers',
-          'authorization, content-type, x-correlation-id, traceparent, tracestate, if-match, if-none-match',
+          'authorization, content-type, x-correlation-id, x-portarium-request, traceparent, tracestate, if-match, if-none-match',
         );
         outgoing.setHeader('access-control-max-age', '86400');
       }
@@ -776,6 +987,30 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
   // The `location-events:stream` path uses a named-group RegExp because the
   // literal colon would otherwise be parsed as a Hono path parameter.
   // -------------------------------------------------------------------------
+
+  // GET /auth/session
+  app.get('/auth/session', async (c) => {
+    await handleGetCockpitWebSession(c.get('ctx'));
+    return c.body(null);
+  });
+
+  // POST /auth/oidc/callback
+  app.post('/auth/oidc/callback', async (c) => {
+    await handleCreateCockpitWebOidcSession(c.get('ctx'));
+    return c.body(null);
+  });
+
+  // POST /auth/dev-session
+  app.post('/auth/dev-session', async (c) => {
+    await handleCreateCockpitDevelopmentSession(c.get('ctx'));
+    return c.body(null);
+  });
+
+  // POST /auth/logout
+  app.post('/auth/logout', (c) => {
+    handleLogoutCockpitWebSession(c.get('ctx'));
+    return c.body(null);
+  });
 
   // GET /v1/workspaces
   app.get('/v1/workspaces', async (c) => {
