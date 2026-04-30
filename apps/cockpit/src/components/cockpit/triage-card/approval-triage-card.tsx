@@ -71,6 +71,28 @@ export function ApprovalTriageCard({
     dragRejection,
   });
 
+  const proposedAction =
+    plannedEffects[0]?.summary ??
+    (approval.agentActionProposal
+      ? `${approval.agentActionProposal.toolName} via ${approval.agentActionProposal.agentId}`
+      : approval.prompt);
+  const gateReason = approval.policyRule?.tier
+    ? `${approval.policyRule.tier} review is required for this Action.`
+    : 'Policy Studio opened this live case for focused review.';
+  const blastRadius =
+    approval.policyRule?.blastRadius && approval.policyRule.blastRadius.length > 0
+      ? approval.policyRule.blastRadius.join(', ')
+      : 'No external system blast radius declared';
+  const evidenceSummary =
+    evidenceEntries.length > 0
+      ? `${evidenceEntries.length} evidence item${evidenceEntries.length === 1 ? '' : 's'} linked to this Run`
+      : 'No linked evidence items are available yet';
+  const recommendation = card.isBlocked
+    ? 'Do not approve from this account; hand off or request another approver.'
+    : approval.policyRule?.tier === 'ManualOnly'
+      ? 'Treat this as manual-only unless a policy owner changes the future default.'
+      : 'Review the evidence packet, then approve only if the proposed Action matches policy and intent.';
+
   return (
     <div className="w-full max-w-2xl mx-auto space-y-4">
       <TriageProgressDots
@@ -93,48 +115,58 @@ export function ApprovalTriageCard({
             isOverdue={card.isOverdue}
           />
 
-          <div className="px-5 pt-3 pb-0 shrink-0">
-            <ModeSwitcher context={card.approvalContext} />
-          </div>
+          {!policyLinkedMode ? (
+            <div className="px-5 pt-3 pb-0 shrink-0">
+              <ModeSwitcher context={card.approvalContext} />
+            </div>
+          ) : null}
 
           <div className="px-5 py-5 flex-1 min-h-0 flex flex-col gap-4 overflow-hidden">
             {policyLinkedMode ? (
               <>
                 <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 text-sm">
                   <div className="text-xs font-medium uppercase tracking-[0.18em] text-primary">
-                    Focused review
+                    Focused policy-linked review
                   </div>
                   <div className="mt-2 text-base font-semibold text-foreground">
                     Decide this live case now
                   </div>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    The staged Policy draft affects future cases later. This card is only the
+                    immediate Approval decision.
+                  </p>
                   <div className="mt-3 grid gap-3 md:grid-cols-3">
                     <div className="rounded-md border border-border bg-background/80 p-3">
                       <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                        Why it is here
+                        Proposed Action
                       </div>
-                      <p className="mt-2 text-sm text-foreground">
-                        {approval.policyRule?.tier
-                          ? `Policy requires ${approval.policyRule.tier} review for this action.`
-                          : 'This approval was opened from Policy Studio for focused review.'}
-                      </p>
+                      <p className="mt-2 text-sm font-medium text-foreground">{proposedAction}</p>
                     </div>
                     <div className="rounded-md border border-border bg-background/80 p-3">
                       <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                        Decision needed
+                        Why gated
                       </div>
-                      <p className="mt-2 text-sm text-foreground">
-                        Approve, deny, or request changes before returning to the staged policy
-                        draft.
-                      </p>
+                      <p className="mt-2 text-sm text-foreground">{gateReason}</p>
                     </div>
                     <div className="rounded-md border border-border bg-background/80 p-3">
                       <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                        Return path
+                        Current recommendation
                       </div>
-                      <p className="mt-2 text-sm text-foreground">
-                        Policy Studio keeps the draft state so you can adjust the future default
-                        after this decision.
-                      </p>
+                      <p className="mt-2 text-sm text-foreground">{recommendation}</p>
+                    </div>
+                  </div>
+                  <div className="mt-3 grid gap-3 md:grid-cols-2">
+                    <div className="rounded-md border border-border bg-background/80 p-3">
+                      <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                        Blast radius
+                      </div>
+                      <p className="mt-2 text-sm text-foreground">{blastRadius}</p>
+                    </div>
+                    <div className="rounded-md border border-border bg-background/80 p-3">
+                      <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                        Evidence sufficiency
+                      </div>
+                      <p className="mt-2 text-sm text-foreground">{evidenceSummary}</p>
                     </div>
                   </div>
                 </div>
@@ -157,6 +189,23 @@ export function ApprovalTriageCard({
                   onRationaleFocus={() => card.setRationaleHasFocus(true)}
                   onRationaleBlur={() => card.setRationaleHasFocus(false)}
                 />
+
+                <div className="rounded-lg border border-border bg-muted/20 p-3">
+                  <div className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                    Evidence and policy context
+                  </div>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Use this section to confirm the evidence packet and policy basis before
+                    deciding. Deep audit detail remains available below.
+                  </p>
+                </div>
+
+                <div className="rounded-lg border border-border bg-background/80 p-3">
+                  <div className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                    Deep audit detail
+                  </div>
+                  <ModeSwitcher context={card.approvalContext} />
+                </div>
 
                 <TriageCardBody
                   approval={approval}

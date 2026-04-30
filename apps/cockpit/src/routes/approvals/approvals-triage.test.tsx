@@ -207,10 +207,18 @@ describe('Approvals triage page', () => {
     expect(await screen.findByText(/opened from policy studio/i)).toBeTruthy();
     expect(
       await screen.findByText(
-        /Focused review for the live case that led to the staged Policy draft/i,
+        /Focused policy-linked review for the live case that led to the staged Policy draft/i,
       ),
     ).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'Approval Review', level: 1 })).toBeTruthy();
+    expect(screen.getAllByText(/focused policy-linked review/i).length).toBeGreaterThan(0);
     expect(await screen.findByText(/Decide this live case now/i)).toBeTruthy();
+    expect(await screen.findByText('Proposed Action')).toBeTruthy();
+    expect(await screen.findByText('Why gated')).toBeTruthy();
+    expect(await screen.findByText('Current recommendation')).toBeTruthy();
+    expect(await screen.findByText('Evidence and policy context')).toBeTruthy();
+    expect(await screen.findByText('Deep audit detail')).toBeTruthy();
+    expect(await screen.findByText(/immediate Approval decision/i, { exact: false })).toBeTruthy();
     const backLink = await screen.findByRole('link', { name: /Back to Policy Studio/i });
     const href = backLink.getAttribute('href') ?? '';
     expect(href).toContain('/config/policies');

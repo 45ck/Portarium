@@ -643,12 +643,12 @@ function ApprovalsPage() {
         </motion.div>
       ) : null}
       <PageHeader
-        title={singleCaseMode ? 'Approval Review' : 'Approvals'}
+        title={singleCaseMode || policyLinkedMode ? 'Approval Review' : 'Approvals'}
         description={
           singleCaseMode
             ? 'Single-case review opened from a notification or deep link.'
             : policyLinkedMode
-              ? 'Focused review for the live case that led to the staged Policy draft.'
+              ? 'Focused policy-linked review for the live case that led to the staged Policy draft.'
               : undefined
         }
         icon={<EntityIcon entityType="approval" size="md" decorative />}
