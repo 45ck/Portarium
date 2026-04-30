@@ -225,21 +225,42 @@ export const handlers = [
     const nextStatus =
       body.interventionType === 'pause' ||
       body.interventionType === 'freeze' ||
-      body.interventionType === 'request-evidence'
+      body.interventionType === 'request-evidence' ||
+      body.interventionType === 'request-more-evidence' ||
+      body.interventionType === 'sandbox' ||
+      body.interventionType === 'emergency-disable'
         ? ('Paused' as const)
         : body.interventionType === 'resume'
           ? ('Running' as const)
           : undefined;
+    const nextControlState =
+      body.interventionType === 'freeze' || body.interventionType === 'emergency-disable'
+        ? ('frozen' as const)
+        : body.interventionType === 'request-evidence' ||
+            body.interventionType === 'request-more-evidence' ||
+            body.interventionType === 'escalate'
+          ? ('blocked' as const)
+          : body.interventionType === 'sandbox'
+            ? ('degraded' as const)
+            : body.interventionType === 'handoff' || body.interventionType === 'reroute'
+              ? ('operator-owned' as const)
+              : body.interventionType === 'resume'
+                ? undefined
+                : undefined;
 
-    runs = runs.map((r) =>
-      r.runId === runId
-        ? {
-            ...r,
-            ...(nextStatus ? { status: nextStatus } : {}),
-            ...(nextStatus === 'Running' ? { endedAtIso: undefined } : {}),
-          }
-        : r,
-    );
+    runs = runs.map((r) => {
+      if (r.runId !== runId) return r;
+      const updatedRun = {
+        ...r,
+        ...(nextStatus ? { status: nextStatus } : {}),
+        ...(nextStatus === 'Running' ? { endedAtIso: undefined } : {}),
+        ...(nextControlState ? { controlState: nextControlState } : {}),
+        ...(body.target ? { operatorOwnerId: body.target } : {}),
+      };
+      if (!nextControlState) delete updatedRun.controlState;
+      if (!body.target) delete updatedRun.operatorOwnerId;
+      return updatedRun;
+    });
     const updated = runs.find((r) => r.runId === runId);
     if (!updated) return HttpResponse.json(null, { status: 404 });
 
@@ -253,7 +274,9 @@ export const handlers = [
         workspaceId: wsId,
         occurredAtIso: nowIso,
         category: body.interventionType === 'annotate' ? 'System' : 'Action',
-        summary: `${body.interventionType}: ${body.rationale}`,
+        summary: `${body.interventionType}: ${body.rationale}${
+          body.authoritySource ? ` (${body.authoritySource})` : ''
+        }`,
         actor: { kind: 'User', userId: 'user-001' },
         links: { runId },
         ...(previousHash ? { previousHash } : {}),

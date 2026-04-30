@@ -36,10 +36,12 @@ Some Cockpit contracts depend on this sequence because they would otherwise gues
 - `bead-1058` unblocks `bead-1075`, the evidence sufficiency packet.
 - `bead-1074` defines authority and accountability before `bead-1076` expands intervention controls.
 - `bead-1075` then unblocks `bead-1078`, `bead-1079`, and the deeper approval review model.
+- `bead-1076` maps those contracts into the Cockpit Run intervention controls for steering, handoff, escalation, containment, and emergency action.
 
 The bead-1074 artifact is the authority and accountability contract in `.specify/specs/operator-interaction-model-v1.md`.
 The bead-1058 eval is runnable with `node node_modules/vitest/vitest.mjs run scripts/integration/scenario-operator-trust-calibration.test.ts`.
 The bead-1075 artifact is the shared packet contract in `.specify/specs/decision-context-packet-v1.md`.
+The bead-1076 artifact is the Run intervention surface in `apps/cockpit/src/components/cockpit/run-intervention-panel.tsx`.
 
 ## Not Core For This Sequence
 

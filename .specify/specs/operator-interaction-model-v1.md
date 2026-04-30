@@ -620,6 +620,22 @@ Approval and steering surfaces must support, where permitted by Policy:
 - inspect blast radius and reversibility
 - attach feedback that targets the current Run or future behaviour
 
+The Cockpit Run intervention surface must preserve the action semantics below so
+that generic buttons cannot disguise different consequences or authority levels.
+
+| Intervention          | UI surface | Authority source     | Effect scope              | Required affordance                       |
+| --------------------- | ---------- | -------------------- | ------------------------- | ----------------------------------------- |
+| pause                 | steering   | run charter          | current Run               | rationale and evidence-backed audit entry |
+| resume                | steering   | run charter          | current Run               | current blocked/frozen state visible      |
+| reroute               | steering   | run charter          | current Run               | target person or Workforce Queue          |
+| handoff               | steering   | delegated role       | current Run               | previous and new owner visible            |
+| escalate              | steering   | delegated role       | current Run               | higher authority or queue target          |
+| request-more-evidence | approval   | policy rule          | Approval Gate             | missing evidence as first-class state     |
+| freeze                | steering   | policy rule          | current Run               | explicit non-routine acknowledgement      |
+| sandbox               | steering   | policy rule          | contained current Run     | degraded containment state visible        |
+| emergency disable     | emergency  | incident break-glass | workspace safety boundary | explicit break-glass acknowledgement      |
+| annotate              | monitoring | audit annotation     | context only              | no state-change implication               |
+
 ### R10a Approval card minimum contract
 
 Every approval or steering card should show, at minimum:

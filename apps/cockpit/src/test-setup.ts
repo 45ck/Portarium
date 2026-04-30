@@ -44,3 +44,10 @@ try {
   // @ts-ignore — global reassignment intentional for test environment
   globalThis.localStorage = createMemoryStorage();
 }
+
+if (typeof HTMLElement !== 'undefined') {
+  HTMLElement.prototype.hasPointerCapture ??= () => false;
+  HTMLElement.prototype.setPointerCapture ??= () => undefined;
+  HTMLElement.prototype.releasePointerCapture ??= () => undefined;
+  HTMLElement.prototype.scrollIntoView ??= () => undefined;
+}

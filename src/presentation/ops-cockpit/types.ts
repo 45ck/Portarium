@@ -93,6 +93,8 @@ export type RunStatus =
   | 'Failed'
   | 'Cancelled';
 
+export type RunControlState = 'waiting' | 'blocked' | 'degraded' | 'frozen' | 'operator-owned';
+
 export interface RunSummary {
   schemaVersion: number;
   runId: string;
@@ -105,6 +107,8 @@ export interface RunSummary {
   createdAtIso: string;
   startedAtIso?: string;
   endedAtIso?: string;
+  controlState?: RunControlState;
+  operatorOwnerId?: string;
   agentIds?: string[];
   robotIds?: string[];
   workforceMemberIds?: string[];
@@ -117,17 +121,44 @@ export type RunInterventionKind =
   | 'resume'
   | 'reroute'
   | 'handoff'
+  | 'escalate'
   | 'annotate'
   | 'request-evidence'
-  | 'freeze';
+  | 'request-more-evidence'
+  | 'freeze'
+  | 'sandbox'
+  | 'emergency-disable';
 
-export type OperatorInputEffect = 'current-run-effect' | 'future-policy-effect' | 'context-only';
+export type OperatorInputEffect =
+  | 'current-run-effect'
+  | 'approval-gate-effect'
+  | 'future-policy-effect'
+  | 'workspace-safety-effect'
+  | 'context-only';
+
+export type RunInterventionSurface =
+  | 'monitoring'
+  | 'steering'
+  | 'approval'
+  | 'policy-change'
+  | 'emergency';
+
+export type RunInterventionAuthoritySource =
+  | 'run-charter'
+  | 'policy-rule'
+  | 'delegated-role'
+  | 'incident-break-glass'
+  | 'audit-annotation';
 
 export interface RunInterventionRequest {
   interventionType: RunInterventionKind;
   rationale: string;
   target?: string;
+  surface?: RunInterventionSurface;
+  authoritySource?: RunInterventionAuthoritySource;
   effect?: OperatorInputEffect;
+  consequence?: string;
+  evidenceRequired?: boolean;
 }
 
 export type WorkflowTriggerKind = 'Manual' | 'Cron' | 'Webhook' | 'DomainEvent';
