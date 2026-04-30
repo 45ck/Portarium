@@ -5,17 +5,27 @@ import { cleanup, render, screen } from '@testing-library/react';
 import type { PlanEffect, PredictedPlanEffect } from '@portarium/cockpit-types';
 import { EffectsList } from './effects-list';
 
-const makeEffect = (id: string, op: PlanEffect['operation'] = 'CREATE'): PlanEffect => ({
+const makeEffect = (id: string, op: PlanEffect['operation'] = 'Create'): PlanEffect => ({
   effectId: id,
   operation: op,
-  target: { sorName: 'odoo', externalType: 'invoice' },
+  target: {
+    sorName: 'odoo',
+    portFamily: 'FinanceAccounting',
+    externalId: `invoice-${id}`,
+    externalType: 'invoice',
+  },
   summary: `Effect ${id}`,
 });
 
 const makePredicted = (id: string): PredictedPlanEffect => ({
   effectId: id,
-  operation: 'UPDATE',
-  target: { sorName: 'odoo', externalType: 'account' },
+  operation: 'Update',
+  target: {
+    sorName: 'odoo',
+    portFamily: 'FinanceAccounting',
+    externalId: `account-${id}`,
+    externalType: 'account',
+  },
   summary: `Predicted ${id}`,
   confidence: 0.85,
 });
@@ -64,8 +74,8 @@ describe('EffectsList', () => {
   });
 
   it('shows operation badge', () => {
-    render(<EffectsList planned={[makeEffect('e1', 'DELETE')]} />);
-    expect(screen.getByText('DELETE')).toBeTruthy();
+    render(<EffectsList planned={[makeEffect('e1', 'Delete')]} />);
+    expect(screen.getByText('Delete')).toBeTruthy();
   });
 
   it('shows target SOR name and type', () => {

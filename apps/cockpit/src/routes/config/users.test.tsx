@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 
+import '@testing-library/jest-dom/vitest';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { RouterProvider, createMemoryHistory } from '@tanstack/react-router';
 import { createCockpitRouter } from '@/router';
@@ -198,7 +199,8 @@ describe('Users/RBAC management page', () => {
     await userEvent.click(aliceCell);
 
     const aliceUser = MOCK_USERS.find((u) => u.name === 'Alice Chen');
-    expect(await screen.findByText(aliceUser!.email, { selector: '*' })).toBeTruthy();
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText(aliceUser!.email)).toBeTruthy();
     expect(await screen.findByRole('button', { name: /update role/i })).toBeTruthy();
   });
 

@@ -4,6 +4,7 @@ reports
 .tsbuildinfo
 apps/*/node_modules
 apps/*/dist
+apps/*/dist-live-preview
 apps/*/coverage
 apps/*/storybook-static
 apps/*/public/mockServiceWorker.js

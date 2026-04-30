@@ -78,7 +78,10 @@ function tierFor(approval: ApprovalSummary | undefined, run: RunSummary | undefi
   return run?.executionTier ?? 'Auto';
 }
 
-function blastRadiusFor(approval: ApprovalSummary | undefined, tier: RunSummary['executionTier']) {
+function blastRadiusFor(
+  approval: ApprovalSummary | undefined,
+  tier: RunSummary['executionTier'],
+): BlastRadiusLevel {
   if (tier === 'ManualOnly' || approval?.policyRule?.irreversibility === 'full') return 'critical';
   if (tier === 'HumanApprove') return 'high';
   if ((approval?.policyRule?.blastRadius.length ?? 0) > 0 || tier === 'Assisted') return 'medium';

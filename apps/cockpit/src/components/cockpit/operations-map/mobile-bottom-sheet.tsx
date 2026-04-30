@@ -41,7 +41,10 @@ export function MobileBottomSheet({
 
   const handleTouchStart = useCallback(
     (e: React.TouchEvent) => {
-      dragStartY.current = e.touches[0].clientY;
+      const touch = e.touches.item(0);
+      if (!touch) return;
+
+      dragStartY.current = touch.clientY;
       dragStartSnap.current = snap;
     },
     [snap],
@@ -49,7 +52,13 @@ export function MobileBottomSheet({
 
   const handleTouchEnd = useCallback((e: React.TouchEvent) => {
     if (dragStartY.current === null) return;
-    const deltaY = dragStartY.current - e.changedTouches[0].clientY;
+    const changedTouch = e.changedTouches.item(0);
+    if (!changedTouch) {
+      dragStartY.current = null;
+      return;
+    }
+
+    const deltaY = dragStartY.current - changedTouch.clientY;
     dragStartY.current = null;
 
     // Swipe up = positive deltaY, swipe down = negative

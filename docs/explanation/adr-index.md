@@ -14,6 +14,7 @@ Architecture Decision Records live in `docs/internal/adr/`.
 - Agentic workflow cockpit reuse-vs-build strategy: `docs/internal/adr/0078-agentic-workflow-cockpit-reuse-vs-build-strategy.md`
 - Derived artifacts and retrieval architecture: `docs/internal/adr/0079-derived-artifacts-retrieval-rag-vector-graph.md`
 - Cockpit extension host: `docs/internal/adr/ADR-0126-cockpit-extension-host.md`
+- Cockpit live preview CI gate: `docs/internal/adr/ADR-0127-cockpit-live-preview-ci-gate.md`
 
 ## Working rule
 

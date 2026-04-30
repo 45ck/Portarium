@@ -7,6 +7,7 @@ import { RouterProvider, createMemoryHistory } from '@tanstack/react-router';
 import { createCockpitRouter } from '@/router';
 import { queryClient } from '@/lib/query-client';
 import { APPROVALS } from '@/mocks/fixtures/demo';
+import type { OfflineQueryMeta } from '@/hooks/queries/use-offline-query';
 import type { ApprovalSummary } from '@portarium/cockpit-types';
 
 // ---------------------------------------------------------------------------
@@ -20,11 +21,10 @@ const ALL_PENDING = APPROVALS.filter((a) => a.status === 'Pending');
 let _mockApprovals: ApprovalSummary[] = [...APPROVALS];
 let _mockIsLoading = false;
 let _mockIsError = false;
-let _mockOfflineMeta = {
+let _mockOfflineMeta: OfflineQueryMeta = {
   isOffline: false,
   isStaleData: false,
-  dataSource: 'network' as const,
-  lastSyncAtIso: undefined as string | undefined,
+  dataSource: 'network',
 };
 let _mockPendingCount = 0;
 const _mockRefetch = vi.fn();
@@ -141,8 +141,7 @@ beforeEach(() => {
   _mockOfflineMeta = {
     isOffline: false,
     isStaleData: false,
-    dataSource: 'network' as const,
-    lastSyncAtIso: undefined,
+    dataSource: 'network',
   };
   _mockPendingCount = 0;
   _mockRefetch.mockClear();

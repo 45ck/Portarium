@@ -26,7 +26,6 @@ const preview: Preview = {
           { value: 'theme-quantum', title: 'Quantum' },
           { value: 'theme-tactical', title: 'Tactical' },
         ],
-        showName: true,
         dynamicTitle: true,
       },
     },

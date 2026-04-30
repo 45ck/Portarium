@@ -399,7 +399,7 @@ function ApprovalsPage() {
         />
       </motion.div>
     );
-  } else if (singleCaseMode && singleCaseApproval?.status !== 'Pending') {
+  } else if (singleCaseMode && singleCaseApproval && singleCaseApproval.status !== 'Pending') {
     triageChild = (
       <motion.div
         key="single-decided"

@@ -82,7 +82,7 @@ export const DATASETS: DatasetEntry[] = [
         EVIDENCE: m.EVIDENCE,
         WORKFORCE_MEMBERS: m.WORKFORCE_MEMBERS,
         WORKFORCE_QUEUES: m.WORKFORCE_QUEUES,
-        AGENTS: m.AGENTS,
+        AGENTS: m.AGENTS as MeridianDataset['AGENTS'],
         MACHINES: m.MACHINES,
         ADAPTERS: m.ADAPTERS,
         ROBOTS: m.ROBOTS,
