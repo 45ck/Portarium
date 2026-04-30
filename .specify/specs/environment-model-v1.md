@@ -41,6 +41,10 @@ tiers.
 - **Purpose:** zero-infrastructure developer loop. No cloud credentials required.
 - **Override:** `docker-compose.local.yml` for app service addition without touching
   the baseline.
+- **Seeded Cockpit workspace:** `npm run dev:seed` must create live local tenant
+  data for `ws-local-dev` in PostgreSQL. `npm run seed:cockpit-live:validate`
+  is the acceptance check for runs, approvals, work items, evidence, config,
+  and workforce records used by live Cockpit QA.
 
 ### dev
 

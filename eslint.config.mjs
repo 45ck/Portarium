@@ -198,6 +198,17 @@ export default tseslint.config(
     },
   },
 
+  // The Cockpit live seed is a deterministic fixture plus persistence harness.
+  // Keep lint focused on type safety and imports rather than splitting the
+  // fixture across many files just to satisfy line-count caps.
+  {
+    files: ['scripts/seed/cockpit-live-seed-data.ts', 'scripts/seed/seed-cockpit-live.ts'],
+    rules: {
+      'max-lines': 'off',
+      'max-lines-per-function': 'off',
+    },
+  },
+
   // Demo scripts use optional SDK packages (openai, @anthropic-ai/sdk) that are
   // not installed by default. Dynamic import() is used so the scripts fail
   // gracefully at runtime with a helpful message rather than at load time.

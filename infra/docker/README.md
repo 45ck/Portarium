@@ -31,6 +31,15 @@ curl http://localhost:8080/healthz   # API server  → {"service":"control-plane
 curl http://localhost:8081/healthz   # Worker      → {"service":"execution-plane","status":"ok",...}
 ```
 
+Seed the live local Cockpit workspace from the repo root:
+
+```bash
+npm run dev:seed
+npm run seed:cockpit-live:validate
+```
+
+The default seed workspace is `ws-local-dev`.
+
 ## Key env vars (control plane)
 
 | Variable                            | Required   | Default  | Description                                                            |

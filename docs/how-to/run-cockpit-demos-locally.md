@@ -22,7 +22,29 @@ Open `http://localhost:5173`. The Cockpit loads with in-memory mock handlers —
 
 ---
 
-## 2. Run the demo-machine clips (L0 — mock data)
+## 2. Start Cockpit with live local data
+
+For a live-data walkthrough, start and seed the full local stack first:
+
+```bash
+npm run dev:all
+npm run dev:seed
+npm run seed:cockpit-live:validate
+```
+
+Then run Cockpit against the control-plane API instead of the mock handlers:
+
+```bash
+VITE_PORTARIUM_API_BASE_URL=http://localhost:8080 VITE_PORTARIUM_ENABLE_MSW=false npm run cockpit:dev
+```
+
+Open `http://cockpit.localhost:1355`. The live seed uses workspace
+`ws-local-dev`, pending approval `apr-live-001`, waiting run `run-live-001`,
+and work item `wi-live-001`.
+
+---
+
+## 3. Run the demo-machine clips (L0 — mock data)
 
 The `docs/internal/ui/cockpit/demo-machine/clips/` folder contains six deterministic storylines. Each clip is self-contained and uses the Cockpit mock handlers.
 
@@ -46,7 +68,7 @@ demo-machine run docs/internal/ui/cockpit/demo-machine/clips/01-approval-gate-un
 
 ---
 
-## 3. Render showcase media (approvals-v2)
+## 4. Render showcase media (approvals-v2)
 
 Generate a GIF and JSON artefact for the approvals-v2 showcase:
 
@@ -61,7 +83,7 @@ Outputs:
 
 ---
 
-## 4. Integration showcase ladder (L0–L3)
+## 5. Integration showcase ladder (L0–L3)
 
 The integration showcase ladder progresses from mock data to a fully governed run. See [Integration Ladder](../integration/integration-ladder.md) for gate definitions.
 
@@ -128,7 +150,7 @@ npm run test -- src/infrastructure/emulator/run-emulator.test.ts
 
 ---
 
-## 5. Verify evidence after a governed run
+## 6. Verify evidence after a governed run
 
 ```bash
 npm run cli:portarium -- evidence verify --run-id <runId>
