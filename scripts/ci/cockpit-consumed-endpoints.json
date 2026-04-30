@@ -280,12 +280,10 @@
     {
       "id": "workforce.members.list",
       "method": "GET",
-      "path": "/v1/workspaces/{workspaceId}/workforce/members",
-      "openapi": "pending",
-      "runtime": "pending",
+      "path": "/v1/workspaces/{workspaceId}/workforce",
+      "openapi": "required",
+      "runtime": "required",
       "mock": "required",
-      "trackingBead": "bead-1130",
-      "reason": "Cockpit still consumes a members alias while the live workforce contract exposes /workforce.",
       "consumers": ["apps/cockpit/src/hooks/queries/use-workforce.ts"]
     },
     {

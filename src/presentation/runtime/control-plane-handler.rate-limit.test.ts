@@ -4,7 +4,13 @@ import { toAppContext } from '../../application/common/context.js';
 import { ok } from '../../application/common/result.js';
 import { TenantId } from '../../domain/primitives/index.js';
 import { InMemoryRateLimitStore } from '../../infrastructure/rate-limiting/index.js';
+import { InMemoryEvidenceLog } from '../../infrastructure/stores/in-memory-evidence-log.js';
 import { createControlPlaneHandler } from './control-plane-handler.js';
+import {
+  buildInMemoryHumanTaskStore,
+  buildInMemoryWorkforceMemberStore,
+  buildInMemoryWorkforceQueueStore,
+} from './control-plane-handler.bootstrap.js';
 import type { HealthServerHandle } from './health-server.js';
 import { startHealthServer } from './health-server.js';
 import type { ControlPlaneDeps } from './control-plane-handler.shared.js';
@@ -32,6 +38,7 @@ function makeCtx() {
 
 function makeDeps(maxRequests: number): ControlPlaneDeps {
   store = new InMemoryRateLimitStore();
+  const evidenceLog = new InMemoryEvidenceLog();
   const scope = { kind: 'Tenant' as const, tenantId: TenantId(WORKSPACE_ID) };
   store.setRules(scope, [
     {
@@ -54,6 +61,11 @@ function makeDeps(maxRequests: number): ControlPlaneDeps {
       getRunById: async () => null,
       saveRun: async () => undefined,
     },
+    workforceMemberStore: buildInMemoryWorkforceMemberStore(WORKSPACE_ID),
+    workforceQueueStore: buildInMemoryWorkforceQueueStore(WORKSPACE_ID),
+    humanTaskStore: buildInMemoryHumanTaskStore(WORKSPACE_ID),
+    evidenceLog,
+    evidenceQueryStore: evidenceLog,
     rateLimitStore: store,
   };
 }
@@ -214,6 +226,7 @@ describe('control-plane rate limiting', () => {
 
   it('does not apply rate limit when no rateLimitStore is provided', async () => {
     // Omit rateLimitStore entirely — all workspace requests should pass through.
+    const evidenceLog = new InMemoryEvidenceLog();
     const deps: ControlPlaneDeps = {
       authentication: { authenticateBearerToken: async () => ok(makeCtx()) },
       authorization: { isAllowed: async () => true },
@@ -226,6 +239,11 @@ describe('control-plane rate limiting', () => {
         getRunById: async () => null,
         saveRun: async () => undefined,
       },
+      workforceMemberStore: buildInMemoryWorkforceMemberStore(WORKSPACE_ID),
+      workforceQueueStore: buildInMemoryWorkforceQueueStore(WORKSPACE_ID),
+      humanTaskStore: buildInMemoryHumanTaskStore(WORKSPACE_ID),
+      evidenceLog,
+      evidenceQueryStore: evidenceLog,
     };
     await startWith(deps);
     const url = `http://${handle!.host}:${handle!.port}/v1/workspaces/${WORKSPACE_ID}/workforce`;

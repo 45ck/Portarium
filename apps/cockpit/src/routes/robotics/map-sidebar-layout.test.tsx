@@ -115,7 +115,7 @@ function routeResponse(pathname: string): Response {
   if (new RegExp(WS.source + '/workflows$').test(pathname)) return json({ items: WORKFLOWS });
   if (new RegExp(WS.source + '/approvals$').test(pathname)) return json({ items: APPROVALS });
   if (new RegExp(WS.source + '/evidence$').test(pathname)) return json({ items: EVIDENCE });
-  if (new RegExp(WS.source + '/workforce/members$').test(pathname))
+  if (new RegExp(WS.source + '/workforce$').test(pathname))
     return json({ items: WORKFORCE_MEMBERS });
   if (new RegExp(WS.source + '/workforce/queues$').test(pathname))
     return json({ items: WORKFORCE_QUEUES });

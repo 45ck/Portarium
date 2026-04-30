@@ -8,7 +8,23 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { toAppContext } from '../../application/common/context.js';
 import { ok } from '../../application/common/result.js';
+import { InMemoryEvidenceLog } from '../../infrastructure/stores/in-memory-evidence-log.js';
+import {
+  InMemoryHumanTaskStore,
+  InMemoryWorkforceMemberStore,
+  InMemoryWorkforceQueueStore,
+} from '../../infrastructure/stores/in-memory-workforce-store.js';
+import {
+  parseHumanTaskV1,
+  parseWorkforceMemberV1,
+  parseWorkforceQueueV1,
+} from '../../domain/workforce/index.js';
 import { createControlPlaneHandler } from './control-plane-handler.js';
+import {
+  buildInMemoryHumanTaskStore,
+  buildInMemoryWorkforceMemberStore,
+  buildInMemoryWorkforceQueueStore,
+} from './control-plane-handler.bootstrap.js';
 import type { HealthServerHandle } from './health-server.js';
 import { startHealthServer } from './health-server.js';
 
@@ -21,7 +37,7 @@ afterEach(async () => {
 
 function makeCtx(roles: readonly ('admin' | 'operator' | 'approver' | 'auditor')[] = ['admin']) {
   return toAppContext({
-    tenantId: 'tenant-1',
+    tenantId: 'workspace-1',
     principalId: 'user-1',
     roles,
     correlationId: 'corr-workforce-contract',
@@ -29,6 +45,7 @@ function makeCtx(roles: readonly ('admin' | 'operator' | 'approver' | 'auditor')
 }
 
 function makeDeps(roles: readonly ('admin' | 'operator' | 'approver' | 'auditor')[] = ['admin']) {
+  const evidenceLog = new InMemoryEvidenceLog();
   return {
     authentication: {
       authenticateBearerToken: async () => ok(makeCtx(roles)),
@@ -45,6 +62,86 @@ function makeDeps(roles: readonly ('admin' | 'operator' | 'approver' | 'auditor'
       getRunById: async () => null,
       saveRun: async () => undefined,
     },
+    workforceMemberStore: buildInMemoryWorkforceMemberStore('workspace-1'),
+    workforceQueueStore: buildInMemoryWorkforceQueueStore('workspace-1'),
+    humanTaskStore: buildInMemoryHumanTaskStore('workspace-1'),
+    evidenceLog,
+    evidenceQueryStore: evidenceLog,
+  };
+}
+
+function makeStoreOnlyDeps() {
+  const evidenceLog = new InMemoryEvidenceLog();
+  const workforceMemberStore = new InMemoryWorkforceMemberStore([
+    parseWorkforceMemberV1({
+      schemaVersion: 1,
+      workforceMemberId: 'wm-live',
+      linkedUserId: 'user-live',
+      displayName: 'Live Store Operator',
+      capabilities: ['operations.dispatch'],
+      availabilityStatus: 'available',
+      queueMemberships: ['queue-live'],
+      tenantId: 'workspace-live',
+      createdAtIso: '2026-02-20T00:00:00.000Z',
+    }),
+  ]);
+  const workforceQueueStore = new InMemoryWorkforceQueueStore([
+    parseWorkforceQueueV1({
+      schemaVersion: 1,
+      workforceQueueId: 'queue-live',
+      name: 'Live Queue',
+      requiredCapabilities: ['operations.dispatch'],
+      memberIds: ['wm-live'],
+      routingStrategy: 'round-robin',
+      tenantId: 'workspace-live',
+    }),
+  ]);
+  const humanTaskStore = new InMemoryHumanTaskStore([
+    {
+      workspaceId: 'workspace-live',
+      task: parseHumanTaskV1({
+        schemaVersion: 1,
+        humanTaskId: 'ht-live',
+        workItemId: 'wi-live',
+        runId: 'run-live',
+        stepId: 'step-live',
+        description: 'Store-only task',
+        requiredCapabilities: ['operations.dispatch'],
+        status: 'pending',
+      }),
+    },
+  ]);
+
+  return {
+    authentication: {
+      authenticateBearerToken: async () =>
+        ok(
+          toAppContext({
+            tenantId: 'workspace-live',
+            principalId: 'user-live',
+            roles: ['operator'],
+            correlationId: 'corr-store-backed-workforce',
+          }),
+        ),
+    },
+    authorization: {
+      isAllowed: async () => true,
+    },
+    workspaceStore: {
+      getWorkspaceById: async () => null,
+      getWorkspaceByName: async () => null,
+      saveWorkspace: async () => undefined,
+    },
+    runStore: {
+      getRunById: async () => null,
+      saveRun: async () => undefined,
+    },
+    workforceMemberStore,
+    workforceQueueStore,
+    humanTaskStore,
+    evidenceLog,
+    evidenceQueryStore: evidenceLog,
+    clock: () => new Date('2026-02-20T10:00:00.000Z'),
   };
 }
 
@@ -113,6 +210,62 @@ describe('PATCH /workforce/:id/availability — body validation', () => {
     expect(res.status).toBe(200);
     const body = (await res.json()) as { availabilityStatus: string };
     expect(body.availabilityStatus).toBe('busy');
+  });
+});
+
+describe('store-backed workforce route reads', () => {
+  it('uses injected stores for list, mutation, and restart read checks', async () => {
+    const deps = makeStoreOnlyDeps();
+    handle = await startHealthServer({
+      role: 'control-plane',
+      host: '127.0.0.1',
+      port: 0,
+      handler: createControlPlaneHandler(deps),
+    });
+
+    let res = await fetch(url('/v1/workspaces/workspace-live/workforce'));
+    expect(res.status).toBe(200);
+    await expect(res.json()).resolves.toMatchObject({
+      items: [{ workforceMemberId: 'wm-live', tenantId: 'workspace-live' }],
+    });
+
+    res = await fetch(url('/v1/workspaces/workspace-live/workforce/wm-live/availability'), {
+      method: 'PATCH',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ availabilityStatus: 'busy' }),
+    });
+    expect(res.status).toBe(200);
+
+    res = await fetch(url('/v1/workspaces/workspace-live/human-tasks/ht-live/assign'), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ workforceMemberId: 'wm-live' }),
+    });
+    expect(res.status).toBe(200);
+
+    await handle.close();
+    handle = undefined;
+    handle = await startHealthServer({
+      role: 'control-plane',
+      host: '127.0.0.1',
+      port: 0,
+      handler: createControlPlaneHandler(deps),
+    });
+
+    res = await fetch(url('/v1/workspaces/workspace-live/workforce/wm-live'));
+    expect(res.status).toBe(200);
+    await expect(res.json()).resolves.toMatchObject({
+      workforceMemberId: 'wm-live',
+      availabilityStatus: 'busy',
+    });
+
+    res = await fetch(url('/v1/workspaces/workspace-live/human-tasks/ht-live'));
+    expect(res.status).toBe(200);
+    await expect(res.json()).resolves.toMatchObject({
+      humanTaskId: 'ht-live',
+      assigneeId: 'wm-live',
+      status: 'assigned',
+    });
   });
 });
 

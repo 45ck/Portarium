@@ -7,6 +7,7 @@ import type {
   AdapterRegistrationStore,
   AuthenticationPort,
   AuthorizationPort,
+  HumanTaskStore,
   IdempotencyStore,
   ListWorkItemsFilter,
   PlanQueryStore,
@@ -14,6 +15,7 @@ import type {
   RunQueryStore,
   RunStore,
   WorkforceMemberStore,
+  WorkforceQueueStore,
   WorkflowOrchestrator,
   WorkflowStore,
   WorkItemStore,
@@ -50,7 +52,9 @@ import {
 } from '../../infrastructure/postgresql/postgres-store-adapters.js';
 import {
   PostgresWorkItemStore,
+  PostgresHumanTaskStore,
   PostgresWorkforceMemberStore,
+  PostgresWorkforceQueueStore,
 } from '../../infrastructure/postgresql/postgres-workforce-store-adapters.js';
 import { TemporalWorkflowOrchestrator } from '../../infrastructure/temporal/temporal-workflow-orchestrator.js';
 import {
@@ -64,12 +68,21 @@ import { InMemoryMachineRegistryStore } from '../../infrastructure/stores/in-mem
 import { InMemoryPolicyStore } from '../../infrastructure/stores/in-memory-policy-store.js';
 import { InMemoryAdapterRegistrationStore } from '../../infrastructure/stores/in-memory-adapter-registration-store.js';
 import { InMemoryWorkspaceUserStore } from '../../infrastructure/stores/in-memory-workspace-user-store.js';
+import {
+  InMemoryHumanTaskStore,
+  InMemoryWorkforceMemberStore,
+  InMemoryWorkforceQueueStore,
+} from '../../infrastructure/stores/in-memory-workforce-store.js';
 import { parseAdapterRegistrationV1 } from '../../domain/adapters/index.js';
 import { parsePolicyV1 } from '../../domain/policy/policy-v1.js';
 import { TenantId, WorkspaceId } from '../../domain/primitives/index.js';
 import { parseWorkspaceUserV1 } from '../../domain/users/index.js';
 import type { WorkItemV1 } from '../../domain/work-items/index.js';
-import { parseWorkforceMemberV1 } from '../../domain/workforce/index.js';
+import {
+  parseHumanTaskV1,
+  parseWorkforceMemberV1,
+  parseWorkforceQueueV1,
+} from '../../domain/workforce/index.js';
 import type { PolicyStore } from '../../application/ports/policy-store.js';
 import type { WorkspaceUserStore } from '../../application/ports/workspace-user-store.js';
 import type { ControlPlaneDeps } from './control-plane-handler.shared.js';
@@ -78,7 +91,11 @@ import {
   type CockpitWebSessionConfig,
 } from './cockpit-web-session.js';
 import { checkStoreBootstrapGate } from './store-bootstrap-gate.js';
-import { listFixtureMembers } from './control-plane-handler.workforce-state.js';
+import {
+  listFixtureHumanTasks,
+  listFixtureMembers,
+  listFixtureQueues,
+} from './control-plane-handler.workforce-state.js';
 
 /** Seed a default governance policy into the given policy store. */
 async function seedDefaultPolicy(store: PolicyStore, workspaceId: string): Promise<void> {
@@ -496,19 +513,32 @@ function matchesLink(values: readonly unknown[] | undefined, expected: unknown):
   return values?.some((value) => String(value) === String(expected)) ?? false;
 }
 
-export function buildInMemoryWorkforceMemberStore(): WorkforceMemberStore {
-  return {
-    getWorkforceMemberById: async (tenantId, workforceMemberId) =>
-      listFixtureMembers(String(tenantId))
-        .map((member) => parseWorkforceMemberV1(member))
-        .find((member) => String(member.workforceMemberId) === String(workforceMemberId)) ?? null,
-    listWorkforceMembersByIds: async (tenantId, workforceMemberIds) => {
-      const wanted = new Set(workforceMemberIds.map(String));
-      return listFixtureMembers(String(tenantId))
-        .map((member) => parseWorkforceMemberV1(member))
-        .filter((member) => wanted.has(String(member.workforceMemberId)));
-    },
-  };
+export function buildInMemoryWorkforceMemberStore(
+  workspaceId = 'workspace-1',
+): WorkforceMemberStore {
+  return new InMemoryWorkforceMemberStore(
+    listFixtureMembers('workspace-1').map((member) =>
+      parseWorkforceMemberV1({ ...member, tenantId: workspaceId }),
+    ),
+  );
+}
+
+export function buildInMemoryWorkforceQueueStore(workspaceId = 'workspace-1'): WorkforceQueueStore {
+  return new InMemoryWorkforceQueueStore(
+    listFixtureQueues('workspace-1').map((queue) =>
+      parseWorkforceQueueV1({ ...queue, tenantId: workspaceId }),
+    ),
+  );
+}
+
+export function buildInMemoryHumanTaskStore(workspaceId = 'workspace-1'): HumanTaskStore {
+  return new InMemoryHumanTaskStore(
+    listFixtureHumanTasks('workspace-1').map((record) => {
+      const { tenantId: _tenantId, ...task } = record;
+      void _tenantId;
+      return { workspaceId, task: parseHumanTaskV1(task) };
+    }),
+  );
 }
 
 export function buildInMemoryPlanQueryStore(): PlanQueryStore {
@@ -630,6 +660,8 @@ export async function buildControlPlaneDeps(): Promise<ControlPlaneDeps> {
     const machineStore = new PostgresMachineRegistryStore(sqlClient);
     const workItemStore = new PostgresWorkItemStore(sqlClient);
     const workforceMemberStore = new PostgresWorkforceMemberStore(sqlClient);
+    const workforceQueueStore = new PostgresWorkforceQueueStore(sqlClient);
+    const humanTaskStore = new PostgresHumanTaskStore(sqlClient);
     const evidenceLog: EvidenceLogPort & EvidenceQueryStore = new PostgresEvidenceLog(sqlClient);
     const planQueryStore = new PostgresPlanQueryStore(sqlClient);
     const policyStore = new PostgresPolicyStore(sqlClient);
@@ -656,6 +688,8 @@ export async function buildControlPlaneDeps(): Promise<ControlPlaneDeps> {
       agentActionProposalStore,
       workItemStore,
       workforceMemberStore,
+      workforceQueueStore,
+      humanTaskStore,
       machineRegistryStore: machineStore,
       machineQueryStore: machineStore,
       evidenceLog,
@@ -702,12 +736,14 @@ export async function buildControlPlaneDeps(): Promise<ControlPlaneDeps> {
   };
   const agentActionProposalStore = new InMemoryAgentActionProposalStore();
   const workItemStore = buildInMemoryWorkItemStore();
-  const workforceMemberStore = buildInMemoryWorkforceMemberStore();
+  const devWsId = process.env['PORTARIUM_DEV_WORKSPACE_ID']?.trim() ?? 'ws-local-dev';
+  const workforceMemberStore = buildInMemoryWorkforceMemberStore(devWsId);
+  const workforceQueueStore = buildInMemoryWorkforceQueueStore(devWsId);
+  const humanTaskStore = buildInMemoryHumanTaskStore(devWsId);
   const machineRegistryStore = new InMemoryMachineRegistryStore();
   const adapterRegistrationStore = new InMemoryAdapterRegistrationStore();
   const policyStore = new InMemoryPolicyStore();
   const workspaceUserStore = new InMemoryWorkspaceUserStore();
-  const devWsId = process.env['PORTARIUM_DEV_WORKSPACE_ID']?.trim() ?? 'ws-local-dev';
   await seedDefaultPolicy(policyStore, devWsId);
   await seedDefaultWorkspaceUser(workspaceUserStore, devWsId);
   await seedDefaultAdapterRegistration(adapterRegistrationStore, devWsId);
@@ -730,6 +766,8 @@ export async function buildControlPlaneDeps(): Promise<ControlPlaneDeps> {
     adapterRegistrationStore,
     workItemStore,
     workforceMemberStore,
+    workforceQueueStore,
+    humanTaskStore,
     machineRegistryStore,
     machineQueryStore: machineRegistryStore,
     policyStore,

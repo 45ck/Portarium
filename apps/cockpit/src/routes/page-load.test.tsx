@@ -133,7 +133,7 @@ function routeResponse(pathname: string, init?: RequestInit): Response {
     return json({ items: EVIDENCE });
   }
 
-  if (/^\/v1\/workspaces\/[^/]+\/workforce\/members$/.test(pathname)) {
+  if (/^\/v1\/workspaces\/[^/]+\/workforce$/.test(pathname)) {
     return json({ items: WORKFORCE_MEMBERS });
   }
 
