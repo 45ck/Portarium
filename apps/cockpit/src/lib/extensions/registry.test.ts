@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { COCKPIT_EXTENSION_FIXTURES, NEUTRAL_OPS_EXTENSION } from './fixtures';
+import { COCKPIT_EXTENSION_FIXTURES, NEUTRAL_REFERENCE_EXTENSION } from './fixtures';
 import {
   canAccessExtensionRoute,
   resolveCockpitExtensionRegistry,
@@ -10,14 +10,14 @@ import {
 import type { CockpitExtensionManifest, CockpitExtensionRouteModuleLoader } from './types';
 
 const neutralRouteLoaders = Object.fromEntries(
-  NEUTRAL_OPS_EXTENSION.routes.map((route) => [
+  NEUTRAL_REFERENCE_EXTENSION.routes.map((route) => [
     route.id,
     (() => Promise.resolve({})) satisfies CockpitExtensionRouteModuleLoader,
   ]),
 );
 
 const neutralAccessContext = {
-  availableCapabilities: ['asset:read', 'incident:read', 'evidence:read'],
+  availableCapabilities: ['extension:read', 'extension:review', 'evidence:read'],
   availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
 } as const;
 
@@ -25,43 +25,44 @@ function cloneExtension(
   overrides: Partial<CockpitExtensionManifest> = {},
 ): CockpitExtensionManifest {
   return {
-    ...NEUTRAL_OPS_EXTENSION,
-    routes: [...NEUTRAL_OPS_EXTENSION.routes],
-    navItems: [...NEUTRAL_OPS_EXTENSION.navItems],
-    commands: [...NEUTRAL_OPS_EXTENSION.commands],
+    ...NEUTRAL_REFERENCE_EXTENSION,
+    personas: [...NEUTRAL_REFERENCE_EXTENSION.personas],
+    routes: [...NEUTRAL_REFERENCE_EXTENSION.routes],
+    navItems: [...NEUTRAL_REFERENCE_EXTENSION.navItems],
+    commands: [...NEUTRAL_REFERENCE_EXTENSION.commands],
     ...overrides,
   };
 }
 
 describe('cockpit extension registry', () => {
   it('keeps the neutral fixture catalog aligned to the installed reference manifest', () => {
-    expect(COCKPIT_EXTENSION_FIXTURES).toEqual([NEUTRAL_OPS_EXTENSION]);
-    expect(NEUTRAL_OPS_EXTENSION.routes.map((route) => route.id)).toEqual([
-      'example-ops-overview',
-      'example-ops-action-review',
+    expect(COCKPIT_EXTENSION_FIXTURES).toEqual([NEUTRAL_REFERENCE_EXTENSION]);
+    expect(NEUTRAL_REFERENCE_EXTENSION.routes.map((route) => route.id)).toEqual([
+      'example-reference-overview',
+      'example-reference-review',
     ]);
   });
 
   it('resolves enabled extensions when pack activation is present', () => {
     const registry = resolveCockpitExtensionRegistry({
-      installedExtensions: [NEUTRAL_OPS_EXTENSION],
-      activePackIds: ['example.ops-demo'],
+      installedExtensions: [NEUTRAL_REFERENCE_EXTENSION],
+      activePackIds: ['example.reference'],
       ...neutralAccessContext,
       routeLoaders: neutralRouteLoaders,
     });
 
     expect(registry.problems).toEqual([]);
     expect(registry.extensions[0]?.status).toBe('enabled');
-    expect(registry.routes).toEqual(NEUTRAL_OPS_EXTENSION.routes);
+    expect(registry.routes).toEqual(NEUTRAL_REFERENCE_EXTENSION.routes);
     expect(registry.navItems).toHaveLength(1);
     expect(registry.commands).toHaveLength(1);
   });
 
   it('keeps quarantined extensions out of routes, navigation, and commands', () => {
     const registry = resolveCockpitExtensionRegistry({
-      installedExtensions: [NEUTRAL_OPS_EXTENSION],
-      activePackIds: ['example.ops-demo'],
-      quarantinedExtensionIds: [NEUTRAL_OPS_EXTENSION.id],
+      installedExtensions: [NEUTRAL_REFERENCE_EXTENSION],
+      activePackIds: ['example.reference'],
+      quarantinedExtensionIds: [NEUTRAL_REFERENCE_EXTENSION.id],
       ...neutralAccessContext,
       routeLoaders: neutralRouteLoaders,
     });
@@ -76,7 +77,7 @@ describe('cockpit extension registry', () => {
 
   it('hides installed extensions when pack activation is absent', () => {
     const registry = resolveCockpitExtensionRegistry({
-      installedExtensions: [NEUTRAL_OPS_EXTENSION],
+      installedExtensions: [NEUTRAL_REFERENCE_EXTENSION],
       activePackIds: [],
     });
 
@@ -89,12 +90,12 @@ describe('cockpit extension registry', () => {
 
   it('fails closed on duplicate extension, route, path, command, and shortcut ids', () => {
     const duplicate = cloneExtension({
-      id: NEUTRAL_OPS_EXTENSION.id,
+      id: NEUTRAL_REFERENCE_EXTENSION.id,
       owner: 'portarium-test',
     });
     const registry = resolveCockpitExtensionRegistry({
-      installedExtensions: [NEUTRAL_OPS_EXTENSION, duplicate],
-      activePackIds: ['example.ops-demo'],
+      installedExtensions: [NEUTRAL_REFERENCE_EXTENSION, duplicate],
+      activePackIds: ['example.reference'],
       ...neutralAccessContext,
       routeLoaders: neutralRouteLoaders,
     });
@@ -117,7 +118,7 @@ describe('cockpit extension registry', () => {
     const invalid = cloneExtension({
       navItems: [
         {
-          ...NEUTRAL_OPS_EXTENSION.navItems[0]!,
+          ...NEUTRAL_REFERENCE_EXTENSION.navItems[0]!,
           icon: 'unknown-icon' as never,
           surfaces: ['sidebar', 'unknown-surface' as never],
         },
@@ -125,7 +126,7 @@ describe('cockpit extension registry', () => {
     });
     const registry = resolveCockpitExtensionRegistry({
       installedExtensions: [invalid],
-      activePackIds: ['example.ops-demo'],
+      activePackIds: ['example.reference'],
       ...neutralAccessContext,
       routeLoaders: neutralRouteLoaders,
     });
@@ -137,18 +138,63 @@ describe('cockpit extension registry', () => {
     expect(registry.navItems).toEqual([]);
   });
 
+  it('fails closed on invalid personas and privacy classes', () => {
+    const invalid = cloneExtension({
+      personas: ['Guest' as never],
+      routes: [
+        {
+          ...NEUTRAL_REFERENCE_EXTENSION.routes[0]!,
+          guard: {
+            ...NEUTRAL_REFERENCE_EXTENSION.routes[0]!.guard,
+            personas: ['Guest' as never],
+            privacyClasses: ['unknown-privacy' as never],
+          },
+        },
+      ],
+      navItems: [
+        {
+          ...NEUTRAL_REFERENCE_EXTENSION.navItems[0]!,
+          personas: ['Guest' as never],
+        },
+      ],
+      commands: [
+        {
+          ...NEUTRAL_REFERENCE_EXTENSION.commands[0]!,
+          guard: {
+            ...NEUTRAL_REFERENCE_EXTENSION.commands[0]!.guard,
+            personas: ['Guest' as never],
+          },
+        },
+      ],
+    });
+    const registry = resolveCockpitExtensionRegistry({
+      installedExtensions: [invalid],
+      activePackIds: ['example.reference'],
+      ...neutralAccessContext,
+      routeLoaders: neutralRouteLoaders,
+    });
+
+    expect(registry.extensions[0]?.status).toBe('invalid');
+    expect(registry.problems.map((problem) => problem.code)).toEqual(
+      expect.arrayContaining(['invalid-persona', 'invalid-privacy-class']),
+    );
+    expect(registry.routes).toEqual([]);
+    expect(registry.navItems).toEqual([]);
+    expect(registry.commands).toEqual([]);
+  });
+
   it('fails closed when surfaced routes do not declare host guard metadata', () => {
     const invalid = cloneExtension({
       routes: [
         {
-          ...NEUTRAL_OPS_EXTENSION.routes[0]!,
+          ...NEUTRAL_REFERENCE_EXTENSION.routes[0]!,
           guard: undefined as never,
         },
       ],
     });
     const registry = resolveCockpitExtensionRegistry({
       installedExtensions: [invalid],
-      activePackIds: ['example.ops-demo'],
+      activePackIds: ['example.reference'],
       ...neutralAccessContext,
       routeLoaders: neutralRouteLoaders,
     });
@@ -158,24 +204,60 @@ describe('cockpit extension registry', () => {
     expect(registry.routes).toEqual([]);
   });
 
-  it('fails closed on routes outside the external boundary and parameterized nav targets', () => {
+  it('fails closed when route or command guards omit persona metadata', () => {
     const invalid = cloneExtension({
       routes: [
         {
-          ...NEUTRAL_OPS_EXTENSION.routes[0]!,
-          path: '/config/settings',
+          ...NEUTRAL_REFERENCE_EXTENSION.routes[0]!,
+          guard: {
+            ...NEUTRAL_REFERENCE_EXTENSION.routes[0]!.guard,
+            personas: [],
+          },
         },
       ],
-      navItems: [
+      commands: [
         {
-          ...NEUTRAL_OPS_EXTENSION.navItems[0]!,
-          to: '/external/example-ops/actions/$proposalId',
+          ...NEUTRAL_REFERENCE_EXTENSION.commands[0]!,
+          guard: {
+            ...NEUTRAL_REFERENCE_EXTENSION.commands[0]!.guard,
+            personas: [],
+          },
         },
       ],
     });
     const registry = resolveCockpitExtensionRegistry({
       installedExtensions: [invalid],
-      activePackIds: ['example.ops-demo'],
+      activePackIds: ['example.reference'],
+      ...neutralAccessContext,
+      routeLoaders: neutralRouteLoaders,
+    });
+
+    expect(registry.extensions[0]?.status).toBe('invalid');
+    expect(registry.problems.map((problem) => problem.code)).toEqual(
+      expect.arrayContaining(['missing-route-guard', 'missing-command-guard']),
+    );
+    expect(registry.routes).toEqual([]);
+    expect(registry.commands).toEqual([]);
+  });
+
+  it('fails closed on routes outside the external boundary and parameterized nav targets', () => {
+    const invalid = cloneExtension({
+      routes: [
+        {
+          ...NEUTRAL_REFERENCE_EXTENSION.routes[0]!,
+          path: '/config/settings',
+        },
+      ],
+      navItems: [
+        {
+          ...NEUTRAL_REFERENCE_EXTENSION.navItems[0]!,
+          to: '/external/example-reference/reviews/$proposalId',
+        },
+      ],
+    });
+    const registry = resolveCockpitExtensionRegistry({
+      installedExtensions: [invalid],
+      activePackIds: ['example.reference'],
       ...neutralAccessContext,
       routeLoaders: neutralRouteLoaders,
     });
@@ -187,13 +269,62 @@ describe('cockpit extension registry', () => {
     expect(registry.routes).toEqual([]);
   });
 
+  it('fails closed when direct nav targets do not match referenced external routes', () => {
+    const invalid = cloneExtension({
+      navItems: [
+        {
+          ...NEUTRAL_REFERENCE_EXTENSION.navItems[0]!,
+          to: '/config/settings',
+        },
+      ],
+    });
+    const registry = resolveCockpitExtensionRegistry({
+      installedExtensions: [invalid],
+      activePackIds: ['example.reference'],
+      ...neutralAccessContext,
+      routeLoaders: neutralRouteLoaders,
+    });
+
+    expect(registry.extensions[0]?.status).toBe('invalid');
+    expect(registry.problems.map((problem) => problem.code)).toContain('invalid-direct-nav-target');
+    expect(registry.navItems).toEqual([]);
+  });
+
+  it('fails closed when nav items and commands reference missing routes', () => {
+    const invalid = cloneExtension({
+      navItems: [
+        {
+          ...NEUTRAL_REFERENCE_EXTENSION.navItems[0]!,
+          routeId: 'missing-route',
+        },
+      ],
+      commands: [
+        {
+          ...NEUTRAL_REFERENCE_EXTENSION.commands[0]!,
+          routeId: 'missing-route',
+        },
+      ],
+    });
+    const registry = resolveCockpitExtensionRegistry({
+      installedExtensions: [invalid],
+      activePackIds: ['example.reference'],
+      ...neutralAccessContext,
+      routeLoaders: neutralRouteLoaders,
+    });
+
+    expect(registry.extensions[0]?.status).toBe('invalid');
+    expect(registry.problems.map((problem) => problem.code)).toContain('missing-route');
+    expect(registry.navItems).toEqual([]);
+    expect(registry.commands).toEqual([]);
+  });
+
   it('fails closed when an active route lacks a compile-time module loader', () => {
     const registry = resolveCockpitExtensionRegistry({
-      installedExtensions: [NEUTRAL_OPS_EXTENSION],
-      activePackIds: ['example.ops-demo'],
+      installedExtensions: [NEUTRAL_REFERENCE_EXTENSION],
+      activePackIds: ['example.reference'],
       ...neutralAccessContext,
       routeLoaders: {
-        [NEUTRAL_OPS_EXTENSION.routes[0]!.id]: () => Promise.resolve({}),
+        [NEUTRAL_REFERENCE_EXTENSION.routes[0]!.id]: () => Promise.resolve({}),
       },
     });
 
@@ -202,7 +333,7 @@ describe('cockpit extension registry', () => {
       expect.arrayContaining([
         expect.objectContaining({
           code: 'missing-route-module',
-          itemId: NEUTRAL_OPS_EXTENSION.routes[1]!.id,
+          itemId: NEUTRAL_REFERENCE_EXTENSION.routes[1]!.id,
           message: expect.stringContaining('compile-time route module loader'),
         }),
       ]),
@@ -212,31 +343,51 @@ describe('cockpit extension registry', () => {
     expect(registry.commands).toEqual([]);
   });
 
+  it('fails closed when an active extension declares no pack activation keys', () => {
+    const invalid = cloneExtension({
+      packIds: [],
+    });
+    const registry = resolveCockpitExtensionRegistry({
+      installedExtensions: [invalid],
+      activePackIds: [],
+      ...neutralAccessContext,
+      routeLoaders: neutralRouteLoaders,
+    });
+
+    expect(registry.extensions[0]?.status).toBe('invalid');
+    expect(registry.problems).toEqual(
+      expect.arrayContaining([expect.objectContaining({ code: 'missing-pack-activation' })]),
+    );
+    expect(registry.routes).toEqual([]);
+    expect(registry.navItems).toEqual([]);
+    expect(registry.commands).toEqual([]);
+  });
+
   it('keeps disabled extensions out of validation namespaces and public surfaces', () => {
     const disabledDuplicate = cloneExtension({
-      id: 'example.disabled-ops-demo',
+      id: 'example.disabled-reference',
       packIds: ['example.disabled-pack'],
-      routes: NEUTRAL_OPS_EXTENSION.routes.map((route) => ({ ...route })),
+      routes: NEUTRAL_REFERENCE_EXTENSION.routes.map((route) => ({ ...route })),
       navItems: [
         {
-          ...NEUTRAL_OPS_EXTENSION.navItems[0]!,
-          id: NEUTRAL_OPS_EXTENSION.navItems[0]!.id,
-          routeId: NEUTRAL_OPS_EXTENSION.routes[1]!.id,
-          to: NEUTRAL_OPS_EXTENSION.routes[1]!.path,
+          ...NEUTRAL_REFERENCE_EXTENSION.navItems[0]!,
+          id: NEUTRAL_REFERENCE_EXTENSION.navItems[0]!.id,
+          routeId: NEUTRAL_REFERENCE_EXTENSION.routes[1]!.id,
+          to: NEUTRAL_REFERENCE_EXTENSION.routes[1]!.path,
           icon: 'unknown-icon' as never,
         },
       ],
       commands: [
         {
-          ...NEUTRAL_OPS_EXTENSION.commands[0]!,
-          id: NEUTRAL_OPS_EXTENSION.commands[0]!.id,
-          shortcut: NEUTRAL_OPS_EXTENSION.commands[0]!.shortcut,
+          ...NEUTRAL_REFERENCE_EXTENSION.commands[0]!,
+          id: NEUTRAL_REFERENCE_EXTENSION.commands[0]!.id,
+          shortcut: NEUTRAL_REFERENCE_EXTENSION.commands[0]!.shortcut,
         },
       ],
     });
     const registry = resolveCockpitExtensionRegistry({
-      installedExtensions: [NEUTRAL_OPS_EXTENSION, disabledDuplicate],
-      activePackIds: ['example.ops-demo'],
+      installedExtensions: [NEUTRAL_REFERENCE_EXTENSION, disabledDuplicate],
+      activePackIds: ['example.reference'],
       ...neutralAccessContext,
       routeLoaders: neutralRouteLoaders,
     });
@@ -246,16 +397,16 @@ describe('cockpit extension registry', () => {
       'enabled',
       'disabled',
     ]);
-    expect(registry.routes).toEqual(NEUTRAL_OPS_EXTENSION.routes);
-    expect(registry.navItems).toEqual(NEUTRAL_OPS_EXTENSION.navItems);
-    expect(registry.commands).toEqual(NEUTRAL_OPS_EXTENSION.commands);
+    expect(registry.routes).toEqual(NEUTRAL_REFERENCE_EXTENSION.routes);
+    expect(registry.navItems).toEqual(NEUTRAL_REFERENCE_EXTENSION.navItems);
+    expect(registry.commands).toEqual(NEUTRAL_REFERENCE_EXTENSION.commands);
   });
 
   it('disables active extensions when manifest capabilities or API scopes are unavailable', () => {
     const registry = resolveCockpitExtensionRegistry({
-      installedExtensions: [NEUTRAL_OPS_EXTENSION],
-      activePackIds: ['example.ops-demo'],
-      availableCapabilities: ['asset:read'],
+      installedExtensions: [NEUTRAL_REFERENCE_EXTENSION],
+      activePackIds: ['example.reference'],
+      availableCapabilities: ['extension:read'],
       availableApiScopes: ['extensions.read'],
       routeLoaders: neutralRouteLoaders,
     });
@@ -275,8 +426,8 @@ describe('cockpit extension registry', () => {
 
   it('fails closed when active extension availability context is omitted', () => {
     const registry = resolveCockpitExtensionRegistry({
-      installedExtensions: [NEUTRAL_OPS_EXTENSION],
-      activePackIds: ['example.ops-demo'],
+      installedExtensions: [NEUTRAL_REFERENCE_EXTENSION],
+      activePackIds: ['example.reference'],
       routeLoaders: neutralRouteLoaders,
     });
 
@@ -295,13 +446,13 @@ describe('cockpit extension registry', () => {
 
   it('fails closed when installed route module keys do not match manifest routes', () => {
     const registry = resolveCockpitExtensionRegistry({
-      installedExtensions: [NEUTRAL_OPS_EXTENSION],
-      activePackIds: ['example.ops-demo'],
+      installedExtensions: [NEUTRAL_REFERENCE_EXTENSION],
+      activePackIds: ['example.reference'],
       ...neutralAccessContext,
       routeLoaders: {
-        [NEUTRAL_OPS_EXTENSION.routes[0]!.id]:
-          neutralRouteLoaders[NEUTRAL_OPS_EXTENSION.routes[0]!.id],
-        'example-ops-uninstalled-route': () => Promise.resolve({}),
+        [NEUTRAL_REFERENCE_EXTENSION.routes[0]!.id]:
+          neutralRouteLoaders[NEUTRAL_REFERENCE_EXTENSION.routes[0]!.id],
+        'example-reference-uninstalled-route': () => Promise.resolve({}),
       },
     });
 
@@ -310,7 +461,7 @@ describe('cockpit extension registry', () => {
       expect.arrayContaining([
         expect.objectContaining({
           code: 'missing-route-module',
-          itemId: NEUTRAL_OPS_EXTENSION.routes[1]!.id,
+          itemId: NEUTRAL_REFERENCE_EXTENSION.routes[1]!.id,
         }),
       ]),
     );
@@ -321,8 +472,8 @@ describe('cockpit extension registry', () => {
 
   it('filters routes, nav items, and commands through the same capability and scope model', () => {
     const registry = resolveCockpitExtensionRegistry({
-      installedExtensions: [NEUTRAL_OPS_EXTENSION],
-      activePackIds: ['example.ops-demo'],
+      installedExtensions: [NEUTRAL_REFERENCE_EXTENSION],
+      activePackIds: ['example.reference'],
       ...neutralAccessContext,
       routeLoaders: neutralRouteLoaders,
     });
@@ -337,16 +488,16 @@ describe('cockpit extension registry', () => {
     expect(
       selectExtensionRoutes(registry, {
         persona: 'Operator',
-        availableCapabilities: ['asset:read'],
+        availableCapabilities: ['extension:read'],
         availableApiScopes: ['extensions.read'],
       }).map((route) => route.id),
-    ).toEqual(['example-ops-overview']);
+    ).toEqual(['example-reference-overview']);
     expect(
       selectExtensionNavItems(registry, 'sidebar', 'Operator', {
-        availableCapabilities: ['asset:read'],
+        availableCapabilities: ['extension:read'],
         availableApiScopes: ['extensions.read'],
       }).map((item) => item.id),
-    ).toEqual(['example-ops-overview-nav']);
+    ).toEqual(['example-reference-overview-nav']);
     expect(
       selectExtensionCommands(registry, 'Operator', {
         availableCapabilities: [],
@@ -355,9 +506,42 @@ describe('cockpit extension registry', () => {
     ).toEqual([]);
   });
 
+  it('applies command guard personas in addition to route guard personas', () => {
+    const approverOnly = cloneExtension({
+      commands: [
+        {
+          ...NEUTRAL_REFERENCE_EXTENSION.commands[0]!,
+          guard: {
+            ...NEUTRAL_REFERENCE_EXTENSION.commands[0]!.guard,
+            personas: ['Approver'],
+          },
+        },
+      ],
+    });
+    const registry = resolveCockpitExtensionRegistry({
+      installedExtensions: [approverOnly],
+      activePackIds: ['example.reference'],
+      ...neutralAccessContext,
+      routeLoaders: neutralRouteLoaders,
+    });
+
+    expect(
+      selectExtensionCommands(registry, 'Operator', {
+        availableCapabilities: ['extension:read'],
+        availableApiScopes: ['extensions.read'],
+      }),
+    ).toEqual([]);
+    expect(
+      selectExtensionCommands(registry, 'Approver', {
+        availableCapabilities: ['extension:read'],
+        availableApiScopes: ['extensions.read'],
+      }),
+    ).toEqual(approverOnly.commands);
+  });
+
   it('honors server-issued persona grants when evaluating route access', () => {
     expect(
-      canAccessExtensionRoute(NEUTRAL_OPS_EXTENSION.routes[0]!, {
+      canAccessExtensionRoute(NEUTRAL_REFERENCE_EXTENSION.routes[0]!, {
         persona: 'Operator',
         availablePersonas: ['Auditor'],
         ...neutralAccessContext,
@@ -368,7 +552,7 @@ describe('cockpit extension registry', () => {
     });
 
     expect(
-      canAccessExtensionRoute(NEUTRAL_OPS_EXTENSION.routes[0]!, {
+      canAccessExtensionRoute(NEUTRAL_REFERENCE_EXTENSION.routes[0]!, {
         persona: 'Operator',
         availablePersonas: ['Operator'],
         ...neutralAccessContext,
@@ -379,8 +563,17 @@ describe('cockpit extension registry', () => {
     });
   });
 
+  it('fails closed when persona context is omitted for a guarded route', () => {
+    expect(
+      canAccessExtensionRoute(NEUTRAL_REFERENCE_EXTENSION.routes[0]!, neutralAccessContext),
+    ).toEqual({
+      allowed: false,
+      denials: [{ code: 'persona' }],
+    });
+  });
+
   it('reports forbidden route access without exposing domain-specific assumptions', () => {
-    const decision = canAccessExtensionRoute(NEUTRAL_OPS_EXTENSION.routes[0]!, {
+    const decision = canAccessExtensionRoute(NEUTRAL_REFERENCE_EXTENSION.routes[0]!, {
       persona: 'Operator',
       availableCapabilities: [],
       availableApiScopes: [],
@@ -389,21 +582,21 @@ describe('cockpit extension registry', () => {
     expect(decision).toEqual({
       allowed: false,
       denials: [
-        { code: 'missing-capability', missing: ['asset:read'] },
+        { code: 'missing-capability', missing: ['extension:read'] },
         { code: 'missing-api-scope', missing: ['extensions.read'] },
       ],
     });
   });
 
   it('fails closed when guarded access is evaluated without capability or scope context', () => {
-    const decision = canAccessExtensionRoute(NEUTRAL_OPS_EXTENSION.routes[0]!, {
+    const decision = canAccessExtensionRoute(NEUTRAL_REFERENCE_EXTENSION.routes[0]!, {
       persona: 'Operator',
     });
 
     expect(decision).toEqual({
       allowed: false,
       denials: [
-        { code: 'missing-capability', missing: ['asset:read'] },
+        { code: 'missing-capability', missing: ['extension:read'] },
         { code: 'missing-api-scope', missing: ['extensions.read'] },
       ],
     });

@@ -109,9 +109,9 @@ beforeAll(() => {
             principalId: 'user-1',
             persona: 'Operator',
             availablePersonas: ['Operator', 'Admin'],
-            availableCapabilities: ['asset:read', 'incident:read', 'evidence:read'],
+            availableCapabilities: ['extension:read', 'extension:review', 'evidence:read'],
             availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
-            activePackIds: ['example.ops-demo'],
+            activePackIds: ['example.reference'],
             quarantinedExtensionIds: [],
             issuedAtIso: '2026-04-30T02:00:00.000Z',
             expiresAtIso: '2999-04-30T02:05:00.000Z',
@@ -138,7 +138,7 @@ beforeEach(() => {
       workspaceId: 'ws-demo',
       roles: ['operator'],
       personas: ['Operator'],
-      capabilities: ['asset:read', 'incident:read', 'evidence:read'],
+      capabilities: ['extension:read', 'extension:review', 'evidence:read'],
       apiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
     },
     error: null,
@@ -149,9 +149,9 @@ beforeEach(() => {
     principalId: 'user-1',
     persona: 'Operator',
     availablePersonas: ['Operator', 'Admin'],
-    availableCapabilities: ['asset:read', 'incident:read', 'evidence:read'],
+    availableCapabilities: ['extension:read', 'extension:review', 'evidence:read'],
     availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
-    activePackIds: ['example.ops-demo'],
+    activePackIds: ['example.reference'],
     quarantinedExtensionIds: [],
     issuedAtIso: '2026-04-30T02:00:00.000Z',
     expiresAtIso: '2999-04-30T02:05:00.000Z',
@@ -168,23 +168,23 @@ afterAll(() => {
 
 describe('external route host', () => {
   it('loads the neutral overview route through the compiled external host', async () => {
-    await renderRoute('/external/example-ops/overview');
+    await renderRoute('/external/example-reference/overview');
 
-    expect(await screen.findByRole('heading', { name: 'Operations Overview' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'Reference Overview' })).toBeTruthy();
     expect(await screen.findByText('Extension Boundary')).toBeTruthy();
     expect(screen.queryByText('Host Fallback')).toBeNull();
   });
 
   it('loads parameterized neutral routes declared by the extension manifest', async () => {
-    await renderRoute('/external/example-ops/actions/proposal-123');
+    await renderRoute('/external/example-reference/reviews/proposal-123');
 
-    expect(await screen.findByRole('heading', { name: 'Governed Action Review' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'Reference Review' })).toBeTruthy();
     expect(await screen.findByText('Review Contract')).toBeTruthy();
     expect(screen.queryByText('External Route Not Found')).toBeNull();
   });
 
   it('fails closed when no installed extension declares the external path', async () => {
-    await renderRoute('/external/example-ops/unknown');
+    await renderRoute('/external/example-reference/unknown');
 
     expect(await screen.findByRole('heading', { name: 'External Route Not Found' })).toBeTruthy();
     expect(screen.getByText('No enabled extension route matches this external path.')).toBeTruthy();
@@ -194,7 +194,7 @@ describe('external route host', () => {
   it('fails closed when the active persona is forbidden from the external route', async () => {
     useUIStore.setState({ activePersona: 'Guest' as never });
 
-    await renderRoute('/external/example-ops/overview');
+    await renderRoute('/external/example-reference/overview');
 
     expect(await screen.findByRole('heading', { name: 'Extension Route Restricted' })).toBeTruthy();
     expect(
@@ -208,17 +208,17 @@ describe('external route host', () => {
   it('falls back when an active external route has no host-owned renderer', async () => {
     externalRouteHostTestState.omitHostedComponents = true;
 
-    await renderRoute('/external/example-ops/actions/proposal-123');
+    await renderRoute('/external/example-reference/reviews/proposal-123');
 
-    expect(await screen.findByRole('heading', { name: 'Governed Action Review' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'Reference Review' })).toBeTruthy();
     expect(
       screen.getByText(
         'This extension route is active, but this Cockpit build does not include a host-owned renderer for it.',
       ),
     ).toBeTruthy();
     expect(screen.getByText('Host Fallback')).toBeTruthy();
-    expect(screen.getByText('Operations Demo')).toBeTruthy();
-    expect(screen.getByText('example-ops-action-review')).toBeTruthy();
+    expect(screen.getByText('Reference Extension')).toBeTruthy();
+    expect(screen.getByText('example-reference-review')).toBeTruthy();
     expect(screen.getByText('renderer missing')).toBeTruthy();
     expect(screen.getByText('proposalId=proposal-123')).toBeTruthy();
     expect(screen.queryByText('Review Contract')).toBeNull();

@@ -7,11 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useCockpitExtensionContext } from '@/hooks/queries/use-cockpit-extension-context';
 import { resolveCockpitExtensionServerAccess } from '@/lib/extensions/access-context';
-import {
-  INSTALLED_COCKPIT_EXTENSIONS,
-  INSTALLED_COCKPIT_ROUTE_LOADERS,
-} from '@/lib/extensions/installed';
-import { resolveCockpitExtensionRegistry } from '@/lib/extensions/registry';
+import { resolveInstalledCockpitExtensionRegistry } from '@/lib/extensions/installed';
 import type { ResolvedCockpitExtension } from '@/lib/extensions/types';
 import { useAuthStore } from '@/stores/auth-store';
 import { useUIStore } from '@/stores/ui-store';
@@ -30,13 +26,11 @@ function ExtensionsPage() {
         ? extensionContextQuery.data
         : null,
   });
-  const registry = resolveCockpitExtensionRegistry({
-    installedExtensions: INSTALLED_COCKPIT_EXTENSIONS,
+  const registry = resolveInstalledCockpitExtensionRegistry({
     activePackIds: serverAccess.activePackIds,
     quarantinedExtensionIds: serverAccess.quarantinedExtensionIds,
     availableCapabilities: serverAccess.accessContext.availableCapabilities,
     availableApiScopes: serverAccess.accessContext.availableApiScopes,
-    routeLoaders: INSTALLED_COCKPIT_ROUTE_LOADERS,
   });
 
   return (

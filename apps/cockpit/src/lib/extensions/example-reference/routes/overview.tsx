@@ -2,11 +2,11 @@ import { PageHeader } from '../../../../components/cockpit/page-header';
 import { Badge } from '../../../../components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '../../../../components/ui/card';
 
-export default function ExampleOpsOverviewRoute() {
+export default function ExampleReferenceOverviewRoute() {
   return (
     <div className="space-y-6 p-6">
       <PageHeader
-        title="Operations Overview"
+        title="Reference Overview"
         description="Host-owned placeholder for a compile-time installed reference extension"
       />
 
@@ -21,7 +21,7 @@ export default function ExampleOpsOverviewRoute() {
             scopes visible to the host.
           </p>
           <div className="flex flex-wrap gap-2">
-            <Badge variant="outline">asset:read</Badge>
+            <Badge variant="outline">extension:read</Badge>
             <Badge variant="outline">extensions.read</Badge>
             <Badge variant="outline">internal</Badge>
           </div>

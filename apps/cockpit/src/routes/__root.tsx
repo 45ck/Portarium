@@ -32,15 +32,9 @@ import { KeyboardCheatsheet } from '@/components/cockpit/keyboard-cheatsheet';
 import { OfflineIndicator } from '@/components/cockpit/offline-indicator';
 import { StartRunDialog } from '@/components/cockpit/start-run-dialog';
 import { IntentPlanSheet } from '@/components/cockpit/intent-plan-sheet';
-import {
-  INSTALLED_COCKPIT_EXTENSIONS,
-  INSTALLED_COCKPIT_ROUTE_LOADERS,
-} from '@/lib/extensions/installed';
+import { resolveInstalledCockpitExtensionRegistry } from '@/lib/extensions/installed';
 import { resolveCockpitExtensionServerAccess } from '@/lib/extensions/access-context';
-import {
-  resolveCockpitExtensionRegistry,
-  selectExtensionNavItems,
-} from '@/lib/extensions/registry';
+import { selectExtensionNavItems } from '@/lib/extensions/registry';
 import type { CockpitExtensionIcon } from '@/lib/extensions/types';
 import { Toaster } from 'sonner';
 import {
@@ -393,13 +387,11 @@ function RootShell() {
         ? extensionContextQuery.data
         : null,
   });
-  const extensionRegistry = resolveCockpitExtensionRegistry({
-    installedExtensions: INSTALLED_COCKPIT_EXTENSIONS,
+  const extensionRegistry = resolveInstalledCockpitExtensionRegistry({
     activePackIds: extensionServerAccess.activePackIds,
     quarantinedExtensionIds: extensionServerAccess.quarantinedExtensionIds,
     availableCapabilities: extensionServerAccess.accessContext.availableCapabilities,
     availableApiScopes: extensionServerAccess.accessContext.availableApiScopes,
-    routeLoaders: INSTALLED_COCKPIT_ROUTE_LOADERS,
   });
   const extensionNavItems: NavItemDef[] = selectExtensionNavItems(
     extensionRegistry,

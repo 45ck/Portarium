@@ -65,10 +65,10 @@ function buildServerAccess(
   overrides?: Partial<ReturnType<typeof mockResolveCockpitExtensionServerAccess>>,
 ) {
   return {
-    activePackIds: ['example.ops-demo'],
+    activePackIds: ['example.reference'],
     quarantinedExtensionIds: [] as string[],
     accessContext: {
-      availableCapabilities: ['asset:read', 'incident:read', 'evidence:read'],
+      availableCapabilities: ['extension:read', 'extension:review', 'evidence:read'],
       availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
       availablePersonas: ['Operator'],
     },
@@ -96,7 +96,7 @@ describe('CommandPalette', () => {
         workspaceId: 'ws-demo',
         roles: ['operator'],
         personas: ['Operator'],
-        capabilities: ['asset:read', 'incident:read', 'evidence:read'],
+        capabilities: ['extension:read', 'extension:review', 'evidence:read'],
         apiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
       },
       error: null,
@@ -111,25 +111,25 @@ describe('CommandPalette', () => {
 
     expect(mockUseCockpitExtensionContext).toHaveBeenCalledWith('ws-demo', 'user-1');
 
-    const extensionCommand = screen.getByRole('button', { name: /open operations demo/i });
+    const extensionCommand = screen.getByRole('button', { name: /open reference extension/i });
     expect(extensionCommand).toBeTruthy();
     expect(screen.getByText('G X')).toBeTruthy();
 
     fireEvent.click(extensionCommand);
 
-    expect(mockNavigate).toHaveBeenCalledWith({ to: '/external/example-ops/overview' });
+    expect(mockNavigate).toHaveBeenCalledWith({ to: '/external/example-reference/overview' });
     expect(useUIStore.getState().commandPaletteOpen).toBe(false);
   });
 
   it('omits commands for quarantined extensions', () => {
     mockResolveCockpitExtensionServerAccess.mockReturnValue(
       buildServerAccess({
-        quarantinedExtensionIds: ['example.ops-demo'],
+        quarantinedExtensionIds: ['example.reference'],
       }),
     );
 
     render(<CommandPalette />);
 
-    expect(screen.queryByRole('button', { name: /open operations demo/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /open reference extension/i })).toBeNull();
   });
 });

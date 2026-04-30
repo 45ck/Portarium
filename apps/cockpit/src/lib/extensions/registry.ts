@@ -1,6 +1,7 @@
 import {
   COCKPIT_EXTENSION_ICONS,
   COCKPIT_EXTENSION_PERSONAS,
+  COCKPIT_EXTENSION_PRIVACY_CLASSES,
   COCKPIT_EXTENSION_SURFACES,
   type CockpitExtensionAccessContext,
   type CockpitExtensionAccessDecision,
@@ -18,6 +19,7 @@ import {
 
 const allowedSurfaces = new Set<string>(COCKPIT_EXTENSION_SURFACES);
 const allowedPersonas = new Set<string>(COCKPIT_EXTENSION_PERSONAS);
+const allowedPrivacyClasses = new Set<string>(COCKPIT_EXTENSION_PRIVACY_CLASSES);
 const allowedIcons = new Set<string>(COCKPIT_EXTENSION_ICONS);
 
 export interface ResolveCockpitExtensionRegistryInput {
@@ -87,11 +89,12 @@ export function resolveCockpitExtensionRegistry({
     }
     extensionIds.add(extension.id);
 
-    const localRouteIds = new Set(extension.routes.map((route) => route.id));
+    const localRoutes = new Map(extension.routes.map((route) => [route.id, route]));
+    validatePersonas(extension.id, extension.id, extension.personas, addProblem);
     validatePackActivation(extension, activePacks, addProblem);
     validateRoutes(extension, routeIds, routePaths, routeLoaders, addProblem);
-    validateNavItems(extension, localRouteIds, navIds, addProblem);
-    validateCommands(extension, localRouteIds, commandIds, shortcutIds, addProblem);
+    validateNavItems(extension, localRoutes, navIds, addProblem);
+    validateCommands(extension, localRoutes, commandIds, shortcutIds, addProblem);
   }
 
   const resolvedExtensions: ResolvedCockpitExtension[] = installedExtensions.map((manifest) => {
@@ -166,6 +169,7 @@ export function canAccessExtensionRoute(
       personas: route.guard.personas,
       requiredCapabilities: route.guard.requiredCapabilities,
       requiredApiScopes: route.guard.requiredApiScopes,
+      privacyClasses: route.guard.privacyClasses ?? [],
     },
     context,
   );
@@ -180,6 +184,7 @@ export function canAccessExtensionNavItem(
       personas: item.personas,
       requiredCapabilities: item.requiredCapabilities ?? [],
       requiredApiScopes: item.requiredApiScopes ?? [],
+      privacyClasses: [],
     },
     context,
   );
@@ -196,14 +201,20 @@ export function canAccessExtensionCommand(
 
   return decideAccess(
     {
-      personas: route?.guard.personas ?? [],
+      personas: combinePersonaRequirements(route?.guard.personas, command.guard.personas),
       requiredCapabilities: uniqueStrings([
         ...(route?.guard.requiredCapabilities ?? []),
+        ...command.guard.requiredCapabilities,
         ...(command.requiredCapabilities ?? []),
       ]),
       requiredApiScopes: uniqueStrings([
         ...(route?.guard.requiredApiScopes ?? []),
+        ...command.guard.requiredApiScopes,
         ...(command.requiredApiScopes ?? []),
+      ]),
+      privacyClasses: uniqueStrings([
+        ...(route?.guard.privacyClasses ?? []),
+        ...(command.guard.privacyClasses ?? []),
       ]),
     },
     context,
@@ -252,6 +263,7 @@ function decideAccess(
     personas: readonly string[];
     requiredCapabilities: readonly string[];
     requiredApiScopes: readonly string[];
+    privacyClasses: readonly string[];
   },
   context: CockpitExtensionAccessContext,
 ): CockpitExtensionAccessDecision {
@@ -299,20 +311,31 @@ function getPersonaDenied(
   context: CockpitExtensionAccessContext,
 ): boolean {
   if (requiredPersonas.length === 0) return false;
+  if (!context.persona) return true;
 
   if (context.availablePersonas) {
-    if (!context.persona) return true;
     return (
       !requiredPersonas.includes(context.persona) ||
       !context.availablePersonas.includes(context.persona)
     );
   }
 
-  return Boolean(context.persona && !requiredPersonas.includes(context.persona));
+  return !requiredPersonas.includes(context.persona);
 }
 
 function uniqueStrings(values: readonly string[]): string[] {
   return [...new Set(values)];
+}
+
+function combinePersonaRequirements(
+  routePersonas: readonly string[] | undefined,
+  commandPersonas: readonly string[],
+): string[] {
+  if (!routePersonas) return uniqueStrings(commandPersonas);
+
+  const routePersonaSet = new Set(routePersonas);
+  const sharedPersonas = commandPersonas.filter((persona) => routePersonaSet.has(persona));
+  return sharedPersonas.length > 0 ? uniqueStrings(sharedPersonas) : [''];
 }
 
 function validatePackActivation(
@@ -320,16 +343,13 @@ function validatePackActivation(
   activePacks: ReadonlySet<string>,
   addProblem: (problem: CockpitExtensionRegistryProblem) => void,
 ) {
+  void activePacks;
   if (extension.packIds.length > 0) return;
   addProblem({
     code: 'missing-pack-activation',
     message: `Extension "${extension.id}" must declare at least one pack activation key.`,
     extensionId: extension.id,
   });
-
-  for (const packId of extension.packIds) {
-    void activePacks.has(packId);
-  }
 }
 
 function validateRoutes(
@@ -377,13 +397,13 @@ function validateRoutes(
         itemId: route.id,
       });
     }
-    validatePersonas(extension.id, route.id, route.guard.personas, addProblem);
+    validateGuard(extension.id, route.id, route.guard, addProblem);
   }
 }
 
 function validateNavItems(
   extension: CockpitExtensionManifest,
-  localRouteIds: ReadonlySet<string>,
+  localRoutes: ReadonlyMap<string, CockpitExtensionRouteRef>,
   navIds: Map<string, string>,
   addProblem: (problem: CockpitExtensionRegistryProblem) => void,
 ) {
@@ -394,7 +414,8 @@ function validateNavItems(
       itemId: item.id,
       addProblem,
     });
-    if (!localRouteIds.has(item.routeId)) {
+    const route = localRoutes.get(item.routeId);
+    if (!route) {
       addProblem({
         code: 'missing-route',
         message: `Nav item "${item.id}" references missing route "${item.routeId}".`,
@@ -402,10 +423,14 @@ function validateNavItems(
         itemId: item.id,
       });
     }
-    if (item.to.includes('$')) {
+    if (
+      !item.to.startsWith('/external/') ||
+      item.to.includes('$') ||
+      (route && item.to !== route.path)
+    ) {
       addProblem({
         code: 'invalid-direct-nav-target',
-        message: `Nav item "${item.id}" targets parameterized route "${item.to}".`,
+        message: `Nav item "${item.id}" must target its referenced non-parameterized external route path.`,
         extensionId: extension.id,
         itemId: item.id,
       });
@@ -434,7 +459,7 @@ function validateNavItems(
 
 function validateCommands(
   extension: CockpitExtensionManifest,
-  localRouteIds: ReadonlySet<string>,
+  localRoutes: ReadonlyMap<string, CockpitExtensionRouteRef>,
   commandIds: Map<string, string>,
   shortcutIds: Map<string, string>,
   addProblem: (problem: CockpitExtensionRegistryProblem) => void,
@@ -446,7 +471,7 @@ function validateCommands(
       itemId: command.id,
       addProblem,
     });
-    if (command.routeId && !localRouteIds.has(command.routeId)) {
+    if (command.routeId && !localRoutes.has(command.routeId)) {
       addProblem({
         code: 'missing-route',
         message: `Command "${command.id}" references missing route "${command.routeId}".`,
@@ -454,12 +479,45 @@ function validateCommands(
         itemId: command.id,
       });
     }
+    if (!command.guard || command.guard.personas.length === 0) {
+      addProblem({
+        code: 'missing-command-guard',
+        message: `Command "${command.id}" must declare host-owned guard metadata.`,
+        extensionId: extension.id,
+        itemId: command.id,
+      });
+    } else {
+      validateGuard(extension.id, command.id, command.guard, addProblem);
+    }
     if (command.shortcut) {
       addDuplicateProblem(shortcutIds, command.shortcut, extension.id, 'shortcut', {
         code: 'duplicate-shortcut',
         extensionId: extension.id,
         itemId: command.id,
         addProblem,
+      });
+    }
+  }
+}
+
+function validateGuard(
+  extensionId: string,
+  itemId: string,
+  guard: {
+    personas: readonly string[];
+    privacyClasses?: readonly string[];
+  },
+  addProblem: (problem: CockpitExtensionRegistryProblem) => void,
+) {
+  validatePersonas(extensionId, itemId, guard.personas, addProblem);
+
+  for (const privacyClass of guard.privacyClasses ?? []) {
+    if (!allowedPrivacyClasses.has(privacyClass)) {
+      addProblem({
+        code: 'invalid-privacy-class',
+        message: `Item "${itemId}" uses unsupported privacy class "${privacyClass}".`,
+        extensionId,
+        itemId,
       });
     }
   }

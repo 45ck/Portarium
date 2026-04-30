@@ -2,14 +2,10 @@ import type { ComponentType } from 'react';
 import {
   DEFAULT_ACTIVE_EXTENSION_PACK_IDS,
   DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
-  INSTALLED_COCKPIT_EXTENSION_MODULES,
+  resolveInstalledCockpitExtensionRegistry,
 } from '@/lib/extensions/installed';
-import {
-  canAccessExtensionRoute,
-  resolveCockpitExtensionRegistry,
-} from '@/lib/extensions/registry';
+import { canAccessExtensionRoute } from '@/lib/extensions/registry';
 import type {
-  CockpitExtensionRouteModuleLoader,
   CockpitExtensionRouteRef,
   ResolvedCockpitExtension,
   ResolvedCockpitExtensionRegistry,
@@ -53,11 +49,9 @@ export interface ResolveExternalRouteInput {
   components?: Readonly<Record<string, ExternalRouteComponent>>;
 }
 
-export const HOST_EXTERNAL_EXTENSION_REGISTRY = resolveCockpitExtensionRegistry({
-  installedExtensions: INSTALLED_COCKPIT_EXTENSION_MODULES.map((extension) => extension.manifest),
+export const HOST_EXTERNAL_EXTENSION_REGISTRY = resolveInstalledCockpitExtensionRegistry({
   activePackIds: DEFAULT_ACTIVE_EXTENSION_PACK_IDS,
   ...DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
-  routeLoaders: collectHostRouteLoaders(),
 });
 
 export function resolveExternalRoute({
@@ -108,18 +102,6 @@ export function resolveExternalRoute({
     kind: 'not-found',
     pathname: normalizedPathname,
   };
-}
-
-function collectHostRouteLoaders(): Readonly<Record<string, CockpitExtensionRouteModuleLoader>> {
-  const routeLoaders: Record<string, CockpitExtensionRouteModuleLoader> = {};
-
-  for (const extension of INSTALLED_COCKPIT_EXTENSION_MODULES) {
-    for (const routeModule of extension.routeModules) {
-      routeLoaders[routeModule.routeId] = routeModule.loadModule;
-    }
-  }
-
-  return routeLoaders;
 }
 
 function matchExternalRoutePath(

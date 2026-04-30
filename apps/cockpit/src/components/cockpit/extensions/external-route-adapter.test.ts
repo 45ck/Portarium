@@ -11,6 +11,7 @@ const TEST_EXTENSION: CockpitExtensionManifest = {
   displayName: 'Test Extension',
   description: 'Test extension manifest',
   packIds: ['test.extension'],
+  personas: ['Operator', 'Admin'],
   requiredCapabilities: ['objects:read'],
   requiredApiScopes: ['extensions.read'],
   routes: [

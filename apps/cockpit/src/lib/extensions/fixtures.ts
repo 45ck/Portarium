@@ -1,8 +1,8 @@
 import type { CockpitExtensionManifest } from './types';
-import { EXAMPLE_OPS_DEMO_EXTENSION } from './example-ops-demo/manifest';
+import { EXAMPLE_REFERENCE_EXTENSION } from './example-reference/manifest';
 
-export const NEUTRAL_OPS_EXTENSION: CockpitExtensionManifest = EXAMPLE_OPS_DEMO_EXTENSION;
+export const NEUTRAL_REFERENCE_EXTENSION: CockpitExtensionManifest = EXAMPLE_REFERENCE_EXTENSION;
 
 export const COCKPIT_EXTENSION_FIXTURES: readonly CockpitExtensionManifest[] = [
-  NEUTRAL_OPS_EXTENSION,
+  NEUTRAL_REFERENCE_EXTENSION,
 ];

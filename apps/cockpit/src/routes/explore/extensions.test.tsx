@@ -91,9 +91,9 @@ beforeAll(() => {
             principalId: 'user-1',
             persona: 'Operator',
             availablePersonas: ['Operator'],
-            availableCapabilities: ['asset:read', 'incident:read', 'evidence:read'],
+            availableCapabilities: ['extension:read', 'extension:review', 'evidence:read'],
             availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
-            activePackIds: ['example.ops-demo'],
+            activePackIds: ['example.reference'],
             quarantinedExtensionIds: [],
             issuedAtIso: '2026-04-30T02:00:00.000Z',
             expiresAtIso: '2999-04-30T02:05:00.000Z',
@@ -119,7 +119,7 @@ beforeEach(() => {
       workspaceId: 'ws-demo',
       roles: ['operator'],
       personas: ['Operator'],
-      capabilities: ['asset:read', 'incident:read', 'evidence:read'],
+      capabilities: ['extension:read', 'extension:review', 'evidence:read'],
       apiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
     },
     error: null,
@@ -130,9 +130,9 @@ beforeEach(() => {
     principalId: 'user-1',
     persona: 'Operator',
     availablePersonas: ['Operator'],
-    availableCapabilities: ['asset:read', 'incident:read', 'evidence:read'],
+    availableCapabilities: ['extension:read', 'extension:review', 'evidence:read'],
     availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
-    activePackIds: ['example.ops-demo'],
+    activePackIds: ['example.reference'],
     quarantinedExtensionIds: [],
     issuedAtIso: '2026-04-30T02:00:00.000Z',
     expiresAtIso: '2999-04-30T02:05:00.000Z',
@@ -152,21 +152,21 @@ describe('external extensions route', () => {
     await renderRoute('/explore/extensions');
 
     expect(await screen.findByRole('heading', { name: 'External Extensions' })).toBeTruthy();
-    expect(screen.getByText('Operations Demo')).toBeTruthy();
+    expect(screen.getByText('Reference Extension')).toBeTruthy();
     expect(screen.getByText('Host Rules')).toBeTruthy();
-    expect(screen.getByText('example.ops-demo')).toBeTruthy();
+    expect(screen.getByText('example.reference')).toBeTruthy();
     expect(screen.getByText('enabled')).toBeTruthy();
-    expect(screen.getByText('/external/example-ops/overview')).toBeTruthy();
-    expect(screen.getByText('/external/example-ops/actions/$proposalId')).toBeTruthy();
-    expect(screen.getByText('Open operations demo')).toBeTruthy();
+    expect(screen.getByText('/external/example-reference/overview')).toBeTruthy();
+    expect(screen.getByText('/external/example-reference/reviews/$proposalId')).toBeTruthy();
+    expect(screen.getByText('Open reference extension')).toBeTruthy();
     expect(screen.getByText('G X')).toBeTruthy();
-    expect(screen.getByText('asset:read')).toBeTruthy();
-    expect(screen.getByText('incident:read')).toBeTruthy();
+    expect(screen.getByText('extension:read')).toBeTruthy();
+    expect(screen.getByText('extension:review')).toBeTruthy();
     expect(screen.getByText('evidence:read')).toBeTruthy();
 
     const primaryNavigation = screen.getByLabelText('Primary navigation');
     expect(
-      within(primaryNavigation).getByRole('link', { name: 'Operations Overview' }),
+      within(primaryNavigation).getByRole('link', { name: 'Reference Overview' }),
     ).toBeTruthy();
   });
 });
