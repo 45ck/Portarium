@@ -84,6 +84,20 @@ export interface IntentPlanResponse {
   artifact: PlanArtifact;
 }
 
+export interface CockpitExtensionContextResponse {
+  schemaVersion: 1;
+  workspaceId: string;
+  principalId: string;
+  persona?: string;
+  availablePersonas: string[];
+  availableCapabilities: string[];
+  availableApiScopes: string[];
+  activePackIds: string[];
+  quarantinedExtensionIds: string[];
+  issuedAtIso: string;
+  expiresAtIso: string;
+}
+
 export type RunStatus =
   | 'Pending'
   | 'Running'

@@ -32,6 +32,45 @@ describe('ControlPlaneClient', () => {
     expect(headers.get('Authorization')).toBe('Bearer token-123');
   });
 
+  it('fetches cockpit extension context with bearer auth', async () => {
+    const fetchImpl = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            schemaVersion: 1,
+            workspaceId: 'ws-1',
+            principalId: 'user-1',
+            availablePersonas: ['Operator'],
+            availableCapabilities: ['objects:read'],
+            availableApiScopes: ['extensions.read'],
+            activePackIds: [],
+            quarantinedExtensionIds: [],
+            issuedAtIso: '2026-04-30T02:00:00.000Z',
+            expiresAtIso: '2026-04-30T02:05:00.000Z',
+          }),
+          {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          },
+        ),
+    );
+    const client = new ControlPlaneClient({
+      baseUrl: 'https://api.example.test',
+      getBearerToken: () => 'token-123',
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+
+    await client.getCockpitExtensionContext('workspace with spaces');
+
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchImpl.mock.calls[0] as unknown as [string, RequestInit];
+    const headers = new Headers(init.headers);
+    expect(url).toBe(
+      'https://api.example.test/v1/workspaces/workspace%20with%20spaces/cockpit/extension-context',
+    );
+    expect(headers.get('Authorization')).toBe('Bearer token-123');
+  });
+
   it('normalizes problem+json responses into CockpitApiError', async () => {
     const fetchImpl = vi.fn(
       async () =>

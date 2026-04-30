@@ -26,6 +26,7 @@ import {
 import type {
   ApprovalDecisionRequest,
   ApprovalSummary,
+  CockpitExtensionContextResponse,
   AssignHumanTaskRequest,
   CompleteHumanTaskRequest,
   CursorPage,
@@ -104,6 +105,13 @@ export class ControlPlaneClient {
   public getRun(workspaceId: string, runId: string): Promise<RunDetail> {
     return this.request(
       `/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/runs/${normalizeResourceId(runId)}`,
+      'GET',
+    );
+  }
+
+  public getCockpitExtensionContext(workspaceId: string): Promise<CockpitExtensionContextResponse> {
+    return this.request(
+      `/v1/workspaces/${normalizeWorkspaceId(workspaceId)}/cockpit/extension-context`,
       'GET',
     );
   }

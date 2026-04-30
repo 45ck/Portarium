@@ -88,6 +88,7 @@ import {
   handleListPolicies,
   handleSavePolicy,
 } from './control-plane-handler.policies.js';
+import { handleGetCockpitExtensionContext } from './control-plane-handler.cockpit-extension-context.js';
 
 // ---------------------------------------------------------------------------
 // Hono environment types
@@ -608,6 +609,13 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
   app.get('/v1/workspaces/:workspaceId', async (c) => {
     const ctx = c.get('ctx');
     await handleGetWorkspace({ ...ctx, workspaceId: c.req.param('workspaceId') });
+    return c.body(null);
+  });
+
+  // GET /v1/workspaces/:workspaceId/cockpit/extension-context
+  app.get('/v1/workspaces/:workspaceId/cockpit/extension-context', async (c) => {
+    const ctx = c.get('ctx');
+    await handleGetCockpitExtensionContext({ ...ctx, workspaceId: c.req.param('workspaceId') });
     return c.body(null);
   });
 

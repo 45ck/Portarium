@@ -24,6 +24,7 @@ tags:
   - name: AdapterRegistrations
   - name: Machines
   - name: Agents
+  - name: Cockpit
   - name: Workforce
   - name: HumanTasks
   - name: Location
@@ -64,6 +65,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Workspace'
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/cockpit/extension-context:
+    get:
+      tags: [Cockpit]
+      summary: Get workspace-scoped Cockpit extension access context
+      operationId: getCockpitExtensionContext
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CockpitExtensionContext'
         default:
           $ref: '#/components/responses/Problem'
   /v1/workspaces/{workspaceId}/users:
@@ -2256,6 +2275,60 @@ components:
           type: string
           minLength: 1
       required: [items]
+    CockpitExtensionContext:
+      type: object
+      additionalProperties: false
+      properties:
+        schemaVersion:
+          type: integer
+          const: 1
+        workspaceId:
+          $ref: '#/components/schemas/WorkspaceId'
+        principalId:
+          $ref: '#/components/schemas/UserId'
+        persona:
+          type: string
+          enum: [Operator, Approver, Auditor, Admin]
+        availablePersonas:
+          type: array
+          items:
+            type: string
+            enum: [Operator, Approver, Auditor, Admin]
+        availableCapabilities:
+          type: array
+          items:
+            type: string
+            minLength: 1
+        availableApiScopes:
+          type: array
+          items:
+            type: string
+            minLength: 1
+        activePackIds:
+          type: array
+          items:
+            type: string
+            minLength: 1
+        quarantinedExtensionIds:
+          type: array
+          items:
+            type: string
+            minLength: 1
+        issuedAtIso:
+          $ref: '#/components/schemas/IsoTimestamp'
+        expiresAtIso:
+          $ref: '#/components/schemas/IsoTimestamp'
+      required:
+        - schemaVersion
+        - workspaceId
+        - principalId
+        - availablePersonas
+        - availableCapabilities
+        - availableApiScopes
+        - activePackIds
+        - quarantinedExtensionIds
+        - issuedAtIso
+        - expiresAtIso
     UserRole:
       type: string
       enum: [admin, operator, approver, auditor]

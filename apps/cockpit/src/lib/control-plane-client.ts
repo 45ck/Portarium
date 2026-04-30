@@ -1,6 +1,7 @@
 import type {
   ApprovalDecisionRequest,
   ApprovalSummary,
+  CockpitExtensionContextResponse,
   CursorPage,
   DerivedArtifactListResponse,
   DiffHunk,
@@ -105,6 +106,10 @@ export class ControlPlaneClient {
 
   public listApprovals(workspaceId: string): Promise<CursorPage<ApprovalSummary>> {
     return this.request(`/v1/workspaces/${pathSegment(workspaceId)}/approvals`);
+  }
+
+  public getCockpitExtensionContext(workspaceId: string): Promise<CockpitExtensionContextResponse> {
+    return this.request(`/v1/workspaces/${pathSegment(workspaceId)}/cockpit/extension-context`);
   }
 
   public getApproval(workspaceId: string, approvalId: string): Promise<ApprovalSummary> {

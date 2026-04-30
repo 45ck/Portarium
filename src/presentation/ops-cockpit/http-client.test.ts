@@ -76,6 +76,32 @@ describe('ControlPlaneClient contract-aligned route construction', () => {
     expect(call.init.method).toBe('GET');
   });
 
+  it('builds cockpit extension context endpoint with encoded workspace id', async () => {
+    const { calls, fetchImpl } = createJsonFetch({
+      schemaVersion: 1,
+      workspaceId: 'workspace with spaces',
+      principalId: 'user-1',
+      availablePersonas: ['Operator'],
+      availableCapabilities: [],
+      availableApiScopes: [],
+      activePackIds: [],
+      quarantinedExtensionIds: [],
+      issuedAtIso: '2026-04-30T02:00:00.000Z',
+      expiresAtIso: '2026-04-30T02:05:00.000Z',
+    });
+    const client = makeClient(fetchImpl);
+
+    await client.getCockpitExtensionContext('workspace with spaces');
+
+    expect(calls).toHaveLength(1);
+    const call = calls[0]!;
+    const parsed = new URL(call.input);
+    expect(parsed.pathname).toBe(
+      '/v1/workspaces/workspace%20with%20spaces/cockpit/extension-context',
+    );
+    expect(call.init.method).toBe('GET');
+  });
+
   it('builds approval decision endpoint against approvalId', async () => {
     const { calls, fetchImpl } = createJsonFetch({
       schemaVersion: 1,

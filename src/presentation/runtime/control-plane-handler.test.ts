@@ -16,11 +16,12 @@ afterEach(async () => {
 type Role = 'admin' | 'operator' | 'approver' | 'auditor';
 type HandlerDeps = Parameters<typeof createControlPlaneHandler>[0];
 
-function makeCtx(roles: readonly Role[] = ['admin']) {
+function makeCtx(roles: readonly Role[] = ['admin'], scopes: readonly string[] = []) {
   return toAppContext({
     tenantId: 'tenant-1',
     principalId: 'user-1',
     roles,
+    scopes,
     correlationId: 'corr-1',
   });
 }
@@ -65,6 +66,64 @@ describe('createControlPlaneHandler', () => {
     const body = (await res.json()) as { type: string; status: number };
     expect(body.type).toMatch(/not-found/);
     expect(body.status).toBe(404);
+  });
+
+  it('returns generic cockpit extension context from the authenticated principal', async () => {
+    await startWith(
+      makeDeps({
+        authentication: {
+          authenticateBearerToken: async () =>
+            ok(makeCtx(['operator', 'auditor'], ['extensions.read', 'objects:read'])),
+        },
+        clock: () => new Date('2026-04-30T02:00:00.000Z'),
+      }),
+    );
+
+    const res = await fetch(
+      `http://${handle!.host}:${handle!.port}/v1/workspaces/tenant-1/cockpit/extension-context`,
+    );
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get('ETag')).toMatch(/^"[a-f0-9]{12}"$/);
+    const body = (await res.json()) as {
+      schemaVersion: number;
+      workspaceId: string;
+      principalId: string;
+      persona: string;
+      availablePersonas: string[];
+      availableCapabilities: string[];
+      availableApiScopes: string[];
+      activePackIds: string[];
+      quarantinedExtensionIds: string[];
+      issuedAtIso: string;
+      expiresAtIso: string;
+    };
+    expect(body).toEqual({
+      schemaVersion: 1,
+      workspaceId: 'tenant-1',
+      principalId: 'user-1',
+      persona: 'Operator',
+      availablePersonas: ['Operator', 'Auditor'],
+      availableCapabilities: ['extensions.read', 'objects:read'],
+      availableApiScopes: ['extensions.read', 'objects:read'],
+      activePackIds: [],
+      quarantinedExtensionIds: [],
+      issuedAtIso: '2026-04-30T02:00:00.000Z',
+      expiresAtIso: '2026-04-30T02:05:00.000Z',
+    });
+  });
+
+  it('denies cockpit extension context when the requested workspace is outside token scope', async () => {
+    await startWith(makeDeps());
+
+    const res = await fetch(
+      `http://${handle!.host}:${handle!.port}/v1/workspaces/workspace-2/cockpit/extension-context`,
+    );
+
+    expect(res.status).toBe(403);
+    const body = (await res.json()) as { type: string; status: number };
+    expect(body.type).toMatch(/forbidden/);
+    expect(body.status).toBe(403);
   });
 
   it('routes GET run to application query and returns Problem Details on unauthorized', async () => {
