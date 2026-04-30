@@ -1,6 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { ApprovalId, PlanId, RunId, UserId, WorkspaceId } from '../../domain/primitives/index.js';
+import {
+  ActionId,
+  ApprovalId,
+  PlanId,
+  RunId,
+  UserId,
+  WorkspaceId,
+} from '../../domain/primitives/index.js';
 import type { ApprovalDecidedV1 } from '../../domain/approvals/index.js';
 import { toAppContext } from '../common/context.js';
 import type {
@@ -218,6 +225,7 @@ describe('executeApprovedAgentAction', () => {
 
     expect(actionRunner.dispatchAction).toHaveBeenCalledWith(
       expect.objectContaining({
+        actionId: ActionId('ExecuteApprovedAgentAction:tenant-1:ws-1:appr-1:flow-abc'),
         flowRef: 'flow-abc',
         idempotencyKey: 'ExecuteApprovedAgentAction:tenant-1:ws-1:appr-1:flow-abc',
         payload: { key: 'value' },
@@ -232,8 +240,45 @@ describe('executeApprovedAgentAction', () => {
     });
 
     expect(actionRunner.dispatchAction).toHaveBeenCalledWith(
-      expect.objectContaining({ idempotencyKey: 'execute-retry-key' }),
+      expect.objectContaining({
+        actionId: ActionId('execute-retry-key'),
+        idempotencyKey: 'execute-retry-key',
+      }),
     );
+  });
+
+  it('retries after persistence failure with the same execution action id', async () => {
+    const dispatches: Array<{ actionId: unknown; idempotencyKey: unknown }> = [];
+    actionRunner.dispatchAction = vi.fn(async (input) => {
+      dispatches.push({ actionId: input.actionId, idempotencyKey: input.idempotencyKey });
+      return { ok: true as const, output: { result: 'done' } };
+    });
+    let attempt = 0;
+    unitOfWork.execute = async <T>(fn: () => Promise<T>) => {
+      attempt += 1;
+      const result = await fn();
+      if (attempt === 1) {
+        throw new Error('event store unavailable');
+      }
+      return result;
+    };
+
+    const input = { ...makeInput(), idempotencyKey: 'execute-crash-retry-key' };
+    const first = await executeApprovedAgentAction(makeDeps(), makeCtx(), input);
+    const second = await executeApprovedAgentAction(makeDeps(), makeCtx(), input);
+
+    expect(first.ok).toBe(false);
+    expect(second.ok).toBe(true);
+    expect(dispatches).toEqual([
+      {
+        actionId: ActionId('execute-crash-retry-key'),
+        idempotencyKey: 'execute-crash-retry-key',
+      },
+      {
+        actionId: ActionId('execute-crash-retry-key'),
+        idempotencyKey: 'execute-crash-retry-key',
+      },
+    ]);
   });
 
   it('stores successful execution result in idempotency cache', async () => {
@@ -290,7 +335,7 @@ describe('executeApprovedAgentAction', () => {
     expect(second.ok).toBe(true);
     if (!second.ok) throw new Error('Expected replay success.');
     expect(second.value).toEqual({
-      executionId: 'id-1',
+      executionId: 'execute-idem-2',
       approvalId: ApprovalId('appr-1'),
       status: 'Executed',
       output: { result: 'done' },
