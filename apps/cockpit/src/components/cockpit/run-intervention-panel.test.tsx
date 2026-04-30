@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { RunSummary } from '@portarium/cockpit-types';
@@ -27,6 +27,10 @@ async function selectAction(label: RegExp) {
   await userEvent.click(screen.getByRole('option', { name: label }));
 }
 
+function setRationale(value: string) {
+  fireEvent.change(screen.getByLabelText(/rationale/i), { target: { value } });
+}
+
 describe('RunInterventionPanel', () => {
   it('records a typed current-run steering input with rationale', async () => {
     const onSubmit = vi.fn();
@@ -42,10 +46,7 @@ describe('RunInterventionPanel', () => {
     expect(screen.getByRole('button', { name: /record pause/i }).hasAttribute('disabled')).toBe(
       true,
     );
-    await userEvent.type(
-      screen.getByLabelText(/rationale/i),
-      'Need invoice evidence before the agent continues.',
-    );
+    setRationale('Need invoice evidence before the agent continues.');
     await userEvent.click(screen.getByRole('button', { name: /record pause/i }));
 
     expect(onSubmit).toHaveBeenCalledWith({
@@ -89,10 +90,7 @@ describe('RunInterventionPanel', () => {
     expect(screen.getByText('Approval Gate')).toBeTruthy();
     expect(screen.getByText('Policy rule')).toBeTruthy();
 
-    await userEvent.type(
-      screen.getByLabelText(/rationale/i),
-      'Need source invoice and vendor match before approval.',
-    );
+    setRationale('Need source invoice and vendor match before approval.');
     await userEvent.click(screen.getByRole('button', { name: /record request more evidence/i }));
 
     expect(onSubmit).toHaveBeenCalledWith({
@@ -130,7 +128,7 @@ describe('RunInterventionPanel', () => {
     );
 
     await selectAction(/handoff/i);
-    await userEvent.type(screen.getByLabelText(/rationale/i), 'Finance operator should own this.');
+    setRationale('Finance operator should own this.');
 
     const submit = screen.getByRole('button', { name: /record handoff/i });
     expect(submit.hasAttribute('disabled')).toBe(true);
@@ -162,10 +160,7 @@ describe('RunInterventionPanel', () => {
     );
 
     await selectAction(/emergency disable/i);
-    await userEvent.type(
-      screen.getByLabelText(/rationale/i),
-      'Potential credential compromise across active automation.',
-    );
+    setRationale('Potential credential compromise across active automation.');
 
     const submit = screen.getByRole('button', { name: /record emergency disable/i });
     expect(submit.hasAttribute('disabled')).toBe(true);

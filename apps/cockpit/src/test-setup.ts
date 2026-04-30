@@ -49,5 +49,8 @@ if (typeof HTMLElement !== 'undefined') {
   HTMLElement.prototype.hasPointerCapture ??= () => false;
   HTMLElement.prototype.setPointerCapture ??= () => undefined;
   HTMLElement.prototype.releasePointerCapture ??= () => undefined;
-  HTMLElement.prototype.scrollIntoView ??= () => undefined;
+}
+
+if (typeof Element !== 'undefined') {
+  Element.prototype.scrollIntoView ??= () => undefined;
 }
