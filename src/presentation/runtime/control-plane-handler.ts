@@ -4,6 +4,11 @@ import { randomUUID, timingSafeEqual } from 'node:crypto';
 import { Hono, type Context } from 'hono';
 
 import { getRun } from '../../application/queries/get-run.js';
+import {
+  submitRunIntervention,
+  type SubmitRunInterventionError,
+  type SubmitRunInterventionInput,
+} from '../../application/commands/submit-run-intervention.js';
 import { getWorkspace } from '../../application/queries/get-workspace.js';
 import { listRuns } from '../../application/queries/list-runs.js';
 import { listWorkspaces } from '../../application/queries/list-workspaces.js';
@@ -24,6 +29,7 @@ import { createLogger } from '../../infrastructure/observability/logger.js';
 import { createRequestLogger } from '../../infrastructure/observability/request-logger.js';
 import {
   PayloadTooLargeError,
+  GENERIC_DEPENDENCY_FAILURE_DETAIL,
   GENERIC_INTERNAL_ERROR_DETAIL,
   assertReadAccess,
   authenticate,
@@ -34,9 +40,11 @@ import {
   normalizeTraceContext,
   parseListQueryParams,
   problemFromError,
+  readJsonBody,
   respondJson,
   respondProblem,
   type ControlPlaneDeps,
+  type ProblemDetails,
 } from './control-plane-handler.shared.js';
 import {
   handleAgentHeartbeat,
@@ -123,6 +131,34 @@ interface HonoEnv {
 
 const MALFORMED_WORKSPACE_RATE_LIMIT_ID = '__malformed_workspace__';
 
+function runInterventionErrorToProblem(
+  error: SubmitRunInterventionError,
+  instance: string,
+): ProblemDetails {
+  switch (error.kind) {
+    case 'Forbidden':
+    case 'ValidationFailed':
+    case 'NotFound':
+      return problemFromError(error, instance);
+    case 'Conflict':
+      return {
+        type: 'https://portarium.dev/problems/conflict',
+        title: 'Conflict',
+        status: 409,
+        detail: error.message,
+        instance,
+      };
+    case 'DependencyFailure':
+      return {
+        type: 'https://portarium.dev/problems/dependency-failure',
+        title: 'Bad Gateway',
+        status: 502,
+        detail: GENERIC_DEPENDENCY_FAILURE_DETAIL,
+        instance,
+      };
+  }
+}
+
 function hasValidMetricsBearerToken(
   authorizationHeader: string | string[] | undefined,
   expectedToken: string,
@@ -163,7 +199,12 @@ async function handleGetWorkspace(args: WorkspaceHandlerArgs): Promise<void> {
     { workspaceId },
   );
   if (!result.ok) {
-    respondProblem(res, problemFromError(result.error, pathname), correlationId, traceContext);
+    respondProblem(
+      res,
+      problemFromError(result.error, pathname),
+      correlationId,
+      traceContext,
+    );
     return;
   }
 
@@ -197,7 +238,12 @@ async function handleGetRun(args: RunHandlerArgs): Promise<void> {
     { workspaceId, runId },
   );
   if (!result.ok) {
-    respondProblem(res, problemFromError(result.error, pathname), correlationId, traceContext);
+    respondProblem(
+      res,
+      problemFromError(result.error, pathname),
+      correlationId,
+      traceContext,
+    );
     return;
   }
 
@@ -217,6 +263,118 @@ async function handleGetRun(args: RunHandlerArgs): Promise<void> {
     res.statusCode = 304;
     res.setHeader('x-correlation-id', correlationId);
     res.end();
+    return;
+  }
+
+  respondJson(res, { statusCode: 200, correlationId, traceContext, body: result.value });
+}
+
+async function handleSubmitRunIntervention(args: RunHandlerArgs): Promise<void> {
+  const { deps, req, res, correlationId, pathname, traceContext, workspaceId, runId } = args;
+  const auth = await authenticate(deps, {
+    req,
+    correlationId,
+    traceContext,
+    expectedWorkspaceId: workspaceId,
+  });
+  if (!auth.ok) {
+    respondProblem(res, problemFromError(auth.error, pathname), correlationId, traceContext);
+    return;
+  }
+
+  if (!deps.evidenceLog) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/service-unavailable',
+        title: 'Service Unavailable',
+        status: 503,
+        detail: 'Run intervention governance is unavailable: evidenceLog is not configured.',
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  const bodyResult = await readJsonBody(req);
+  if (!bodyResult.ok) {
+    respondProblem(
+      res,
+      {
+        type:
+          bodyResult.error === 'unsupported-content-type'
+            ? 'https://portarium.dev/problems/unsupported-media-type'
+            : 'https://portarium.dev/problems/bad-request',
+        title:
+          bodyResult.error === 'unsupported-content-type' ? 'Unsupported Media Type' : 'Bad Request',
+        status: bodyResult.error === 'unsupported-content-type' ? 415 : 400,
+        detail:
+          bodyResult.error === 'invalid-json'
+            ? 'Request body contains invalid JSON.'
+            : bodyResult.error === 'empty-body'
+              ? 'Request body must not be empty.'
+              : 'Content-Type must be application/json.',
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  if (!bodyResult.value || typeof bodyResult.value !== 'object') {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/validation-failed',
+        title: 'Validation Failed',
+        status: 422,
+        detail: 'Request body must be a JSON object.',
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  const body = bodyResult.value as Partial<SubmitRunInterventionInput>;
+  const result = await submitRunIntervention(
+    {
+      authorization: deps.authorization,
+      runStore: deps.runStore,
+      evidenceLog: deps.evidenceLog,
+      clock: { nowIso: () => (deps.clock ?? (() => new Date()))().toISOString() },
+      idGenerator: { generateId: randomUUID },
+    },
+    auth.ctx,
+    {
+      workspaceId,
+      runId,
+      interventionType: body.interventionType as SubmitRunInterventionInput['interventionType'],
+      rationale: body.rationale as string,
+      ...(typeof body.target === 'string' ? { target: body.target } : {}),
+      ...(typeof body.surface === 'string' ? { surface: body.surface } : {}),
+      ...(typeof body.authoritySource === 'string'
+        ? { authoritySource: body.authoritySource }
+        : {}),
+      ...(typeof body.effect === 'string' ? { effect: body.effect } : {}),
+      ...(typeof body.consequence === 'string' ? { consequence: body.consequence } : {}),
+      ...(typeof body.evidenceRequired === 'boolean'
+        ? { evidenceRequired: body.evidenceRequired }
+        : {}),
+    },
+  );
+
+  if (!result.ok) {
+    respondProblem(
+      res,
+      runInterventionErrorToProblem(result.error, pathname),
+      correlationId,
+      traceContext,
+    );
     return;
   }
 
@@ -615,6 +773,17 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
   app.get('/v1/workspaces/:workspaceId/runs', async (c) => {
     const ctx = c.get('ctx');
     await handleListRuns({ ...ctx, workspaceId: c.req.param('workspaceId') });
+    return c.body(null);
+  });
+
+  // POST /v1/workspaces/:workspaceId/runs/:runId/interventions
+  app.post('/v1/workspaces/:workspaceId/runs/:runId/interventions', async (c) => {
+    const ctx = c.get('ctx');
+    await handleSubmitRunIntervention({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+      runId: c.req.param('runId'),
+    });
     return c.body(null);
   });
 

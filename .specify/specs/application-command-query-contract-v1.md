@@ -1,6 +1,6 @@
 # Application Command/Query Contract v1
 
-**Beads:** bead-0319, bead-0340, bead-0434
+**Beads:** bead-0319, bead-0340, bead-0434, bead-1124
 
 ## Purpose
 
@@ -17,6 +17,7 @@ Define the complete application-layer command/query surface contract and keep it
 | --------- | ------------------------- | --------------------------- | -------------------------------------------------------- | ------------------------------ | ------------------------------- | ------------------------------- |
 | `command` | `registerWorkspace`       | `workspace:register`        | `src/application/commands/register-workspace.ts`         | `RegisterWorkspaceInput`       | `RegisterWorkspaceOutput`       | `RegisterWorkspaceError`        |
 | `command` | `startWorkflow`           | `run:start`                 | `src/application/commands/start-workflow.ts`             | `StartWorkflowInput`           | `StartWorkflowOutput`           | `StartWorkflowError`            |
+| `command` | `submitRunIntervention`   | `run:intervene`             | `src/application/commands/submit-run-intervention.ts`    | `SubmitRunInterventionInput`   | `SubmitRunInterventionOutput`   | `SubmitRunInterventionError`    |
 | `command` | `createApproval`          | `approval:create`           | `src/application/commands/create-approval.ts`            | `CreateApprovalInput`          | `CreateApprovalOutput`          | `CreateApprovalError`           |
 | `command` | `submitApproval`          | `approval:submit`           | `src/application/commands/submit-approval.ts`            | `SubmitApprovalInput`          | `SubmitApprovalOutput`          | `SubmitApprovalError`           |
 | `command` | `submitMapCommandIntent`  | `map-command:submit`        | `src/application/commands/submit-map-command-intent.ts`  | `SubmitMapCommandIntentInput`  | `SubmitMapCommandIntentOutput`  | `SubmitMapCommandIntentError`   |
@@ -47,6 +48,7 @@ Define the complete application-layer command/query surface contract and keep it
 | workspace/run/approval/work-item list+read query surface                                             | `bead-0319`          |
 | remaining application command use-cases (`submitMapCommandIntent`, workforce assignment/completion)  | `bead-0340`          |
 | machine/agent registration command set (`registerMachine`, `createAgent`, `updateAgentCapabilities`) | `bead-0434`          |
+| run intervention command surface for Cockpit operator control                                        | `bead-1124`          |
 
 ## CI Enforcement
 
