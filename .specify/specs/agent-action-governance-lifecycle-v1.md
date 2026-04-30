@@ -141,7 +141,7 @@ Execution is retry-safe:
 - If the caller omits `idempotencyKey`, the command derives a stable dispatch key from `(tenantId, workspaceId, approvalId, flowRef)`.
 - A matching replay returns the cached execution response without a second action dispatch, event publish, evidence append, or approval state write.
 - Reusing the same idempotency key with a different execution fingerprint returns `Conflict`.
-- The dispatch key is forwarded through `ActionRunnerPort` and `MachineInvokerPort`; OpenClaw gateway requests carry it as `Idempotency-Key`.
+- The dispatch key is used as the stable `actionId` and is forwarded through `ActionRunnerPort` and `MachineInvokerPort`; OpenClaw gateway requests carry it as `Idempotency-Key`.
 - This command-level replay protection does not replace datastore compare-and-set for highly concurrent first submissions; first-submission atomic claim/locking remains a storage-layer hardening requirement.
 
 ## Evidence Chain Requirements

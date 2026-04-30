@@ -217,9 +217,11 @@ export async function executeApprovedAgentAction(
     });
   }
 
+  const providedIdempotencyKey = input.idempotencyKey?.trim();
   const dispatchIdempotencyKey =
-    input.idempotencyKey?.trim() ||
-    `${EXECUTE_COMMAND}:${String(ctx.tenantId)}:${String(workspaceId)}:${String(approvalId)}:${input.flowRef}`;
+    providedIdempotencyKey !== undefined && providedIdempotencyKey !== ''
+      ? providedIdempotencyKey
+      : `${EXECUTE_COMMAND}:${String(ctx.tenantId)}:${String(workspaceId)}:${String(approvalId)}:${input.flowRef}`;
 
   const commandKey = {
     tenantId: ctx.tenantId,
@@ -260,12 +262,8 @@ export async function executeApprovedAgentAction(
     });
   }
 
-  // --- Generate execution ID ---
-  const executionId = deps.idGenerator.generateId();
-  if (executionId.trim() === '') {
-    return err({ kind: 'DependencyFailure', message: 'Unable to generate execution identifier.' });
-  }
-
+  // Stable across retries so execution-plane dedupe can key on both actionId and Idempotency-Key.
+  const executionId = dispatchIdempotencyKey;
   const executedAtIso = deps.clock.nowIso();
   if (executedAtIso.trim() === '') {
     return err({ kind: 'DependencyFailure', message: 'Clock returned an invalid timestamp.' });
