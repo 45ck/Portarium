@@ -67,6 +67,20 @@ The manifest cannot expand browser egress. Egress policy is host-owned and must
 be covered by tests before real customer or operational source systems are
 connected.
 
+`bead-1121` makes that policy deny-by-default and origin-based. The approved
+target set is limited to same-origin `/v1/*` and `/auth/*` Portarium paths plus
+exact configured Portarium API origins used for mediated backend-for-frontend
+traffic. Manifests, workspace grants, and package metadata cannot declare
+`connect-src`, allowed origins, API base URLs, remote entry URLs, or other egress
+escape hatches.
+
+Denied Browser Egress is represented as host audit metadata, not as a generic
+network error. A denial records the policy ID and version, decision, reason,
+extension ID, route or command ID when known, Workspace, principal, correlation
+ID, request kind, method, attempted origin, redacted attempted path, and the
+configured Host/API Origin set. Query strings, fragments, bearer tokens, cookies,
+and request bodies are not included in that metadata.
+
 ## Consequences
 
 Positive:
@@ -140,7 +154,7 @@ IDs.
   before extension code import.
 - Guarding still needs broader end-to-end coverage once real extension packages
   are installed outside the neutral reference extension.
-- Browser egress is not production-ready until denied origins are enforced and
-  tested.
+- Browser egress conformance still needs to expand with future third-party
+  package graduation and build-artifact scans.
 - SDK graduation waits until the host, activation, guard, install-boundary, and
   regression matrix are stable.

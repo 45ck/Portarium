@@ -15,6 +15,8 @@ Cockpit build.
 - Route module exports for every route declared by the manifest.
 - Workspace-scoped activation grant for the pack ID or IDs.
 - Guard metadata for routes, navigation items, commands, and shortcuts.
+- Browser Egress review notes covering the Host/API Origins the package expects
+  and any denied-egress evidence captured during validation.
 
 ## Package Shape
 
@@ -47,8 +49,11 @@ runtime. Route loading remains a host decision.
 4. Add a workspace-scoped activation grant through
    `PORTARIUM_COCKPIT_EXTENSION_GRANTS_JSON`.
 5. Keep every route under `/external/`.
-6. Run the Cockpit extension registry and route-host tests.
-7. Build Cockpit so the lazy route chunks are emitted by the host bundle.
+6. Confirm route modules use host-provided Portarium API helpers instead of
+   direct browser calls to systems of record, provider APIs, vaults, gateways,
+   runtime daemons, or unmanaged external origins.
+7. Run the Cockpit extension registry, route-host, and Browser Egress checks.
+8. Build Cockpit so the lazy route chunks are emitted by the host bundle.
 
 Do not add separate shell navigation or command-palette entries. Declare nav
 items, commands, surfaces, shortcuts, and guards in the manifest; Cockpit
@@ -94,6 +99,20 @@ export const INSTALLED_COCKPIT_EXTENSION_MODULES = [
 Use a neutral package and pack ID in examples and fixtures. Do not encode
 organization, vertical, or vendor-specific names into generic Cockpit extension
 docs.
+
+## Browser Egress
+
+Browser Egress is owned by the Cockpit Extension Host. A package must not add
+manifest fields such as `allowedOrigins`, `egressAllowlist`, `connectSrc`,
+`apiBaseUrl`, `remoteApiBaseUrl`, or provider endpoint URLs. The package may
+only request data through host-reviewed Portarium APIs and mediated
+backend-for-frontend APIs.
+
+Reviewed route code must not call `fetch`, XHR, WebSocket, EventSource,
+`navigator.sendBeacon`, worker APIs, external forms, external links, or
+non-relative dynamic imports directly. Add a host API helper when a new
+Portarium endpoint is required, then let the Browser Egress policy enforce the
+configured Host/API Origin and path before network dispatch.
 
 ## Activation Grant
 
@@ -143,6 +162,7 @@ Run the smallest relevant checks before handoff:
 
 ```bash
 npm run cockpit:build
+node scripts/ci/check-cockpit-extension-egress.mjs
 node node_modules/vitest/vitest.mjs run apps/cockpit/src/lib/extensions apps/cockpit/src/components/cockpit/extensions apps/cockpit/src/routes/external
 ```
 
@@ -159,5 +179,7 @@ Record these in the handoff:
 - package name and pinned version or commit,
 - manifest ID and activated pack IDs,
 - routes added under `/external/`,
+- Host/API Origins expected by the package and whether any Egress Denials were
+  observed,
 - checks run,
 - any guard, egress, or registry problems left unresolved.

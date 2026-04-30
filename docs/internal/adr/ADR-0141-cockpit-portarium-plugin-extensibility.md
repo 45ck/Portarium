@@ -21,6 +21,10 @@ installed UI packages, host-owned imports, `/external/` routes, server-issued
 activation context, same-origin or mediated API calls, and no remote browser
 JavaScript.
 
+ADR-0126 also owns the v1 Cockpit Extension Browser Egress policy and denial
+metadata: extension browser code is limited to host-approved Portarium
+Host/API Origins, while manifests and activation grants cannot expand egress.
+
 This ADR defines the broader plugin and operator-surface extensibility model
 that those decisions fit inside.
 

@@ -5,6 +5,7 @@ import path from 'node:path';
 export const CRITICAL_GATE_PATHS = [
   // Gate integrity implementation (treat the checker as part of the gate).
   'scripts/ci/check-gate-baseline.mjs',
+  'scripts/ci/check-cockpit-extension-egress.mjs',
   'scripts/ci/update-gate-baseline.mjs',
   'scripts/ci/gate-baseline.shared.mjs',
   '.gitattributes',

@@ -121,6 +121,15 @@ describe('installed cockpit extension catalog', () => {
       'srcdoc',
       'loader',
       'import',
+      'allowedOrigins',
+      'egressAllowlist',
+      'egressPolicy',
+      'connectSrc',
+      'apiBaseUrl',
+      'remoteApiBaseUrl',
+      'providerBaseUrl',
+      'webhookUrl',
+      'callbackUrl',
     ]);
 
     for (const extension of INSTALLED_COCKPIT_EXTENSION_MODULES) {
