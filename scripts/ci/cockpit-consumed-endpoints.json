@@ -1,0 +1,712 @@
+{
+  "version": 1,
+  "description": "Single source of truth for endpoints consumed by Cockpit code and MSW handlers.",
+  "endpoints": [
+    {
+      "id": "workspaces.list",
+      "method": "GET",
+      "path": "/v1/workspaces",
+      "openapi": "required",
+      "runtime": "required",
+      "mock": "required",
+      "consumers": ["apps/cockpit/src/routes/__root.tsx"]
+    },
+    {
+      "id": "cockpit.extensionContext.get",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/cockpit/extension-context",
+      "openapi": "required",
+      "runtime": "required",
+      "mock": "not-required",
+      "clientMethod": "getCockpitExtensionContext",
+      "consumers": ["apps/cockpit/src/lib/control-plane-client.ts"]
+    },
+    {
+      "id": "approvals.list",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/approvals",
+      "openapi": "required",
+      "runtime": "required",
+      "mock": "required",
+      "clientMethod": "listApprovals",
+      "consumers": ["apps/cockpit/src/lib/control-plane-client.ts"]
+    },
+    {
+      "id": "approvals.get",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/approvals/{approvalId}",
+      "openapi": "required",
+      "runtime": "required",
+      "mock": "required",
+      "clientMethod": "getApproval",
+      "consumers": ["apps/cockpit/src/lib/control-plane-client.ts"]
+    },
+    {
+      "id": "approvals.decide",
+      "method": "POST",
+      "path": "/v1/workspaces/{workspaceId}/approvals/{approvalId}/decide",
+      "openapi": "required",
+      "runtime": "required",
+      "mock": "required",
+      "clientMethod": "decideApproval",
+      "consumers": ["apps/cockpit/src/lib/control-plane-client.ts"]
+    },
+    {
+      "id": "runs.list",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/runs",
+      "openapi": "required",
+      "runtime": "required",
+      "mock": "required",
+      "clientMethod": "listRuns",
+      "consumers": [
+        "apps/cockpit/src/lib/control-plane-client.ts",
+        "apps/cockpit/src/routes/runs/index.tsx"
+      ]
+    },
+    {
+      "id": "runs.get",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/runs/{runId}",
+      "openapi": "required",
+      "runtime": "required",
+      "mock": "required",
+      "clientMethod": "getRun",
+      "consumers": ["apps/cockpit/src/lib/control-plane-client.ts"]
+    },
+    {
+      "id": "runs.start",
+      "method": "POST",
+      "path": "/v1/workspaces/{workspaceId}/runs",
+      "openapi": "required",
+      "runtime": "pending",
+      "mock": "required",
+      "clientMethod": "startRun",
+      "trackingBead": "bead-1127",
+      "reason": "Run mutation runtime parity is owned by the live runs API bead.",
+      "consumers": ["apps/cockpit/src/lib/control-plane-client.ts"]
+    },
+    {
+      "id": "runs.cancel",
+      "method": "POST",
+      "path": "/v1/workspaces/{workspaceId}/runs/{runId}/cancel",
+      "openapi": "required",
+      "runtime": "pending",
+      "mock": "required",
+      "clientMethod": "cancelRun",
+      "trackingBead": "bead-1127",
+      "reason": "Run cancellation runtime parity is owned by the live runs API bead.",
+      "consumers": ["apps/cockpit/src/lib/control-plane-client.ts"]
+    },
+    {
+      "id": "runs.interventions.submit",
+      "method": "POST",
+      "path": "/v1/workspaces/{workspaceId}/runs/{runId}/interventions",
+      "openapi": "pending",
+      "runtime": "pending",
+      "mock": "required",
+      "clientMethod": "submitRunIntervention",
+      "trackingBead": "bead-1127",
+      "reason": "Operator intervention contracts are part of run-control API parity.",
+      "consumers": ["apps/cockpit/src/lib/control-plane-client.ts"]
+    },
+    {
+      "id": "intents.plan",
+      "method": "POST",
+      "path": "/v1/workspaces/{workspaceId}/intents:plan",
+      "openapi": "pending",
+      "runtime": "required",
+      "mock": "required",
+      "clientMethod": "planIntent",
+      "trackingBead": "bead-1127",
+      "reason": "Intent planning is mounted in runtime and still needs OpenAPI contract parity.",
+      "consumers": ["apps/cockpit/src/lib/control-plane-client.ts"]
+    },
+    {
+      "id": "workItems.list",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/work-items",
+      "openapi": "required",
+      "runtime": "pending",
+      "mock": "required",
+      "clientMethod": "listWorkItems",
+      "trackingBead": "bead-1128",
+      "reason": "Work item runtime parity is owned by the live work items API bead.",
+      "consumers": ["apps/cockpit/src/lib/control-plane-client.ts"]
+    },
+    {
+      "id": "workItems.get",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/work-items/{workItemId}",
+      "openapi": "required",
+      "runtime": "pending",
+      "mock": "required",
+      "clientMethod": "getWorkItem",
+      "trackingBead": "bead-1128",
+      "reason": "Work item runtime parity is owned by the live work items API bead.",
+      "consumers": ["apps/cockpit/src/lib/control-plane-client.ts"]
+    },
+    {
+      "id": "workItems.update",
+      "method": "PATCH",
+      "path": "/v1/workspaces/{workspaceId}/work-items/{workItemId}",
+      "openapi": "required",
+      "runtime": "pending",
+      "mock": "required",
+      "clientMethod": "updateWorkItem",
+      "trackingBead": "bead-1128",
+      "reason": "Work item mutation runtime parity is owned by the live work items API bead.",
+      "consumers": ["apps/cockpit/src/lib/control-plane-client.ts"]
+    },
+    {
+      "id": "workflows.list",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/workflows",
+      "openapi": "required",
+      "runtime": "pending",
+      "mock": "required",
+      "clientMethod": "listWorkflows",
+      "trackingBead": "bead-1128",
+      "reason": "Workflow runtime parity is owned by the live config API bead.",
+      "consumers": ["apps/cockpit/src/lib/control-plane-client.ts"]
+    },
+    {
+      "id": "workflows.get",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/workflows/{workflowId}",
+      "openapi": "required",
+      "runtime": "pending",
+      "mock": "required",
+      "clientMethod": "getWorkflow",
+      "trackingBead": "bead-1128",
+      "reason": "Workflow runtime parity is owned by the live config API bead.",
+      "consumers": ["apps/cockpit/src/lib/control-plane-client.ts"]
+    },
+    {
+      "id": "workflows.update",
+      "method": "PATCH",
+      "path": "/v1/workspaces/{workspaceId}/workflows/{workflowId}",
+      "openapi": "required",
+      "runtime": "pending",
+      "mock": "required",
+      "clientMethod": "updateWorkflow",
+      "trackingBead": "bead-1128",
+      "reason": "Workflow mutation runtime parity is owned by the live config API bead.",
+      "consumers": ["apps/cockpit/src/lib/control-plane-client.ts"]
+    },
+    {
+      "id": "plans.get",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/plans/{planId}",
+      "openapi": "required",
+      "runtime": "pending",
+      "mock": "required",
+      "trackingBead": "bead-1128",
+      "reason": "Plan runtime parity is owned by the live config API bead.",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-plan.ts"]
+    },
+    {
+      "id": "evidence.list",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/evidence",
+      "openapi": "required",
+      "runtime": "required",
+      "mock": "required",
+      "consumers": [
+        "apps/cockpit/src/hooks/queries/use-evidence.ts",
+        "apps/cockpit/src/routes/explore/events.tsx"
+      ]
+    },
+    {
+      "id": "beads.diff.get",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/beads/{beadId}/diff",
+      "openapi": "required",
+      "runtime": "required",
+      "mock": "required",
+      "clientMethod": "getBeadDiff",
+      "consumers": ["apps/cockpit/src/lib/control-plane-client.ts"]
+    },
+    {
+      "id": "beads.thread.get",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/beads/{beadId}/thread",
+      "openapi": "pending",
+      "runtime": "pending",
+      "mock": "required",
+      "trackingBead": "bead-1128",
+      "reason": "Bead thread snapshots are rollout-only until the engineering stream API is contracted.",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-bead-thread-stream.ts"]
+    },
+    {
+      "id": "beads.events.stream",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/beads/{beadId}/events",
+      "openapi": "pending",
+      "runtime": "required",
+      "mock": "required",
+      "trackingBead": "bead-1128",
+      "reason": "Bead event SSE is mounted in runtime and still needs OpenAPI parity.",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-bead-thread-stream.ts"]
+    },
+    {
+      "id": "events.stream",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/events:stream",
+      "openapi": "pending",
+      "runtime": "required",
+      "mock": "required",
+      "trackingBead": "bead-1128",
+      "reason": "Workspace event SSE is mounted in runtime and still needs OpenAPI parity.",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-approval-event-stream.ts"]
+    },
+    {
+      "id": "workforce.members.list",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/workforce/members",
+      "openapi": "pending",
+      "runtime": "pending",
+      "mock": "required",
+      "trackingBead": "bead-1130",
+      "reason": "Cockpit still consumes a members alias while the live workforce contract exposes /workforce.",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-workforce.ts"]
+    },
+    {
+      "id": "workforce.queues.list",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/workforce/queues",
+      "openapi": "required",
+      "runtime": "required",
+      "mock": "required",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-workforce.ts"]
+    },
+    {
+      "id": "humanTasks.list",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/human-tasks",
+      "openapi": "required",
+      "runtime": "required",
+      "mock": "required",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-human-tasks.ts"]
+    },
+    {
+      "id": "humanTasks.assign",
+      "method": "POST",
+      "path": "/v1/workspaces/{workspaceId}/human-tasks/{humanTaskId}/assign",
+      "openapi": "required",
+      "runtime": "required",
+      "mock": "required",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-human-tasks.ts"]
+    },
+    {
+      "id": "humanTasks.complete",
+      "method": "POST",
+      "path": "/v1/workspaces/{workspaceId}/human-tasks/{humanTaskId}/complete",
+      "openapi": "required",
+      "runtime": "required",
+      "mock": "required",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-human-tasks.ts"]
+    },
+    {
+      "id": "humanTasks.escalate",
+      "method": "POST",
+      "path": "/v1/workspaces/{workspaceId}/human-tasks/{humanTaskId}/escalate",
+      "openapi": "required",
+      "runtime": "required",
+      "mock": "required",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-human-tasks.ts"]
+    },
+    {
+      "id": "agents.list",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/agents",
+      "openapi": "required",
+      "runtime": "required",
+      "mock": "required",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-agents.ts"]
+    },
+    {
+      "id": "agents.get",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/agents/{agentId}",
+      "openapi": "required",
+      "runtime": "required",
+      "mock": "required",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-agents.ts"]
+    },
+    {
+      "id": "agents.register",
+      "method": "POST",
+      "path": "/v1/workspaces/{workspaceId}/agents",
+      "openapi": "required",
+      "runtime": "required",
+      "mock": "required",
+      "consumers": ["apps/cockpit/src/components/cockpit/register-agent-dialog.tsx"]
+    },
+    {
+      "id": "machines.list",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/machines",
+      "openapi": "required",
+      "runtime": "required",
+      "mock": "required",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-machines.ts"]
+    },
+    {
+      "id": "machines.get",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/machines/{machineId}",
+      "openapi": "required",
+      "runtime": "required",
+      "mock": "required",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-machines.ts"]
+    },
+    {
+      "id": "machines.register",
+      "method": "POST",
+      "path": "/v1/workspaces/{workspaceId}/machines",
+      "openapi": "required",
+      "runtime": "required",
+      "mock": "required",
+      "consumers": ["apps/cockpit/src/components/cockpit/register-machine-dialog.tsx"]
+    },
+    {
+      "id": "adapters.list",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/adapters",
+      "openapi": "pending",
+      "runtime": "pending",
+      "mock": "required",
+      "trackingBead": "bead-1129",
+      "reason": "Cockpit still consumes /adapters while the OpenAPI surface uses /adapter-registrations.",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-adapters.ts"]
+    },
+    {
+      "id": "credentialGrants.list",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/credential-grants",
+      "openapi": "required",
+      "runtime": "pending",
+      "mock": "required",
+      "trackingBead": "bead-1129",
+      "reason": "Credential grant runtime parity is owned by the live config API bead.",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-credential-grants.ts"]
+    },
+    {
+      "id": "credentialGrants.create",
+      "method": "POST",
+      "path": "/v1/workspaces/{workspaceId}/credential-grants",
+      "openapi": "required",
+      "runtime": "pending",
+      "mock": "required",
+      "trackingBead": "bead-1129",
+      "reason": "Credential grant mutation runtime parity is owned by the live config API bead.",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-credential-grants.ts"]
+    },
+    {
+      "id": "credentialGrants.revoke",
+      "method": "POST",
+      "path": "/v1/workspaces/{workspaceId}/credential-grants/{credentialGrantId}/revoke",
+      "openapi": "required",
+      "runtime": "pending",
+      "mock": "required",
+      "trackingBead": "bead-1129",
+      "reason": "Credential grant revoke runtime parity is owned by the live config API bead.",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-credential-grants.ts"]
+    },
+    {
+      "id": "users.list",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/users",
+      "openapi": "required",
+      "runtime": "pending",
+      "mock": "required",
+      "trackingBead": "bead-1129",
+      "reason": "User runtime parity is owned by the live config API bead.",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-users.ts"]
+    },
+    {
+      "id": "users.invite",
+      "method": "POST",
+      "path": "/v1/workspaces/{workspaceId}/users/invite",
+      "openapi": "pending",
+      "runtime": "pending",
+      "mock": "required",
+      "trackingBead": "bead-1129",
+      "reason": "Cockpit invite flow must be reconciled with the OpenAPI user creation contract.",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-users.ts"]
+    },
+    {
+      "id": "users.update",
+      "method": "PATCH",
+      "path": "/v1/workspaces/{workspaceId}/users/{userId}",
+      "openapi": "required",
+      "runtime": "pending",
+      "mock": "required",
+      "trackingBead": "bead-1129",
+      "reason": "User update runtime parity is owned by the live config API bead.",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-users.ts"]
+    },
+    {
+      "id": "policies.list",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/policies",
+      "openapi": "pending",
+      "runtime": "required",
+      "mock": "required",
+      "trackingBead": "bead-1129",
+      "reason": "Policy endpoints are mounted in runtime and still need OpenAPI parity.",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-policies.ts"]
+    },
+    {
+      "id": "policies.get",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/policies/{policyId}",
+      "openapi": "pending",
+      "runtime": "required",
+      "mock": "required",
+      "trackingBead": "bead-1129",
+      "reason": "Policy endpoints are mounted in runtime and still need OpenAPI parity.",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-policies.ts"]
+    },
+    {
+      "id": "sodConstraints.list",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/sod-constraints",
+      "openapi": "pending",
+      "runtime": "pending",
+      "mock": "required",
+      "trackingBead": "bead-1129",
+      "reason": "SoD constraint endpoints are demo-only until config API parity lands.",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-policies.ts"]
+    },
+    {
+      "id": "observability.get",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/observability",
+      "openapi": "pending",
+      "runtime": "pending",
+      "mock": "required",
+      "trackingBead": "bead-1136",
+      "reason": "Observability is fixture-backed until mock isolation and live freshness UX are complete.",
+      "consumers": ["apps/cockpit/src/routes/explore/observability.tsx"]
+    },
+    {
+      "id": "packUiRuntime.get",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/pack-ui-runtime",
+      "openapi": "pending",
+      "runtime": "pending",
+      "mock": "required",
+      "trackingBead": "bead-1136",
+      "reason": "Pack UI runtime remains fixture-backed until mock isolation and live freshness UX are complete.",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-pack-ui-runtime.ts"]
+    },
+    {
+      "id": "retrieval.search",
+      "method": "POST",
+      "path": "/v1/workspaces/{workspaceId}/retrieval/search",
+      "openapi": "required",
+      "runtime": "required",
+      "mock": "required",
+      "clientMethod": "searchRetrieval",
+      "consumers": ["apps/cockpit/src/lib/control-plane-client.ts"]
+    },
+    {
+      "id": "graph.query",
+      "method": "POST",
+      "path": "/v1/workspaces/{workspaceId}/graph/query",
+      "openapi": "required",
+      "runtime": "required",
+      "mock": "required",
+      "clientMethod": "queryGraph",
+      "consumers": ["apps/cockpit/src/lib/control-plane-client.ts"]
+    },
+    {
+      "id": "derivedArtifacts.list",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/derived-artifacts",
+      "openapi": "required",
+      "runtime": "required",
+      "mock": "required",
+      "clientMethod": "listDerivedArtifacts",
+      "consumers": ["apps/cockpit/src/lib/control-plane-client.ts"]
+    },
+    {
+      "id": "robotics.robotLocations.list",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/robotics/robot-locations",
+      "openapi": "pending",
+      "runtime": "pending",
+      "mock": "required",
+      "trackingBead": "bead-1134",
+      "reason": "Robotics telemetry is fixture-backed until live telemetry or explicit non-live gating lands.",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-robot-locations.ts"]
+    },
+    {
+      "id": "robotics.robots.list",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/robotics/robots",
+      "openapi": "pending",
+      "runtime": "pending",
+      "mock": "required",
+      "trackingBead": "bead-1134",
+      "reason": "Robotics telemetry is fixture-backed until live telemetry or explicit non-live gating lands.",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-robots.ts"]
+    },
+    {
+      "id": "robotics.robots.get",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/robotics/robots/{robotId}",
+      "openapi": "pending",
+      "runtime": "pending",
+      "mock": "required",
+      "trackingBead": "bead-1134",
+      "reason": "Robotics telemetry is fixture-backed until live telemetry or explicit non-live gating lands.",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-robots.ts"]
+    },
+    {
+      "id": "robotics.missions.list",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/robotics/missions",
+      "openapi": "pending",
+      "runtime": "pending",
+      "mock": "required",
+      "trackingBead": "bead-1134",
+      "reason": "Robotics missions are fixture-backed until live telemetry or explicit non-live gating lands.",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-missions.ts"]
+    },
+    {
+      "id": "robotics.missions.get",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/robotics/missions/{missionId}",
+      "openapi": "pending",
+      "runtime": "pending",
+      "mock": "required",
+      "trackingBead": "bead-1134",
+      "reason": "Robotics missions are fixture-backed until live telemetry or explicit non-live gating lands.",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-missions.ts"]
+    },
+    {
+      "id": "robotics.missions.cancel",
+      "method": "POST",
+      "path": "/v1/workspaces/{workspaceId}/robotics/missions/{missionId}/cancel",
+      "openapi": "pending",
+      "runtime": "pending",
+      "mock": "required",
+      "trackingBead": "bead-1134",
+      "reason": "Robotics mission commands are fixture-backed until live telemetry or explicit non-live gating lands.",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-missions.ts"]
+    },
+    {
+      "id": "robotics.missions.preempt",
+      "method": "POST",
+      "path": "/v1/workspaces/{workspaceId}/robotics/missions/{missionId}/preempt",
+      "openapi": "pending",
+      "runtime": "pending",
+      "mock": "required",
+      "trackingBead": "bead-1134",
+      "reason": "Robotics mission commands are fixture-backed until live telemetry or explicit non-live gating lands.",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-missions.ts"]
+    },
+    {
+      "id": "robotics.missions.retry",
+      "method": "POST",
+      "path": "/v1/workspaces/{workspaceId}/robotics/missions/{missionId}/retry",
+      "openapi": "pending",
+      "runtime": "pending",
+      "mock": "required",
+      "trackingBead": "bead-1134",
+      "reason": "Robotics mission commands are fixture-backed until live telemetry or explicit non-live gating lands.",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-missions.ts"]
+    },
+    {
+      "id": "robotics.missions.actionFamily",
+      "method": "POST",
+      "path": "/v1/workspaces/{workspaceId}/robotics/missions/{missionId}/{action}",
+      "openapi": "pending",
+      "runtime": "pending",
+      "mock": "not-required",
+      "trackingBead": "bead-1134",
+      "reason": "The hook builds mission command URLs dynamically; concrete mock handlers are registered above.",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-missions.ts"]
+    },
+    {
+      "id": "robotics.safety.constraints",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/robotics/safety/constraints",
+      "openapi": "pending",
+      "runtime": "pending",
+      "mock": "required",
+      "trackingBead": "bead-1134",
+      "reason": "Robotics safety data is fixture-backed until live telemetry or explicit non-live gating lands.",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-safety.ts"]
+    },
+    {
+      "id": "robotics.safety.thresholds",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/robotics/safety/thresholds",
+      "openapi": "pending",
+      "runtime": "pending",
+      "mock": "required",
+      "trackingBead": "bead-1134",
+      "reason": "Robotics safety data is fixture-backed until live telemetry or explicit non-live gating lands.",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-safety.ts"]
+    },
+    {
+      "id": "robotics.safety.estopLog",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/robotics/safety/estop-log",
+      "openapi": "pending",
+      "runtime": "pending",
+      "mock": "required",
+      "trackingBead": "bead-1134",
+      "reason": "Robotics safety data is fixture-backed until live telemetry or explicit non-live gating lands.",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-safety.ts"]
+    },
+    {
+      "id": "robotics.safety.estop.get",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/robotics/safety/estop",
+      "openapi": "pending",
+      "runtime": "pending",
+      "mock": "required",
+      "trackingBead": "bead-1134",
+      "reason": "Robotics E-stop state is fixture-backed until live telemetry or explicit non-live gating lands.",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-safety.ts"]
+    },
+    {
+      "id": "robotics.safety.estop.send",
+      "method": "POST",
+      "path": "/v1/workspaces/{workspaceId}/robotics/safety/estop",
+      "openapi": "pending",
+      "runtime": "pending",
+      "mock": "required",
+      "trackingBead": "bead-1134",
+      "reason": "Robotics E-stop commands are fixture-backed until live telemetry or explicit non-live gating lands.",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-safety.ts"]
+    },
+    {
+      "id": "robotics.safety.estop.clear",
+      "method": "DELETE",
+      "path": "/v1/workspaces/{workspaceId}/robotics/safety/estop",
+      "openapi": "pending",
+      "runtime": "pending",
+      "mock": "required",
+      "trackingBead": "bead-1134",
+      "reason": "Robotics E-stop commands are fixture-backed until live telemetry or explicit non-live gating lands.",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-safety.ts"]
+    },
+    {
+      "id": "robotics.gateways.list",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/robotics/gateways",
+      "openapi": "pending",
+      "runtime": "pending",
+      "mock": "required",
+      "trackingBead": "bead-1134",
+      "reason": "Robotics gateways are fixture-backed until live telemetry or explicit non-live gating lands.",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-gateways.ts"]
+    }
+  ]
+}

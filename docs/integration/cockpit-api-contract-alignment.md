@@ -190,31 +190,67 @@ HTTP status codes used:
 
 ## 5. CI drift detection
 
-Add `npm run ci:cockpit:api-drift` to `ci:pr` (may already exist — verify):
+`npm run ci:cockpit:api-drift` is part of `ci:pr` and must pass before Cockpit
+endpoint changes merge:
 
 ```bash
-# scripts/ci/check-cockpit-api-drift.mjs
-# 1. Load openapi.yaml
-# 2. Extract all paths consumed by Cockpit (from apps/cockpit/src/api/endpoints.ts)
-# 3. Assert each path exists in OpenAPI spec with expected methods
-# 4. Assert response schema is compatible (no removed required fields)
-# Exit non-zero if any mismatch found
+npm run ci:cockpit:api-drift
 ```
 
-Cockpit maintains a typed endpoint registry at `apps/cockpit/src/api/endpoints.ts`:
+Cockpit maintains one consumed-endpoint registry at
+`scripts/ci/cockpit-consumed-endpoints.json`. Every Cockpit `/v1` consumer,
+ControlPlaneClient method, and MSW handler must be represented there.
 
-```typescript
-// Explicit registry — CI validates this against openapi.yaml
-export const COCKPIT_ENDPOINTS = [
-  { method: 'GET', path: '/v1/workspaces/{wsId}/work-items' },
-  { method: 'POST', path: '/v1/workspaces/{wsId}/work-items' },
-  // ... (full list from section 2)
-] as const;
+The registry records:
+
+- `method` and OpenAPI-style `path`.
+- `openapi`, `runtime`, and `mock` coverage as `required`, `pending`, or
+  `not-required`.
+- `clientMethod` for endpoints owned by `apps/cockpit/src/lib/control-plane-client.ts`.
+- `trackingBead` and `reason` for every pending coverage dimension.
+
+The gate validates the registry against:
+
+- `docs/spec/openapi/portarium-control-plane.v1.yaml`.
+- Runtime Hono routes in `src/presentation/runtime/control-plane-handler.ts`.
+- MSW routes in `apps/cockpit/src/mocks/handlers.ts`.
+- Production Cockpit `/v1` path literals.
+- `ControlPlaneClient` method/path declarations.
+- `WorkItemStatus` enum parity between OpenAPI and Cockpit DTO types.
+
+Pending endpoints are allowed only when they name the Bead that will make the
+endpoint live, or explicitly gate it as non-live/demo-only.
+
+---
+
+## 6. Fixture refresh workflow
+
+When live seeded data or DTO fields change, refresh Cockpit fixtures
+deterministically:
+
+1. Start or seed deterministic local data with `npm run dev:all` followed by
+   `npm run test:seed -- --api` when the refresh depends on live API response
+   shapes.
+2. Update the compact baseline fixtures in `apps/cockpit/src/mocks/fixtures/demo.ts`.
+3. Update companion generated fixtures only when their source DTOs change:
+   `users.ts`, `policies.ts`, `workflows.ts`, and `human-tasks.ts`.
+4. Keep fixture values synthetic and tenant-neutral. Do not paste customer data,
+   access tokens, bearer tokens, or live tenant identifiers into fixtures.
+5. For every fixture-backed endpoint, update
+   `scripts/ci/cockpit-consumed-endpoints.json`. Mark real live coverage
+   `required`; mark fixture-only coverage `pending` with a `trackingBead` and
+   `reason`.
+6. Run:
+
+```bash
+npm run ci:cockpit:api-drift
+npm run -w apps/cockpit test -- src/mocks/fixtures/fixture-parity.test.ts
+npm run ci:pr
 ```
 
 ---
 
-## 6. Versioning policy
+## 7. Versioning policy
 
 - **Non-breaking changes** (additive fields, new optional query params): allowed without version bump.
 - **Breaking changes** (removed fields, changed types, removed endpoints): require `/v2/` path prefix and migration ADR.
@@ -222,7 +258,7 @@ export const COCKPIT_ENDPOINTS = [
 
 ---
 
-## 7. Related documents
+## 8. Related documents
 
 | Document                                  | Purpose                       |
 | ----------------------------------------- | ----------------------------- |
