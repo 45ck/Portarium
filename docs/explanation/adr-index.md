@@ -16,6 +16,7 @@ Architecture Decision Records live in `docs/internal/adr/`.
 - Cockpit extension host: `docs/internal/adr/ADR-0126-cockpit-extension-host.md`
 - Cockpit live preview CI gate: `docs/internal/adr/ADR-0127-cockpit-live-preview-ci-gate.md`
 - Mission control integration strategy: `docs/internal/adr/ADR-0140-mission-control-integration.md`
+- Cockpit and Portarium plugin extensibility: `docs/internal/adr/ADR-0141-cockpit-portarium-plugin-extensibility.md`
 
 ## Working rule
 
