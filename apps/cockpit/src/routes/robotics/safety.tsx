@@ -14,6 +14,11 @@ import {
 } from '@/hooks/queries/use-safety';
 import { PageHeader } from '@/components/cockpit/page-header';
 import { FreshnessBadge } from '@/components/cockpit/freshness-badge';
+import {
+  RoboticsDataErrorState,
+  RoboticsDemoNotice,
+  RoboticsRouteGate,
+} from '@/components/cockpit/robotics-runtime-state';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useCockpitDataSourceStatus } from '@/hooks/use-cockpit-data-source-status';
@@ -65,19 +70,38 @@ function TierBadge({ tier }: { tier: string }) {
 }
 
 function SafetyPage() {
+  return (
+    <RoboticsRouteGate surface="Safety">
+      <SafetyPageBody />
+    </RoboticsRouteGate>
+  );
+}
+
+function SafetyPageBody() {
   const { activeWorkspaceId: wsId } = useUIStore();
   const {
     data: constraintsData,
     isLoading: constraintsLoading,
+    isError: constraintsError,
     offlineMeta: constraintsOfflineMeta,
   } = useSafetyConstraints(wsId);
   const {
     data: thresholdsData,
     isLoading: thresholdsLoading,
+    isError: thresholdsError,
     offlineMeta: thresholdsOfflineMeta,
   } = useApprovalThresholds(wsId);
-  const { data: logData, isLoading: logLoading, offlineMeta: logOfflineMeta } = useEStopLog(wsId);
-  const { data: estopData, offlineMeta: estopOfflineMeta } = useGlobalEstopStatus(wsId);
+  const {
+    data: logData,
+    isLoading: logLoading,
+    isError: logError,
+    offlineMeta: logOfflineMeta,
+  } = useEStopLog(wsId);
+  const {
+    data: estopData,
+    isError: estopError,
+    offlineMeta: estopOfflineMeta,
+  } = useGlobalEstopStatus(wsId);
   const dataSourceStatus = useCockpitDataSourceStatus();
   const setEstop = useSetEstop(wsId);
   const clearEstop = useClearEstop(wsId);
@@ -88,7 +112,7 @@ function SafetyPage() {
   const globalEstopActive = estopData?.active ?? false;
   const liveActionBlocked = !dataSourceStatus.canUseLiveActions;
   const liveActionReason = liveActionBlocked
-    ? `Live controls disabled: ${dataSourceStatus.label.toLowerCase()} data`
+    ? `Robotics controls disabled: ${dataSourceStatus.label.toLowerCase()} data`
     : undefined;
   const [showEstopModal, setShowEstopModal] = useState(false);
   const [showClearModal, setShowClearModal] = useState(false);
@@ -123,6 +147,25 @@ function SafetyPage() {
           {globalEstopActive ? 'E-Stop Active' : 'Global E-Stop'}
         </Button>
       </div>
+
+      <RoboticsDemoNotice />
+
+      {constraintsError || thresholdsError || logError || estopError ? (
+        <RoboticsDataErrorState
+          title="Safety data unavailable"
+          detail="The simulated robotics safety source failed. E-Stop and constraint controls remain disabled."
+        />
+      ) : null}
+
+      {liveActionBlocked && liveActionReason ? (
+        <div
+          role="note"
+          className="rounded-md border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning"
+        >
+          {liveActionReason}. Unsafe robotics actions require fresh live telemetry and an audited
+          command contract.
+        </div>
+      ) : null}
 
       <div
         role="status"
@@ -330,8 +373,13 @@ function SafetyPage() {
             </Button>
             <Button
               variant="destructive"
-              disabled={setEstop.isPending}
+              disabled={liveActionBlocked || setEstop.isPending}
+              title={liveActionReason}
               onClick={() => {
+                if (liveActionBlocked) {
+                  toast.error(liveActionReason ?? 'Robotics controls disabled');
+                  return;
+                }
                 setEstop.mutate('user-operator', {
                   onSuccess: () => {
                     setShowEstopModal(false);
@@ -374,8 +422,13 @@ function SafetyPage() {
               Cancel
             </Button>
             <Button
-              disabled={!clearRationale.trim() || clearEstop.isPending}
+              disabled={liveActionBlocked || !clearRationale.trim() || clearEstop.isPending}
+              title={liveActionReason}
               onClick={() => {
+                if (liveActionBlocked) {
+                  toast.error(liveActionReason ?? 'Robotics controls disabled');
+                  return;
+                }
                 clearEstop.mutate(
                   { actor: 'user-admin', rationale: clearRationale },
                   {

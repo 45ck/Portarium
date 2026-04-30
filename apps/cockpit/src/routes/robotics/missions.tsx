@@ -4,19 +4,38 @@ import { toast } from 'sonner';
 import { Route as rootRoute } from '../__root';
 import { useUIStore } from '@/stores/ui-store';
 import { useMissions, useRetryMission } from '@/hooks/queries/use-missions';
+import { useCockpitDataSourceStatus } from '@/hooks/use-cockpit-data-source-status';
 import { PageHeader } from '@/components/cockpit/page-header';
 import { FreshnessBadge } from '@/components/cockpit/freshness-badge';
+import {
+  RoboticsDataErrorState,
+  RoboticsDemoNotice,
+  RoboticsRouteGate,
+} from '@/components/cockpit/robotics-runtime-state';
 import { DataTable } from '@/components/cockpit/data-table';
 import { MissionStatusBadge } from '@/components/domain/mission-status-badge';
 import { Button } from '@/components/ui/button';
 import type { MissionSummary } from '@/types/robotics';
 
 function MissionsPage() {
+  return (
+    <RoboticsRouteGate surface="Missions">
+      <MissionsPageBody />
+    </RoboticsRouteGate>
+  );
+}
+
+function MissionsPageBody() {
   const { activeWorkspaceId: wsId } = useUIStore();
-  const { data, isLoading, offlineMeta } = useMissions(wsId);
+  const { data, isLoading, isError, offlineMeta } = useMissions(wsId);
   const retryMission = useRetryMission(wsId);
+  const dataSourceStatus = useCockpitDataSourceStatus();
   const navigate = useNavigate();
   const missionsList = data?.items ?? [];
+  const actionBlocked = !dataSourceStatus.canUseLiveActions;
+  const actionBlockedReason = actionBlocked
+    ? `Robotics controls disabled: ${dataSourceStatus.label.toLowerCase()} data`
+    : undefined;
   const stats = {
     active: missionsList.filter((m) => m.status === 'Executing').length,
     pending: missionsList.filter((m) => m.status === 'Pending').length,
@@ -27,6 +46,10 @@ function MissionsPage() {
   };
 
   function handleRetry(missionId: string) {
+    if (actionBlocked) {
+      toast.error(actionBlockedReason);
+      return;
+    }
     retryMission.mutate(missionId, {
       onSuccess: () => toast.success(`Mission ${missionId} queued for retry`),
     });
@@ -84,7 +107,12 @@ function MissionsPage() {
               to={`/robotics/missions/${row.missionId}` as string}
               onClick={(e: React.MouseEvent) => e.stopPropagation()}
             >
-              <Button variant="outline" size="sm" className="h-6 text-xs">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-6 text-xs"
+                title={actionBlockedReason}
+              >
                 Pre-empt
               </Button>
             </Link>
@@ -95,6 +123,8 @@ function MissionsPage() {
               variant="outline"
               size="sm"
               className="h-6 text-xs"
+              disabled={actionBlocked || retryMission.isPending}
+              title={actionBlockedReason}
               onClick={(e) => {
                 e.stopPropagation();
                 handleRetry(row.missionId);
@@ -113,6 +143,7 @@ function MissionsPage() {
                 variant="outline"
                 size="sm"
                 className="h-6 text-xs text-destructive hover:text-destructive"
+                title={actionBlockedReason}
               >
                 Cancel
               </Button>
@@ -131,6 +162,8 @@ function MissionsPage() {
         breadcrumb={[{ label: 'Robotics', to: '/robotics' }, { label: 'Missions' }]}
         status={<FreshnessBadge offlineMeta={offlineMeta} isFetching={isLoading} />}
       />
+      <RoboticsDemoNotice />
+      {isError ? <RoboticsDataErrorState title="Missions unavailable" /> : null}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
           { label: 'Active', value: isLoading ? '—' : stats.active },

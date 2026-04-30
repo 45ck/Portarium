@@ -21,6 +21,7 @@ import {
   resolveInstalledCockpitExtensionRegistry,
 } from '@/lib/extensions/installed';
 import { selectExtensionCommands } from '@/lib/extensions/registry';
+import { shouldEnableRoboticsDemo } from '@/lib/robotics-runtime';
 import {
   LayoutDashboard,
   Settings,
@@ -102,6 +103,31 @@ function CommandPalette() {
     });
     return items;
   }, []);
+
+  const roboticsNavigationItems: CommandItemDef[] = shouldEnableRoboticsDemo()
+    ? [
+        {
+          label: 'Robots',
+          icon: <EntityIcon entityType="robot" size="sm" decorative />,
+          onSelect: () => nav('/robotics/robots'),
+        },
+        {
+          label: 'Missions',
+          icon: <EntityIcon entityType="mission" size="sm" decorative />,
+          onSelect: () => nav('/robotics/missions'),
+        },
+        {
+          label: 'Safety',
+          icon: <ShieldAlert className="h-4 w-4" />,
+          onSelect: () => nav('/robotics/safety'),
+        },
+        {
+          label: 'Gateways',
+          icon: <EntityIcon entityType="port" size="sm" decorative />,
+          onSelect: () => nav('/robotics/gateways'),
+        },
+      ]
+    : [];
 
   const navigationItems: CommandItemDef[] = [
     {
@@ -200,26 +226,7 @@ function CommandPalette() {
       icon: <Plug className="h-4 w-4" />,
       onSelect: () => nav('/explore/extensions'),
     },
-    {
-      label: 'Robots',
-      icon: <EntityIcon entityType="robot" size="sm" decorative />,
-      onSelect: () => nav('/robotics/robots'),
-    },
-    {
-      label: 'Missions',
-      icon: <EntityIcon entityType="mission" size="sm" decorative />,
-      onSelect: () => nav('/robotics/missions'),
-    },
-    {
-      label: 'Safety',
-      icon: <ShieldAlert className="h-4 w-4" />,
-      onSelect: () => nav('/robotics/safety'),
-    },
-    {
-      label: 'Gateways',
-      icon: <EntityIcon entityType="port" size="sm" decorative />,
-      onSelect: () => nav('/robotics/gateways'),
-    },
+    ...roboticsNavigationItems,
     ...extensionNavigationItems,
   ];
 

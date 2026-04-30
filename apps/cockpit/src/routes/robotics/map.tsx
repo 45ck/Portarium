@@ -12,6 +12,11 @@ import { AlertTriagePanel } from '@/components/cockpit/operations-map/alert-tria
 import { PlaybackControls } from '@/components/cockpit/operations-map/playback-controls';
 import { MapLegend } from '@/components/cockpit/operations-map/map-legend';
 import { MobileMapLayout } from '@/components/cockpit/operations-map/mobile-map-layout';
+import {
+  RoboticsDataErrorState,
+  RoboticsDemoNotice,
+  RoboticsRouteGate,
+} from '@/components/cockpit/robotics-runtime-state';
 import type { LayerVisibility } from '@/components/cockpit/operations-map/layer-toggles';
 import {
   Breadcrumb,
@@ -38,8 +43,16 @@ const DESKTOP_DEFAULT_LAYERS: LayerVisibility = {
 };
 
 function OperationsMapPage() {
+  return (
+    <RoboticsRouteGate surface="Operations Map">
+      <OperationsMapBody />
+    </RoboticsRouteGate>
+  );
+}
+
+function OperationsMapBody() {
   const { activeWorkspaceId: wsId } = useUIStore();
-  const { data, isLoading } = useRobotLocations(wsId);
+  const { data, isLoading, isError } = useRobotLocations(wsId);
   const isMobile = useIsMobile();
   const searchParams = useSearch({ from: '/robotics/map' });
   const initialRobotId = (searchParams as { robotId?: string }).robotId ?? null;
@@ -69,6 +82,39 @@ function OperationsMapPage() {
           <Loader2 className="h-8 w-8 animate-spin" />
           <p className="text-sm">Loading operations map...</p>
         </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="p-6 space-y-4">
+        <div className="border-b border-border pb-3 space-y-1">
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbLink asChild>
+                  <Link to="/robotics">Robotics</Link>
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Operations Map</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+          <div className="flex items-center gap-2">
+            <MapPin className="h-4 w-4 text-muted-foreground" />
+            <h1 className="text-sm font-semibold" role="heading" aria-level={1}>
+              Operations Map
+            </h1>
+          </div>
+        </div>
+        <RoboticsDemoNotice />
+        <RoboticsDataErrorState
+          title="Robotics telemetry unavailable"
+          detail="The simulated robot-location feed failed. The map is not showing live hardware state."
+        />
       </div>
     );
   }
@@ -117,6 +163,9 @@ function OperationsMapPage() {
             {locations.length} robots &middot; {alerts.length} alerts
           </span>
         </div>
+      </div>
+      <div className="px-4 py-3">
+        <RoboticsDemoNotice />
       </div>
 
       {/* Main content — min-h-0 prevents flexbox overflow, overflow-hidden

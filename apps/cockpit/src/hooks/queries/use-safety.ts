@@ -2,6 +2,11 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { SafetyConstraint, ApprovalThreshold, EStopAuditEntry } from '@/types/robotics';
 import { fetchJson } from '@/lib/fetch-json';
 import { useOfflineQuery } from '@/hooks/queries/use-offline-query';
+import { assertRoboticsDemoRuntime, shouldEnableRoboticsQuery } from '@/lib/robotics-runtime';
+
+interface RoboticsQueryOptions {
+  enabled?: boolean;
+}
 
 async function fetchConstraints(wsId: string): Promise<{ items: SafetyConstraint[] }> {
   return fetchJson(
@@ -35,39 +40,39 @@ async function fetchEstopStatus(wsId: string): Promise<{ active: boolean }> {
   );
 }
 
-export function useSafetyConstraints(wsId: string) {
+export function useSafetyConstraints(wsId: string, options: RoboticsQueryOptions = {}) {
   return useOfflineQuery({
     queryKey: ['safety-constraints', wsId],
     cacheKey: `safety-constraints:${wsId}`,
     queryFn: () => fetchConstraints(wsId),
-    enabled: Boolean(wsId),
+    enabled: shouldEnableRoboticsQuery(wsId, options.enabled),
   });
 }
 
-export function useApprovalThresholds(wsId: string) {
+export function useApprovalThresholds(wsId: string, options: RoboticsQueryOptions = {}) {
   return useOfflineQuery({
     queryKey: ['approval-thresholds', wsId],
     cacheKey: `approval-thresholds:${wsId}`,
     queryFn: () => fetchThresholds(wsId),
-    enabled: Boolean(wsId),
+    enabled: shouldEnableRoboticsQuery(wsId, options.enabled),
   });
 }
 
-export function useEStopLog(wsId: string) {
+export function useEStopLog(wsId: string, options: RoboticsQueryOptions = {}) {
   return useOfflineQuery({
     queryKey: ['estop-log', wsId],
     cacheKey: `estop-log:${wsId}`,
     queryFn: () => fetchEStopLog(wsId),
-    enabled: Boolean(wsId),
+    enabled: shouldEnableRoboticsQuery(wsId, options.enabled),
   });
 }
 
-export function useGlobalEstopStatus(wsId: string) {
+export function useGlobalEstopStatus(wsId: string, options: RoboticsQueryOptions = {}) {
   return useOfflineQuery({
     queryKey: ['estop-status', wsId],
     cacheKey: `estop-status:${wsId}`,
     queryFn: () => fetchEstopStatus(wsId),
-    enabled: Boolean(wsId),
+    enabled: shouldEnableRoboticsQuery(wsId, options.enabled),
   });
 }
 
@@ -75,6 +80,7 @@ export function useSetEstop(wsId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (actor: string) => {
+      assertRoboticsDemoRuntime('Global E-Stop');
       const res = await fetch(`/v1/workspaces/${wsId}/robotics/safety/estop`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -94,6 +100,7 @@ export function useClearEstop(wsId: string) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async ({ actor, rationale }: { actor: string; rationale: string }) => {
+      assertRoboticsDemoRuntime('Clear E-Stop');
       const res = await fetch(`/v1/workspaces/${wsId}/robotics/safety/estop`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },

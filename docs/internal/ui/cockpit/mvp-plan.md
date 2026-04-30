@@ -17,20 +17,20 @@ The Cockpit MVP is the minimum viable surface that demonstrates Portarium's gove
 
 ### Routes implemented (53 route files)
 
-| Area       | Routes                                      | Data binding       | Status     |
-| ---------- | ------------------------------------------- | ------------------ | ---------- |
-| Dashboard  | `/`                                         | Mock fixtures      | Scaffold   |
-| Approvals  | `/approvals`, `/approvals/:id`              | Mock + triage deck | Functional |
-| Runs       | `/runs`, `/runs/:id`                        | Mock fixtures      | Scaffold   |
-| Work items | `/work-items`, `/work-items/:id`            | Mock fixtures      | Scaffold   |
-| Evidence   | `/evidence`                                 | Mock fixtures      | Scaffold   |
-| Workflows  | `/workflows`, `/workflows/:id`, builder     | Mock fixtures      | Scaffold   |
-| Robotics   | `/robotics`, map, robots, missions, safety  | Mock fixtures      | Scaffold   |
-| Config     | settings, adapters, agents, machines, users | Mock fixtures      | Scaffold   |
-| Search     | `/search`                                   | Mock fixtures      | Scaffold   |
-| Inbox      | `/inbox`                                    | Mock fixtures      | Scaffold   |
-| Workforce  | `/workforce`, queues                        | Mock fixtures      | Scaffold   |
-| Auth       | `/auth/login`                               | Mock OIDC          | Scaffold   |
+| Area       | Routes                                      | Data binding                                                                                                         | Status     |
+| ---------- | ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ---------- |
+| Dashboard  | `/`                                         | Mock fixtures                                                                                                        | Scaffold   |
+| Approvals  | `/approvals`, `/approvals/:id`              | Mock + triage deck                                                                                                   | Functional |
+| Runs       | `/runs`, `/runs/:id`                        | Mock fixtures                                                                                                        | Scaffold   |
+| Work items | `/work-items`, `/work-items/:id`            | Mock fixtures                                                                                                        | Scaffold   |
+| Evidence   | `/evidence`                                 | Mock fixtures                                                                                                        | Scaffold   |
+| Workflows  | `/workflows`, `/workflows/:id`, builder     | Mock fixtures                                                                                                        | Scaffold   |
+| Robotics   | `/robotics`, map, robots, missions, safety  | Demo-only fixtures; live route disabled until `LocationEvent`/`MapLayer` mapping and audited command contracts exist | Scaffold   |
+| Config     | settings, adapters, agents, machines, users | Mock fixtures                                                                                                        | Scaffold   |
+| Search     | `/search`                                   | Mock fixtures                                                                                                        | Scaffold   |
+| Inbox      | `/inbox`                                    | Mock fixtures                                                                                                        | Scaffold   |
+| Workforce  | `/workforce`, queues                        | Mock fixtures                                                                                                        | Scaffold   |
+| Auth       | `/auth/login`                               | Mock OIDC                                                                                                            | Scaffold   |
 
 ### Components completed
 

@@ -100,6 +100,10 @@ Invariants:
 
 - Overview-first:
   - default response payloads prioritize current location state and key status signals
+- Cockpit live telemetry consumers:
+  - live robotics map work must consume `LocationEvent` history/stream and `MapLayer` metadata, not fixture-only `/robotics/robot-locations` payloads
+  - clients must explicitly map pose/frame/quality into the map UI state and preserve stale/unknown quality as visible degraded telemetry
+  - missions, gateway health, safety constraints, and E-Stop commands are not covered by this telemetry contract and require separate audited control-plane contracts before live UI controls can be enabled
 - Details-on-demand:
   - clients can query full per-asset history and layer metadata only when needed
 - Time-window playback:

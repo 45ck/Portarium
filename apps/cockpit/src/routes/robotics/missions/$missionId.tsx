@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { Route as rootRoute } from '../../__root';
 import { useUIStore } from '@/stores/ui-store';
+import { useCockpitDataSourceStatus } from '@/hooks/use-cockpit-data-source-status';
 import {
   useMission,
   useCancelMission,
@@ -11,6 +12,7 @@ import {
   useRetryMission,
 } from '@/hooks/queries/use-missions';
 import { PageHeader } from '@/components/cockpit/page-header';
+import { RoboticsDemoNotice, RoboticsRouteGate } from '@/components/cockpit/robotics-runtime-state';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { RelatedEntities } from '@/components/cockpit/related-entities';
 import type { RelatedEntity } from '@/components/cockpit/related-entities';
@@ -33,6 +35,14 @@ import { cn } from '@/lib/utils';
 import { MapPin } from 'lucide-react';
 
 function MissionDetailPage() {
+  return (
+    <RoboticsRouteGate surface="Mission detail">
+      <MissionDetailBody />
+    </RoboticsRouteGate>
+  );
+}
+
+function MissionDetailBody() {
   const { missionId } = Route.useParams();
   const { activeWorkspaceId: wsId } = useUIStore();
   const [confirmAction, setConfirmAction] = useState<'cancel' | 'preempt' | null>(null);
@@ -41,6 +51,11 @@ function MissionDetailPage() {
   const cancelMission = useCancelMission(wsId);
   const preemptMission = usePreemptMission(wsId);
   const retryMission = useRetryMission(wsId);
+  const dataSourceStatus = useCockpitDataSourceStatus();
+  const actionBlocked = !dataSourceStatus.canUseLiveActions;
+  const actionBlockedReason = actionBlocked
+    ? `Robotics controls disabled: ${dataSourceStatus.label.toLowerCase()} data`
+    : undefined;
 
   if (isLoading) {
     return (
@@ -90,6 +105,10 @@ function MissionDetailPage() {
 
   function handleConfirm() {
     if (!mission) return;
+    if (actionBlocked) {
+      toast.error(actionBlockedReason ?? 'Robotics controls disabled');
+      return;
+    }
     if (confirmAction === 'cancel') {
       cancelMission.mutate(mission.missionId, {
         onSuccess: () => toast.success(`Mission ${mission.missionId} cancelled`),
@@ -124,6 +143,8 @@ function MissionDetailPage() {
           { label: missionId },
         ]}
       />
+
+      <RoboticsDemoNotice />
 
       <div className="flex flex-wrap items-center gap-3">
         <MissionStatusBadge status={mission.status} />
@@ -229,6 +250,8 @@ function MissionDetailPage() {
                     <Button
                       variant="outline"
                       size="sm"
+                      disabled={actionBlocked}
+                      title={actionBlockedReason}
                       onClick={() => setConfirmAction('preempt')}
                       aria-label={`Pre-empt mission ${mission.missionId}`}
                     >
@@ -239,6 +262,8 @@ function MissionDetailPage() {
                     <Button
                       variant="destructive"
                       size="sm"
+                      disabled={actionBlocked}
+                      title={actionBlockedReason}
                       onClick={() => setConfirmAction('cancel')}
                       aria-label={`Cancel mission ${mission.missionId}`}
                     >
@@ -249,7 +274,13 @@ function MissionDetailPage() {
                     <Button
                       variant="outline"
                       size="sm"
+                      disabled={actionBlocked || retryMission.isPending}
+                      title={actionBlockedReason}
                       onClick={() => {
+                        if (actionBlocked) {
+                          toast.error(actionBlockedReason ?? 'Robotics controls disabled');
+                          return;
+                        }
                         retryMission.mutate(mission.missionId, {
                           onSuccess: () =>
                             toast.success(`Mission ${mission.missionId} queued for retry`),
@@ -290,6 +321,8 @@ function MissionDetailPage() {
             <AlertDialogCancel>Go back</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={actionBlocked}
+              title={actionBlockedReason}
               onClick={(e) => {
                 e.preventDefault();
                 handleConfirm();
