@@ -1,6 +1,6 @@
 {
   "openapiSpecPath": "docs/spec/openapi/portarium-control-plane.v1.yaml",
-  "operationCount": 78,
+  "operationCount": 79,
   "operationIds": [
     "addWorkspaceUser",
     "archiveWorkflow",
@@ -23,6 +23,7 @@
     "getAgent",
     "getApproval",
     "getBeadDiff",
+    "getCockpitExtensionContext",
     "getCredentialGrant",
     "getEvidenceRetentionSchedule",
     "getHumanTask",
