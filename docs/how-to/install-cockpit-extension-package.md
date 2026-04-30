@@ -113,6 +113,11 @@ Set the JSON as `PORTARIUM_COCKPIT_EXTENSION_GRANTS_JSON`. Use
 `quarantinedExtensionIds` to suppress a specific installed extension by manifest
 ID without uninstalling its package.
 
+Cockpit treats activation as fail-closed. Installed extensions are disabled
+until their pack IDs are explicitly active for the current workspace, unknown
+active pack IDs mark the registry invalid, and partially satisfied pack
+requirements do not expose routes, navigation, commands, or shortcuts.
+
 ## Verification
 
 Run the smallest relevant checks before handoff:

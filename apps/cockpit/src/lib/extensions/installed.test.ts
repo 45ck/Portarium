@@ -3,6 +3,7 @@ import {
   DEFAULT_ACTIVE_EXTENSION_PACK_IDS,
   DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
   INSTALLED_COCKPIT_EXTENSION_MODULES,
+  INSTALLED_COCKPIT_ROUTE_HOST_PACK_IDS,
   INSTALLED_COCKPIT_ROUTE_HOST_DEFINITIONS,
   INSTALLED_COCKPIT_ROUTE_HOST_PROBLEMS,
   INSTALLED_COCKPIT_ROUTE_LOADERS,
@@ -11,10 +12,27 @@ import {
 } from './installed';
 
 describe('installed cockpit extension catalog', () => {
-  it('resolves the authoritative compile-time installed catalog', () => {
+  it('keeps the authoritative compile-time installed catalog hidden without workspace activation', () => {
     const registry = resolveInstalledCockpitExtensionRegistry({
       activePackIds: DEFAULT_ACTIVE_EXTENSION_PACK_IDS,
       ...DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
+    });
+
+    expect(registry.problems).toEqual([]);
+    expect(registry.extensions.map((extension) => extension.status)).toEqual(['disabled']);
+    expect(registry.extensions[0]?.disableReasons).toEqual([
+      expect.objectContaining({ code: 'workspace-pack-inactive' }),
+    ]);
+    expect(registry.routes).toEqual([]);
+    expect(registry.navItems).toEqual([]);
+    expect(registry.commands).toEqual([]);
+  });
+
+  it('resolves enabled installed extensions only from workspace activation state', () => {
+    const registry = resolveInstalledCockpitExtensionRegistry({
+      activePackIds: ['example.reference'],
+      availableCapabilities: ['extension:read', 'extension:review', 'evidence:read'],
+      availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
     });
 
     expect(registry.problems).toEqual([]);
@@ -46,6 +64,7 @@ describe('installed cockpit extension catalog', () => {
   });
 
   it('exposes deterministic installed external route id and path pairs', () => {
+    expect(INSTALLED_COCKPIT_ROUTE_HOST_PACK_IDS).toEqual(['example.reference']);
     expect(INSTALLED_COCKPIT_ROUTE_HOST_PROBLEMS).toEqual([]);
     expect(
       INSTALLED_COCKPIT_ROUTE_HOST_DEFINITIONS.map((definition) => [

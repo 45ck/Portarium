@@ -137,6 +137,20 @@ describe('CommandPalette', () => {
     expect(screen.queryByRole('button', { name: /open reference extension/i })).toBeNull();
   });
 
+  it('omits commands for installed extensions without workspace activation', () => {
+    mockResolveCockpitExtensionServerAccess.mockReturnValue(
+      buildServerAccess({
+        activePackIds: [],
+      }),
+    );
+
+    render(<CommandPalette />);
+
+    expect(screen.queryByRole('button', { name: /open reference extension/i })).toBeNull();
+    expect(screen.queryByText('G X')).toBeNull();
+    expect(screen.getByRole('button', { name: /^extensions$/i })).toBeTruthy();
+  });
+
   it('omits robotics commands in dev-live mode', () => {
     vi.stubEnv('DEV', true);
     vi.stubEnv('VITE_PORTARIUM_ENABLE_MSW', 'false');

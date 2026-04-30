@@ -62,6 +62,7 @@ export function resolveCockpitExtensionServerAccess({
   now = new Date(),
 }: ResolveCockpitExtensionServerAccessInput): ResolvedCockpitExtensionServerAccess {
   if (!serverContext) return EMPTY_SERVER_ACCESS;
+  if (!isValidServerContext(serverContext)) return EMPTY_SERVER_ACCESS;
   if (serverContext.workspaceId !== workspaceId) return EMPTY_SERVER_ACCESS;
   if (principalId && serverContext.principalId !== principalId) return EMPTY_SERVER_ACCESS;
   if (isExpired(serverContext.expiresAtIso, now)) return EMPTY_SERVER_ACCESS;
@@ -78,6 +79,26 @@ export function resolveCockpitExtensionServerAccess({
     },
     usable: true,
   };
+}
+
+function isValidServerContext(serverContext: CockpitExtensionContextResponse): boolean {
+  return (
+    serverContext.schemaVersion === 1 &&
+    typeof serverContext.workspaceId === 'string' &&
+    typeof serverContext.principalId === 'string' &&
+    (serverContext.persona === undefined || typeof serverContext.persona === 'string') &&
+    typeof serverContext.issuedAtIso === 'string' &&
+    typeof serverContext.expiresAtIso === 'string' &&
+    isStringArray(serverContext.availablePersonas) &&
+    isStringArray(serverContext.availableCapabilities) &&
+    isStringArray(serverContext.availableApiScopes) &&
+    isStringArray(serverContext.activePackIds) &&
+    isStringArray(serverContext.quarantinedExtensionIds)
+  );
+}
+
+function isStringArray(value: unknown): value is readonly string[] {
+  return Array.isArray(value) && value.every((item) => typeof item === 'string');
 }
 
 function isExpired(expiresAtIso: string, now: Date): boolean {

@@ -83,6 +83,57 @@ describe('cockpit extension registry', () => {
 
     expect(registry.problems).toEqual([]);
     expect(registry.extensions[0]?.status).toBe('disabled');
+    expect(registry.extensions[0]?.disableReasons).toEqual([
+      expect.objectContaining({
+        code: 'workspace-pack-inactive',
+        message: expect.stringContaining('example.reference'),
+      }),
+    ]);
+    expect(registry.routes).toEqual([]);
+    expect(registry.navItems).toEqual([]);
+    expect(registry.commands).toEqual([]);
+  });
+
+  it('hides installed extensions when workspace pack activation is only partially satisfied', () => {
+    const partial = cloneExtension({
+      packIds: ['example.reference', 'example.addon'],
+    });
+
+    const registry = resolveCockpitExtensionRegistry({
+      installedExtensions: [partial],
+      activePackIds: ['example.reference'],
+      ...neutralAccessContext,
+      routeLoaders: neutralRouteLoaders,
+    });
+
+    expect(registry.problems).toEqual([]);
+    expect(registry.extensions[0]?.status).toBe('disabled');
+    expect(registry.extensions[0]?.disableReasons).toEqual([
+      expect.objectContaining({
+        code: 'workspace-pack-inactive',
+        message: expect.stringContaining('example.addon'),
+      }),
+    ]);
+    expect(registry.routes).toEqual([]);
+    expect(registry.navItems).toEqual([]);
+    expect(registry.commands).toEqual([]);
+  });
+
+  it('fails closed on unknown workspace pack activation keys', () => {
+    const registry = resolveCockpitExtensionRegistry({
+      installedExtensions: [NEUTRAL_REFERENCE_EXTENSION],
+      activePackIds: ['example.reference', 'unknown.pack'],
+      ...neutralAccessContext,
+      routeLoaders: neutralRouteLoaders,
+    });
+
+    expect(registry.problems).toEqual([
+      expect.objectContaining({
+        code: 'unknown-pack-activation',
+        itemId: 'unknown.pack',
+      }),
+    ]);
+    expect(registry.extensions[0]?.status).toBe('enabled');
     expect(registry.routes).toEqual([]);
     expect(registry.navItems).toEqual([]);
     expect(registry.commands).toEqual([]);
@@ -112,6 +163,30 @@ describe('cockpit extension registry', () => {
       ]),
     );
     expect(registry.routes).toEqual([]);
+  });
+
+  it('fails all public surfaces closed when active extensions conflict on route ids or paths', () => {
+    const duplicate = cloneExtension({
+      id: 'example.reference.duplicate',
+      routes: NEUTRAL_REFERENCE_EXTENSION.routes.map((route) => ({ ...route })),
+    });
+    const registry = resolveCockpitExtensionRegistry({
+      installedExtensions: [NEUTRAL_REFERENCE_EXTENSION, duplicate],
+      activePackIds: ['example.reference'],
+      ...neutralAccessContext,
+      routeLoaders: neutralRouteLoaders,
+    });
+
+    expect(registry.extensions.map((extension) => extension.status)).toEqual([
+      'enabled',
+      'invalid',
+    ]);
+    expect(registry.problems.map((problem) => problem.code)).toEqual(
+      expect.arrayContaining(['duplicate-route-id', 'duplicate-route-path']),
+    );
+    expect(registry.routes).toEqual([]);
+    expect(registry.navItems).toEqual([]);
+    expect(registry.commands).toEqual([]);
   });
 
   it('fails closed on invalid surfaces and icons', () => {

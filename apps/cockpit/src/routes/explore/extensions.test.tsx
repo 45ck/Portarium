@@ -154,7 +154,7 @@ describe('external extensions route', () => {
     expect(await screen.findByRole('heading', { name: 'External Extensions' })).toBeTruthy();
     expect(screen.getByText('Reference Extension')).toBeTruthy();
     expect(screen.getByText('Host Rules')).toBeTruthy();
-    expect(screen.getByText('example.reference')).toBeTruthy();
+    expect(screen.getAllByText('example.reference').length).toBeGreaterThan(0);
     expect(screen.getByText('enabled')).toBeTruthy();
     expect(screen.getByText('/external/example-reference/overview')).toBeTruthy();
     expect(screen.getByText('/external/example-reference/reviews/$proposalId')).toBeTruthy();
@@ -168,5 +168,39 @@ describe('external extensions route', () => {
     expect(
       within(primaryNavigation).getByRole('link', { name: 'Reference Overview' }),
     ).toBeTruthy();
+  });
+
+  it('keeps core Cockpit usable while installed extensions are disabled by workspace activation', async () => {
+    queryClient.setQueryData(['cockpit-extension-context', 'ws-demo', 'user-1'], {
+      schemaVersion: 1,
+      workspaceId: 'ws-demo',
+      principalId: 'user-1',
+      persona: 'Operator',
+      availablePersonas: ['Operator'],
+      availableCapabilities: ['extension:read', 'extension:review', 'evidence:read'],
+      availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+      activePackIds: [],
+      quarantinedExtensionIds: [],
+      issuedAtIso: '2026-04-30T02:00:00.000Z',
+      expiresAtIso: '2999-04-30T02:05:00.000Z',
+    });
+
+    await renderRoute('/explore/extensions');
+
+    expect(await screen.findByRole('heading', { name: 'External Extensions' })).toBeTruthy();
+    expect(screen.getByText('Reference Extension')).toBeTruthy();
+    expect(screen.getByText('disabled')).toBeTruthy();
+    expect(screen.getByText('workspace-pack-inactive')).toBeTruthy();
+    expect(screen.getAllByText('example.reference').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Reference Overview')).toBeNull();
+    expect(screen.queryByText('/external/example-reference/overview')).toBeNull();
+    expect(screen.queryByText('Open reference extension')).toBeNull();
+    expect(screen.queryByText('G X')).toBeNull();
+
+    const primaryNavigation = screen.getByLabelText('Primary navigation');
+    expect(within(primaryNavigation).getByRole('link', { name: 'Extensions' })).toBeTruthy();
+    expect(
+      within(primaryNavigation).queryByRole('link', { name: 'Reference Overview' }),
+    ).toBeNull();
   });
 });

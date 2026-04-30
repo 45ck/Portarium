@@ -44,11 +44,29 @@ export const INSTALLED_COCKPIT_ROUTE_PATHS = new Map(
   ),
 ) as ReadonlyMap<string, string>;
 
-export const DEFAULT_ACTIVE_EXTENSION_PACK_IDS = ['example.reference'] as const;
+export const DEFAULT_ACTIVE_EXTENSION_PACK_IDS = [] as const;
+
+export const INSTALLED_COCKPIT_ROUTE_HOST_PACK_IDS = [
+  ...new Set(INSTALLED_COCKPIT_EXTENSIONS.flatMap((extension) => extension.packIds)),
+] as const;
 
 export const DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT = {
-  availableCapabilities: collectInstalledRequirements('requiredCapabilities'),
-  availableApiScopes: collectInstalledRequirements('requiredApiScopes'),
+  availableCapabilities: [],
+  availableApiScopes: [],
+} as const satisfies Pick<
+  CockpitExtensionAccessContext,
+  'availableCapabilities' | 'availableApiScopes'
+>;
+
+const INSTALLED_COCKPIT_ROUTE_HOST_ACCESS_CONTEXT = {
+  availableCapabilities: collectInstalledRequirements(
+    'requiredCapabilities',
+    INSTALLED_COCKPIT_ROUTE_HOST_PACK_IDS,
+  ),
+  availableApiScopes: collectInstalledRequirements(
+    'requiredApiScopes',
+    INSTALLED_COCKPIT_ROUTE_HOST_PACK_IDS,
+  ),
 } as const satisfies Pick<
   CockpitExtensionAccessContext,
   'availableCapabilities' | 'availableApiScopes'
@@ -63,8 +81,8 @@ export const DEFAULT_COCKPIT_EXTENSION_REGISTRY = resolveCockpitExtensionRegistr
 
 const installedRouteHostResolution = resolveCockpitExtensionRouteHostDefinitions({
   installedExtensions: INSTALLED_COCKPIT_EXTENSIONS,
-  activePackIds: DEFAULT_ACTIVE_EXTENSION_PACK_IDS,
-  ...DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
+  activePackIds: INSTALLED_COCKPIT_ROUTE_HOST_PACK_IDS,
+  ...INSTALLED_COCKPIT_ROUTE_HOST_ACCESS_CONTEXT,
   routeLoaders: INSTALLED_COCKPIT_ROUTE_LOADERS,
 });
 
@@ -84,13 +102,12 @@ export function resolveInstalledCockpitExtensionRegistry(
 
 function collectInstalledRequirements(
   key: 'requiredCapabilities' | 'requiredApiScopes',
+  activePackIds: readonly string[],
 ): readonly string[] {
   return [
     ...new Set(
       INSTALLED_COCKPIT_EXTENSIONS.flatMap((extension) =>
-        extension.packIds.every((packId) => DEFAULT_ACTIVE_EXTENSION_PACK_IDS.includes(packId))
-          ? extension[key]
-          : [],
+        extension.packIds.every((packId) => activePackIds.includes(packId)) ? extension[key] : [],
       ),
     ),
   ];
