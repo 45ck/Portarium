@@ -14,9 +14,12 @@ This guide walks you through running the full Portarium stack locally in one com
 npm ci
 npm run dev:all
 npm run dev:seed
+npm run seed:cockpit-live:validate
 ```
 
-This brings up Postgres, Temporal, MinIO, Vault, Keycloak, OpenFGA, Odoo, the control-plane API (port 8080), and the worker, then seeds demo workspace data. Verify the stack is healthy:
+This brings up Postgres, Temporal, MinIO, Vault, Keycloak, OpenFGA, Odoo, the control-plane API (port 8080), and the worker, then seeds live Cockpit workspace data for `ws-local-dev`. The validation command checks the same Postgres data from the host and should report all checks as `ok: true`.
+
+Verify the stack is healthy:
 
 ```bash
 curl -s http://localhost:8080/healthz
@@ -32,8 +35,7 @@ export NODE_ENV=development
 export ENABLE_DEV_AUTH=true
 export PORTARIUM_DEV_TOKEN=portarium-dev-token
 export PORTARIUM_DEV_WORKSPACE_ID=ws-local-dev
-# Optional: defaults to "dev-user"
-export PORTARIUM_DEV_USER_ID=alice
+export PORTARIUM_DEV_USER_ID=user-local-dev
 export PORTARIUM_CORS_ALLOWED_ORIGINS=http://cockpit.localhost:1355,http://localhost:1355,http://localhost:5173
 ```
 
@@ -42,7 +44,7 @@ $env:NODE_ENV = "development"
 $env:ENABLE_DEV_AUTH = "true"
 $env:PORTARIUM_DEV_TOKEN = "portarium-dev-token"
 $env:PORTARIUM_DEV_WORKSPACE_ID = "ws-local-dev"
-$env:PORTARIUM_DEV_USER_ID = "alice"
+$env:PORTARIUM_DEV_USER_ID = "user-local-dev"
 $env:PORTARIUM_CORS_ALLOWED_ORIGINS = "http://cockpit.localhost:1355,http://localhost:1355,http://localhost:5173"
 ```
 
@@ -97,6 +99,19 @@ Live API QA uses live retention semantics: cached tenant payloads are disabled
 by default, and switching between demo/MSW and live API modes should be treated
 as a site-data boundary. Only set `VITE_PORTARIUM_ENABLE_LIVE_OFFLINE_CACHE=true`
 when explicitly testing live offline retention behavior.
+
+The live seed creates deterministic Cockpit records:
+
+| Record       | Seeded ID        | Purpose                                     |
+| ------------ | ---------------- | ------------------------------------------- |
+| Workspace    | `ws-local-dev`   | Dev-auth tenant and Cockpit workspace       |
+| User         | `user-local-dev` | Local admin/operator/approver/auditor actor |
+| Pending gate | `apr-live-001`   | Approval decision smoke target              |
+| Run          | `run-live-001`   | Waiting-for-approval governed run           |
+| Work item    | `wi-live-001`    | Linked approval task                        |
+
+Re-run `npm run dev:seed` after `npm run dev:db:reset`, then confirm with
+`npm run seed:cockpit-live:validate`.
 
 For OpenClaw approval-triage demo capture (mock dataset):
 

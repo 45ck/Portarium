@@ -5,27 +5,26 @@
  * Container-internal seed script — runs inside the portarium-api Docker
  * container via `npm run dev:seed`.
  *
- * Calls the Portarium HTTP API to seed canonical demo data:
- *   - Demo workspace (ws-demo)
- *   - Default policy bundle
- *
- * The script uses the API rather than direct DB access so it works with any
- * persistence backend (Postgres, in-memory, etc.).
+ * Seeds the local Cockpit live workspace through the same PostgreSQL stores
+ * used by the control-plane read APIs:
+ *   - Live workspace (ws-local-dev by default)
+ *   - Users, runs, approvals, work items, evidence, config, and workforce data
  *
  * Usage (from repo root):
  *   npm run dev:seed   # runs inside the running portarium-api container
  *
- * Bead: bead-sgt7
+ * Bead: bead-1137
  */
 
 import { spawnSync } from 'node:child_process';
 import process from 'node:process';
 
 const API_URL = process.env['LOCAL_STACK_URL'] ?? 'http://localhost:8080';
-const SEED_TENANT = process.env['PORTARIUM_SEED_TENANT_ID'] ?? 'ws-demo';
+const SEED_TENANT = process.env['PORTARIUM_SEED_TENANT_ID'] ?? 'ws-local-dev';
+const SEED_WORKSPACE = process.env['PORTARIUM_SEED_WORKSPACE_ID'] ?? SEED_TENANT;
 
 process.stdout.write(`[seed-all] API_URL=${API_URL}\n`);
-process.stdout.write(`[seed-all] Seeding canonical demo bundle...\n`);
+process.stdout.write(`[seed-all] Seeding Cockpit live bundle for ${SEED_WORKSPACE}...\n`);
 
 // Health-check before seeding
 async function healthCheck() {
@@ -42,9 +41,9 @@ async function healthCheck() {
   }
 }
 
-// Seed canonical bundle via tsx (available in the container's node_modules)
-async function seedCanonicalBundle() {
-  const result = spawnSync('node', ['--import', 'tsx/esm', 'scripts/seed/seed-bundle.ts'], {
+// Seed Cockpit live bundle via tsx (available in the container's node_modules)
+async function seedCockpitLiveBundle() {
+  const result = spawnSync('node', ['--import', 'tsx/esm', 'scripts/seed/seed-cockpit-live.ts'], {
     stdio: 'inherit',
     env: {
       ...process.env,
@@ -52,16 +51,19 @@ async function seedCanonicalBundle() {
         process.env['DATABASE_URL'] ??
         'postgresql://portarium:portarium@evidence-db:5432/portarium',
       PORTARIUM_SEED_TENANT_ID: SEED_TENANT,
+      PORTARIUM_SEED_WORKSPACE_ID: SEED_WORKSPACE,
     },
   });
 
   if (result.status !== 0) {
-    process.stderr.write(`[seed-all] seed-bundle failed (exit ${result.status ?? 'null'}).\n`);
+    process.stderr.write(
+      `[seed-all] seed-cockpit-live failed (exit ${result.status ?? 'null'}).\n`,
+    );
     process.exit(result.status ?? 1);
   }
 }
 
 await healthCheck();
-await seedCanonicalBundle();
+await seedCockpitLiveBundle();
 
 process.stdout.write('[seed-all] All seed steps complete.\n');

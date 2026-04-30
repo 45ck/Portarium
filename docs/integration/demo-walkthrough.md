@@ -13,22 +13,32 @@ A step-by-step guide to running the Portarium integration showcase locally and d
 ```bash
 npm run dev:all
 npm run dev:seed
+npm run seed:cockpit-live:validate
 ```
 
-This starts Postgres, Temporal, MinIO, Vault, the API (port 8080), and the worker. The API is
-available immediately at `http://localhost:8080`.
+This starts Postgres, Temporal, MinIO, Vault, the API (port 8080), and the worker. It also seeds `ws-local-dev` with live Cockpit data: runs, approvals, work items, evidence, config, and workforce records. The API is available at `http://localhost:8080`.
 
 > **Dev-auth bypass:** `PORTARIUM_DEV_TOKEN=portarium-dev-token` is accepted as a static bearer
 > token only when `ENABLE_DEV_AUTH=true` and `NODE_ENV` is `development` or `test`.
 > No Keycloak required for demos.
 
-## 2. Boot the Cockpit (optional)
+## 2. Boot the Cockpit against live data
 
 ```bash
-npm run cockpit:dev
+VITE_PORTARIUM_API_BASE_URL=http://localhost:8080 VITE_PORTARIUM_ENABLE_MSW=false npm run cockpit:dev
 ```
 
 Open `http://cockpit.localhost:1355`.
+
+Use these seeded IDs for a live walkthrough:
+
+| Surface   | Seeded ID         | What to show                         |
+| --------- | ----------------- | ------------------------------------ |
+| Run       | `run-live-001`    | Waiting-for-approval run state       |
+| Approval  | `apr-live-001`    | Pending approval that can be decided |
+| Work item | `wi-live-001`     | Linked human task and approval       |
+| Evidence  | `ev-live-001`     | Plan evidence chain entry            |
+| Config    | `adapter-iam-001` | Live adapter registration record     |
 
 ## 3. Showcase: Approvals governance flow
 
@@ -86,7 +96,7 @@ The `RunEmulator` exercises the full governance stack without live infrastructur
 npm run test -- src/infrastructure/emulator/run-emulator.test.ts
 ```
 
-To run against the live stack (requires `npm run dev:all` and `npm run dev:seed`):
+To run against the live stack (requires `npm run dev:all`, `npm run dev:seed`, and `npm run seed:cockpit-live:validate`):
 
 ```bash
 GOVERNED_RUN_INTEGRATION=true LOCAL_STACK_URL=http://localhost:8080 \

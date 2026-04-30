@@ -23,6 +23,7 @@ npm ci
 ```bash
 npm run dev:all
 npm run dev:seed
+npm run seed:cockpit-live:validate
 ```
 
 Verify the control plane health endpoint:
@@ -67,8 +68,9 @@ Next:
 
 ## Troubleshooting
 
-| Error                              | Fix                                                                 |
-| ---------------------------------- | ------------------------------------------------------------------- |
-| `npm run dev:all` fails            | Check Docker services with `docker compose ps` and fix port clashes |
-| `healthz` returns non-200          | Wait for stack startup to complete, then re-run `npm run dev:seed`  |
-| `npm run smoke:governed-run` fails | Re-run `npm run test` to confirm local test/runtime prerequisites   |
+| Error                              | Fix                                                                  |
+| ---------------------------------- | -------------------------------------------------------------------- |
+| `npm run dev:all` fails            | Check Docker services with `docker compose ps` and fix port clashes  |
+| `healthz` returns non-200          | Wait for stack startup to complete, then re-run `npm run dev:seed`   |
+| Cockpit has no live data           | Re-run `npm run dev:seed`, then `npm run seed:cockpit-live:validate` |
+| `npm run smoke:governed-run` fails | Re-run `npm run test` to confirm local test/runtime prerequisites    |

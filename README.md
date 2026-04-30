@@ -117,8 +117,11 @@ cd Portarium
 npm ci
 npm run dev:all
 npm run dev:seed
+npm run seed:cockpit-live:validate
 curl -s http://localhost:8080/healthz
 ```
+
+`dev:seed` creates the live local Cockpit workspace `ws-local-dev` with pending approval `apr-live-001`, run `run-live-001`, linked work item `wi-live-001`, and evidence records for live UI walkthroughs.
 
 Run the quickest governed-flow check:
 
