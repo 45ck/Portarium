@@ -58,8 +58,9 @@ function ApprovalsPage() {
   const search = Route.useSearch();
   const policyLinkedMode = search.from === 'policy-studio';
   const singleCaseApprovalId =
-    search.from === 'notification' && search.focus ? search.focus : undefined;
+    (search.from === 'notification' || policyLinkedMode) && search.focus ? search.focus : undefined;
   const singleCaseMode = singleCaseApprovalId !== undefined;
+  const policyLinkedSingleCaseMode = policyLinkedMode && singleCaseMode;
   const { activeWorkspaceId: wsId } = useUIStore();
   const { data, isLoading, isError, refetch, offlineMeta } = useApprovals(wsId);
   const { submitDecision, pendingCount, isFlushing } = useApprovalDecisionOutbox(wsId);
@@ -175,6 +176,13 @@ function ApprovalsPage() {
     ? (items.find((approval) => approval.approvalId === search.focus) ?? null)
     : currentApproval;
   const returnPolicyStudioSearch = fromApprovalReturnSearch(search);
+  const policyStudioFocusDescription = !search.focus
+    ? 'Return to Policy Studio with the same staged draft when you are done.'
+    : focusedApproval?.status === 'Pending'
+      ? `You are focused on ${focusedApproval.approvalId}. This reviews one Approval only and will not advance to unrelated queue items.`
+      : focusedApproval
+        ? `Approval ${focusedApproval.approvalId} is ${focusedApproval.status}. The staged Policy Studio draft is still preserved on the return path.`
+        : 'The original live card is no longer active in the queue, but the staged Policy Studio draft is still preserved on the return path.';
 
   const { data: planData } = usePlan(wsId, currentApproval?.planId);
   const { data: evidenceData } = useEvidence(wsId);
@@ -372,12 +380,21 @@ function ApprovalsPage() {
       >
         <EmptyState
           title="Approval not found"
-          description={`Approval ${singleCaseApprovalId} is not available in this workspace. It may have been removed, expired, or opened from an outdated link.`}
+          description={`Approval ${singleCaseApprovalId} is not available in this workspace. It may have been removed, expired, or opened from an outdated ${policyLinkedSingleCaseMode ? 'Policy Studio handoff' : 'link'}.`}
           icon={<AlertCircle className="h-12 w-12" />}
           action={
-            <Button variant="outline" size="sm" asChild>
-              <Link to="/approvals">Open approval queue</Link>
-            </Button>
+            <div className="flex flex-wrap justify-center gap-2">
+              {policyLinkedMode ? (
+                <Button variant="outline" size="sm" asChild>
+                  <Link to="/config/policies" search={returnPolicyStudioSearch}>
+                    Back to Policy Studio
+                  </Link>
+                </Button>
+              ) : null}
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/approvals">Open approval queue</Link>
+              </Button>
+            </div>
           }
         />
       </motion.div>
@@ -393,12 +410,21 @@ function ApprovalsPage() {
       >
         <EmptyState
           title="Approval already decided"
-          description={`Approval ${singleCaseApproval.approvalId} is ${singleCaseApproval.status}. This deep link will not advance to another queued approval.`}
+          description={`Approval ${singleCaseApproval.approvalId} is ${singleCaseApproval.status}. This ${policyLinkedSingleCaseMode ? 'Policy Studio handoff' : 'deep link'} will not advance to another queued approval.`}
           icon={<CheckSquare className="h-12 w-12" />}
           action={
-            <Button variant="outline" size="sm" asChild>
-              <Link to="/approvals">Open approval queue</Link>
-            </Button>
+            <div className="flex flex-wrap justify-center gap-2">
+              {policyLinkedMode ? (
+                <Button variant="outline" size="sm" asChild>
+                  <Link to="/config/policies" search={returnPolicyStudioSearch}>
+                    Back to Policy Studio
+                  </Link>
+                </Button>
+              ) : null}
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/approvals">Open approval queue</Link>
+              </Button>
+            </div>
           }
         />
       </motion.div>
@@ -426,6 +452,13 @@ function ApprovalsPage() {
               {pendingAction ? (
                 <Button variant="outline" size="sm" onClick={() => handleUndo()}>
                   Undo decision
+                </Button>
+              ) : null}
+              {policyLinkedMode ? (
+                <Button variant="outline" size="sm" asChild>
+                  <Link to="/config/policies" search={returnPolicyStudioSearch}>
+                    Back to Policy Studio
+                  </Link>
                 </Button>
               ) : null}
               {isSkip ? (
@@ -601,14 +634,17 @@ function ApprovalsPage() {
         >
           <div className="space-y-1">
             <div className="text-xs font-medium uppercase tracking-[0.18em] text-primary">
-              Focused approval review
+              {policyLinkedSingleCaseMode
+                ? 'Focused policy-linked review'
+                : 'Focused approval review'}
             </div>
             <div className="text-sm font-medium">
               {singleCaseApprovalId ? `Reviewing ${singleCaseApprovalId}` : 'Reviewing approval'}
             </div>
             <p className="text-sm text-muted-foreground">
-              This mobile link reviews one Approval only. Finishing it will not advance to another
-              item in the queue.
+              {policyLinkedSingleCaseMode
+                ? 'This Policy Studio handoff reviews one Approval only. Finishing it will not advance to another item in the queue.'
+                : 'This mobile link reviews one Approval only. Finishing it will not advance to another item in the queue.'}
             </p>
           </div>
         </motion.div>
@@ -628,11 +664,7 @@ function ApprovalsPage() {
               <div className="text-sm font-medium">
                 {focusedApproval?.prompt ?? 'Return to the staged policy draft when you are done.'}
               </div>
-              <p className="text-sm text-muted-foreground">
-                {focusedApproval
-                  ? `You are focused on ${focusedApproval.approvalId}. Review the live case in the deck, then return to Policy Studio with the same staged draft.`
-                  : 'The original live card is no longer active in the queue, but the staged Policy Studio draft is still preserved on the return path.'}
-              </p>
+              <p className="text-sm text-muted-foreground">{policyStudioFocusDescription}</p>
             </div>
             <Button variant="outline" size="sm" asChild>
               <Link to="/config/policies" search={returnPolicyStudioSearch}>
@@ -645,10 +677,10 @@ function ApprovalsPage() {
       <PageHeader
         title={singleCaseMode || policyLinkedMode ? 'Approval Review' : 'Approvals'}
         description={
-          singleCaseMode
-            ? 'Single-case review opened from a notification or deep link.'
-            : policyLinkedMode
-              ? 'Focused policy-linked review for the live case that led to the staged Policy draft.'
+          policyLinkedMode
+            ? 'Focused policy-linked review for the live case that led to the staged Policy draft.'
+            : singleCaseMode
+              ? 'Single-case review opened from a notification or deep link.'
               : undefined
         }
         icon={<EntityIcon entityType="approval" size="md" decorative />}

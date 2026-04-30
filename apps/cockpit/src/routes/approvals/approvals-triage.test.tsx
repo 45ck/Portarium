@@ -212,6 +212,7 @@ describe('Approvals triage page', () => {
     ).toBeTruthy();
     expect(await screen.findByRole('heading', { name: 'Approval Review', level: 1 })).toBeTruthy();
     expect(screen.getAllByText(/focused policy-linked review/i).length).toBeGreaterThan(0);
+    expect(await screen.findByText('1 of 1 pending')).toBeTruthy();
     expect(await screen.findByText(/Decide this live case now/i)).toBeTruthy();
     expect(await screen.findByText('Proposed Action')).toBeTruthy();
     expect(await screen.findByText('Why gated')).toBeTruthy();
@@ -227,6 +228,114 @@ describe('Approvals triage page', () => {
     expect(href).toContain('draftTier=ManualOnly');
     expect(href).toContain('draftRationale=');
     expect(await screen.findAllByText(focused.prompt, { exact: false })).toBeTruthy();
+  });
+
+  it('does not advance to another approval after skipping a policy-studio focused review', async () => {
+    const firstPending = ALL_PENDING[0]!;
+    const focused = ALL_PENDING[1]!;
+
+    await renderApprovalsRoute(
+      `/approvals?focus=${encodeURIComponent(focused.approvalId)}&from=policy-studio&returnSlice=CRON-CREATE-BLOCK-001&returnPrecedent=precedent-persistent-cron`,
+    );
+
+    expect(await screen.findAllByText(focused.prompt, { exact: false })).toBeTruthy();
+
+    await userEvent.click(screen.getByRole('button', { name: /skip/i }));
+
+    await waitFor(
+      () => {
+        expect(screen.queryByText(/approval skipped/i)).toBeTruthy();
+      },
+      { timeout: 2000 },
+    );
+    expect(screen.getByText(/will not advance to another queued approval/i)).toBeTruthy();
+    expect(screen.queryByText(firstPending.prompt, { exact: false })).toBeNull();
+    expect(screen.getAllByRole('link', { name: /Back to Policy Studio/i }).length).toBeGreaterThan(
+      0,
+    );
+  });
+
+  it.each([
+    {
+      label: 'approving',
+      action: async () => {
+        const group = screen.getByRole('group', { name: /make approval decision/i });
+        await userEvent.click(within(group).getByRole('button', { name: /^approve$/i }));
+      },
+    },
+    {
+      label: 'denying',
+      action: async () => {
+        await userEvent.type(screen.getByLabelText(/decision rationale/i), 'Reject risky spend');
+        const group = screen.getByRole('group', { name: /make approval decision/i });
+        await userEvent.click(within(group).getByRole('button', { name: /deny/i }));
+      },
+    },
+    {
+      label: 'requesting changes',
+      action: async () => {
+        const group = screen.getByRole('group', { name: /make approval decision/i });
+        await userEvent.click(within(group).getByRole('button', { name: /changes/i }));
+        fireEvent.change(
+          screen.getByPlaceholderText(/describe what the requestor needs to update/i),
+          { target: { value: 'Attach updated approval evidence' } },
+        );
+        await userEvent.click(screen.getByRole('button', { name: /submit request for changes/i }));
+      },
+    },
+  ])(
+    'does not advance to another approval after $label a policy-studio focused review',
+    async ({ action }) => {
+      const firstPending = ALL_PENDING[0]!;
+      const focused = ALL_PENDING[1]!;
+
+      await renderApprovalsRoute(
+        `/approvals?focus=${encodeURIComponent(focused.approvalId)}&from=policy-studio&returnSlice=CRON-CREATE-BLOCK-001&returnPrecedent=precedent-persistent-cron`,
+      );
+
+      expect(await screen.findAllByText(focused.prompt, { exact: false })).toBeTruthy();
+
+      await action();
+
+      await waitFor(
+        () => {
+          expect(screen.queryByText(/approval handled/i)).toBeTruthy();
+        },
+        { timeout: 2000 },
+      );
+      expect(screen.getByText(/will not advance to another queued approval/i)).toBeTruthy();
+      expect(screen.queryByText(firstPending.prompt, { exact: false })).toBeNull();
+      expect(
+        screen.getAllByRole('link', { name: /Back to Policy Studio/i }).length,
+      ).toBeGreaterThan(0);
+    },
+  );
+
+  it('shows an explicit already-decided state for policy-studio focused reviews', async () => {
+    const decided = APPROVALS.find((a) => a.status === 'Approved')!;
+
+    await renderApprovalsRoute(
+      `/approvals?focus=${encodeURIComponent(decided.approvalId)}&from=policy-studio&returnSlice=CRON-CREATE-BLOCK-001`,
+    );
+
+    expect(await screen.findByText(/approval already decided/i)).toBeTruthy();
+    expect(screen.getByText(/will not advance to another queued approval/i)).toBeTruthy();
+    expect(screen.getByText(/staged Policy Studio draft is still preserved/i)).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /^approve$/i })).toBeNull();
+    expect(screen.getAllByRole('link', { name: /Back to Policy Studio/i }).length).toBeGreaterThan(
+      0,
+    );
+  });
+
+  it('shows an explicit not-found state for stale policy-studio focused reviews', async () => {
+    await renderApprovalsRoute('/approvals?focus=apr-missing&from=policy-studio');
+
+    expect(await screen.findByText(/approval not found/i)).toBeTruthy();
+    expect(screen.getAllByText(/Policy Studio handoff/i).length).toBeGreaterThan(0);
+    expect(screen.queryByRole('button', { name: /^approve$/i })).toBeNull();
+    expect(screen.getAllByRole('link', { name: /Back to Policy Studio/i }).length).toBeGreaterThan(
+      0,
+    );
   });
 
   it('advances to the next approval after skipping the current one', async () => {
