@@ -1418,6 +1418,69 @@ paths:
                 $ref: '#/components/schemas/CredentialGrantV1'
         default:
           $ref: '#/components/responses/Problem'
+  # ---- Policies ----
+  /v1/workspaces/{workspaceId}/policies:
+    get:
+      tags: [Policies]
+      summary: List workspace policies
+      operationId: listPolicies
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/LimitQuery'
+        - $ref: '#/components/parameters/CursorQuery'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyListResponse'
+        default:
+          $ref: '#/components/responses/Problem'
+    post:
+      tags: [Policies]
+      summary: Save a workspace policy
+      operationId: savePolicy
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolicyV1'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SavePolicyResponse'
+        default:
+          $ref: '#/components/responses/Problem'
+  /v1/workspaces/{workspaceId}/policies/{policyId}:
+    get:
+      tags: [Policies]
+      summary: Get a workspace policy
+      operationId: getPolicy
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdPath'
+        - $ref: '#/components/parameters/PolicyIdPath'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyV1'
+        default:
+          $ref: '#/components/responses/Problem'
   # ---- Adapter Registrations ----
   /v1/workspaces/{workspaceId}/adapter-registrations:
     get:
@@ -1993,6 +2056,12 @@ components:
       required: true
       schema:
         $ref: '#/components/schemas/AdapterId'
+    PolicyIdPath:
+      name: policyId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/PolicyId'
     MachineIdPath:
       name: machineId
       in: path
@@ -3772,6 +3841,13 @@ components:
           type: string
           minLength: 1
       required: [items]
+    SavePolicyResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        policyId:
+          $ref: '#/components/schemas/PolicyId'
+      required: [policyId]
     CreatePolicyRequest:
       type: object
       additionalProperties: false

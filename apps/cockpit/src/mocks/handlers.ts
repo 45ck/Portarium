@@ -18,6 +18,8 @@ import type {
   WorkflowSummary,
   MachineV1,
   AgentCapability,
+  AdapterSummary,
+  PolicySummary,
 } from '@portarium/cockpit-types';
 import { buildMockWorkflows } from './fixtures/workflows';
 import { buildMockHumanTasks } from './fixtures/human-tasks';
@@ -81,6 +83,116 @@ function getWorkflows(): WorkflowSummary[] {
 
 function findWorkflowById(workflowId: string): WorkflowSummary | null {
   return getWorkflows().find((workflow) => workflow.workflowId === workflowId) ?? null;
+}
+
+type WorkspaceUserRole = 'admin' | 'operator' | 'approver' | 'auditor';
+
+type WorkspaceUser = Readonly<{
+  userId: string;
+  workspaceId: string;
+  email: string;
+  displayName?: string;
+  roles: WorkspaceUserRole[];
+  active: boolean;
+  createdAtIso: string;
+}>;
+
+type AdapterRegistration = Readonly<{
+  schemaVersion: 1;
+  adapterId: string;
+  workspaceId: string;
+  providerSlug: string;
+  portFamily: string;
+  enabled: boolean;
+  capabilityMatrix: readonly { operation: string; requiresAuth: boolean }[];
+  executionPolicy: {
+    tenantIsolationMode: 'PerTenantWorker';
+    egressAllowlist: readonly string[];
+    credentialScope: 'capabilityMatrix';
+    sandboxVerified: true;
+    sandboxAvailable: boolean;
+  };
+}>;
+
+type PolicyV1 = Readonly<{
+  schemaVersion: 1;
+  policyId: string;
+  workspaceId: string;
+  name: string;
+  description?: string;
+  active: boolean;
+  priority: number;
+  version: number;
+  createdAtIso: string;
+  createdByUserId: string;
+  rules?: readonly { ruleId: string; condition: string; effect: 'Allow' | 'Deny' }[];
+}>;
+
+const ROLE_TO_API: Readonly<Record<UserSummary['role'], WorkspaceUserRole>> = {
+  Admin: 'admin',
+  Operator: 'operator',
+  Approver: 'approver',
+  Auditor: 'auditor',
+};
+
+const ROLE_FROM_API: Readonly<Record<WorkspaceUserRole, UserSummary['role']>> = {
+  admin: 'Admin',
+  operator: 'Operator',
+  approver: 'Approver',
+  auditor: 'Auditor',
+};
+
+function toWorkspaceUser(user: UserSummary, workspaceId: string): WorkspaceUser {
+  return {
+    userId: user.userId,
+    workspaceId,
+    email: user.email,
+    displayName: user.name,
+    roles: [ROLE_TO_API[user.role] ?? 'auditor'],
+    active: user.status === 'active',
+    createdAtIso: user.lastActiveIso,
+  };
+}
+
+function toAdapterRegistration(adapter: AdapterSummary, workspaceId: string): AdapterRegistration {
+  return {
+    schemaVersion: 1,
+    adapterId: adapter.adapterId,
+    workspaceId,
+    providerSlug: adapter.name,
+    portFamily: adapter.sorFamily,
+    enabled: adapter.status !== 'unhealthy',
+    capabilityMatrix: [{ operation: 'record:read', requiresAuth: true }],
+    executionPolicy: {
+      tenantIsolationMode: 'PerTenantWorker',
+      egressAllowlist: ['https://mock.portarium.local'],
+      credentialScope: 'capabilityMatrix',
+      sandboxVerified: true,
+      sandboxAvailable: true,
+    },
+  };
+}
+
+function toPolicyV1(policy: PolicySummary, workspaceId: string, index: number): PolicyV1 {
+  return {
+    schemaVersion: 1,
+    policyId: policy.policyId,
+    workspaceId,
+    name: policy.name,
+    description: policy.description,
+    active: policy.status !== 'Archived',
+    priority: index + 1,
+    version: 1,
+    createdAtIso: '2026-02-20T00:00:00Z',
+    createdByUserId: 'user-admin',
+    rules: [
+      {
+        ruleId: `${policy.policyId}-rule-1`,
+        condition: policy.ruleText || 'true',
+        effect: policy.status === 'Draft' ? 'Allow' : 'Deny',
+      },
+    ],
+  };
 }
 
 export const handlers = [
@@ -600,8 +712,12 @@ export const handlers = [
   }),
 
   // Adapters
-  http.get('/v1/workspaces/:wsId/adapters', () =>
-    HttpResponse.json({ items: data?.ADAPTERS ?? [] }),
+  http.get('/v1/workspaces/:wsId/adapter-registrations', ({ params }) =>
+    HttpResponse.json({
+      items: (data?.ADAPTERS ?? []).map((adapter) =>
+        toAdapterRegistration(adapter, String(params['wsId'] ?? 'ws-demo')),
+      ),
+    }),
   ),
 
   // Credential grants
@@ -757,36 +873,56 @@ export const handlers = [
   }),
 
   // Users
-  http.get('/v1/workspaces/:wsId/users', () => HttpResponse.json({ items: users })),
-  http.post('/v1/workspaces/:wsId/users/invite', async ({ request, params }) => {
-    const body = (await request.json()) as { email: string; role: string };
+  http.get('/v1/workspaces/:wsId/users', ({ params }) =>
+    HttpResponse.json({
+      items: users.map((user) => toWorkspaceUser(user, String(params['wsId'] ?? 'ws-demo'))),
+    }),
+  ),
+  http.post('/v1/workspaces/:wsId/users', async ({ request, params }) => {
+    const body = (await request.json()) as { email: string; roles?: WorkspaceUserRole[] };
     const wsId = String(params['wsId'] ?? 'ws-demo');
+    const role = body.roles?.[0] ?? 'auditor';
     const newUser: UserSummary = {
       userId: `user-${Date.now()}`,
       name: body.email.split('@')[0] ?? 'New User',
       email: body.email,
-      role: body.role as UserSummary['role'],
+      role: ROLE_FROM_API[role] ?? 'Auditor',
       status: 'active',
       lastActiveIso: new Date().toISOString(),
     };
     users = [newUser, ...users];
-    return HttpResponse.json(newUser, { status: 201 });
+    return HttpResponse.json(toWorkspaceUser(newUser, wsId), { status: 201 });
   }),
   http.patch('/v1/workspaces/:wsId/users/:userId', async ({ request, params }) => {
-    const body = (await request.json()) as Partial<Pick<UserSummary, 'role' | 'status'>>;
+    const body = (await request.json()) as { roles?: WorkspaceUserRole[]; active?: boolean };
     const userId = String(params['userId'] ?? '');
-    users = users.map((u) => (u.userId === userId ? { ...u, ...body } : u));
+    users = users.map((u) =>
+      u.userId === userId
+        ? {
+            ...u,
+            ...(body.roles?.[0] ? { role: ROLE_FROM_API[body.roles[0]] ?? u.role } : {}),
+            ...(body.active !== undefined ? { status: body.active ? 'active' : 'suspended' } : {}),
+          }
+        : u,
+    );
     const updated = users.find((u) => u.userId === userId);
     if (!updated) return HttpResponse.json(null, { status: 404 });
-    return HttpResponse.json(updated);
+    return HttpResponse.json(toWorkspaceUser(updated, String(params['wsId'] ?? 'ws-demo')));
   }),
 
   // Policies
-  http.get('/v1/workspaces/:wsId/policies', () => HttpResponse.json({ items: MOCK_POLICIES })),
+  http.get('/v1/workspaces/:wsId/policies', ({ params }) =>
+    HttpResponse.json({
+      items: MOCK_POLICIES.map((policy, index) =>
+        toPolicyV1(policy, String(params['wsId'] ?? 'ws-demo'), index),
+      ),
+    }),
+  ),
   http.get('/v1/workspaces/:wsId/policies/:policyId', ({ params }) => {
-    const policy = MOCK_POLICIES.find((p) => p.policyId === params['policyId']);
+    const index = MOCK_POLICIES.findIndex((p) => p.policyId === params['policyId']);
+    const policy = index >= 0 ? MOCK_POLICIES[index] : undefined;
     if (!policy) return HttpResponse.json(null, { status: 404 });
-    return HttpResponse.json(policy);
+    return HttpResponse.json(toPolicyV1(policy, String(params['wsId'] ?? 'ws-demo'), index));
   }),
 
   // SoD Constraints

@@ -11,6 +11,7 @@ import type {
   PolicyStore,
   RunQueryStore,
   RunStore,
+  WorkspaceUserStore,
   WorkspaceListPage,
   WorkspaceQueryStore,
   WorkflowStore,
@@ -23,6 +24,7 @@ import type { ApprovalV1 } from '../../domain/approvals/approval-v1.js';
 import { parseApprovalV1 } from '../../domain/approvals/approval-v1.js';
 import type { PolicyV1 } from '../../domain/policy/policy-v1.js';
 import { parsePolicyV1 } from '../../domain/policy/policy-v1.js';
+import { parseWorkspaceUserV1, type WorkspaceUserV1 } from '../../domain/users/index.js';
 import type { RunV1 } from '../../domain/runs/run-v1.js';
 import { parseRunV1 } from '../../domain/runs/run-v1.js';
 import { parseWorkflowV1 } from '../../domain/workflows/workflow-v1.js';
@@ -38,6 +40,7 @@ const COLLECTION_WORKFLOWS = 'workflows';
 const COLLECTION_ADAPTER_REGISTRATIONS = 'adapter-registrations';
 const COLLECTION_APPROVALS = 'approvals';
 const COLLECTION_POLICIES = 'policies';
+const COLLECTION_WORKSPACE_USERS = 'workspace-users';
 const COLLECTION_IDEMPOTENCY = 'idempotency';
 
 export class PostgresWorkspaceStore implements WorkspaceStore, WorkspaceQueryStore {
@@ -316,6 +319,30 @@ export class PostgresPolicyStore implements PolicyStore {
     this.#documents = new PostgresJsonDocumentStore(client);
   }
 
+  public async listPolicies(
+    tenantId: string,
+    workspaceId: string,
+    pagination: { limit?: number; cursor?: string } = {},
+  ) {
+    const limit = clampLimit(pagination.limit);
+    const payloads = await this.#documents.list({
+      tenantId: String(tenantId),
+      workspaceId: String(workspaceId),
+      collection: COLLECTION_POLICIES,
+      limit: limit + 1,
+      ...(pagination.cursor ? { afterId: pagination.cursor } : {}),
+    });
+    const rows = payloads.map((payload) => parsePolicyV1(payload));
+    const hasMore = rows.length > limit;
+    const items = hasMore ? rows.slice(0, limit) : rows;
+    return {
+      items,
+      ...(hasMore && items.length > 0
+        ? { nextCursor: String(items[items.length - 1]!.policyId) }
+        : {}),
+    };
+  }
+
   public async getPolicyById(tenantId: string, workspaceId: string, policyId: string) {
     const payload = await this.#documents.get(
       String(tenantId),
@@ -337,6 +364,67 @@ export class PostgresPolicyStore implements PolicyStore {
       documentId: String(policy.policyId),
       payload: policy,
     });
+  }
+}
+
+export class PostgresWorkspaceUserStore implements WorkspaceUserStore {
+  readonly #documents: PostgresJsonDocumentStore;
+
+  public constructor(client: SqlClient) {
+    this.#documents = new PostgresJsonDocumentStore(client);
+  }
+
+  public async listWorkspaceUsers(
+    tenantId: string,
+    workspaceId: string,
+    pagination: { limit?: number; cursor?: string } = {},
+  ) {
+    const limit = clampLimit(pagination.limit);
+    const payloads = await this.#documents.list({
+      tenantId: String(tenantId),
+      workspaceId: String(workspaceId),
+      collection: COLLECTION_WORKSPACE_USERS,
+      limit: limit + 1,
+      ...(pagination.cursor ? { afterId: pagination.cursor } : {}),
+    });
+    const rows = payloads.map((payload) => parseWorkspaceUserV1(payload));
+    const hasMore = rows.length > limit;
+    const items = hasMore ? rows.slice(0, limit) : rows;
+    return {
+      items,
+      ...(hasMore && items.length > 0
+        ? { nextCursor: String(items[items.length - 1]!.userId) }
+        : {}),
+    };
+  }
+
+  public async getWorkspaceUserById(tenantId: string, workspaceId: string, userId: string) {
+    const payload = await this.#documents.get(
+      String(tenantId),
+      COLLECTION_WORKSPACE_USERS,
+      String(userId),
+    );
+    if (payload === null) {
+      return null;
+    }
+    const parsed = parseWorkspaceUserV1(payload);
+    return String(parsed.workspaceId) === String(workspaceId) ? parsed : null;
+  }
+
+  public async saveWorkspaceUser(tenantId: string, user: WorkspaceUserV1) {
+    await this.#documents.upsert({
+      tenantId: String(tenantId),
+      workspaceId: String(user.workspaceId),
+      collection: COLLECTION_WORKSPACE_USERS,
+      documentId: String(user.userId),
+      payload: user,
+    });
+  }
+
+  public async removeWorkspaceUser(tenantId: string, workspaceId: string, userId: string) {
+    const existing = await this.getWorkspaceUserById(tenantId, workspaceId, userId);
+    if (existing === null) return;
+    await this.saveWorkspaceUser(tenantId, { ...existing, active: false });
   }
 }
 

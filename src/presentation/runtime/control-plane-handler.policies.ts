@@ -11,7 +11,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 
 import type { TraceContext } from '../../application/common/trace-context.js';
 import { parsePolicyV1 } from '../../domain/policy/policy-v1.js';
-import { PolicyId, TenantId, WorkspaceId } from '../../domain/primitives/index.js';
+import { PolicyId, WorkspaceId } from '../../domain/primitives/index.js';
 import {
   type ControlPlaneDeps,
   authenticate,
@@ -74,15 +74,64 @@ export async function handleListPolicies(args: PolicyListArgs): Promise<void> {
     return;
   }
 
-  // PolicyStore only has getPolicyById — for listing, we rely on the
-  // InMemoryPolicyStore's internal state. For production, a listPolicies
-  // method would be added to the port. For now, return the seeded policy.
-  // This is a known limitation documented in the live-boot session.
+  if (!deps.policyStore.listPolicies) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/service-unavailable',
+        title: 'Service Unavailable',
+        status: 503,
+        detail: 'Policy listing is not supported by the configured policy store.',
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  const url = new URL(req.url ?? '/', 'http://localhost');
+  const limitRaw = url.searchParams.get('limit');
+  if (limitRaw !== null) {
+    const parsedLimit = Number.parseInt(limitRaw, 10);
+    if (Number.isInteger(parsedLimit) && parsedLimit > 0) {
+      const cursor = url.searchParams.get('cursor') ?? undefined;
+      const page = await deps.policyStore.listPolicies(
+        auth.ctx.tenantId,
+        WorkspaceId(workspaceId),
+        { limit: parsedLimit, ...(cursor ? { cursor } : {}) },
+      );
+      respondJson(res, {
+        statusCode: 200,
+        correlationId,
+        traceContext,
+        body: page,
+      });
+      return;
+    }
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/validation-failed',
+        title: 'Validation Failed',
+        status: 400,
+        detail: 'limit must be a positive integer.',
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+  const cursor = url.searchParams.get('cursor') ?? undefined;
+  const page = await deps.policyStore.listPolicies(auth.ctx.tenantId, WorkspaceId(workspaceId), {
+    ...(cursor ? { cursor } : {}),
+  });
   respondJson(res, {
     statusCode: 200,
     correlationId,
     traceContext,
-    body: { items: [] },
+    body: page,
   });
 }
 
@@ -229,7 +278,7 @@ export async function handleSavePolicy(args: PolicyListArgs): Promise<void> {
     const policyData = { ...record, workspaceId };
     const policy = parsePolicyV1(policyData);
 
-    await deps.policyStore.savePolicy(TenantId(workspaceId), WorkspaceId(workspaceId), policy);
+    await deps.policyStore.savePolicy(auth.ctx.tenantId, WorkspaceId(workspaceId), policy);
 
     const policyId = String(policy.policyId);
     respondJson(res, {

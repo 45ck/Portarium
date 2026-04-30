@@ -44,4 +44,21 @@ describe('InMemoryPolicyStore', () => {
     expect(await store.getPolicyById(TenantId('other'), WS, PolicyId('pol-x'))).toBeNull();
     expect(await store.getPolicyById(T, WorkspaceId('other'), PolicyId('pol-x'))).toBeNull();
   });
+
+  it('lists policies by workspace with cursor pagination', async () => {
+    const store = new InMemoryPolicyStore();
+    await store.savePolicy(T, WS, makePolicy('pol-a'));
+    await store.savePolicy(T, WS, makePolicy('pol-b'));
+    await store.savePolicy(T, WorkspaceId('other'), makePolicy('pol-c'));
+
+    const firstPage = await store.listPolicies(T, WS, { limit: 1 });
+    expect(firstPage.items.map((policy) => String(policy.policyId))).toEqual(['pol-a']);
+    expect(firstPage.nextCursor).toBe('pol-a');
+
+    const cursor = firstPage.nextCursor;
+    if (!cursor) throw new Error('Expected first page to include nextCursor.');
+    const secondPage = await store.listPolicies(T, WS, { limit: 10, cursor });
+    expect(secondPage.items.map((policy) => String(policy.policyId))).toEqual(['pol-b']);
+    expect(secondPage.nextCursor).toBeUndefined();
+  });
 });

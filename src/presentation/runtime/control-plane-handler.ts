@@ -58,10 +58,19 @@ import {
   handleListMachines,
   handleGetMachine,
   handleRegisterMachine,
+  handleDeregisterMachine,
+  handleTestMachineConnection,
   handleListAgents,
   handleGetAgent,
   handleCreateAgent,
+  handleUpdateAgent,
+  handleTestAgentConnection,
 } from './control-plane-handler.machines.js';
+import {
+  handleGetAdapterRegistration,
+  handleListAdapterRegistrations,
+  handleUnsupportedAdapterRegistrationMutation,
+} from './control-plane-handler.adapter-registrations.js';
 import {
   handleListLocationEvents,
   handleListMapLayers,
@@ -108,6 +117,13 @@ import {
   handleListPolicies,
   handleSavePolicy,
 } from './control-plane-handler.policies.js';
+import {
+  handleAddWorkspaceUser,
+  handleGetWorkspaceUser,
+  handleListWorkspaceUsers,
+  handleRemoveWorkspaceUser,
+  handleUpdateWorkspaceUser,
+} from './control-plane-handler.users.js';
 import { handleGetCockpitExtensionContext } from './control-plane-handler.cockpit-extension-context.js';
 import {
   buildClearSessionCookie,
@@ -1819,6 +1835,91 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
     return c.body(null);
   });
 
+  // GET /v1/workspaces/:workspaceId/users
+  app.get('/v1/workspaces/:workspaceId/users', async (c) => {
+    const ctx = c.get('ctx');
+    await handleListWorkspaceUsers({ ...ctx, workspaceId: c.req.param('workspaceId') });
+    return c.body(null);
+  });
+
+  // POST /v1/workspaces/:workspaceId/users
+  app.post('/v1/workspaces/:workspaceId/users', async (c) => {
+    const ctx = c.get('ctx');
+    await handleAddWorkspaceUser({ ...ctx, workspaceId: c.req.param('workspaceId') });
+    return c.body(null);
+  });
+
+  // GET /v1/workspaces/:workspaceId/users/:userId
+  app.get('/v1/workspaces/:workspaceId/users/:userId', async (c) => {
+    const ctx = c.get('ctx');
+    await handleGetWorkspaceUser({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+      userId: c.req.param('userId'),
+    });
+    return c.body(null);
+  });
+
+  // PATCH /v1/workspaces/:workspaceId/users/:userId
+  app.patch('/v1/workspaces/:workspaceId/users/:userId', async (c) => {
+    const ctx = c.get('ctx');
+    await handleUpdateWorkspaceUser({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+      userId: c.req.param('userId'),
+    });
+    return c.body(null);
+  });
+
+  // DELETE /v1/workspaces/:workspaceId/users/:userId
+  app.delete('/v1/workspaces/:workspaceId/users/:userId', async (c) => {
+    const ctx = c.get('ctx');
+    await handleRemoveWorkspaceUser({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+      userId: c.req.param('userId'),
+    });
+    return c.body(null);
+  });
+
+  // GET /v1/workspaces/:workspaceId/adapter-registrations
+  app.get('/v1/workspaces/:workspaceId/adapter-registrations', async (c) => {
+    const ctx = c.get('ctx');
+    await handleListAdapterRegistrations({ ...ctx, workspaceId: c.req.param('workspaceId') });
+    return c.body(null);
+  });
+
+  // POST /v1/workspaces/:workspaceId/adapter-registrations
+  app.post('/v1/workspaces/:workspaceId/adapter-registrations', async (c) => {
+    const ctx = c.get('ctx');
+    await handleUnsupportedAdapterRegistrationMutation({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+    });
+    return c.body(null);
+  });
+
+  // GET /v1/workspaces/:workspaceId/adapter-registrations/:adapterId
+  app.get('/v1/workspaces/:workspaceId/adapter-registrations/:adapterId', async (c) => {
+    const ctx = c.get('ctx');
+    await handleGetAdapterRegistration({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+      adapterId: c.req.param('adapterId'),
+    });
+    return c.body(null);
+  });
+
+  // PATCH /v1/workspaces/:workspaceId/adapter-registrations/:adapterId
+  app.patch('/v1/workspaces/:workspaceId/adapter-registrations/:adapterId', async (c) => {
+    const ctx = c.get('ctx');
+    await handleUnsupportedAdapterRegistrationMutation({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+    });
+    return c.body(null);
+  });
+
   // GET /v1/workspaces/:workspaceId/policies
   app.get('/v1/workspaces/:workspaceId/policies', async (c) => {
     const ctx = c.get('ctx');
@@ -1862,6 +1963,28 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
     return c.body(null);
   });
 
+  // DELETE /v1/workspaces/:workspaceId/machines/:machineId
+  app.delete('/v1/workspaces/:workspaceId/machines/:machineId', async (c) => {
+    const ctx = c.get('ctx');
+    await handleDeregisterMachine({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+      machineId: c.req.param('machineId'),
+    });
+    return c.body(null);
+  });
+
+  // POST /v1/workspaces/:workspaceId/machines/:machineId/test
+  app.post('/v1/workspaces/:workspaceId/machines/:machineId/test', async (c) => {
+    const ctx = c.get('ctx');
+    await handleTestMachineConnection({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+      machineId: c.req.param('machineId'),
+    });
+    return c.body(null);
+  });
+
   // POST /v1/workspaces/:workspaceId/machines
   app.post('/v1/workspaces/:workspaceId/machines', async (c) => {
     const ctx = c.get('ctx');
@@ -1880,6 +2003,28 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
   app.get('/v1/workspaces/:workspaceId/agents/:agentId', async (c) => {
     const ctx = c.get('ctx');
     await handleGetAgent({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+      agentId: c.req.param('agentId'),
+    });
+    return c.body(null);
+  });
+
+  // PATCH /v1/workspaces/:workspaceId/agents/:agentId
+  app.patch('/v1/workspaces/:workspaceId/agents/:agentId', async (c) => {
+    const ctx = c.get('ctx');
+    await handleUpdateAgent({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+      agentId: c.req.param('agentId'),
+    });
+    return c.body(null);
+  });
+
+  // POST /v1/workspaces/:workspaceId/agents/:agentId/test
+  app.post('/v1/workspaces/:workspaceId/agents/:agentId/test', async (c) => {
+    const ctx = c.get('ctx');
+    await handleTestAgentConnection({
       ...ctx,
       workspaceId: c.req.param('workspaceId'),
       agentId: c.req.param('agentId'),

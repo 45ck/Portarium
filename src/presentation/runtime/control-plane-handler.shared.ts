@@ -37,6 +37,7 @@ import type {
   WorkItemStore,
   WorkspaceQueryStore,
   WorkspaceStore,
+  WorkspaceUserStore,
 } from '../../application/ports/index.js';
 import type { AppContext } from '../../application/common/context.js';
 import {
@@ -160,6 +161,8 @@ export type ControlPlaneDeps = Readonly<{
   approvalQueryStore?: ApprovalQueryStore;
   /** Optional policy store for agent-governance policy evaluation. */
   policyStore?: PolicyStore;
+  /** Optional workspace user store; enables canonical users routes. */
+  workspaceUserStore?: WorkspaceUserStore;
   /** Optional event publisher for domain events. */
   eventPublisher?: EventPublisher;
   /** Optional evidence log for audit trail. */

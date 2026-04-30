@@ -540,6 +540,56 @@ describe('machines/agents registry endpoints', () => {
     expect(saveMachineRegistration).toHaveBeenCalledOnce();
   });
 
+  it('registers a machine from Cockpit payload and returns browser-safe view', async () => {
+    const saveMachineRegistration = vi.fn().mockResolvedValue(undefined);
+    handle = await startHealthServer({
+      role: 'control-plane',
+      host: '127.0.0.1',
+      port: 0,
+      handler: createControlPlaneHandler({
+        ...makeDeps(),
+        machineRegistryStore: {
+          getMachineRegistrationById: vi.fn().mockResolvedValue(null),
+          saveMachineRegistration,
+          getAgentConfigById: vi.fn().mockResolvedValue(null),
+          saveAgentConfig: vi.fn().mockResolvedValue(undefined),
+          updateMachineHeartbeat: vi.fn().mockResolvedValue(true),
+          updateAgentHeartbeat: vi.fn().mockResolvedValue(true),
+        },
+      }),
+    });
+
+    const res = await fetch(
+      `http://${handle.host}:${handle.port}/v1/workspaces/workspace-1/machines`,
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          hostname: 'edge-01.example.com',
+          allowedCapabilities: ['machine:invoke', 'analyze'],
+        }),
+      },
+    );
+
+    expect(res.status).toBe(201);
+    const responseBody = (await res.json()) as {
+      hostname: string;
+      status: string;
+      allowedCapabilities: string[];
+      authConfig?: unknown;
+    };
+    expect(responseBody).toEqual(
+      expect.objectContaining({
+        hostname: 'edge-01.example.com',
+        status: 'Offline',
+        allowedCapabilities: ['machine:invoke', 'analyze'],
+      }),
+    );
+    expect(responseBody.authConfig).toBeUndefined();
+    const saved = saveMachineRegistration.mock.calls[0]?.[1] as MachineRegistrationV1;
+    expect(saved.endpointUrl).toBe('https://edge-01.example.com');
+  });
+
   it('rejects register with invalid machine body returning 400', async () => {
     handle = await startHealthServer({
       role: 'control-plane',
@@ -715,6 +765,163 @@ describe('machines/agents registry endpoints', () => {
     expect(res.status).toBe(201);
     const responseBody = (await res.json()) as { agentId: string };
     expect(responseBody.agentId).toBe('agent-new');
+    expect(saveAgentConfig).toHaveBeenCalledOnce();
+  });
+
+  it('creates an agent from Cockpit payload and returns machine-bound view', async () => {
+    const saveAgentConfig = vi.fn().mockResolvedValue(undefined);
+    handle = await startHealthServer({
+      role: 'control-plane',
+      host: '127.0.0.1',
+      port: 0,
+      handler: createControlPlaneHandler({
+        ...makeDeps(),
+        machineRegistryStore: {
+          getMachineRegistrationById: vi.fn().mockResolvedValue(machine1),
+          saveMachineRegistration: vi.fn().mockResolvedValue(undefined),
+          getAgentConfigById: vi.fn().mockResolvedValue(null),
+          saveAgentConfig,
+          updateMachineHeartbeat: vi.fn().mockResolvedValue(true),
+          updateAgentHeartbeat: vi.fn().mockResolvedValue(true),
+        },
+      }),
+    });
+
+    const res = await fetch(
+      `http://${handle.host}:${handle.port}/v1/workspaces/workspace-1/agents`,
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          name: 'Analyzer Agent',
+          endpoint: 'https://agent.example.com',
+          machineId: 'machine-1',
+          allowedCapabilities: ['analyze', 'machine:invoke'],
+          policyTier: 'HumanApprove',
+        }),
+      },
+    );
+
+    expect(res.status).toBe(201);
+    const responseBody = (await res.json()) as {
+      name: string;
+      endpoint: string;
+      machineId: string;
+      allowedCapabilities: string[];
+    };
+    expect(responseBody).toEqual(
+      expect.objectContaining({
+        name: 'Analyzer Agent',
+        endpoint: 'machine://machine-1',
+        machineId: 'machine-1',
+        allowedCapabilities: ['analyze', 'machine:invoke'],
+      }),
+    );
+    expect(saveAgentConfig).toHaveBeenCalledOnce();
+  });
+
+  it('deregisters a machine by marking it inactive', async () => {
+    const saveMachineRegistration = vi.fn().mockResolvedValue(undefined);
+    handle = await startHealthServer({
+      role: 'control-plane',
+      host: '127.0.0.1',
+      port: 0,
+      handler: createControlPlaneHandler({
+        ...makeDeps(),
+        machineRegistryStore: {
+          getMachineRegistrationById: vi.fn().mockResolvedValue(machine1),
+          saveMachineRegistration,
+          getAgentConfigById: vi.fn().mockResolvedValue(null),
+          saveAgentConfig: vi.fn().mockResolvedValue(undefined),
+          updateMachineHeartbeat: vi.fn().mockResolvedValue(true),
+          updateAgentHeartbeat: vi.fn().mockResolvedValue(true),
+        },
+      }),
+    });
+
+    const res = await fetch(
+      `http://${handle.host}:${handle.port}/v1/workspaces/workspace-1/machines/machine-1`,
+      { method: 'DELETE' },
+    );
+
+    expect(res.status).toBe(204);
+    expect(saveMachineRegistration).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ active: false }),
+    );
+  });
+
+  it('tests machine and agent connections through registry reads', async () => {
+    handle = await startHealthServer({
+      role: 'control-plane',
+      host: '127.0.0.1',
+      port: 0,
+      handler: createControlPlaneHandler({
+        ...makeDeps(),
+        machineRegistryStore: {
+          getMachineRegistrationById: vi.fn().mockResolvedValue(machine1),
+          saveMachineRegistration: vi.fn().mockResolvedValue(undefined),
+          getAgentConfigById: vi.fn().mockResolvedValue(agent1),
+          saveAgentConfig: vi.fn().mockResolvedValue(undefined),
+          updateMachineHeartbeat: vi.fn().mockResolvedValue(true),
+          updateAgentHeartbeat: vi.fn().mockResolvedValue(true),
+        },
+        machineQueryStore: {
+          getMachineRegistrationById: vi.fn().mockResolvedValue(machine1),
+          listMachineRegistrations: vi.fn().mockResolvedValue({ items: [], nextCursor: undefined }),
+          getAgentConfigById: vi.fn().mockResolvedValue(agent1),
+          listAgentConfigs: vi.fn().mockResolvedValue({ items: [], nextCursor: undefined }),
+        },
+      }),
+    });
+
+    const machineRes = await fetch(
+      `http://${handle.host}:${handle.port}/v1/workspaces/workspace-1/machines/machine-1/test`,
+      { method: 'POST' },
+    );
+    expect(machineRes.status).toBe(200);
+    expect(await machineRes.json()).toEqual({ status: 'unreachable', latencyMs: 0 });
+
+    const agentRes = await fetch(
+      `http://${handle.host}:${handle.port}/v1/workspaces/workspace-1/agents/agent-1/test`,
+      { method: 'POST' },
+    );
+    expect(agentRes.status).toBe(200);
+    expect(await agentRes.json()).toEqual({ status: 'ok', latencyMs: 0 });
+  });
+
+  it('patches an agent name and capabilities', async () => {
+    const saveAgentConfig = vi.fn().mockResolvedValue(undefined);
+    handle = await startHealthServer({
+      role: 'control-plane',
+      host: '127.0.0.1',
+      port: 0,
+      handler: createControlPlaneHandler({
+        ...makeDeps(),
+        machineRegistryStore: {
+          getMachineRegistrationById: vi.fn().mockResolvedValue(null),
+          saveMachineRegistration: vi.fn().mockResolvedValue(undefined),
+          getAgentConfigById: vi.fn().mockResolvedValue(agent1),
+          saveAgentConfig,
+          updateMachineHeartbeat: vi.fn().mockResolvedValue(true),
+          updateAgentHeartbeat: vi.fn().mockResolvedValue(true),
+        },
+      }),
+    });
+
+    const res = await fetch(
+      `http://${handle.host}:${handle.port}/v1/workspaces/workspace-1/agents/agent-1`,
+      {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ name: 'Updated Agent', allowedCapabilities: ['generate'] }),
+      },
+    );
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { name: string; allowedCapabilities: string[] };
+    expect(body.name).toBe('Updated Agent');
+    expect(body.allowedCapabilities).toEqual(['generate']);
     expect(saveAgentConfig).toHaveBeenCalledOnce();
   });
 });

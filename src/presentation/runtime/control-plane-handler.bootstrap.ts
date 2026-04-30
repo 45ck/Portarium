@@ -45,6 +45,7 @@ import {
   PostgresPolicyStore,
   PostgresRunStore,
   PostgresWorkflowStore,
+  PostgresWorkspaceUserStore,
   PostgresWorkspaceStore,
 } from '../../infrastructure/postgresql/postgres-store-adapters.js';
 import {
@@ -61,11 +62,16 @@ import { InMemoryAgentActionProposalStore } from '../../infrastructure/stores/in
 import { InMemoryEvidenceLog } from '../../infrastructure/stores/in-memory-evidence-log.js';
 import { InMemoryMachineRegistryStore } from '../../infrastructure/stores/in-memory-machine-registry-store.js';
 import { InMemoryPolicyStore } from '../../infrastructure/stores/in-memory-policy-store.js';
+import { InMemoryAdapterRegistrationStore } from '../../infrastructure/stores/in-memory-adapter-registration-store.js';
+import { InMemoryWorkspaceUserStore } from '../../infrastructure/stores/in-memory-workspace-user-store.js';
+import { parseAdapterRegistrationV1 } from '../../domain/adapters/index.js';
 import { parsePolicyV1 } from '../../domain/policy/policy-v1.js';
 import { TenantId, WorkspaceId } from '../../domain/primitives/index.js';
+import { parseWorkspaceUserV1 } from '../../domain/users/index.js';
 import type { WorkItemV1 } from '../../domain/work-items/index.js';
 import { parseWorkforceMemberV1 } from '../../domain/workforce/index.js';
 import type { PolicyStore } from '../../application/ports/policy-store.js';
+import type { WorkspaceUserStore } from '../../application/ports/workspace-user-store.js';
 import type { ControlPlaneDeps } from './control-plane-handler.shared.js';
 import {
   InMemoryCockpitWebSessionStore,
@@ -89,6 +95,51 @@ async function seedDefaultPolicy(store: PolicyStore, workspaceId: string): Promi
     createdByUserId: 'system',
   });
   await store.savePolicy(TenantId(workspaceId), WorkspaceId(workspaceId), policy);
+}
+
+async function seedDefaultWorkspaceUser(
+  store: WorkspaceUserStore,
+  workspaceId: string,
+): Promise<void> {
+  const user = parseWorkspaceUserV1({
+    userId: 'dev-user',
+    workspaceId,
+    email: 'dev.user@portarium.local',
+    displayName: 'Dev User',
+    roles: ['admin'],
+    active: true,
+    createdAtIso: new Date().toISOString(),
+  });
+  await store.saveWorkspaceUser(TenantId(workspaceId), user);
+}
+
+async function seedDefaultAdapterRegistration(
+  store: InMemoryAdapterRegistrationStore,
+  workspaceId: string,
+): Promise<void> {
+  const registration = parseAdapterRegistrationV1({
+    schemaVersion: 1,
+    adapterId: 'adapter-local-dev',
+    workspaceId,
+    providerSlug: 'local-dev',
+    portFamily: 'SoftwareDev',
+    enabled: true,
+    capabilityMatrix: [
+      {
+        capability: 'repository:read',
+        operation: 'repository:read',
+        requiresAuth: false,
+      },
+    ],
+    executionPolicy: {
+      tenantIsolationMode: 'PerTenantWorker',
+      egressAllowlist: ['https://localhost.localdomain'],
+      credentialScope: 'capabilityMatrix',
+      sandboxVerified: true,
+      sandboxAvailable: true,
+    },
+  });
+  await store.saveRegistration(TenantId(workspaceId), registration);
 }
 
 /**
@@ -582,8 +633,10 @@ export async function buildControlPlaneDeps(): Promise<ControlPlaneDeps> {
     const evidenceLog: EvidenceLogPort & EvidenceQueryStore = new PostgresEvidenceLog(sqlClient);
     const planQueryStore = new PostgresPlanQueryStore(sqlClient);
     const policyStore = new PostgresPolicyStore(sqlClient);
+    const workspaceUserStore = new PostgresWorkspaceUserStore(sqlClient);
     const devWsId = process.env['PORTARIUM_DEV_WORKSPACE_ID']?.trim() ?? 'ws-local-dev';
     await seedDefaultPolicy(policyStore, devWsId);
+    await seedDefaultWorkspaceUser(workspaceUserStore, devWsId);
     return {
       authentication,
       authorization,
@@ -609,6 +662,7 @@ export async function buildControlPlaneDeps(): Promise<ControlPlaneDeps> {
       evidenceQueryStore: evidenceLog,
       planQueryStore,
       policyStore,
+      workspaceUserStore,
       eventPublisher,
       unitOfWork,
       actionRunner,
@@ -650,9 +704,13 @@ export async function buildControlPlaneDeps(): Promise<ControlPlaneDeps> {
   const workItemStore = buildInMemoryWorkItemStore();
   const workforceMemberStore = buildInMemoryWorkforceMemberStore();
   const machineRegistryStore = new InMemoryMachineRegistryStore();
+  const adapterRegistrationStore = new InMemoryAdapterRegistrationStore();
   const policyStore = new InMemoryPolicyStore();
+  const workspaceUserStore = new InMemoryWorkspaceUserStore();
   const devWsId = process.env['PORTARIUM_DEV_WORKSPACE_ID']?.trim() ?? 'ws-local-dev';
   await seedDefaultPolicy(policyStore, devWsId);
+  await seedDefaultWorkspaceUser(workspaceUserStore, devWsId);
+  await seedDefaultAdapterRegistration(adapterRegistrationStore, devWsId);
   const evidenceLog: EvidenceLogPort & EvidenceQueryStore = new InMemoryEvidenceLog();
   const planQueryStore = buildInMemoryPlanQueryStore();
 
@@ -669,11 +727,13 @@ export async function buildControlPlaneDeps(): Promise<ControlPlaneDeps> {
     approvalStore,
     approvalQueryStore: approvalStore,
     agentActionProposalStore,
+    adapterRegistrationStore,
     workItemStore,
     workforceMemberStore,
     machineRegistryStore,
     machineQueryStore: machineRegistryStore,
     policyStore,
+    workspaceUserStore,
     evidenceLog,
     evidenceQueryStore: evidenceLog,
     planQueryStore,

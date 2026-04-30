@@ -49,7 +49,9 @@ export class InMemoryMachineRegistryStore implements MachineRegistryStore, Machi
     maybeMachineId?: MachineId,
   ): Promise<MachineRegistrationV1 | null> {
     const machineId = maybeMachineId ?? (machineIdOrWorkspaceId as MachineId);
-    return this.#machines.get(this.#machineKey(tenantId, machineId)) ?? null;
+    const machine = this.#machines.get(this.#machineKey(tenantId, machineId)) ?? null;
+    if (machine === null || maybeMachineId === undefined) return machine;
+    return String(machine.workspaceId) === String(machineIdOrWorkspaceId) ? machine : null;
   }
 
   async saveMachineRegistration(
@@ -73,7 +75,9 @@ export class InMemoryMachineRegistryStore implements MachineRegistryStore, Machi
     maybeAgentId?: AgentId,
   ): Promise<AgentConfigV1 | null> {
     const agentId = maybeAgentId ?? (agentIdOrWorkspaceId as AgentId);
-    return this.#agents.get(this.#agentKey(tenantId, agentId)) ?? null;
+    const agent = this.#agents.get(this.#agentKey(tenantId, agentId)) ?? null;
+    if (agent === null || maybeAgentId === undefined) return agent;
+    return String(agent.workspaceId) === String(agentIdOrWorkspaceId) ? agent : null;
   }
 
   async saveAgentConfig(tenantId: TenantId, agent: AgentConfigV1): Promise<void> {
