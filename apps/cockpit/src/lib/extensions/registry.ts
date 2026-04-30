@@ -54,6 +54,9 @@ export function resolveCockpitExtensionRegistry({
   const shortcutIds = new Map<string, string>();
   const extensionIds = new Set<string>();
   const declaredPackIds = new Set(installedExtensions.flatMap((extension) => extension.packIds));
+  const declaredRouteIds = new Set(
+    installedExtensions.flatMap((extension) => extension.routes.map((route) => route.id)),
+  );
 
   function addProblem(problem: CockpitExtensionRegistryProblem) {
     globalProblems.push(problem);
@@ -69,6 +72,16 @@ export function resolveCockpitExtensionRegistry({
         code: 'unknown-pack-activation',
         message: `Workspace activated unknown extension pack "${activePackId}".`,
         itemId: activePackId,
+      });
+    }
+  }
+
+  for (const routeId of Object.keys(routeLoaders).sort()) {
+    if (!declaredRouteIds.has(routeId)) {
+      addProblem({
+        code: 'undeclared-route-module',
+        message: `Route module "${routeId}" is installed but no extension manifest declares it.`,
+        itemId: routeId,
       });
     }
   }
@@ -420,10 +433,11 @@ function validateRoutes(
       });
       continue;
     }
-    if (!route.path.startsWith('/external/')) {
+    const invalidPathReason = getInvalidExternalPathReason(route.path);
+    if (invalidPathReason) {
       addProblem({
         code: 'invalid-external-path',
-        message: `Route "${route.id}" must live under the /external/ path boundary.`,
+        message: `Route "${route.id}" must live under the /external/ path boundary: ${invalidPathReason}.`,
         extensionId: extension.id,
         itemId: route.id,
       });
@@ -462,11 +476,8 @@ function validateNavItems(
         itemId: item.id,
       });
     }
-    if (
-      !item.to.startsWith('/external/') ||
-      item.to.includes('$') ||
-      (route && item.to !== route.path)
-    ) {
+    const invalidTargetReason = getInvalidExternalPathReason(item.to);
+    if (invalidTargetReason || item.to.includes('$') || (route && item.to !== route.path)) {
       addProblem({
         code: 'invalid-direct-nav-target',
         message: `Nav item "${item.id}" must target its referenced non-parameterized external route path.`,
@@ -577,6 +588,47 @@ function validatePersonas(
         itemId,
       });
     }
+  }
+}
+
+function getInvalidExternalPathReason(path: string): string | null {
+  if (!path.startsWith('/external/')) {
+    return 'path must start with /external/';
+  }
+  if (path.includes('?') || path.includes('#')) {
+    return 'path must not include query or hash fragments';
+  }
+  if (/[\u0000-\u001f\u007f]/.test(path)) {
+    return 'path must not include control characters';
+  }
+  if (path.includes('//')) {
+    return 'path must not include duplicate slashes';
+  }
+
+  for (const segment of path.split('/').filter(Boolean)) {
+    const decoded = decodeExternalPathSegment(segment);
+    if (!decoded) {
+      return 'path segments must be valid, non-ambiguous URI segments';
+    }
+    if (decoded === '.' || decoded === '..') {
+      return 'path must not include dot segments';
+    }
+    if (decoded.includes('/') || decoded.includes('\\')) {
+      return 'path must not include encoded slash or backslash characters';
+    }
+    if (/[\u0000-\u001f\u007f]/.test(decoded)) {
+      return 'path must not include encoded control characters';
+    }
+  }
+
+  return null;
+}
+
+function decodeExternalPathSegment(segment: string): string | null {
+  try {
+    return decodeURIComponent(segment);
+  } catch {
+    return null;
   }
 }
 

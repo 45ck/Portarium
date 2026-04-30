@@ -2,14 +2,17 @@ import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_ACTIVE_EXTENSION_PACK_IDS,
   DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
+  INSTALLED_COCKPIT_EXTENSION_CATALOG_PROBLEMS,
   INSTALLED_COCKPIT_EXTENSION_MODULES,
   INSTALLED_COCKPIT_ROUTE_HOST_PACK_IDS,
   INSTALLED_COCKPIT_ROUTE_HOST_DEFINITIONS,
   INSTALLED_COCKPIT_ROUTE_HOST_PROBLEMS,
   INSTALLED_COCKPIT_ROUTE_LOADERS,
   INSTALLED_COCKPIT_ROUTE_PATHS,
+  validateInstalledCockpitExtensionModules,
   resolveInstalledCockpitExtensionRegistry,
 } from './installed';
+import type { CockpitInstalledExtension } from './types';
 
 describe('installed cockpit extension catalog', () => {
   it('keeps the authoritative compile-time installed catalog hidden without workspace activation', () => {
@@ -45,6 +48,8 @@ describe('installed cockpit extension catalog', () => {
   });
 
   it('keeps installed route paths aligned with installed manifest routes', () => {
+    expect(INSTALLED_COCKPIT_EXTENSION_CATALOG_PROBLEMS).toEqual([]);
+
     for (const extension of INSTALLED_COCKPIT_EXTENSION_MODULES) {
       for (const route of extension.manifest.routes) {
         expect(INSTALLED_COCKPIT_ROUTE_PATHS.get(route.id)).toBe(route.path);
@@ -64,6 +69,65 @@ describe('installed cockpit extension catalog', () => {
     expect(moduleRouteIds).toEqual(manifestRouteIds);
   });
 
+  it('requires host-reviewed package refs and workspace pack refs for installed modules', () => {
+    for (const extension of INSTALLED_COCKPIT_EXTENSION_MODULES) {
+      expect(extension.packageRef.packageName).toMatch(/^@portarium\/cockpit-/);
+      expect(extension.workspacePackRefs.map((ref) => ref.packId).sort()).toEqual(
+        [...extension.manifest.packIds].sort(),
+      );
+    }
+  });
+
+  it('reports install catalog mismatches before route chunks can be hosted', () => {
+    const [installedExtension] = INSTALLED_COCKPIT_EXTENSION_MODULES;
+    if (!installedExtension) throw new Error('Expected an installed extension fixture.');
+
+    const invalid = {
+      ...installedExtension,
+      packageRef: { packageName: '' },
+      workspacePackRefs: [{ packId: 'wrong.pack' }],
+      routeModules: [
+        installedExtension.routeModules[0]!,
+        installedExtension.routeModules[0]!,
+        { routeId: 'undeclared-route', loadModule: () => Promise.resolve({}) },
+      ],
+    } satisfies CockpitInstalledExtension;
+
+    expect(validateInstalledCockpitExtensionModules([invalid])).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ code: 'missing-package-ref' }),
+        expect.objectContaining({ code: 'install-pack-ref-mismatch', itemId: 'example.reference' }),
+        expect.objectContaining({ code: 'install-pack-ref-mismatch', itemId: 'wrong.pack' }),
+        expect.objectContaining({ code: 'duplicate-route-module' }),
+        expect.objectContaining({ code: 'missing-route-module' }),
+        expect.objectContaining({ code: 'undeclared-route-module', itemId: 'undeclared-route' }),
+      ]),
+    );
+  });
+
+  it('keeps installed manifests data-only without remote executable entry fields', () => {
+    const forbiddenKeys = new Set([
+      'entry',
+      'entrypoint',
+      'script',
+      'scripts',
+      'module',
+      'moduleUrl',
+      'remoteUrl',
+      'url',
+      'src',
+      'href',
+      'iframe',
+      'srcdoc',
+      'loader',
+      'import',
+    ]);
+
+    for (const extension of INSTALLED_COCKPIT_EXTENSION_MODULES) {
+      expect(findForbiddenManifestKeys(extension.manifest, forbiddenKeys)).toEqual([]);
+    }
+  });
+
   it('exposes deterministic installed external route id and path pairs', () => {
     expect(INSTALLED_COCKPIT_ROUTE_HOST_PACK_IDS).toEqual(['example.reference']);
     expect(INSTALLED_COCKPIT_ROUTE_HOST_PROBLEMS).toEqual([]);
@@ -78,3 +142,21 @@ describe('installed cockpit extension catalog', () => {
     ]);
   });
 });
+
+function findForbiddenManifestKeys(
+  value: unknown,
+  forbiddenKeys: ReadonlySet<string>,
+  path = 'manifest',
+): string[] {
+  if (!value || typeof value !== 'object') return [];
+  if (Array.isArray(value)) {
+    return value.flatMap((item, index) =>
+      findForbiddenManifestKeys(item, forbiddenKeys, `${path}[${index}]`),
+    );
+  }
+
+  return Object.entries(value as Record<string, unknown>).flatMap(([key, child]) => [
+    ...(forbiddenKeys.has(key) ? [`${path}.${key}`] : []),
+    ...findForbiddenManifestKeys(child, forbiddenKeys, `${path}.${key}`),
+  ]);
+}

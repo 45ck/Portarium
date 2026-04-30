@@ -18,7 +18,7 @@ Cockpit build.
 
 ## Package Shape
 
-The package should expose a manifest and explicit route module loaders:
+The package must expose a manifest and explicit route module loaders:
 
 ```ts
 export { EXTENSION_MANIFEST } from './manifest';
@@ -60,6 +60,7 @@ from the resolved registry after activation and guard checks.
 `INSTALLED_COCKPIT_EXTENSION_MODULES` is the compile-time import map for
 extension executable code. It binds:
 
+- a reviewed package reference,
 - a reviewed manifest,
 - route IDs declared by that manifest,
 - host-owned dynamic imports for route components.
@@ -76,11 +77,16 @@ import { EXTENSION_MANIFEST, EXTENSION_ROUTE_LOADERS } from '@example/cockpit-ex
 
 export const INSTALLED_COCKPIT_EXTENSION_MODULES = [
   {
+    packageRef: {
+      packageName: '@example/cockpit-extension',
+      version: '1.2.3',
+    },
     manifest: EXTENSION_MANIFEST,
     routeModules: Object.entries(EXTENSION_ROUTE_LOADERS).map(([routeId, loadModule]) => ({
       routeId,
       loadModule,
     })),
+    workspacePackRefs: EXTENSION_MANIFEST.packIds.map((packId) => ({ packId })),
   },
 ] as const satisfies readonly InstalledCockpitExtension[];
 ```
