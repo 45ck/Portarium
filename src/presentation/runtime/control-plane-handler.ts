@@ -353,8 +353,8 @@ async function handleSubmitRunIntervention(args: RunHandlerArgs): Promise<void> 
     {
       workspaceId,
       runId,
-      interventionType: body.interventionType as SubmitRunInterventionInput['interventionType'],
-      rationale: body.rationale as string,
+      interventionType: body.interventionType!,
+      rationale: body.rationale!,
       ...(typeof body.target === 'string' ? { target: body.target } : {}),
       ...(typeof body.surface === 'string' ? { surface: body.surface } : {}),
       ...(typeof body.authoritySource === 'string'
