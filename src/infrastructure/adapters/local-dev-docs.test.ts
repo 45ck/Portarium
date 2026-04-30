@@ -81,6 +81,15 @@ describe('local-dev.md — quick start', () => {
     expect(doc).toContain('PORTARIUM_DEV_TOKEN');
   });
 
+  it('documents Cockpit live web session auth without browser bearer token seeding', () => {
+    const doc = readDoc('docs/getting-started/local-dev.md');
+    expect(doc).toContain('HttpOnly session cookie');
+    expect(doc).toContain('/auth/dev-session');
+    expect(doc).toContain('VITE_PORTARIUM_ENABLE_MSW=false');
+    expect(doc).not.toContain('VITE_PORTARIUM_API_BEARER_TOKEN');
+    expect(doc).not.toContain("localStorage.setItem('portarium_cockpit_bearer_token'");
+  });
+
   it('includes a success checklist', () => {
     const doc = readDoc('docs/getting-started/local-dev.md');
     expect(doc).toContain('Success Checklist');

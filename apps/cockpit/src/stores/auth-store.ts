@@ -7,8 +7,10 @@
  *   - Callback handling (deep link or redirect)
  *   - Logout (clears tokens from secure storage)
  *
- * Uses the native bridge for secure storage (Keychain on iOS,
- * EncryptedSharedPreferences on Android, sessionStorage on web).
+ * Native builds use secure storage (Keychain on iOS,
+ * EncryptedSharedPreferences on Android). Web builds use an HttpOnly
+ * same-origin Cockpit session cookie; access and refresh tokens are not
+ * stored in JS-readable browser storage.
  *
  * Bead: bead-0721
  */
@@ -37,6 +39,13 @@ import {
   type ApprovalNavigationTarget,
 } from '@/lib/approval-navigation';
 import { clearPersistedQueryCache, queryClient } from '@/lib/query-client';
+import { clearLegacyBrowserBearerTokens, setNativeBearerToken } from '@/lib/auth-token-provider';
+import {
+  createDevelopmentWebSession,
+  establishWebSession,
+  fetchCurrentWebSession,
+  logoutWebSession,
+} from '@/lib/web-session-auth';
 
 // ---------------------------------------------------------------------------
 // Token storage keys
@@ -151,20 +160,38 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   async initialize() {
     try {
+      if (!isNative()) {
+        clearLegacyBrowserBearerTokens();
+        const session = await fetchCurrentWebSession();
+        if (session) {
+          set({ status: 'authenticated', token: null, claims: session.claims, error: null });
+          return;
+        }
+        clearPersistedQueryCache();
+        queryClient.clear();
+        set({ status: 'unauthenticated', token: null, claims: null, error: null });
+        return;
+      }
+
+      setNativeBearerToken(null);
       const stored = await secureGet(TOKEN_KEY);
       if (stored) {
         const claims = extractClaims(stored);
         if (claims) {
+          setNativeBearerToken(stored);
           set({ status: 'authenticated', token: stored, claims, error: null });
           return;
         }
         // Token present but claims invalid — clear stale token
         await secureRemove(TOKEN_KEY);
+        await secureRemove(REFRESH_TOKEN_KEY);
         clearPersistedQueryCache();
         queryClient.clear();
       }
+      setNativeBearerToken(null);
       set({ status: 'unauthenticated', token: null, claims: null, error: null });
     } catch {
+      setNativeBearerToken(null);
       set({ status: 'unauthenticated', token: null, claims: null, error: null });
     }
   },
@@ -172,12 +199,27 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   async login() {
     const config = loadOidcConfig();
     if (!isOidcConfigured(config)) {
-      // OIDC not configured — skip to unauthenticated (dev/test mode)
-      set({ status: 'unauthenticated', error: null });
+      if (!isNative()) {
+        set({ status: 'authenticating', error: null });
+        clearLegacyBrowserBearerTokens();
+        clearPersistedQueryCache();
+        queryClient.clear();
+        try {
+          const session = await createDevelopmentWebSession();
+          set({ status: 'authenticated', token: null, claims: session.claims, error: null });
+        } catch (err) {
+          const message =
+            err instanceof OidcError ? err.message : 'Development session is not configured';
+          set({ status: 'unauthenticated', token: null, claims: null, error: message });
+        }
+        return;
+      }
+      set({ status: 'unauthenticated', token: null, claims: null, error: null });
       return;
     }
 
     set({ status: 'authenticating', error: null });
+    if (!isNative()) clearLegacyBrowserBearerTokens();
     clearPersistedQueryCache();
     queryClient.clear();
 
@@ -216,12 +258,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         await closeInAppBrowser();
       }
 
+      if (!isNative()) {
+        const session = await establishWebSession(params);
+        clearLegacyBrowserBearerTokens();
+        clearPersistedQueryCache();
+        queryClient.clear();
+        set({ status: 'authenticated', token: null, claims: session.claims, error: null });
+        return;
+      }
+
       const tokens = await exchangeCode({
         code: params.code,
         callbackState: params.state,
         fromSession: true,
       });
-
       const token = tokens.access_token;
       const claims = extractClaims(token);
 
@@ -234,6 +284,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (tokens.refresh_token) {
         await secureSet(REFRESH_TOKEN_KEY, tokens.refresh_token);
       }
+      setNativeBearerToken(token);
 
       clearPersistedQueryCache();
       queryClient.clear();
@@ -245,8 +296,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   async logout() {
-    await secureRemove(TOKEN_KEY);
-    await secureRemove(REFRESH_TOKEN_KEY);
+    if (isNative()) {
+      await secureRemove(TOKEN_KEY);
+      await secureRemove(REFRESH_TOKEN_KEY);
+      setNativeBearerToken(null);
+    } else {
+      await logoutWebSession();
+      clearLegacyBrowserBearerTokens();
+    }
     clearPersistedQueryCache();
     queryClient.clear();
     set({ status: 'unauthenticated', token: null, claims: null, error: null });

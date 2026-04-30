@@ -52,6 +52,11 @@ import type {
 } from '../../domain/derived-artifacts/retrieval-ports.js';
 import type { MachineQueryStore } from '../../application/ports/machine-query-store.js';
 import type { MachineRegistryStore } from '../../application/ports/machine-registry-store.js';
+import {
+  authenticateCockpitWebSession,
+  type CockpitWebSessionConfig,
+  type CockpitWebSessionStore,
+} from './cockpit-web-session.js';
 
 // ---------------------------------------------------------------------------
 // Problem type URIs (RFC 9457) — centralised for consistency
@@ -145,6 +150,10 @@ export type ControlPlaneDeps = Readonly<{
   actionRunner?: ActionRunnerPort;
   /** Optional activation source for workspace-scoped Cockpit extension visibility. */
   cockpitExtensionActivationSource?: CockpitExtensionActivationSource;
+  /** Optional HttpOnly cookie session store for same-origin Cockpit web clients. */
+  cockpitWebSessionStore?: CockpitWebSessionStore;
+  /** Optional same-origin Cockpit web session configuration. */
+  cockpitWebSessionConfig?: CockpitWebSessionConfig;
   /** Optional clock override for testing; defaults to () => new Date(). */
   clock?: () => Date;
 }>;
@@ -352,6 +361,27 @@ export async function authenticate(
   const { req, correlationId, traceContext, expectedWorkspaceId } = args;
   const method = (req.method ?? 'GET').toUpperCase();
   const requireExpectedWorkspaceId = method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS';
+  if (!readAuthorizationHeader(req)) {
+    const webSessionAuth = await authenticateCockpitWebSession({
+      req,
+      store: deps.cockpitWebSessionStore,
+      config: deps.cockpitWebSessionConfig,
+      nowMs: (deps.clock?.() ?? new Date()).getTime(),
+      correlationId,
+      traceContext,
+      ...(expectedWorkspaceId ? { expectedWorkspaceId } : {}),
+      ...(requireExpectedWorkspaceId ? { requireExpectedWorkspaceId } : {}),
+    });
+    if (webSessionAuth?.ok) return { ok: true, ctx: webSessionAuth.value };
+    if (webSessionAuth && !webSessionAuth.ok) {
+      deps.authEventLogger?.logUnauthorized({
+        correlationId,
+        ...(expectedWorkspaceId !== undefined && { workspaceId: expectedWorkspaceId }),
+        reason: webSessionAuth.error.message,
+      });
+      return { ok: false, error: webSessionAuth.error };
+    }
+  }
   const auth = await deps.authentication.authenticateBearerToken({
     authorizationHeader: readAuthorizationHeader(req),
     correlationId,

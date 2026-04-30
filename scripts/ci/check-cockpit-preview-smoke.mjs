@@ -26,9 +26,33 @@ const contentTypes = new Map([
 function sendJson(response, statusCode, payload) {
   response.writeHead(statusCode, {
     'access-control-allow-origin': '*',
+    'cache-control': 'no-store',
     'content-type': 'application/json; charset=utf-8',
   });
   response.end(JSON.stringify(payload));
+}
+
+function authPayload(pathname) {
+  if (
+    pathname === '/auth/session' ||
+    pathname === '/auth/dev-session' ||
+    pathname === '/auth/oidc/callback'
+  ) {
+    return {
+      authenticated: true,
+      claims: {
+        sub: 'preview-user',
+        workspaceId: 'ws-preview',
+        roles: ['operator'],
+        personas: ['operator'],
+        capabilities: ['objects:read'],
+        apiScopes: ['runs.read', 'objects.read'],
+        displayName: 'Cockpit Preview',
+      },
+    };
+  }
+
+  return null;
 }
 
 function apiPayload(pathname) {
@@ -62,10 +86,28 @@ async function serveStatic(request, response) {
     response.writeHead(204, {
       'access-control-allow-origin': '*',
       'access-control-allow-methods': 'GET,POST,PATCH,PUT,DELETE,OPTIONS',
-      'access-control-allow-headers': 'authorization,content-type',
+      'access-control-allow-headers': 'authorization,content-type,x-portarium-request',
     });
     response.end();
     return;
+  }
+
+  if (requestUrl.pathname === '/auth/logout') {
+    response.writeHead(204, {
+      'access-control-allow-origin': '*',
+      'cache-control': 'no-store',
+      'set-cookie': 'portarium_cockpit_session=; Path=/; HttpOnly; SameSite=Strict; Max-Age=0',
+    });
+    response.end();
+    return;
+  }
+
+  if (requestUrl.pathname.startsWith('/auth/')) {
+    const payload = authPayload(requestUrl.pathname);
+    if (payload) {
+      sendJson(response, 200, payload);
+      return;
+    }
   }
 
   if (requestUrl.pathname.startsWith('/v1/')) {

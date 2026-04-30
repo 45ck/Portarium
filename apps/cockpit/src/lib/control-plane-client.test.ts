@@ -30,6 +30,8 @@ describe('ControlPlaneClient', () => {
     const headers = new Headers(init.headers);
     expect(url).toBe('https://api.example.test/v1/workspaces/ws-1/approvals/ap-1/decide');
     expect(headers.get('Authorization')).toBe('Bearer token-123');
+    expect(headers.get('X-Portarium-Request')).toBe('1');
+    expect(init.credentials).toBe('omit');
   });
 
   it('fetches cockpit extension context with bearer auth', async () => {
@@ -69,6 +71,7 @@ describe('ControlPlaneClient', () => {
       'https://api.example.test/v1/workspaces/workspace%20with%20spaces/cockpit/extension-context',
     );
     expect(headers.get('Authorization')).toBe('Bearer token-123');
+    expect(init.credentials).toBe('omit');
   });
 
   it('normalizes problem+json responses into CockpitApiError', async () => {
@@ -143,6 +146,28 @@ describe('ControlPlaneClient', () => {
 
   it('exports a singleton client for hooks/routes', () => {
     expect(controlPlaneClient).toBeInstanceOf(ControlPlaneClient);
+  });
+
+  it('uses cookie credentials when no bearer token is available', async () => {
+    const fetchImpl = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ items: [] }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+    );
+    const client = new ControlPlaneClient({
+      baseUrl: 'https://api.example.test',
+      getBearerToken: () => undefined,
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+
+    await client.listRuns('ws-1');
+
+    const [, init] = fetchImpl.mock.calls[0] as unknown as [string, RequestInit];
+    const headers = new Headers(init.headers);
+    expect(headers.has('Authorization')).toBe(false);
+    expect(init.credentials).toBe('include');
   });
 
   it('posts natural language intents to the plan endpoint', async () => {

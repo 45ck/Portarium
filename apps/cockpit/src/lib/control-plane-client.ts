@@ -19,6 +19,7 @@ import type {
   WorkflowSummary,
   WorkItemSummary,
 } from '@portarium/cockpit-types';
+import { readBearerToken } from '@/lib/auth-token';
 
 interface ProblemDetails {
   type?: string;
@@ -65,27 +66,17 @@ export class CockpitApiError extends Error {
 interface ControlPlaneClientConfig {
   baseUrl?: string;
   getBearerToken?: () => string | undefined;
+  credentials?: RequestCredentials;
   fetchImpl?: typeof fetch;
 }
 
 const DEFAULT_BASE_URL = (import.meta.env.VITE_PORTARIUM_API_BASE_URL ?? '').trim();
-const DEFAULT_BEARER_TOKEN = (import.meta.env.VITE_PORTARIUM_API_BEARER_TOKEN ?? '').trim();
 const RETRYABLE_STATUS = new Set([408, 425, 429, 500, 502, 503, 504]);
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => {
     setTimeout(resolve, ms);
   });
-}
-
-function defaultGetBearerToken(): string | undefined {
-  if (DEFAULT_BEARER_TOKEN) return DEFAULT_BEARER_TOKEN;
-  if (typeof window === 'undefined') return undefined;
-  return (
-    window.localStorage.getItem('portarium_cockpit_bearer_token') ??
-    window.localStorage.getItem('portarium_bearer_token') ??
-    undefined
-  );
 }
 
 function pathSegment(value: string): string {
@@ -95,12 +86,14 @@ function pathSegment(value: string): string {
 export class ControlPlaneClient {
   private readonly baseUrl: string;
   private readonly getBearerToken?: () => string | undefined;
+  private readonly credentials?: RequestCredentials;
   private readonly fetchImpl: typeof fetch;
 
   constructor(config: ControlPlaneClientConfig = {}) {
     const base = (config.baseUrl ?? DEFAULT_BASE_URL).trim();
     this.baseUrl = base.endsWith('/') ? base.slice(0, -1) : base;
-    this.getBearerToken = config.getBearerToken ?? defaultGetBearerToken;
+    this.getBearerToken = config.getBearerToken ?? readBearerToken;
+    this.credentials = config.credentials;
     this.fetchImpl = config.fetchImpl ?? ((...args: Parameters<typeof fetch>) => fetch(...args));
   }
 
@@ -284,12 +277,16 @@ export class ControlPlaneClient {
     }
 
     const method = (init.method ?? 'GET').toUpperCase();
+    if (method !== 'GET' && method !== 'HEAD' && !headers.has('X-Portarium-Request')) {
+      headers.set('X-Portarium-Request', '1');
+    }
+    const credentials = init.credentials ?? this.credentials ?? (token ? 'omit' : 'include');
     const maxRetries = method === 'GET' || method === 'HEAD' ? 3 : 1;
     let response: Response;
 
     for (let attempt = 0; ; attempt += 1) {
       try {
-        response = await this.fetchImpl(this.resolveUrl(path), { ...init, headers });
+        response = await this.fetchImpl(this.resolveUrl(path), { ...init, credentials, headers });
       } catch (error) {
         if (!(error instanceof TypeError) || attempt >= maxRetries) {
           throw error;

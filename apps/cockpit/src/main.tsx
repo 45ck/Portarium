@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import './index.css';
 
 const FETCH_SHIM_KEY = '__portarium_live_fetch_shim_installed__';
+const WEB_SESSION_REQUEST_HEADER = 'X-Portarium-Request';
 
 type WindowWithFetchShimFlag = Window & {
   [FETCH_SHIM_KEY]?: boolean;
@@ -21,17 +22,6 @@ function shouldEnableMocks(): boolean {
   if (!import.meta.env.DEV) return false;
   const raw = (import.meta.env.VITE_PORTARIUM_ENABLE_MSW ?? 'true').trim().toLowerCase();
   return !['0', 'false', 'off', 'no'].includes(raw);
-}
-
-function readBearerToken(): string | undefined {
-  const fromEnv = (import.meta.env.VITE_PORTARIUM_API_BEARER_TOKEN ?? '').trim();
-  if (fromEnv) return fromEnv;
-  if (typeof window === 'undefined') return undefined;
-  return (
-    window.localStorage.getItem('portarium_cockpit_bearer_token') ??
-    window.localStorage.getItem('portarium_bearer_token') ??
-    undefined
-  );
 }
 
 function installLiveFetchShim(): void {
@@ -49,18 +39,19 @@ function installLiveFetchShim(): void {
       return nativeFetch(input, init);
     }
 
-    const isApiPath = input.startsWith('/v1/');
+    const isApiPath = input.startsWith('/v1/') || input.startsWith('/auth/');
     const url = isApiPath ? `${baseUrl}${input}` : input;
-    const token = readBearerToken();
-    if (!token || !isApiPath) {
+    if (!isApiPath) {
       return nativeFetch(url, init);
     }
 
     const headers = new Headers(init?.headers);
-    if (!headers.has('Authorization')) {
-      headers.set('Authorization', `Bearer ${token}`);
+    const method = (init?.method ?? 'GET').toUpperCase();
+    const isUnsafeMethod = method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS';
+    if (isUnsafeMethod && !headers.has(WEB_SESSION_REQUEST_HEADER)) {
+      headers.set(WEB_SESSION_REQUEST_HEADER, '1');
     }
-    return nativeFetch(url, { ...init, headers });
+    return nativeFetch(url, { ...init, credentials: init?.credentials ?? 'include', headers });
   };
 
   fetchShimWindow[FETCH_SHIM_KEY] = true;

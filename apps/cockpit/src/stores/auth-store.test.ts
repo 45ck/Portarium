@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { AUTH_REFRESH_TOKEN_KEY, readStoredBearerToken } from '@/lib/auth-token';
 import { QUERY_CACHE_STORAGE_KEY, queryClient } from '@/lib/query-client';
 import { useAuthStore } from './auth-store';
 
@@ -57,6 +58,48 @@ const oidcMock = vi.hoisted(() => {
   };
 });
 
+const webSessionMock = vi.hoisted(() => ({
+  currentSession: null as null | {
+    authenticated: true;
+    claims: {
+      sub: string;
+      workspaceId: string;
+      roles: string[];
+      personas: string[];
+      capabilities: string[];
+      apiScopes: string[];
+    };
+  },
+  fetchCurrentWebSession: vi.fn(() => Promise.resolve(webSessionMock.currentSession)),
+  establishWebSession: vi.fn(() =>
+    Promise.resolve({
+      authenticated: true as const,
+      claims: {
+        sub: 'web-user',
+        workspaceId: 'web-ws',
+        roles: ['operator'],
+        personas: [],
+        capabilities: [],
+        apiScopes: [],
+      },
+    }),
+  ),
+  createDevelopmentWebSession: vi.fn(() =>
+    Promise.resolve({
+      authenticated: true as const,
+      claims: {
+        sub: 'dev-user',
+        workspaceId: 'dev-ws',
+        roles: ['admin'],
+        personas: [],
+        capabilities: [],
+        apiScopes: [],
+      },
+    }),
+  ),
+  logoutWebSession: vi.fn(() => Promise.resolve()),
+}));
+
 vi.mock('@/lib/native-bridge', () => ({
   secureGet: nativeBridgeMock.secureGet,
   secureSet: nativeBridgeMock.secureSet,
@@ -75,6 +118,13 @@ vi.mock('@/lib/oidc-client', () => ({
   parseCallbackUrl: oidcMock.parseCallbackUrl,
   decodeJwtPayload: oidcMock.decodeJwtPayload,
   OidcError: oidcMock.OidcError,
+}));
+
+vi.mock('@/lib/web-session-auth', () => ({
+  fetchCurrentWebSession: webSessionMock.fetchCurrentWebSession,
+  establishWebSession: webSessionMock.establishWebSession,
+  createDevelopmentWebSession: webSessionMock.createDevelopmentWebSession,
+  logoutWebSession: webSessionMock.logoutWebSession,
 }));
 
 const TOKEN_KEY = 'portarium_cockpit_bearer_token';
@@ -96,7 +146,9 @@ beforeEach(() => {
   nativeBridgeMock.native = true;
   oidcMock.configured = true;
   oidcMock.jwtPayloads.clear();
+  webSessionMock.currentSession = null;
   localStorage.clear();
+  sessionStorage.clear();
   queryClient.clear();
   useAuthStore.setState({
     status: 'initializing',
@@ -148,6 +200,71 @@ describe('useAuthStore cache isolation', () => {
     expectCacheCleared();
   });
 
+  it('initializes web auth from the HttpOnly web session endpoint', async () => {
+    nativeBridgeMock.native = false;
+    webSessionMock.currentSession = {
+      authenticated: true,
+      claims: {
+        sub: 'web-user',
+        workspaceId: 'web-ws',
+        roles: ['operator'],
+        personas: [],
+        capabilities: [],
+        apiScopes: [],
+      },
+    };
+
+    await useAuthStore.getState().initialize();
+
+    expect(useAuthStore.getState()).toMatchObject({
+      status: 'authenticated',
+      token: null,
+      claims: { sub: 'web-user', workspaceId: 'web-ws' },
+    });
+    expect(nativeBridgeMock.secureGet).not.toHaveBeenCalled();
+  });
+
+  it('clears legacy browser tokens when no web session exists', async () => {
+    nativeBridgeMock.native = false;
+    localStorage.setItem(TOKEN_KEY, 'legacy-local-token');
+    sessionStorage.setItem(TOKEN_KEY, 'legacy-session-token');
+    sessionStorage.setItem(AUTH_REFRESH_TOKEN_KEY, 'legacy-refresh-token');
+    seedCache();
+
+    await useAuthStore.getState().initialize();
+
+    expect(useAuthStore.getState()).toMatchObject({
+      status: 'unauthenticated',
+      token: null,
+      claims: null,
+    });
+    expect(localStorage.getItem(TOKEN_KEY)).toBeNull();
+    expect(sessionStorage.getItem(TOKEN_KEY)).toBeNull();
+    expect(sessionStorage.getItem(AUTH_REFRESH_TOKEN_KEY)).toBeNull();
+    expect(nativeBridgeMock.secureGet).not.toHaveBeenCalled();
+    expectCacheCleared();
+  });
+
+  it('establishes web auth via the session endpoint without storing tokens', async () => {
+    nativeBridgeMock.native = false;
+    seedCache();
+
+    await useAuthStore.getState().handleCallback('https://app.test/auth/callback?code=code-1');
+
+    expect(useAuthStore.getState()).toMatchObject({
+      status: 'authenticated',
+      token: null,
+      claims: { sub: 'web-user', workspaceId: 'web-ws' },
+    });
+    expect(webSessionMock.establishWebSession).toHaveBeenCalledWith({
+      code: 'code-1',
+      state: 'state-1',
+    });
+    expect(oidcMock.exchangeCode).not.toHaveBeenCalled();
+    expect(nativeBridgeMock.secureSet).not.toHaveBeenCalled();
+    expectCacheCleared();
+  });
+
   it('clears cached tenant data on logout', async () => {
     useAuthStore.setState({
       status: 'authenticated',
@@ -169,6 +286,48 @@ describe('useAuthStore cache isolation', () => {
     expect(useAuthStore.getState().status).toBe('unauthenticated');
     expect(nativeBridgeMock.secureRemove).toHaveBeenCalledWith(TOKEN_KEY);
     expect(nativeBridgeMock.secureRemove).toHaveBeenCalledWith(REFRESH_TOKEN_KEY);
+    expectCacheCleared();
+  });
+
+  it('clears the native in-memory bearer when native storage no longer has a valid token', async () => {
+    oidcMock.jwtPayloads.set('fresh-token', {
+      sub: 'user-1',
+      workspaceId: 'ws-1',
+      roles: ['operator'],
+    });
+
+    await useAuthStore.getState().handleCallback('portarium://auth/callback?code=code-1');
+    expect(readStoredBearerToken()).toBe('fresh-token');
+
+    nativeBridgeMock.secureStore.clear();
+    await useAuthStore.getState().initialize();
+
+    expect(readStoredBearerToken()).toBeUndefined();
+    expect(useAuthStore.getState().status).toBe('unauthenticated');
+  });
+
+  it('logs out web sessions via the session endpoint', async () => {
+    nativeBridgeMock.native = false;
+    useAuthStore.setState({
+      status: 'authenticated',
+      token: null,
+      claims: {
+        sub: 'web-user',
+        workspaceId: 'web-ws',
+        roles: ['operator'],
+        personas: [],
+        capabilities: [],
+        apiScopes: [],
+      },
+      error: null,
+    });
+    seedCache();
+
+    await useAuthStore.getState().logout();
+
+    expect(webSessionMock.logoutWebSession).toHaveBeenCalled();
+    expect(nativeBridgeMock.secureRemove).not.toHaveBeenCalled();
+    expect(useAuthStore.getState().status).toBe('unauthenticated');
     expectCacheCleared();
   });
 });

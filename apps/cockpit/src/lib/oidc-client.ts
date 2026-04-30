@@ -77,7 +77,7 @@ function base64urlEncode(bytes: Uint8Array): string {
 
 const PKCE_STATE_KEY = 'portarium_pkce_state';
 
-interface PkceState {
+export interface PkceState {
   codeVerifier: string;
   state: string; // random CSRF token
   redirectUri: string;
@@ -101,6 +101,19 @@ function loadPkceState(): PkceState | null {
 
 function clearPkceState(): void {
   sessionStorage.removeItem(PKCE_STATE_KEY);
+}
+
+export function consumePkceStateForCallback(callbackState?: string): PkceState {
+  const stored = loadPkceState();
+  if (!stored) {
+    throw new OidcError('No PKCE session found in storage', 'session_not_found');
+  }
+  if (callbackState !== undefined && callbackState !== stored.state) {
+    clearPkceState();
+    throw new OidcError('CSRF state mismatch — possible replay attack', 'state_mismatch');
+  }
+  clearPkceState();
+  return stored;
 }
 
 // ---------------------------------------------------------------------------
@@ -213,11 +226,7 @@ export async function exchangeCode(opts: ExchangeCodeOptions): Promise<TokenResp
   let pkceState: PkceState;
 
   if (opts.fromSession !== false) {
-    const stored = loadPkceState();
-    if (!stored) {
-      throw new OidcError('No PKCE session found in storage', 'session_not_found');
-    }
-    pkceState = stored;
+    pkceState = consumePkceStateForCallback(opts.callbackState);
   } else if (opts.codeVerifier && opts.config) {
     pkceState = {
       codeVerifier: opts.codeVerifier,
@@ -234,11 +243,6 @@ export async function exchangeCode(opts: ExchangeCodeOptions): Promise<TokenResp
   }
 
   // --- 2. CSRF state check ---
-  if (opts.callbackState !== undefined && opts.callbackState !== pkceState.state) {
-    clearPkceState();
-    throw new OidcError('CSRF state mismatch — possible replay attack', 'state_mismatch');
-  }
-
   // --- 3. Discover token endpoint ---
   let tokenEndpoint: string;
   if (opts.tokenEndpoint) {

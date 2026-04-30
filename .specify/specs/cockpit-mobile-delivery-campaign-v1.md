@@ -29,7 +29,7 @@ The mobile delivery campaign delivers an installable, offline-capable, notificat
 ### Auth (OIDC PKCE mobile)
 
 10. OIDC PKCE flow must use `@capacitor/browser` (in-app browser) on native and standard `window.location` redirect on web.
-11. Tokens must be stored in `@capacitor/preferences` (Keychain/Keystore) on native and `sessionStorage` on web.
+11. Native tokens must be stored in `@capacitor/preferences` (Keychain/Keystore). Web Cockpit must use a same-origin HttpOnly session cookie; access and refresh tokens must not be stored in JS-readable `localStorage` or `sessionStorage`.
 
 ### Push notifications
 

@@ -57,21 +57,26 @@ Invoke-WebRequest http://localhost:8080/v1/workspaces/ws-local `
 
 ### Cockpit integration
 
-Cockpit reads `VITE_PORTARIUM_API_BEARER_TOKEN` at build time and falls back to
-`localStorage`. Set this to the same value as `PORTARIUM_DEV_TOKEN`:
+Cockpit live web uses a same-origin, server-mediated HttpOnly session cookie.
+Do not seed bearer tokens into Vite env, `localStorage`, or `sessionStorage`
+for live web QA. Keep `PORTARIUM_DEV_TOKEN` on the control-plane server only,
+then start Cockpit against the live API:
 
 ```bash
-VITE_PORTARIUM_API_BEARER_TOKEN=portarium-dev-token VITE_PORTARIUM_ENABLE_MSW=false npm run dev
+VITE_PORTARIUM_API_BASE_URL=http://localhost:8080 VITE_PORTARIUM_ENABLE_MSW=false npm run cockpit:dev
 ```
 
 ```powershell
-$env:VITE_PORTARIUM_API_BEARER_TOKEN = "portarium-dev-token"
+$env:VITE_PORTARIUM_API_BASE_URL = "http://localhost:8080"
 $env:VITE_PORTARIUM_ENABLE_MSW = "false"
-npm run dev
+npm run cockpit:dev
 ```
 
 By default, Cockpit enables MSW in Vite dev mode. Set
-`VITE_PORTARIUM_ENABLE_MSW=false` for live API manual QA.
+`VITE_PORTARIUM_ENABLE_MSW=false` for live API manual QA. If OIDC is not
+configured, the login page's **Continue** button requests `/auth/dev-session`;
+the server exchanges its own `PORTARIUM_DEV_TOKEN` for the web session cookie
+without exposing the token to browser JavaScript.
 
 For OpenClaw approval-triage demo capture (mock dataset):
 
@@ -83,13 +88,6 @@ For automated OpenClaw demo videos (MP4 + WEBM artifacts):
 
 ```powershell
 npm run cockpit:demo:openclaw:clips
-```
-
-Or set it at runtime in the browser console:
-
-```js
-localStorage.setItem('portarium_cockpit_bearer_token', 'portarium-dev-token');
-location.reload();
 ```
 
 ---
