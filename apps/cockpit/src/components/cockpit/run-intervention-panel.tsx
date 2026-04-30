@@ -266,6 +266,7 @@ interface RunInterventionPanelProps {
   workforceMembers: WorkforceMemberSummary[];
   workforceQueues: WorkforceQueueSummary[];
   loading?: boolean;
+  recommendedIntervention?: RunInterventionKind;
   onSubmit: (request: RunInterventionRequest) => Promise<void> | void;
 }
 
@@ -274,10 +275,11 @@ export function RunInterventionPanel({
   workforceMembers,
   workforceQueues,
   loading = false,
+  recommendedIntervention,
   onSubmit,
 }: RunInterventionPanelProps) {
-  const [interventionType, setInterventionType] = useState<RunInterventionKind>(() =>
-    defaultIntervention(run),
+  const [interventionType, setInterventionType] = useState<RunInterventionKind>(
+    () => recommendedIntervention ?? defaultIntervention(run),
   );
   const [target, setTarget] = useState('');
   const [rationale, setRationale] = useState('');
