@@ -16,6 +16,19 @@ const neutralRouteLoaders = Object.fromEntries(
   ]),
 );
 
+function routeLoadersFor(
+  extensions: readonly CockpitExtensionManifest[],
+): Readonly<Record<string, CockpitExtensionRouteModuleLoader>> {
+  return Object.fromEntries(
+    extensions.flatMap((extension) =>
+      extension.routes.map((route) => [
+        route.id,
+        (() => Promise.resolve({})) satisfies CockpitExtensionRouteModuleLoader,
+      ]),
+    ),
+  );
+}
+
 const neutralAccessContext = {
   availableCapabilities: ['extension:read', 'extension:review', 'evidence:read'],
   availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
@@ -33,6 +46,43 @@ function cloneExtension(
     commands: [...NEUTRAL_REFERENCE_EXTENSION.commands],
     ...overrides,
   };
+}
+
+function cloneRenamedExtension(
+  prefix: string,
+  overrides: Partial<CockpitExtensionManifest> = {},
+): CockpitExtensionManifest {
+  const overviewRoute = NEUTRAL_REFERENCE_EXTENSION.routes[0]!;
+  const reviewRoute = NEUTRAL_REFERENCE_EXTENSION.routes[1]!;
+  const overviewRouteId = `${prefix}-overview`;
+  const reviewRouteId = `${prefix}-review`;
+  const overviewPath = `/external/${prefix}/overview`;
+
+  return cloneExtension({
+    id: `example.reference.${prefix}`,
+    packIds: ['example.reference'],
+    routes: [
+      { ...overviewRoute, id: overviewRouteId, path: overviewPath },
+      { ...reviewRoute, id: reviewRouteId, path: `/external/${prefix}/reviews/$proposalId` },
+    ],
+    navItems: [
+      {
+        ...NEUTRAL_REFERENCE_EXTENSION.navItems[0]!,
+        id: `${prefix}-overview-nav`,
+        routeId: overviewRouteId,
+        to: overviewPath,
+      },
+    ],
+    commands: [
+      {
+        ...NEUTRAL_REFERENCE_EXTENSION.commands[0]!,
+        id: `${prefix}-open-overview`,
+        routeId: overviewRouteId,
+        shortcut: 'G Y',
+      },
+    ],
+    ...overrides,
+  });
 }
 
 describe('cockpit extension registry', () => {
@@ -166,6 +216,24 @@ describe('cockpit extension registry', () => {
     expect(registry.routes).toEqual([]);
   });
 
+  it('fails closed on duplicate extension ids even when every public item id is unique', () => {
+    const duplicateIdOnly = cloneRenamedExtension('duplicate-id-only', {
+      id: NEUTRAL_REFERENCE_EXTENSION.id,
+    });
+    const registry = resolveCockpitExtensionRegistry({
+      installedExtensions: [NEUTRAL_REFERENCE_EXTENSION, duplicateIdOnly],
+      activePackIds: ['example.reference'],
+      ...neutralAccessContext,
+      routeLoaders: routeLoadersFor([NEUTRAL_REFERENCE_EXTENSION, duplicateIdOnly]),
+    });
+
+    expect(registry.problems.map((problem) => problem.code)).toEqual(['duplicate-extension-id']);
+    expect(registry.extensions.every((extension) => extension.status === 'invalid')).toBe(true);
+    expect(registry.routes).toEqual([]);
+    expect(registry.navItems).toEqual([]);
+    expect(registry.commands).toEqual([]);
+  });
+
   it('fails all public surfaces closed when active extensions conflict on route ids or paths', () => {
     const duplicate = cloneExtension({
       id: 'example.reference.duplicate',
@@ -185,6 +253,45 @@ describe('cockpit extension registry', () => {
     expect(registry.problems.map((problem) => problem.code)).toEqual(
       expect.arrayContaining(['duplicate-route-id', 'duplicate-route-path']),
     );
+    expect(registry.routes).toEqual([]);
+    expect(registry.navItems).toEqual([]);
+    expect(registry.commands).toEqual([]);
+  });
+
+  it('fails closed on duplicate route paths even when route ids are unique', () => {
+    const duplicatePathOnly = cloneRenamedExtension('duplicate-path-only', {
+      routes: NEUTRAL_REFERENCE_EXTENSION.routes.map((route) => ({
+        ...route,
+        id: `${route.id}-duplicate-path-only`,
+      })),
+      navItems: [
+        {
+          ...NEUTRAL_REFERENCE_EXTENSION.navItems[0]!,
+          id: 'duplicate-path-only-overview-nav',
+          routeId: `${NEUTRAL_REFERENCE_EXTENSION.routes[0]!.id}-duplicate-path-only`,
+          to: NEUTRAL_REFERENCE_EXTENSION.routes[0]!.path,
+        },
+      ],
+      commands: [
+        {
+          ...NEUTRAL_REFERENCE_EXTENSION.commands[0]!,
+          id: 'duplicate-path-only-open-overview',
+          routeId: `${NEUTRAL_REFERENCE_EXTENSION.routes[0]!.id}-duplicate-path-only`,
+          shortcut: 'G Y',
+        },
+      ],
+    });
+    const registry = resolveCockpitExtensionRegistry({
+      installedExtensions: [NEUTRAL_REFERENCE_EXTENSION, duplicatePathOnly],
+      activePackIds: ['example.reference'],
+      ...neutralAccessContext,
+      routeLoaders: routeLoadersFor([NEUTRAL_REFERENCE_EXTENSION, duplicatePathOnly]),
+    });
+
+    expect(registry.problems.map((problem) => problem.code)).toEqual(
+      expect.arrayContaining(['duplicate-route-path']),
+    );
+    expect(registry.problems.map((problem) => problem.code)).not.toContain('duplicate-route-id');
     expect(registry.routes).toEqual([]);
     expect(registry.navItems).toEqual([]);
     expect(registry.commands).toEqual([]);
@@ -212,6 +319,34 @@ describe('cockpit extension registry', () => {
       expect.arrayContaining(['invalid-icon', 'invalid-surface']),
     );
     expect(registry.navItems).toEqual([]);
+  });
+
+  it('fails closed on unsupported navigation surfaces without relying on another manifest error', () => {
+    const invalid = cloneExtension({
+      navItems: [
+        {
+          ...NEUTRAL_REFERENCE_EXTENSION.navItems[0]!,
+          surfaces: ['sidebar', 'unknown-surface' as never],
+        },
+      ],
+    });
+    const registry = resolveCockpitExtensionRegistry({
+      installedExtensions: [invalid],
+      activePackIds: ['example.reference'],
+      ...neutralAccessContext,
+      routeLoaders: neutralRouteLoaders,
+    });
+
+    expect(registry.extensions[0]?.status).toBe('invalid');
+    expect(registry.problems).toEqual([
+      expect.objectContaining({
+        code: 'invalid-surface',
+        itemId: NEUTRAL_REFERENCE_EXTENSION.navItems[0]!.id,
+      }),
+    ]);
+    expect(registry.routes).toEqual([]);
+    expect(registry.navItems).toEqual([]);
+    expect(registry.commands).toEqual([]);
   });
 
   it('fails closed on invalid personas and privacy classes', () => {
@@ -316,6 +451,34 @@ describe('cockpit extension registry', () => {
     expect(registry.commands).toEqual([]);
   });
 
+  it('fails closed when surfaced commands do not declare host guard metadata', () => {
+    const invalid = cloneExtension({
+      commands: [
+        {
+          ...NEUTRAL_REFERENCE_EXTENSION.commands[0]!,
+          guard: undefined as never,
+        },
+      ],
+    });
+    const registry = resolveCockpitExtensionRegistry({
+      installedExtensions: [invalid],
+      activePackIds: ['example.reference'],
+      ...neutralAccessContext,
+      routeLoaders: neutralRouteLoaders,
+    });
+
+    expect(registry.extensions[0]?.status).toBe('invalid');
+    expect(registry.problems).toEqual([
+      expect.objectContaining({
+        code: 'missing-command-guard',
+        itemId: NEUTRAL_REFERENCE_EXTENSION.commands[0]!.id,
+      }),
+    ]);
+    expect(registry.routes).toEqual([]);
+    expect(registry.navItems).toEqual([]);
+    expect(registry.commands).toEqual([]);
+  });
+
   it('fails closed on routes outside the external boundary and parameterized nav targets', () => {
     const invalid = cloneExtension({
       routes: [
@@ -389,7 +552,18 @@ describe('cockpit extension registry', () => {
     });
 
     expect(registry.extensions[0]?.status).toBe('invalid');
-    expect(registry.problems.map((problem) => problem.code)).toContain('missing-route');
+    expect(registry.problems).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'missing-route',
+          itemId: NEUTRAL_REFERENCE_EXTENSION.navItems[0]!.id,
+        }),
+        expect.objectContaining({
+          code: 'missing-route',
+          itemId: NEUTRAL_REFERENCE_EXTENSION.commands[0]!.id,
+        }),
+      ]),
+    );
     expect(registry.navItems).toEqual([]);
     expect(registry.commands).toEqual([]);
   });

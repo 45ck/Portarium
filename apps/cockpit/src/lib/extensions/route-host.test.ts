@@ -123,4 +123,12 @@ describe('cockpit extension route host definitions', () => {
 
     expect(resolution).toEqual({ definitions: [], problems: [] });
   });
+
+  it('keeps core Cockpit route hosting valid when installed extensions are not enabled', () => {
+    const resolution = resolveHost({
+      activePackIds: [],
+    });
+
+    expect(resolution).toEqual({ definitions: [], problems: [] });
+  });
 });
