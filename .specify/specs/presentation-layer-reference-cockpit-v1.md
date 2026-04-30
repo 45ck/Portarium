@@ -189,6 +189,16 @@ For each primary screen, show dedicated state components for:
 - Guard denials must expose audit-ready decision metadata for the host while user-facing forbidden and not-found fallbacks avoid leaking sensitive extension route metadata.
 - Extension UI may request governed actions only through Portarium Control Plane APIs; extension surfaces must not perform direct authoritative side effects outside those APIs.
 
+### R14b Cockpit extension browser egress
+
+- Cockpit Extension Browser Egress is host-owned, deny-by-default, and limited to approved Host/API Origins.
+- Approved extension Browser Egress is limited to same-origin `/v1/*` and `/auth/*` Portarium paths plus exact configured Portarium API origins used for mediated backend-for-frontend APIs.
+- Extension manifests, workspace activation grants, and package metadata must not declare or expand allowed browser origins, remote entry URLs, API base URLs, `connect-src`, or provider endpoints.
+- Direct extension use of unmanaged browser egress primitives such as `fetch`, XHR, WebSocket, EventSource, beacon, worker creation, external links/forms, or non-relative dynamic imports must fail deterministic build or test checks.
+- Missing, empty, stale, or indeterminate Browser Egress policy must fail closed before network dispatch.
+- Denied Browser Egress must expose deterministic audit-ready metadata including policy ID/version, decision, reason, extension ID, route or command ID when known, Workspace, principal, correlation ID, request kind, method, attempted origin, redacted attempted path, and configured Host/API Origins.
+- Browser Egress policy and tests must remain generic and must not encode tenant, customer, vertical, system-of-record, provider, vault, gateway, or runtime daemon endpoints.
+
 ## Acceptance signals
 
 - Screen rendering remains stable with partial API failures.
