@@ -143,13 +143,16 @@ export function MobileBottomNav({
   const pendingCount = usePendingCount(activeWorkspaceId);
   const matchRoute = useMatchRoute();
   const [moreOpen, setMoreOpen] = useState(false);
-  const claims = useAuthStore((state) => state.claims);
-  const extensionContextQuery = useCockpitExtensionContext(activeWorkspaceId, claims?.sub);
+  const principalId = useAuthStore((state) => state.claims?.sub);
+  const extensionContextQuery = useCockpitExtensionContext(activeWorkspaceId, principalId);
   const extensionServerAccess = resolveCockpitExtensionServerAccess({
     workspaceId: activeWorkspaceId,
-    principalId: claims?.sub,
+    principalId,
     persona: activePersona,
-    serverContext: extensionContextQuery.data,
+    serverContext:
+      extensionContextQuery.isSuccess && !extensionContextQuery.isFetching
+        ? extensionContextQuery.data
+        : null,
   });
   const extensionRegistry = resolveCockpitExtensionRegistry({
     installedExtensions: INSTALLED_COCKPIT_EXTENSIONS,

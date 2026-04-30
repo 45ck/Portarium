@@ -74,13 +74,16 @@ export function useKeyboardShortcuts() {
   const gTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const activeWorkspaceId = useUIStore((state) => state.activeWorkspaceId);
   const activePersona = useUIStore((state) => state.activePersona);
-  const claims = useAuthStore((state) => state.claims);
-  const extensionContextQuery = useCockpitExtensionContext(activeWorkspaceId, claims?.sub);
+  const principalId = useAuthStore((state) => state.claims?.sub);
+  const extensionContextQuery = useCockpitExtensionContext(activeWorkspaceId, principalId);
   const extensionServerAccess = resolveCockpitExtensionServerAccess({
     workspaceId: activeWorkspaceId,
-    principalId: claims?.sub,
+    principalId,
     persona: activePersona,
-    serverContext: extensionContextQuery.data,
+    serverContext:
+      extensionContextQuery.isSuccess && !extensionContextQuery.isFetching
+        ? extensionContextQuery.data
+        : null,
   });
   const extensionRegistry = resolveCockpitExtensionRegistry({
     installedExtensions: INSTALLED_COCKPIT_EXTENSIONS,

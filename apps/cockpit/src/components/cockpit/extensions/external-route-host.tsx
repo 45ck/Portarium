@@ -20,13 +20,16 @@ import { HOSTED_EXTERNAL_ROUTE_COMPONENTS } from './external-route-components';
 export function ExternalRouteHost({ pathname }: { pathname: string }) {
   const activePersona = useUIStore((state) => state.activePersona);
   const activeWorkspaceId = useUIStore((state) => state.activeWorkspaceId);
-  const claims = useAuthStore((state) => state.claims);
-  const extensionContextQuery = useCockpitExtensionContext(activeWorkspaceId, claims?.sub);
+  const principalId = useAuthStore((state) => state.claims?.sub);
+  const extensionContextQuery = useCockpitExtensionContext(activeWorkspaceId, principalId);
   const serverAccess = resolveCockpitExtensionServerAccess({
     workspaceId: activeWorkspaceId,
-    principalId: claims?.sub,
+    principalId,
     persona: activePersona,
-    serverContext: extensionContextQuery.data,
+    serverContext:
+      extensionContextQuery.isSuccess && !extensionContextQuery.isFetching
+        ? extensionContextQuery.data
+        : null,
   });
   const registry = resolveCockpitExtensionRegistry({
     installedExtensions: INSTALLED_COCKPIT_EXTENSIONS,

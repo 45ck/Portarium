@@ -377,7 +377,10 @@ function RootShell() {
     workspaceId: activeWorkspaceId,
     principalId: claims?.sub,
     persona: activePersona,
-    serverContext: extensionContextQuery.data,
+    serverContext:
+      extensionContextQuery.isSuccess && !extensionContextQuery.isFetching
+        ? extensionContextQuery.data
+        : null,
   });
   const extensionRegistry = resolveCockpitExtensionRegistry({
     installedExtensions: INSTALLED_COCKPIT_EXTENSIONS,

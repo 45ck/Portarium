@@ -57,14 +57,17 @@ const extensionRoutePaths: ReadonlyMap<string, string> = new Map(
 function CommandPalette() {
   const { commandPaletteOpen, setCommandPaletteOpen, activePersona, activeWorkspaceId } =
     useUIStore();
-  const claims = useAuthStore((state) => state.claims);
+  const principalId = useAuthStore((state) => state.claims?.sub);
   const { theme, setTheme, themes } = useTheme();
-  const extensionContextQuery = useCockpitExtensionContext(activeWorkspaceId, claims?.sub);
+  const extensionContextQuery = useCockpitExtensionContext(activeWorkspaceId, principalId);
   const extensionServerAccess = resolveCockpitExtensionServerAccess({
     workspaceId: activeWorkspaceId,
-    principalId: claims?.sub,
+    principalId,
     persona: activePersona,
-    serverContext: extensionContextQuery.data,
+    serverContext:
+      extensionContextQuery.isSuccess && !extensionContextQuery.isFetching
+        ? extensionContextQuery.data
+        : null,
   });
   const extensionRegistry = resolveCockpitExtensionRegistry({
     installedExtensions: INSTALLED_COCKPIT_EXTENSIONS,
