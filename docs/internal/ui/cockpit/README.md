@@ -5,6 +5,7 @@ This folder contains a low-fidelity, clickable prototype for the Portarium Cockp
 ## Current Direction
 
 - `mission-control-convergence.md` defines the agent-first operator surface direction: Cockpit is the place humans observe, approve, steer, and recover governed agent work.
+- `.specify/specs/operator-interaction-model-v1.md` defines the canonical operator inputs: intent, constraint, taste, insight, steering, approval, escalation, override, and annotation.
 - `agent-machine-runtime-design.md` covers agent and machine capability visibility.
 - `governance-policy-design.md` covers Policy and Execution Tier control surfaces.
 - `ia-baseline.md` covers the navigation and information architecture baseline.

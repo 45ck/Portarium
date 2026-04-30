@@ -276,18 +276,94 @@ The final execution decision for a proposed Action based on:
 
 Portarium should treat human input as typed governance signals, not generic comments.
 
-| Input type        | Meaning                                               | Typical attachment           |
-| ----------------- | ----------------------------------------------------- | ---------------------------- |
-| Intent            | Desired outcome and constraints                       | Run, Plan                    |
-| Constraint        | Hard boundary or forbidden path                       | Run, Policy, Approval        |
-| Taste             | Subjective quality bar for creative or strategic work | Plan, Artifact review        |
-| Steering          | Mid-run redirect without replacing the agent          | Run                          |
-| Approval decision | Approve, deny, request changes, defer                 | Approval Gate, policy change |
-| Override          | Exceptional deviation from normal rule path           | Policy change, Run, Action   |
-| Escalation        | Route to another person, queue, or authority level    | Approval, Run                |
-| Audit annotation  | Post-hoc observation tied to evidence                 | Evidence Artifact, Run       |
+| Input type        | Meaning                                                | Typical attachment           | Durable effect                                                                  |
+| ----------------- | ------------------------------------------------------ | ---------------------------- | ------------------------------------------------------------------------------- |
+| Intent            | Desired outcome, success condition, and constraints    | Run, Plan                    | Creates or revises a Run charter and Plan context.                              |
+| Constraint        | Hard boundary, forbidden path, budget, scope, or limit | Run, Policy, Approval        | Narrows what the agent may do; may trigger a new Plan or Policy evaluation.     |
+| Taste             | Subjective quality bar for creative or strategic work  | Plan, Evidence Artifact      | Guides acceptance criteria or artifact review without granting execution power. |
+| Insight           | Domain observation that changes interpretation         | Run, Approval, Evidence      | Adds contextual evidence for current or later decisions.                        |
+| Steering          | Mid-run redirect without replacing the agent           | Run                          | Changes next actions, scope, routing, or paused/resumed state.                  |
+| Approval decision | Approve, deny, request changes, or defer               | Approval Gate, policy change | Resolves a gated Plan or policy change and unblocks or stops execution.         |
+| Override          | Exceptional deviation from normal rule path            | Policy change, Run, Action   | Requires explicit authority, rationale, and evidence-backed audit entry.        |
+| Escalation        | Route to another person, queue, or authority level     | Approval, Run                | Changes owner/queue and carries the current decision packet forward.            |
+| Audit annotation  | Post-hoc observation tied to evidence                  | Evidence Artifact, Run       | Adds review context without changing execution state.                           |
 
 Free-text notes are allowed, but the control plane should preserve the semantic type of the human intervention.
+
+### Canonical input contract
+
+Every typed operator input must be representable as an attributable control-plane record. The exact storage object may vary by implementation, but the canonical fields are:
+
+- `inputId`
+- `workspaceId`
+- `inputType`
+- `actorUserId`
+- `governanceFunction`
+- `authoritySource`
+- `target`
+- `rationale`
+- `evidenceRefs`
+- `createdAtIso`
+- `effect`
+
+`target` must identify one or more of:
+
+- `runId`
+- `approvalId`
+- `planId`
+- `policyId` and policy version
+- `evidenceId`
+- `workItemId`
+- `externalRefs`
+
+`effect` must state whether the input:
+
+- changes execution state now
+- changes approval state now
+- changes future policy behaviour
+- adds context only
+- routes work to another person or queue
+
+This distinction is mandatory because Cockpit must not make an annotation look like approval, a preference look like policy, or steering look like direct tool execution.
+
+### Attachment semantics
+
+| Object            | Inputs that may attach                                           | Notes                                                                                        |
+| ----------------- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Run               | Intent, constraint, steering, escalation, override, annotation   | A Run holds the current charter, live state, and intervention history.                       |
+| Approval Gate     | Approval decision, constraint, escalation, insight, annotation   | Approval inputs resolve or reroute a specific gated Plan or policy change.                   |
+| Plan              | Intent, constraint, taste, approval decision references          | Plans describe intended effects; taste can define quality criteria, not hidden execution.    |
+| Evidence Artifact | Taste, insight, audit annotation, approval decision references   | Evidence preserves what the operator saw, added, or relied on.                               |
+| Policy            | Constraint, override, policy input, approval decision references | Policy input changes future routing; it must not silently rewrite the current live approval. |
+| Work Item         | Intent, escalation, annotation, outcome summary                  | Work Items bind cross-system context but should not absorb provider-specific implementation. |
+
+### Steering is not direct execution
+
+Steering changes the governed Run's intent, constraints, routing, or next-step request. It does not let the operator secretly invoke a data-plane tool outside the Policy and Evidence path.
+
+Examples:
+
+- "Narrow this run to invoices under AUD 5,000" is steering.
+- "Pause until finance reviews the vendor match" is steering.
+- "Use the billing adapter to write invoice INV-123 now" is a proposed Action and must go through Policy, Plan, Approval, and Evidence as required by tier.
+
+### Taste and insight without micromanagement
+
+Taste and insight should help agents make better choices without turning the operator into the worker.
+
+Acceptable capture:
+
+- reusable quality criteria for a Plan or artifact class
+- concise domain correction attached to Evidence
+- a ranked preference between agent-proposed alternatives
+- a review note that changes future prompts, playbooks, or Policy routing
+
+Avoid:
+
+- step-by-step instructions for routine agent work
+- free-text preferences that silently weaken Policy
+- asking the operator to inspect every low-risk intermediate artifact
+- treating subjective taste as a universal approval reason in finance, security, compliance, or operations domains
 
 ## Meaningful Control Requirements
 
@@ -410,6 +486,24 @@ Cockpit must support:
 - escalation to another queue or authority
 - clear blocked, waiting, degraded, and frozen states
 
+### R7a Canonical UI states
+
+Cockpit must name operator states by what the human can safely do next.
+
+| UI state            | Meaning                                                        | Primary inputs                                      |
+| ------------------- | -------------------------------------------------------------- | --------------------------------------------------- |
+| `observing`         | Run is progressing within Policy and no human action is needed | Annotation, audit annotation                        |
+| `needs-approval`    | A gated Plan or policy change is waiting for a decision        | Approval decision, escalation, request changes      |
+| `needs-steering`    | The agent can continue only after direction or scope change    | Steering, constraint, escalation                    |
+| `needs-evidence`    | The current packet is insufficient for a decision              | Request changes, insight, escalation                |
+| `policy-blocked`    | Policy denies the Action or current route                      | Annotation, escalation, future Policy input         |
+| `degraded-realtime` | Cockpit may be showing stale, cached, or delayed state         | Annotation only until refreshed or explicitly stale |
+| `handoff-pending`   | Ownership or queue transfer is in progress                     | Escalation, handoff confirmation                    |
+| `frozen`            | Work is intentionally stopped for safety or investigation      | Audit annotation, authorized resume or override     |
+| `resolved`          | Decision or intervention has been recorded                     | Audit annotation                                    |
+
+These UI states are not a replacement for `RunStatus` or `ApprovalStatus`. They are the presentation layer's operator posture derived from Run, Approval, Policy, Evidence, and realtime freshness.
+
 ### R8 Mode-aware UI
 
 Cockpit must distinguish when the human is:
@@ -421,6 +515,8 @@ Cockpit must distinguish when the human is:
 - changing Policy
 
 The same button shape must not hide materially different authority or consequences.
+
+Mode switching must preserve the target object. Moving from a live approval to Policy Studio may create a future Policy draft, but it must not silently mutate the current pending Approval Gate or Plan.
 
 ### R9 Calm-state UX
 
@@ -532,6 +628,30 @@ Every non-routine intervention must record:
 
 Every approval, denial, reroute, handoff, override, freeze, and policy change must be explainable after the fact.
 
+### Evidence categories for operator input
+
+Operator input should map to existing Evidence categories unless a later schema version adds a dedicated type:
+
+| Input type                         | Evidence category  | Required links                                      |
+| ---------------------------------- | ------------------ | --------------------------------------------------- |
+| Intent, constraint, steering       | `Plan` or `System` | `runId`, `planId` when one exists                   |
+| Approval decision, request changes | `Approval`         | `approvalId`, `runId`, `planId`                     |
+| Policy input, override             | `Policy`           | `policyId`, policy version, `runId` where relevant  |
+| Taste, insight, audit annotation   | `System`           | `runId` or `evidenceId`, plus artifact refs if used |
+| Handoff or escalation              | `System`           | `runId`, `approvalId` where relevant, target queue  |
+
+The immutable metadata entry must be enough to prove who acted, what authority was used, which object changed, and which evidence packet was visible. Larger payloads, snapshots, and transcripts belong in retention-managed payload references.
+
+### Current versus future effect
+
+Each operator input must be classified as one of:
+
+- `current-run-effect`: changes or blocks the active Run, Plan, Approval, or queue routing.
+- `future-policy-effect`: changes future Policy, routing, evidence requirements, or autonomy posture.
+- `context-only`: records taste, insight, or audit context without changing execution state.
+
+Cockpit must surface this classification before the operator submits the input.
+
 ## Hard Invariants
 
 The following must not be user-disableable:
@@ -549,6 +669,9 @@ The following must not be user-disableable:
 - A human reviewer can tell what authority they are exercising and with what consequences.
 - A pending decision exposes enough context to decide without raw-log archaeology.
 - Steering, approval, verification, exception handling, and audit are distinct in the control model.
+- Intent, taste, and insight are typed inputs with explicit attachment points rather than unstructured comments.
+- Steering cannot bypass Policy, Plan, Approval, or Evidence controls for externally-effectful Actions.
+- Cockpit can derive a clear operator UI state from Run, Approval, Policy, Evidence, and realtime freshness.
 - The system supports oversight that is useful at business scale rather than ceremonial at demo scale.
 - The model preserves calm operations while keeping intervention power real.
 
@@ -565,5 +688,10 @@ The following must not be user-disableable:
 - [docs/project-overview.md](../../docs/project-overview.md)
 - [docs/explanation/agent-traffic-controller.md](../../docs/explanation/agent-traffic-controller.md)
 - [docs/internal/engineering-layer/hci-principles.md](../../docs/internal/engineering-layer/hci-principles.md)
+- [docs/internal/ui/cockpit/mission-control-convergence.md](../../docs/internal/ui/cockpit/mission-control-convergence.md)
+- [.specify/specs/approval-v1.md](./approval-v1.md)
+- [.specify/specs/evidence-v1.md](./evidence-v1.md)
 - [.specify/specs/agent-action-governance-lifecycle-v1.md](./agent-action-governance-lifecycle-v1.md)
+- [.specify/specs/plan-v1.md](./plan-v1.md)
 - [.specify/specs/presentation-layer-reference-cockpit-v1.md](./presentation-layer-reference-cockpit-v1.md)
+- [.specify/specs/run-v1.md](./run-v1.md)
