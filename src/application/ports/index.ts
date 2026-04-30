@@ -15,6 +15,7 @@ export * from './work-item-store.js';
 export * from './policy-store.js';
 export * from './unit-of-work.js';
 export * from './workspace-store.js';
+export * from './workspace-user-store.js';
 export * from './event-publisher.js';
 export * from './machine-invoker.js';
 export * from './mission-port.js';

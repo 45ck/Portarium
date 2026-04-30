@@ -120,7 +120,8 @@ function routeResponse(pathname: string): Response {
   if (new RegExp(WS.source + '/workforce/queues$').test(pathname))
     return json({ items: WORKFORCE_QUEUES });
   if (new RegExp(WS.source + '/agents$').test(pathname)) return json({ items: AGENTS });
-  if (new RegExp(WS.source + '/adapters$').test(pathname)) return json({ items: ADAPTERS });
+  if (new RegExp(WS.source + '/adapter-registrations$').test(pathname))
+    return json({ items: ADAPTERS });
   if (new RegExp(WS.source + '/credential-grants$').test(pathname))
     return json({ items: CREDENTIAL_GRANTS });
   if (new RegExp(WS.source + '/human-tasks$').test(pathname)) return json({ items: HUMAN_TASKS });

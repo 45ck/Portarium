@@ -390,12 +390,10 @@
     {
       "id": "adapters.list",
       "method": "GET",
-      "path": "/v1/workspaces/{workspaceId}/adapters",
-      "openapi": "pending",
-      "runtime": "pending",
+      "path": "/v1/workspaces/{workspaceId}/adapter-registrations",
+      "openapi": "required",
+      "runtime": "required",
       "mock": "required",
-      "trackingBead": "bead-1129",
-      "reason": "Cockpit still consumes /adapters while the OpenAPI surface uses /adapter-registrations.",
       "consumers": ["apps/cockpit/src/hooks/queries/use-adapters.ts"]
     },
     {
@@ -436,21 +434,17 @@
       "method": "GET",
       "path": "/v1/workspaces/{workspaceId}/users",
       "openapi": "required",
-      "runtime": "pending",
+      "runtime": "required",
       "mock": "required",
-      "trackingBead": "bead-1129",
-      "reason": "User runtime parity is owned by the live config API bead.",
       "consumers": ["apps/cockpit/src/hooks/queries/use-users.ts"]
     },
     {
-      "id": "users.invite",
+      "id": "users.add",
       "method": "POST",
-      "path": "/v1/workspaces/{workspaceId}/users/invite",
-      "openapi": "pending",
-      "runtime": "pending",
+      "path": "/v1/workspaces/{workspaceId}/users",
+      "openapi": "required",
+      "runtime": "required",
       "mock": "required",
-      "trackingBead": "bead-1129",
-      "reason": "Cockpit invite flow must be reconciled with the OpenAPI user creation contract.",
       "consumers": ["apps/cockpit/src/hooks/queries/use-users.ts"]
     },
     {
@@ -458,32 +452,26 @@
       "method": "PATCH",
       "path": "/v1/workspaces/{workspaceId}/users/{userId}",
       "openapi": "required",
-      "runtime": "pending",
+      "runtime": "required",
       "mock": "required",
-      "trackingBead": "bead-1129",
-      "reason": "User update runtime parity is owned by the live config API bead.",
       "consumers": ["apps/cockpit/src/hooks/queries/use-users.ts"]
     },
     {
       "id": "policies.list",
       "method": "GET",
       "path": "/v1/workspaces/{workspaceId}/policies",
-      "openapi": "pending",
+      "openapi": "required",
       "runtime": "required",
       "mock": "required",
-      "trackingBead": "bead-1129",
-      "reason": "Policy endpoints are mounted in runtime and still need OpenAPI parity.",
       "consumers": ["apps/cockpit/src/hooks/queries/use-policies.ts"]
     },
     {
       "id": "policies.get",
       "method": "GET",
       "path": "/v1/workspaces/{workspaceId}/policies/{policyId}",
-      "openapi": "pending",
+      "openapi": "required",
       "runtime": "required",
       "mock": "required",
-      "trackingBead": "bead-1129",
-      "reason": "Policy endpoints are mounted in runtime and still need OpenAPI parity.",
       "consumers": ["apps/cockpit/src/hooks/queries/use-policies.ts"]
     },
     {

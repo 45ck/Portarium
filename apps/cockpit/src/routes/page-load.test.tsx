@@ -145,7 +145,7 @@ function routeResponse(pathname: string, init?: RequestInit): Response {
     return json({ items: AGENTS });
   }
 
-  if (/^\/v1\/workspaces\/[^/]+\/adapters$/.test(pathname)) {
+  if (/^\/v1\/workspaces\/[^/]+\/adapter-registrations$/.test(pathname)) {
     return json({ items: ADAPTERS });
   }
 
@@ -249,7 +249,7 @@ const PAGE_CASES = [
   },
   { path: '/workflows/builder', heading: 'Workflow Builder' },
   { path: '/approvals', heading: 'Approvals' },
-  { path: '/approvals/apr-3001', heading: 'Approvals' },
+  { path: '/approvals/apr-3001', heading: 'Approval Review' },
   { path: '/evidence', heading: 'Evidence' },
   { path: '/engineering/beads', heading: 'Engineering Cockpit' },
   { path: '/engineering/beads/wi-1001', heading: 'Engineering Cockpit' },

@@ -79,13 +79,17 @@ export class PostgresMachineRegistryStore implements MachineRegistryStore, Machi
     maybeMachineId?: MachineId,
   ): Promise<MachineRegistrationV1 | null> {
     const machineId = maybeMachineId ?? (machineIdOrWorkspaceId as MachineId);
-    const result = await this.#client.query<MachineRegistrationRow>(
-      `SELECT tenant_id, machine_id, payload
+    const workspaceId = maybeMachineId === undefined ? undefined : machineIdOrWorkspaceId;
+    const params: unknown[] = [String(tenantId), String(machineId)];
+    let sql = `SELECT tenant_id, machine_id, payload
          FROM machine_registrations
-        WHERE tenant_id = $1 AND machine_id = $2
-        LIMIT 1`,
-      [String(tenantId), String(machineId)],
-    );
+        WHERE tenant_id = $1 AND machine_id = $2`;
+    if (workspaceId !== undefined) {
+      params.push(String(workspaceId));
+      sql += ` AND workspace_id = $${params.length}`;
+    }
+    sql += ` LIMIT 1`;
+    const result = await this.#client.query<MachineRegistrationRow>(sql, params);
     const row = result.rows[0];
     if (row === undefined) return null;
     return parseMachineRegistrationV1(row.payload);
@@ -131,13 +135,17 @@ export class PostgresMachineRegistryStore implements MachineRegistryStore, Machi
     maybeAgentId?: AgentId,
   ): Promise<AgentConfigV1 | null> {
     const agentId = maybeAgentId ?? (agentIdOrWorkspaceId as AgentId);
-    const result = await this.#client.query<AgentConfigRow>(
-      `SELECT tenant_id, agent_id, payload
+    const workspaceId = maybeAgentId === undefined ? undefined : agentIdOrWorkspaceId;
+    const params: unknown[] = [String(tenantId), String(agentId)];
+    let sql = `SELECT tenant_id, agent_id, payload
          FROM agent_configs
-        WHERE tenant_id = $1 AND agent_id = $2
-        LIMIT 1`,
-      [String(tenantId), String(agentId)],
-    );
+        WHERE tenant_id = $1 AND agent_id = $2`;
+    if (workspaceId !== undefined) {
+      params.push(String(workspaceId));
+      sql += ` AND workspace_id = $${params.length}`;
+    }
+    sql += ` LIMIT 1`;
+    const result = await this.#client.query<AgentConfigRow>(sql, params);
     const row = result.rows[0];
     if (row === undefined) return null;
     return parseAgentConfigV1(row.payload);

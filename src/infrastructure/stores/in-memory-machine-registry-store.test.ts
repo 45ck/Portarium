@@ -10,11 +10,11 @@ import { InMemoryMachineRegistryStore } from './in-memory-machine-registry-store
 const T = TenantId('t-1');
 const WS = WorkspaceId('ws-1');
 
-function makeMachine(id: string, active = true) {
+function makeMachine(id: string, active = true, workspaceId = 'ws-1') {
   return parseMachineRegistrationV1({
     schemaVersion: 1,
     machineId: id,
-    workspaceId: 'ws-1',
+    workspaceId,
     endpointUrl: `https://${id}.localhost:3000`,
     active,
     displayName: `Machine ${id}`,
@@ -29,11 +29,11 @@ function makeMachine(id: string, active = true) {
   });
 }
 
-function makeAgent(id: string, machineId: string) {
+function makeAgent(id: string, machineId: string, workspaceId = 'ws-1') {
   return parseAgentConfigV1({
     schemaVersion: 1,
     agentId: id,
-    workspaceId: 'ws-1',
+    workspaceId,
     machineId,
     displayName: `Agent ${id}`,
     capabilities: [{ capability: 'Execution:RunAgent' }],
@@ -96,6 +96,13 @@ describe('InMemoryMachineRegistryStore', () => {
       expect(found!.machineId).toBe('m-1');
     });
 
+    it('returns null for 3-arg machine lookup when workspace mismatches', async () => {
+      const store = new InMemoryMachineRegistryStore();
+      await store.saveMachineRegistration(T, makeMachine('m-1', true, 'ws-other'));
+      const found = await store.getMachineRegistrationById(T, WS, MachineId('m-1'));
+      expect(found).toBeNull();
+    });
+
     it('lists machines filtered by workspace', async () => {
       const store = new InMemoryMachineRegistryStore();
       await store.saveMachineRegistration(T, makeMachine('m-1'));
@@ -129,6 +136,13 @@ describe('InMemoryMachineRegistryStore', () => {
         pagination: { limit: 50 },
       });
       expect(page.items).toHaveLength(2);
+    });
+
+    it('returns null for 3-arg agent lookup when workspace mismatches', async () => {
+      const store = new InMemoryMachineRegistryStore();
+      await store.saveAgentConfig(T, makeAgent('a-1', 'm-1', 'ws-other'));
+      const found = await store.getAgentConfigById(T, WS, AgentId('a-1'));
+      expect(found).toBeNull();
     });
 
     it('filters agents by machineId', async () => {

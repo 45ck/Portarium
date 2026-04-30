@@ -59,8 +59,6 @@ export function RegisterAgentDialog({ open, onOpenChange }: RegisterAgentDialogP
   const [machineId, setMachineId] = useState('');
   const [policyTier, setPolicyTier] = useState<PolicyTier>('HumanApprove');
 
-  const isOpenClaw = capabilities.includes('machine:invoke');
-
   const registerAgent = useMutation({
     mutationFn: async () => {
       const res = await fetch(`/v1/workspaces/${wsId}/agents`, {
@@ -71,8 +69,8 @@ export function RegisterAgentDialog({ open, onOpenChange }: RegisterAgentDialogP
           endpoint,
           modelId: modelId || undefined,
           allowedCapabilities: capabilities,
-          machineId: isOpenClaw && machineId ? machineId : undefined,
-          policyTier: isOpenClaw ? policyTier : undefined,
+          machineId,
+          policyTier,
         }),
       });
       if (!res.ok) throw new Error('Failed to register agent');
@@ -146,49 +144,43 @@ export function RegisterAgentDialog({ open, onOpenChange }: RegisterAgentDialogP
             </div>
           </div>
 
-          {isOpenClaw && (
-            <>
-              <div className="space-y-2">
-                <Label htmlFor="agent-machine">Connected Machine</Label>
-                <Select value={machineId} onValueChange={setMachineId}>
-                  <SelectTrigger id="agent-machine" className="w-full">
-                    <SelectValue placeholder="Select a machine (optional)" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {machines.map((m) => (
-                      <SelectItem key={m.machineId} value={m.machineId}>
-                        {m.hostname}
-                        <span className="ml-1.5 text-muted-foreground text-[11px]">
-                          ({m.status})
-                        </span>
-                      </SelectItem>
-                    ))}
-                    {machines.length === 0 && (
-                      <SelectItem value="none" disabled>
-                        No machines registered
-                      </SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
+          <div className="space-y-2">
+            <Label htmlFor="agent-machine">Connected Machine</Label>
+            <Select value={machineId} onValueChange={setMachineId}>
+              <SelectTrigger id="agent-machine" className="w-full">
+                <SelectValue placeholder="Select a machine" />
+              </SelectTrigger>
+              <SelectContent>
+                {machines.map((m) => (
+                  <SelectItem key={m.machineId} value={m.machineId}>
+                    {m.hostname}
+                    <span className="ml-1.5 text-muted-foreground text-[11px]">({m.status})</span>
+                  </SelectItem>
+                ))}
+                {machines.length === 0 && (
+                  <SelectItem value="none" disabled>
+                    No machines registered
+                  </SelectItem>
+                )}
+              </SelectContent>
+            </Select>
+          </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="agent-policy-tier">Policy Tier</Label>
-                <Select value={policyTier} onValueChange={(v) => setPolicyTier(v as PolicyTier)}>
-                  <SelectTrigger id="agent-policy-tier" className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {POLICY_TIERS.map((t) => (
-                      <SelectItem key={t.value} value={t.value}>
-                        {t.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </>
-          )}
+          <div className="space-y-2">
+            <Label htmlFor="agent-policy-tier">Policy Tier</Label>
+            <Select value={policyTier} onValueChange={(v) => setPolicyTier(v as PolicyTier)}>
+              <SelectTrigger id="agent-policy-tier" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {POLICY_TIERS.map((t) => (
+                  <SelectItem key={t.value} value={t.value}>
+                    {t.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>
@@ -196,7 +188,7 @@ export function RegisterAgentDialog({ open, onOpenChange }: RegisterAgentDialogP
           </Button>
           <Button
             onClick={() => registerAgent.mutate()}
-            disabled={!name || !endpoint || registerAgent.isPending}
+            disabled={!name || !endpoint || !machineId || registerAgent.isPending}
           >
             {registerAgent.isPending ? 'Registering...' : 'Register'}
           </Button>

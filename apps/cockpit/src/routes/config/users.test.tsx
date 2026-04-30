@@ -58,13 +58,13 @@ function createFetchMock() {
       return Promise.resolve(json({ items: mockUsers }));
     }
 
-    if (/^\/v1\/workspaces\/[^/]+\/users\/invite$/.test(pathname) && init?.method === 'POST') {
-      const body = JSON.parse(String(init.body)) as { email: string; role: string };
+    if (/^\/v1\/workspaces\/[^/]+\/users$/.test(pathname) && init?.method === 'POST') {
+      const body = JSON.parse(String(init.body)) as { email: string; roles?: string[] };
       const newUser: UserSummary = {
         userId: `user-new-${Date.now()}`,
         name: body.email.split('@')[0] ?? 'New User',
         email: body.email,
-        role: body.role as UserSummary['role'],
+        role: body.roles?.[0] === 'admin' ? 'Admin' : 'Operator',
         status: 'active',
         lastActiveIso: new Date().toISOString(),
       };
@@ -75,8 +75,18 @@ function createFetchMock() {
     const patchMatch = pathname.match(/^\/v1\/workspaces\/[^/]+\/users\/([^/]+)$/);
     if (patchMatch && init?.method === 'PATCH') {
       const userId = patchMatch[1];
-      const patch = JSON.parse(String(init.body)) as Partial<UserSummary>;
-      mockUsers = mockUsers.map((u) => (u.userId === userId ? { ...u, ...patch } : u));
+      const patch = JSON.parse(String(init.body)) as { roles?: string[]; active?: boolean };
+      mockUsers = mockUsers.map((u) =>
+        u.userId === userId
+          ? {
+              ...u,
+              ...(patch.roles?.[0] === 'admin' ? { role: 'Admin' as const } : {}),
+              ...(patch.active !== undefined
+                ? { status: patch.active ? ('active' as const) : ('suspended' as const) }
+                : {}),
+            }
+          : u,
+      );
       const updated = mockUsers.find((u) => u.userId === userId);
       return Promise.resolve(json(updated));
     }

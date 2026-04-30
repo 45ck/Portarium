@@ -4,6 +4,7 @@
  */
 
 import type { IncomingMessage, ServerResponse } from 'node:http';
+import { randomUUID } from 'node:crypto';
 
 import type { AppContext } from '../../application/common/context.js';
 import {
@@ -18,22 +19,10 @@ import {
   MachineRegistrationParseError,
   AgentConfigParseError,
   type MachineRegistrationV1,
+  type AgentConfigV1,
 } from '../../domain/machines/machine-registration-v1.js';
+import { AgentId, MachineId, WorkspaceId } from '../../domain/primitives/index.js';
 import type { TraceContext } from '../../application/common/trace-context.js';
-
-// ---------------------------------------------------------------------------
-// Credential stripping — security invariant
-//
-// authConfig (secretRef, bearer/apiKey hints) must never reach the browser.
-// All GET and LIST machine responses strip this field before serialization.
-// ---------------------------------------------------------------------------
-
-function toMachineApiView(
-  machine: MachineRegistrationV1,
-): Omit<MachineRegistrationV1, 'authConfig'> {
-  const { authConfig: _authConfig, ...view } = machine;
-  return view;
-}
 import { machineRegistrationsTotal } from '../../infrastructure/observability/prometheus-registry.js';
 import {
   type ControlPlaneDeps,
@@ -45,6 +34,184 @@ import {
   respondProblem,
   hasRole,
 } from './control-plane-handler.shared.js';
+
+type AgentCapability =
+  | 'read:external'
+  | 'write:external'
+  | 'classify'
+  | 'generate'
+  | 'analyze'
+  | 'execute-code'
+  | 'notify'
+  | 'machine:invoke';
+
+type MachineApiView = Readonly<{
+  schemaVersion: 1;
+  machineId: string;
+  workspaceId: string;
+  hostname: string;
+  registeredAtIso: string;
+  status: 'Online' | 'Offline';
+  allowedCapabilities: readonly AgentCapability[];
+}>;
+
+type AgentApiView = Readonly<{
+  schemaVersion: 1;
+  agentId: string;
+  workspaceId: string;
+  name: string;
+  endpoint: string;
+  allowedCapabilities: readonly AgentCapability[];
+  machineId: string;
+  policyTier: AgentConfigV1['policyTier'];
+  usedByWorkflowIds: readonly string[];
+}>;
+
+const UI_TO_DOMAIN_CAPABILITY: Readonly<Record<AgentCapability, string>> = {
+  'read:external': 'read:external',
+  'write:external': 'write:external',
+  classify: 'agent:classify',
+  generate: 'agent:generate',
+  analyze: 'agent:analyze',
+  'execute-code': 'code:execute',
+  notify: 'notification:send',
+  'machine:invoke': 'machine:invoke',
+};
+
+const DOMAIN_TO_UI_CAPABILITY: Readonly<Record<string, AgentCapability>> = Object.fromEntries(
+  Object.entries(UI_TO_DOMAIN_CAPABILITY).map(([ui, domain]) => [domain, ui]),
+) as Record<string, AgentCapability>;
+
+// authConfig (secretRef, bearer/apiKey hints) must never reach the browser.
+function toMachineApiView(machine: MachineRegistrationV1): MachineApiView {
+  return {
+    schemaVersion: 1,
+    machineId: String(machine.machineId),
+    workspaceId: String(machine.workspaceId),
+    hostname: machine.displayName || hostnameFromEndpoint(machine.endpointUrl),
+    registeredAtIso: machine.registeredAtIso,
+    status: machine.active ? 'Online' : 'Offline',
+    allowedCapabilities: machine.capabilities.map((capability) =>
+      toUiCapability(String(capability.capability)),
+    ),
+  };
+}
+
+function toAgentApiView(agent: AgentConfigV1): AgentApiView {
+  return {
+    schemaVersion: 1,
+    agentId: String(agent.agentId),
+    workspaceId: String(agent.workspaceId),
+    name: agent.displayName,
+    endpoint: `machine://${String(agent.machineId)}`,
+    allowedCapabilities: agent.capabilities.map((capability) =>
+      toUiCapability(String(capability.capability)),
+    ),
+    machineId: String(agent.machineId),
+    policyTier: agent.policyTier,
+    usedByWorkflowIds: [],
+  };
+}
+
+function toUiCapability(capability: string): AgentCapability {
+  return DOMAIN_TO_UI_CAPABILITY[capability] ?? 'analyze';
+}
+
+function toDomainCapability(capability: unknown): string {
+  if (typeof capability !== 'string' || capability.trim() === '') return 'agent:analyze';
+  const trimmed = capability.trim();
+  if ((UI_TO_DOMAIN_CAPABILITY as Record<string, string>)[trimmed]) {
+    return (UI_TO_DOMAIN_CAPABILITY as Record<string, string>)[trimmed]!;
+  }
+  return trimmed.includes(':') ? trimmed : `agent:${trimmed}`;
+}
+
+function hostnameFromEndpoint(endpointUrl: string): string {
+  try {
+    return new URL(endpointUrl).hostname || endpointUrl;
+  } catch {
+    return endpointUrl;
+  }
+}
+
+function endpointFromHostname(hostname: string): string {
+  const trimmed = hostname.trim();
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return `https://${trimmed}`;
+}
+
+function recordFromBody(value: unknown): Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+function normalizeMachinePayload(value: unknown, workspaceId: string): unknown {
+  const record = recordFromBody(value);
+  if (record['schemaVersion'] !== undefined || record['endpointUrl'] !== undefined) return value;
+
+  const hostname = typeof record['hostname'] === 'string' ? record['hostname'].trim() : '';
+  if (hostname === '') {
+    throw new MachineRegistrationParseError('hostname must be a non-empty string.');
+  }
+  const endpointUrl = endpointFromHostname(hostname);
+  const rawCapabilities = Array.isArray(record['allowedCapabilities'])
+    ? record['allowedCapabilities']
+    : ['machine:invoke'];
+  return {
+    schemaVersion: 1,
+    machineId: `machine-${randomUUID()}`,
+    workspaceId,
+    endpointUrl,
+    active: false,
+    displayName: hostname,
+    capabilities: rawCapabilities.map((capability) => ({
+      capability: toDomainCapability(capability),
+    })),
+    registeredAtIso: new Date().toISOString(),
+    executionPolicy: {
+      isolationMode: 'PerTenantWorker',
+      egressAllowlist: [endpointUrl],
+      workloadIdentity: 'Required',
+    },
+  };
+}
+
+function normalizeAgentPayload(value: unknown, workspaceId: string): unknown {
+  const record = recordFromBody(value);
+  if (record['schemaVersion'] !== undefined || record['displayName'] !== undefined) return value;
+
+  const name = typeof record['name'] === 'string' ? record['name'].trim() : '';
+  if (name === '') {
+    throw new AgentConfigParseError('name must be a non-empty string.');
+  }
+  const machineId = typeof record['machineId'] === 'string' ? record['machineId'].trim() : '';
+  if (machineId === '') {
+    throw new AgentConfigParseError('machineId must be a non-empty string.');
+  }
+  const rawCapabilities = Array.isArray(record['allowedCapabilities'])
+    ? record['allowedCapabilities']
+    : ['analyze'];
+  const policyTier =
+    typeof record['policyTier'] === 'string' && record['policyTier'].trim() !== ''
+      ? record['policyTier']
+      : 'HumanApprove';
+  return {
+    schemaVersion: 1,
+    agentId: `agent-${randomUUID()}`,
+    workspaceId,
+    machineId,
+    displayName: name,
+    capabilities: rawCapabilities.map((capability) => ({
+      capability: toDomainCapability(capability),
+    })),
+    policyTier,
+    allowedTools: rawCapabilities.filter(
+      (capability): capability is string => typeof capability === 'string',
+    ),
+    registeredAtIso: new Date().toISOString(),
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Handler arg types
@@ -276,7 +443,9 @@ export async function handleRegisterMachine(args: MachineRegistryArgs): Promise<
 
   let registration;
   try {
-    registration = parseMachineRegistrationV1(bodyResult.value);
+    registration = parseMachineRegistrationV1(
+      normalizeMachinePayload(bodyResult.value, workspaceId),
+    );
   } catch (err) {
     if (err instanceof MachineRegistrationParseError) {
       respondProblem(
@@ -319,8 +488,118 @@ export async function handleRegisterMachine(args: MachineRegistryArgs): Promise<
     statusCode: 201,
     correlationId,
     traceContext,
-    body: { machineId },
+    body: toMachineApiView(registration),
     location: `/v1/workspaces/${workspaceId}/machines/${machineId}`,
+  });
+}
+
+export async function handleDeregisterMachine(args: MachineItemArgs): Promise<void> {
+  const { deps, req, res, correlationId, pathname, workspaceId, machineId, traceContext } = args;
+
+  if (!deps.machineRegistryStore) {
+    respondStoreUnavailable(res, correlationId, pathname, traceContext);
+    return;
+  }
+
+  const authResult = await authAndScope(
+    deps,
+    req,
+    res,
+    correlationId,
+    pathname,
+    workspaceId,
+    traceContext,
+  );
+  if (!authResult.ok) return;
+
+  if (!hasRole(authResult.ctx, 'admin') && !hasRole(authResult.ctx, 'operator')) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/forbidden',
+        title: 'Forbidden',
+        status: 403,
+        detail: 'Only admin or operator roles may deregister machines.',
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  const existing = await deps.machineRegistryStore.getMachineRegistrationById(
+    authResult.ctx.tenantId,
+    MachineId(machineId),
+  );
+  if (!existing || String(existing.workspaceId) !== workspaceId) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/not-found',
+        title: 'Not Found',
+        status: 404,
+        detail: `Machine ${machineId} not found.`,
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  const inactive = parseMachineRegistrationV1({ ...existing, active: false });
+  await deps.machineRegistryStore.saveMachineRegistration(authResult.ctx.tenantId, inactive);
+  res.statusCode = 204;
+  res.setHeader('x-correlation-id', correlationId);
+  res.end();
+}
+
+export async function handleTestMachineConnection(args: MachineItemArgs): Promise<void> {
+  const { deps, req, res, correlationId, pathname, workspaceId, machineId, traceContext } = args;
+
+  if (!deps.machineQueryStore) {
+    respondStoreUnavailable(res, correlationId, pathname, traceContext);
+    return;
+  }
+
+  const authResult = await authAndScope(
+    deps,
+    req,
+    res,
+    correlationId,
+    pathname,
+    workspaceId,
+    traceContext,
+  );
+  if (!authResult.ok) return;
+
+  const machine = await deps.machineQueryStore.getMachineRegistrationById(
+    authResult.ctx.tenantId,
+    WorkspaceId(workspaceId),
+    MachineId(machineId),
+  );
+  if (!machine) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/not-found',
+        title: 'Not Found',
+        status: 404,
+        detail: `Machine ${machineId} not found.`,
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  respondJson(res, {
+    statusCode: 200,
+    correlationId,
+    traceContext,
+    body: { status: machine.active ? 'ok' : 'unreachable', latencyMs: 0 },
   });
 }
 
@@ -368,7 +647,12 @@ export async function handleListAgents(args: AgentRegistryArgs): Promise<void> {
     return;
   }
 
-  respondJson(res, { statusCode: 200, correlationId, traceContext, body: result.value });
+  respondJson(res, {
+    statusCode: 200,
+    correlationId,
+    traceContext,
+    body: { ...result.value, items: result.value.items.map(toAgentApiView) },
+  });
 }
 
 export async function handleGetAgent(args: AgentItemArgs): Promise<void> {
@@ -400,7 +684,12 @@ export async function handleGetAgent(args: AgentItemArgs): Promise<void> {
     return;
   }
 
-  respondJson(res, { statusCode: 200, correlationId, traceContext, body: result.value });
+  respondJson(res, {
+    statusCode: 200,
+    correlationId,
+    traceContext,
+    body: toAgentApiView(result.value),
+  });
 }
 
 export async function handleCreateAgent(args: AgentRegistryArgs): Promise<void> {
@@ -468,7 +757,7 @@ export async function handleCreateAgent(args: AgentRegistryArgs): Promise<void> 
 
   let agent;
   try {
-    agent = parseAgentConfigV1(bodyResult.value);
+    agent = parseAgentConfigV1(normalizeAgentPayload(bodyResult.value, workspaceId));
   } catch (err) {
     if (err instanceof AgentConfigParseError) {
       respondProblem(
@@ -510,7 +799,180 @@ export async function handleCreateAgent(args: AgentRegistryArgs): Promise<void> 
     statusCode: 201,
     correlationId,
     traceContext,
-    body: { agentId },
+    body: toAgentApiView(agent),
     location: `/v1/workspaces/${workspaceId}/agents/${agentId}`,
+  });
+}
+
+export async function handleUpdateAgent(args: AgentItemArgs): Promise<void> {
+  const { deps, req, res, correlationId, pathname, workspaceId, agentId, traceContext } = args;
+
+  if (!deps.machineRegistryStore) {
+    respondStoreUnavailable(res, correlationId, pathname, traceContext);
+    return;
+  }
+
+  const authResult = await authAndScope(
+    deps,
+    req,
+    res,
+    correlationId,
+    pathname,
+    workspaceId,
+    traceContext,
+  );
+  if (!authResult.ok) return;
+
+  if (!hasRole(authResult.ctx, 'admin') && !hasRole(authResult.ctx, 'operator')) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/forbidden',
+        title: 'Forbidden',
+        status: 403,
+        detail: 'Only admin or operator roles may update agents.',
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  const existing = await deps.machineRegistryStore.getAgentConfigById(
+    authResult.ctx.tenantId,
+    AgentId(agentId),
+  );
+  if (!existing || String(existing.workspaceId) !== workspaceId) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/not-found',
+        title: 'Not Found',
+        status: 404,
+        detail: `Agent ${agentId} not found.`,
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  const bodyResult = await readJsonBody(req);
+  if (!bodyResult.ok) {
+    respondProblem(
+      res,
+      {
+        type:
+          bodyResult.error === 'unsupported-content-type'
+            ? 'https://portarium.dev/problems/unsupported-media-type'
+            : 'https://portarium.dev/problems/bad-request',
+        title:
+          bodyResult.error === 'unsupported-content-type'
+            ? 'Unsupported Media Type'
+            : 'Bad Request',
+        status: bodyResult.error === 'unsupported-content-type' ? 415 : 400,
+        detail:
+          bodyResult.error === 'invalid-json'
+            ? 'Request body contains invalid JSON.'
+            : bodyResult.error === 'empty-body'
+              ? 'Request body must not be empty.'
+              : 'Content-Type must be application/json.',
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  try {
+    const patch = recordFromBody(bodyResult.value);
+    const rawCapabilities = Array.isArray(patch['allowedCapabilities'])
+      ? patch['allowedCapabilities']
+      : undefined;
+    const updated = parseAgentConfigV1({
+      ...existing,
+      ...(typeof patch['name'] === 'string' ? { displayName: patch['name'] } : {}),
+      ...(rawCapabilities
+        ? {
+            capabilities: rawCapabilities.map((capability) => ({
+              capability: toDomainCapability(capability),
+            })),
+            allowedTools: rawCapabilities.filter(
+              (capability): capability is string => typeof capability === 'string',
+            ),
+          }
+        : {}),
+    });
+    await deps.machineRegistryStore.saveAgentConfig(authResult.ctx.tenantId, updated);
+    respondJson(res, {
+      statusCode: 200,
+      correlationId,
+      traceContext,
+      body: toAgentApiView(updated),
+    });
+  } catch (error) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/validation-failed',
+        title: 'Validation Failed',
+        status: 400,
+        detail: error instanceof Error ? error.message : 'Invalid agent update payload.',
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+  }
+}
+
+export async function handleTestAgentConnection(args: AgentItemArgs): Promise<void> {
+  const { deps, req, res, correlationId, pathname, workspaceId, agentId, traceContext } = args;
+
+  if (!deps.machineQueryStore) {
+    respondStoreUnavailable(res, correlationId, pathname, traceContext);
+    return;
+  }
+
+  const authResult = await authAndScope(
+    deps,
+    req,
+    res,
+    correlationId,
+    pathname,
+    workspaceId,
+    traceContext,
+  );
+  if (!authResult.ok) return;
+
+  const agent = await deps.machineQueryStore.getAgentConfigById(
+    authResult.ctx.tenantId,
+    WorkspaceId(workspaceId),
+    AgentId(agentId),
+  );
+  if (!agent) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/not-found',
+        title: 'Not Found',
+        status: 404,
+        detail: `Agent ${agentId} not found.`,
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  respondJson(res, {
+    statusCode: 200,
+    correlationId,
+    traceContext,
+    body: { status: 'ok', latencyMs: 0 },
   });
 }
