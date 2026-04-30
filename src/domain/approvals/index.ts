@@ -9,6 +9,7 @@ export * from './approval-delegation-v1.js';
 export * from './approval-context-assembler-v1.js';
 export * from './approval-escalation-events-v1.js';
 export * from './approval-trust-calibration-v1.js';
+export * from './decision-context-packet-v1.js';
 
 // These modules have name conflicts with other domain modules and must be
 // imported directly rather than through the barrel:

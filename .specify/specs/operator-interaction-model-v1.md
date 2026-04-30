@@ -447,7 +447,7 @@ Where rollback or compensation is possible, the system must surface that path ex
 
 Before a human is asked to decide, the system must provide enough context to make that decision without reconstructing the Run from raw logs.
 
-Minimum context packet:
+The normative shared packet is [Decision Context Packet v1](./decision-context-packet-v1.md). Minimum context packet:
 
 - declared goal
 - scope boundary

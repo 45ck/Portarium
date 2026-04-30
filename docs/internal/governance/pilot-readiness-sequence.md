@@ -39,6 +39,7 @@ Some Cockpit contracts depend on this sequence because they would otherwise gues
 
 The bead-1074 artifact is the authority and accountability contract in `.specify/specs/operator-interaction-model-v1.md`.
 The bead-1058 eval is runnable with `node node_modules/vitest/vitest.mjs run scripts/integration/scenario-operator-trust-calibration.test.ts`.
+The bead-1075 artifact is the shared packet contract in `.specify/specs/decision-context-packet-v1.md`.
 
 ## Not Core For This Sequence
 
