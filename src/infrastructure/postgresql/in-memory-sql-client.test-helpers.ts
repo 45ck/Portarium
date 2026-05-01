@@ -2,6 +2,7 @@ import {
   SQL_JSON_DOC_SELECT_BY_IDS,
   SQL_JSON_DOC_SELECT_MANY,
   SQL_JSON_DOC_SELECT_ONE,
+  SQL_JSON_DOC_UPDATE_IF_STATUS,
   SQL_JSON_DOC_UPSERT,
 } from './postgres-json-document-store.js';
 import type { SqlClient, SqlQueryResult, SqlRow } from './sql-client.js';
@@ -37,6 +38,9 @@ export class InMemorySqlClient implements SqlClient {
     }
     if (statement.startsWith(SQL_JSON_DOC_SELECT_BY_IDS)) {
       return Promise.resolve(this.#selectByIds<Row>(params));
+    }
+    if (statement.startsWith(SQL_JSON_DOC_UPDATE_IF_STATUS)) {
+      return Promise.resolve(this.#updateIfStatus<Row>(params));
     }
     throw new Error(`Unsupported SQL statement tag: ${statement.split('\n')[0]}`);
   }
@@ -135,6 +139,32 @@ export class InMemorySqlClient implements SqlClient {
       rows,
       rowCount: rows.length,
     };
+  }
+
+  #updateIfStatus<Row extends SqlRow>(params: readonly unknown[]): SqlQueryResult<Row> {
+    const [tenantId, workspaceId, collection, documentId, expectedStatus, payloadJson] = params;
+    const key = keyFor({
+      tenantId: String(tenantId),
+      collection: String(collection),
+      documentId: String(documentId),
+    });
+    const row = this.#rows.get(key);
+    const payload = row?.payload as { status?: unknown } | undefined;
+    if (
+      row?.workspaceId !== String(workspaceId) ||
+      String(payload?.status ?? '') !== String(expectedStatus)
+    ) {
+      return { rows: [], rowCount: 0 };
+    }
+
+    this.#rows.set(key, {
+      tenantId: String(tenantId),
+      workspaceId: String(workspaceId),
+      collection: String(collection),
+      documentId: String(documentId),
+      payload: JSON.parse(String(payloadJson)) as unknown,
+    });
+    return { rows: [] as unknown as readonly Row[], rowCount: 1 };
   }
 }
 

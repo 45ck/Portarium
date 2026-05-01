@@ -46,6 +46,7 @@ describe('executeApprovedAgentAction', () => {
   let eventPublisher: EventPublisher;
   let actionRunner: ActionRunnerPort;
   let idempotency: IdempotencyStore;
+  let storedApproval: ApprovalDecidedV1;
 
   beforeEach(() => {
     authorization = { isAllowed: vi.fn(async () => true) };
@@ -57,9 +58,19 @@ describe('executeApprovedAgentAction', () => {
         return `id-${callCount}`;
       }),
     };
+    storedApproval = APPROVED;
     approvalStore = {
-      getApprovalById: vi.fn(async () => APPROVED),
-      saveApproval: vi.fn(async () => undefined),
+      getApprovalById: vi.fn(async () => storedApproval),
+      saveApproval: vi.fn(async (_tenantId, approval) => {
+        storedApproval = approval as ApprovalDecidedV1;
+      }),
+      saveApprovalIfStatus: vi.fn(
+        async (_tenantId, _workspaceId, _approvalId, expectedStatus, next) => {
+          if (storedApproval.status !== expectedStatus) return false;
+          storedApproval = next as ApprovalDecidedV1;
+          return true;
+        },
+      ),
     };
     unitOfWork = { execute: vi.fn(async (fn) => fn()) };
     eventPublisher = { publish: vi.fn(async () => undefined) };
@@ -268,17 +279,58 @@ describe('executeApprovedAgentAction', () => {
     const second = await executeApprovedAgentAction(makeDeps(), makeCtx(), input);
 
     expect(first.ok).toBe(false);
-    expect(second.ok).toBe(true);
+    expect(second.ok).toBe(false);
     expect(dispatches).toEqual([
       {
         actionId: ActionId('execute-crash-retry-key'),
         idempotencyKey: 'execute-crash-retry-key',
       },
-      {
-        actionId: ActionId('execute-crash-retry-key'),
-        idempotencyKey: 'execute-crash-retry-key',
-      },
     ]);
+  });
+
+  it('allows only one concurrent first execution to dispatch', async () => {
+    const approvals = new Map<string, ApprovalDecidedV1>([['tenant-1:ws-1:appr-1', APPROVED]]);
+    let readCount = 0;
+    let releaseReads: (() => void) | undefined;
+    const bothRead = new Promise<void>((resolve) => {
+      releaseReads = resolve;
+    });
+    approvalStore = {
+      getApprovalById: vi.fn(async (tenantId, workspaceId, approvalId) => {
+        readCount += 1;
+        const approval = approvals.get(`${tenantId}:${workspaceId}:${approvalId}`) ?? null;
+        if (readCount === 2) releaseReads?.();
+        if (readCount <= 2) await bothRead;
+        return approval;
+      }),
+      saveApproval: vi.fn(async (_tenantId, approval) => {
+        approvals.set(`tenant-1:${approval.workspaceId}:${approval.approvalId}`, approval);
+      }),
+      saveApprovalIfStatus: vi.fn(
+        async (tenantId, workspaceId, approvalId, expectedStatus, next) => {
+          const key = `${tenantId}:${workspaceId}:${approvalId}`;
+          const current = approvals.get(key);
+          if (!current || current.status !== expectedStatus) return false;
+          approvals.set(key, next as ApprovalDecidedV1);
+          return true;
+        },
+      ),
+    };
+
+    const [first, second] = await Promise.all([
+      executeApprovedAgentAction(makeDeps(), makeCtx(), makeInput()),
+      executeApprovedAgentAction(makeDeps(), makeCtx(), makeInput()),
+    ]);
+
+    const results = [first, second];
+    expect(results.filter((result) => result.ok)).toHaveLength(1);
+    expect(results.filter((result) => !result.ok && result.error.kind === 'Conflict')).toHaveLength(
+      1,
+    );
+    expect(actionRunner.dispatchAction).toHaveBeenCalledTimes(1);
+    expect(eventPublisher.publish).toHaveBeenCalledTimes(1);
+    expect(approvalStore.saveApprovalIfStatus).toHaveBeenCalledTimes(3);
+    expect(approvals.get('tenant-1:ws-1:appr-1')?.status).toBe('Executed');
   });
 
   it('stores successful execution result in idempotency cache', async () => {

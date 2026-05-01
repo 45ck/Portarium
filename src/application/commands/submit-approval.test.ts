@@ -832,6 +832,90 @@ describe('submitApproval', () => {
     expect(evidenceLog.appendEntry).not.toHaveBeenCalled();
   });
 
+  it('allows only one concurrent first decision to publish event and evidence', async () => {
+    const approvals = new Map<string, ReturnType<typeof parseApprovalV1>>([
+      ['tenant-1:ws-1:approval-1', PENDING_APPROVAL],
+    ]);
+    let readCount = 0;
+    let releaseReads: (() => void) | undefined;
+    const bothRead = new Promise<void>((resolve) => {
+      releaseReads = resolve;
+    });
+    approvalStore = {
+      getApprovalById: vi.fn(async (tenantId, workspaceId, approvalId) => {
+        readCount += 1;
+        const approval = approvals.get(`${tenantId}:${workspaceId}:${approvalId}`) ?? null;
+        if (readCount === 2) releaseReads?.();
+        if (readCount <= 2) await bothRead;
+        return approval;
+      }),
+      saveApproval: vi.fn(async (_tenantId, approval) => {
+        approvals.set(`tenant-1:${approval.workspaceId}:${approval.approvalId}`, approval);
+      }),
+      saveApprovalIfStatus: vi.fn(
+        async (tenantId, workspaceId, approvalId, expectedStatus, next) => {
+          const key = `${tenantId}:${workspaceId}:${approvalId}`;
+          const current = approvals.get(key);
+          if (!current || current.status !== expectedStatus) return false;
+          approvals.set(key, next);
+          return true;
+        },
+      ),
+    };
+
+    const ctx = toAppContext({
+      tenantId: 'tenant-1',
+      principalId: 'user-1',
+      correlationId: 'corr-1',
+      roles: ['approver'],
+    });
+    const input = {
+      workspaceId: 'ws-1',
+      approvalId: 'approval-1',
+      decision: 'Approved' as const,
+      rationale: 'Concurrent approval.',
+    };
+
+    const [first, second] = await Promise.all([
+      submitApproval(
+        {
+          authorization,
+          clock,
+          idGenerator,
+          approvalStore,
+          unitOfWork,
+          eventPublisher,
+          evidenceLog,
+        },
+        ctx,
+        input,
+      ),
+      submitApproval(
+        {
+          authorization,
+          clock,
+          idGenerator,
+          approvalStore,
+          unitOfWork,
+          eventPublisher,
+          evidenceLog,
+        },
+        ctx,
+        input,
+      ),
+    ]);
+
+    const results = [first, second];
+    expect(results.filter((result) => result.ok)).toHaveLength(1);
+    expect(results.filter((result) => !result.ok && result.error.kind === 'Conflict')).toHaveLength(
+      1,
+    );
+    expect(approvalStore.saveApprovalIfStatus).toHaveBeenCalledTimes(2);
+    expect(eventPublisher.publish).toHaveBeenCalledTimes(1);
+    expect(evidenceLog.appendEntry).toHaveBeenCalledTimes(1);
+    expect(approvals.get('tenant-1:ws-1:approval-1')?.status).toBe('Approved');
+  });
+
   it('rejects an idempotency replay with a different decision payload', async () => {
     const cache = new Map<string, unknown>();
     idempotency = {

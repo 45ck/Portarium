@@ -30,6 +30,7 @@ import type {
 const APPROVAL_STATUSES = [
   'Pending',
   'Approved',
+  'Executing',
   'Denied',
   'Executed',
   'Expired',

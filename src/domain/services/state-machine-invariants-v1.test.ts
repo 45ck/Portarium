@@ -242,10 +242,14 @@ const ALL_APPROVAL_PAIRS: readonly (readonly [ApprovalStatus, ApprovalStatus])[]
   APPROVAL_STATUSES.flatMap((from) => APPROVAL_STATUSES.map((to) => [from, to] as const));
 
 describe('Approval state machine — structural invariants', () => {
-  it('Pending, Approved, and RequestChanges have outgoing transitions; terminal states do not', () => {
+  it('Pending, Approved, Executing, and RequestChanges have outgoing transitions; terminal states do not', () => {
     for (const status of APPROVAL_STATUSES) {
-      if (status === 'Pending' || status === 'RequestChanges' || status === 'Approved') {
-        // Pending → {Approved,Denied,Expired,RequestChanges}; Approved → {Executed}; RequestChanges → {Pending}
+      if (
+        status === 'Pending' ||
+        status === 'RequestChanges' ||
+        status === 'Approved' ||
+        status === 'Executing'
+      ) {
         expect(APPROVAL_STATUS_TRANSITIONS[status].length).toBeGreaterThan(0);
       } else {
         expect(APPROVAL_STATUS_TRANSITIONS[status]).toHaveLength(0);

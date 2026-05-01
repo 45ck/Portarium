@@ -540,6 +540,16 @@ export function buildInMemoryApprovalStore(): ApprovalStore & ApprovalQueryStore
         approval,
       });
     },
+    saveApprovalIfStatus: async (tenantId, workspaceId, approvalId, expectedStatus, approval) => {
+      const storeKey = key(tenantId, workspaceId, approvalId);
+      const existing = store.get(storeKey);
+      if (existing?.approval.status !== expectedStatus) return false;
+      store.set(storeKey, {
+        tenantId: String(tenantId),
+        approval,
+      });
+      return true;
+    },
     listApprovals: async (tenantId, workspaceId, filter) => {
       let items = [...store.values()]
         .filter(

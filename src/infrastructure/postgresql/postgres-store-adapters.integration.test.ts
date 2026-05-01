@@ -198,6 +198,64 @@ describe('PostgreSQL store adapters', () => {
     expect(cached?.runId).toBe('run-1');
   });
 
+  it('updates approvals only when the stored status matches the expected status', async () => {
+    const client = new InMemorySqlClient();
+    const approvals = new PostgresApprovalStore(client);
+    const pending = parseApprovalV1({
+      schemaVersion: 1,
+      approvalId: 'approval-cas-1',
+      workspaceId: 'ws-1',
+      runId: 'run-1',
+      planId: 'plan-1',
+      prompt: 'Approve deployment',
+      status: 'Pending',
+      requestedByUserId: 'user-1',
+      requestedAtIso: '2026-02-20T00:00:00.000Z',
+    });
+    const decided = parseApprovalV1({
+      ...pending,
+      status: 'Approved',
+      decidedByUserId: 'user-2',
+      decidedAtIso: '2026-02-20T00:01:00.000Z',
+      rationale: 'Approved.',
+    });
+    const denied = parseApprovalV1({
+      ...pending,
+      status: 'Denied',
+      decidedByUserId: 'user-3',
+      decidedAtIso: '2026-02-20T00:02:00.000Z',
+      rationale: 'Denied.',
+    });
+
+    await approvals.saveApproval(TenantId('tenant-1'), pending);
+
+    await expect(
+      approvals.saveApprovalIfStatus(
+        TenantId('tenant-1'),
+        'ws-1' as never,
+        'approval-cas-1' as never,
+        'Pending',
+        decided,
+      ),
+    ).resolves.toBe(true);
+    await expect(
+      approvals.saveApprovalIfStatus(
+        TenantId('tenant-1'),
+        'ws-1' as never,
+        'approval-cas-1' as never,
+        'Pending',
+        denied,
+      ),
+    ).resolves.toBe(false);
+
+    const loaded = await approvals.getApprovalById(
+      TenantId('tenant-1'),
+      'ws-1' as never,
+      'approval-cas-1' as never,
+    );
+    expect(loaded?.status).toBe('Approved');
+  });
+
   it('supports work-item and workforce stores', async () => {
     const client = new InMemorySqlClient();
     const workItems = new PostgresWorkItemStore(client);

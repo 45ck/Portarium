@@ -21,6 +21,11 @@ import {
 } from '../../domain/primitives/index.js';
 import type { DomainEventV1 } from '../../domain/events/domain-events-v1.js';
 import {
+  type ApprovalDecidedV1,
+  type ApprovalStatus,
+  parseApprovalV1,
+} from '../../domain/approvals/index.js';
+import {
   type AppContext,
   type Conflict,
   type DependencyFailure,
@@ -96,6 +101,30 @@ type ExecuteIdempotencyEnvelope = Readonly<{
   fingerprint: string;
   output: ExecuteApprovedAgentActionOutput;
 }>;
+
+async function saveApprovalIfStatus(
+  deps: ExecuteApprovedAgentActionDeps,
+  ctx: AppContext,
+  workspaceId: WorkspaceIdType,
+  approvalId: ApprovalIdType,
+  expectedStatus: ApprovalStatus,
+  approval: ApprovalDecidedV1,
+): Promise<boolean> {
+  if (deps.approvalStore.saveApprovalIfStatus) {
+    return deps.approvalStore.saveApprovalIfStatus(
+      ctx.tenantId,
+      workspaceId,
+      approvalId,
+      expectedStatus,
+      approval,
+    );
+  }
+
+  const latest = await deps.approvalStore.getApprovalById(ctx.tenantId, workspaceId, approvalId);
+  if (latest?.status !== expectedStatus) return false;
+  await deps.approvalStore.saveApproval(ctx.tenantId, approval);
+  return true;
+}
 
 function stableJson(value: unknown): string {
   if (Array.isArray(value)) {
@@ -269,6 +298,37 @@ export async function executeApprovedAgentAction(
     return err({ kind: 'DependencyFailure', message: 'Clock returned an invalid timestamp.' });
   }
 
+  const executionClaim: ApprovalDecidedV1 = parseApprovalV1({
+    ...approval,
+    status: 'Executing',
+    decidedAtIso: executedAtIso,
+    decidedByUserId: approval.decidedByUserId,
+    rationale: `Execution claimed (executionId: ${executionId})`,
+  }) as ApprovalDecidedV1;
+
+  try {
+    const claimed = await saveApprovalIfStatus(
+      deps,
+      ctx,
+      workspaceId,
+      approvalId,
+      'Approved',
+      executionClaim,
+    );
+    if (!claimed) {
+      return err({
+        kind: 'Conflict',
+        message: `Approval ${input.approvalId} is already being executed or is no longer Approved.`,
+      });
+    }
+  } catch (error) {
+    return err({
+      kind: 'DependencyFailure',
+      message:
+        error instanceof Error ? error.message : 'Failed to claim approved action execution.',
+    });
+  }
+
   // --- Dispatch through action runner ---
   const dispatchResult = await deps.actionRunner.dispatchAction({
     actionId: ActionId(executionId),
@@ -308,13 +368,39 @@ export async function executeApprovedAgentAction(
       // Mark approval as Executed to prevent double-execution on retry.
       // Only update to terminal 'Executed' state when dispatch succeeded.
       if (dispatchResult.ok) {
-        await deps.approvalStore.saveApproval(ctx.tenantId, {
-          ...approval,
-          status: 'Executed',
-          decidedAtIso: executedAtIso,
-          decidedByUserId: approval.decidedByUserId,
-          rationale: `Executed via action runner (executionId: ${executionId})`,
-        });
+        const finalized = await saveApprovalIfStatus(
+          deps,
+          ctx,
+          workspaceId,
+          approvalId,
+          'Executing',
+          {
+            ...approval,
+            status: 'Executed',
+            decidedAtIso: executedAtIso,
+            decidedByUserId: approval.decidedByUserId,
+            rationale: `Executed via action runner (executionId: ${executionId})`,
+          },
+        );
+        if (!finalized) {
+          throw new Error(
+            `Approval ${String(approvalId)} execution claim was lost before finalize.`,
+          );
+        }
+      } else {
+        const released = await saveApprovalIfStatus(
+          deps,
+          ctx,
+          workspaceId,
+          approvalId,
+          'Executing',
+          approval,
+        );
+        if (!released) {
+          throw new Error(
+            `Approval ${String(approvalId)} execution claim was lost before release.`,
+          );
+        }
       }
 
       await deps.eventPublisher.publish(

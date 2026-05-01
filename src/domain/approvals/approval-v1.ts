@@ -23,7 +23,8 @@ import {
   readString,
 } from '../validation/parse-utils.js';
 
-export type ApprovalStatus = 'Pending' | ApprovalDecision;
+export type ApprovalExecutionStatus = 'Executing';
+export type ApprovalStatus = 'Pending' | ApprovalDecision | ApprovalExecutionStatus;
 
 export type EscalationStepV1 = Readonly<{
   stepOrder: number;
@@ -54,7 +55,7 @@ export type ApprovalPendingV1 = Readonly<
 
 export type ApprovalDecidedV1 = Readonly<
   ApprovalBaseV1 & {
-    status: ApprovalDecision;
+    status: ApprovalDecision | ApprovalExecutionStatus;
     decidedAtIso: string;
     decidedByUserId: UserIdType;
     rationale: string;
@@ -82,7 +83,7 @@ export function parseApprovalV1(value: unknown): ApprovalV1 {
   const statusRaw = readString(record, 'status', ApprovalParseError);
   if (!isApprovalStatus(statusRaw)) {
     throw new ApprovalParseError(
-      'status must be one of: Pending, Approved, Denied, Executed, Expired, RequestChanges.',
+      'status must be one of: Pending, Approved, Denied, Executing, Executed, Expired, RequestChanges.',
     );
   }
 
@@ -140,7 +141,7 @@ function parseApprovalBaseV1(value: Record<string, unknown>): ApprovalBaseV1 {
 
 function parseDecisionFields(
   value: Record<string, unknown>,
-  status: ApprovalDecision,
+  status: ApprovalDecision | ApprovalExecutionStatus,
   requestedAtIso: string,
 ): Pick<ApprovalDecidedV1, 'status' | 'decidedAtIso' | 'decidedByUserId' | 'rationale'> {
   const decidedAtIso = readIsoString(value, 'decidedAtIso', ApprovalParseError);
@@ -192,10 +193,11 @@ function parseOptionalId<T>(
   return raw === undefined ? undefined : ctor(raw);
 }
 
-function isApprovalDecision(value: string): value is ApprovalDecision {
+function isApprovalDecision(value: string): value is ApprovalDecision | ApprovalExecutionStatus {
   return (
     value === 'Approved' ||
     value === 'Denied' ||
+    value === 'Executing' ||
     value === 'Executed' ||
     value === 'Expired' ||
     value === 'RequestChanges'

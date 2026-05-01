@@ -4,6 +4,7 @@ export const SQL_JSON_DOC_UPSERT = '/* portarium:json-doc-upsert */';
 export const SQL_JSON_DOC_SELECT_ONE = '/* portarium:json-doc-select-one */';
 export const SQL_JSON_DOC_SELECT_MANY = '/* portarium:json-doc-select-many */';
 export const SQL_JSON_DOC_SELECT_BY_IDS = '/* portarium:json-doc-select-by-ids */';
+export const SQL_JSON_DOC_UPDATE_IF_STATUS = '/* portarium:json-doc-update-if-status */';
 
 export type JsonDocument = Readonly<{
   tenantId: string;
@@ -57,6 +58,37 @@ LIMIT 1;`,
       return null;
     }
     return result.rows[0]?.payload ?? null;
+  }
+
+  public async updatePayloadIfStatus(
+    params: Readonly<{
+      tenantId: string;
+      workspaceId: string;
+      collection: string;
+      documentId: string;
+      expectedStatus: string;
+      payload: unknown;
+    }>,
+  ): Promise<boolean> {
+    const result = await this.#client.query(
+      `${SQL_JSON_DOC_UPDATE_IF_STATUS}
+UPDATE domain_documents
+SET workspace_id = $2, payload = $6::jsonb, updated_at = NOW()
+WHERE tenant_id = $1
+  AND workspace_id = $2
+  AND collection = $3
+  AND document_id = $4
+  AND payload->>'status' = $5;`,
+      [
+        params.tenantId,
+        params.workspaceId,
+        params.collection,
+        params.documentId,
+        params.expectedStatus,
+        JSON.stringify(params.payload),
+      ],
+    );
+    return result.rowCount === 1;
   }
 
   public async list(

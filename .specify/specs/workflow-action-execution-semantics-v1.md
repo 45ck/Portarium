@@ -136,7 +136,8 @@ Execution rules:
 ## 5) Determinism and Auditability
 
 - Action idempotency key MUST remain stable across retries.
-- Human-approved agent actions MUST reuse either the caller's `Idempotency-Key` or the derived `(tenantId, workspaceId, approvalId, flowRef)` execution key as the stable execution `actionId` and dispatch idempotency key when crossing machine/adapter boundaries.
+- Human-approved agent actions MUST reuse either the caller's `Idempotency-Key` or the derived `(tenantId, workspaceId, approvalId, flowRef)` execution key as the stable execution `actionId`, dispatch idempotency key, and approval execution claim key when crossing machine/adapter boundaries.
+- Before external dispatch, human-approved agent actions MUST win a storage-level approval claim (`Approved -> Executing`). Claim losers MUST NOT dispatch, publish duplicate events, or append duplicate evidence.
 - A successful command replay MUST return the cached execution result without publishing duplicate events or appending duplicate evidence.
 - Scheduler decisions must be deterministic for equivalent input state.
 - Every attempt and terminal transition must produce evidence with:

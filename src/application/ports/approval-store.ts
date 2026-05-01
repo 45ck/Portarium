@@ -24,6 +24,18 @@ export interface ApprovalStore {
     approvalId: ApprovalId,
   ): Promise<ApprovalV1 | null>;
   saveApproval(tenantId: TenantId, approval: ApprovalV1): Promise<void>;
+  /**
+   * Atomically persists `approval` only when the stored approval still has
+   * `expectedStatus`. Returns false when another caller has already moved the
+   * approval to a different state.
+   */
+  saveApprovalIfStatus?(
+    tenantId: TenantId,
+    workspaceId: WorkspaceId,
+    approvalId: ApprovalId,
+    expectedStatus: ApprovalStatus,
+    approval: ApprovalV1,
+  ): Promise<boolean>;
 }
 
 export interface ApprovalQueryStore {

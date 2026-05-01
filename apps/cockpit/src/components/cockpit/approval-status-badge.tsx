@@ -1,7 +1,7 @@
 import type { ApprovalStatus } from '@portarium/cockpit-types';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { Clock, CheckCircle2, XCircle, RefreshCw } from 'lucide-react';
+import { Clock, CheckCircle2, XCircle, RefreshCw, Loader2 } from 'lucide-react';
 
 interface ApprovalStatusBadgeProps {
   status: ApprovalStatus;
@@ -27,6 +27,12 @@ const config: Record<
     label: 'Approved',
     variant: 'default',
     className: 'bg-success text-success-foreground',
+  },
+  Executing: {
+    icon: Loader2,
+    label: 'Executing',
+    variant: 'outline',
+    className: 'border-info text-info',
   },
   Denied: { icon: XCircle, label: 'Denied', variant: 'destructive', className: '' },
   Executed: {

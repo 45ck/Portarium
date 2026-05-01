@@ -12,14 +12,15 @@ import type { ApprovalStatus } from '../approvals/approval-v1.js';
  *   - Starts in `Pending`.
  *   - `RequestChanges` is a non-terminal decision: it transitions back to
  *     `Pending` so the requester can revise and resubmit.
- *   - `Approved` is a non-terminal decision: it transitions to `Executed`
- *     once the approved agent action is dispatched (re-execution guard
- *     ensures this is a one-way, single-use transition).
+ *   - `Approved` is a non-terminal decision: it transitions through a
+ *     short-lived `Executing` claim before `Executed` once the approved agent
+ *     action is dispatched.
  *   - `Denied`, `Expired`, and `Executed` are terminal: no outgoing transitions.
  */
 export interface ApprovalStatusTransitionMap {
   Pending: 'Approved' | 'Denied' | 'Expired' | 'RequestChanges';
-  Approved: 'Executed';
+  Approved: 'Executing';
+  Executing: 'Executed' | 'Approved';
   Denied: never;
   Executed: never;
   Expired: never;
@@ -47,7 +48,8 @@ export const APPROVAL_STATUS_TRANSITIONS: Readonly<
   Record<ApprovalStatus, readonly ApprovalStatus[]>
 > = {
   Pending: ['Approved', 'Denied', 'Expired', 'RequestChanges'],
-  Approved: ['Executed'],
+  Approved: ['Executing'],
+  Executing: ['Executed', 'Approved'],
   Denied: [],
   Executed: [],
   Expired: [],

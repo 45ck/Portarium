@@ -20,7 +20,7 @@ import type {
 import type { Page } from '../../application/common/query.js';
 import { clampLimit, MAX_LIMIT } from '../../application/common/query.js';
 import { parseAdapterRegistrationV1 } from '../../domain/adapters/adapter-registration-v1.js';
-import type { ApprovalV1 } from '../../domain/approvals/approval-v1.js';
+import type { ApprovalStatus, ApprovalV1 } from '../../domain/approvals/approval-v1.js';
 import { parseApprovalV1 } from '../../domain/approvals/approval-v1.js';
 import type { PolicyV1 } from '../../domain/policy/policy-v1.js';
 import { parsePolicyV1 } from '../../domain/policy/policy-v1.js';
@@ -281,6 +281,23 @@ export class PostgresApprovalStore implements ApprovalStore, ApprovalQueryStore 
       workspaceId: String(approval.workspaceId),
       collection: COLLECTION_APPROVALS,
       documentId: String(approval.approvalId),
+      payload: approval,
+    });
+  }
+
+  public saveApprovalIfStatus(
+    tenantId: string,
+    workspaceId: string,
+    approvalId: string,
+    expectedStatus: ApprovalStatus,
+    approval: ApprovalV1,
+  ): Promise<boolean> {
+    return this.#documents.updatePayloadIfStatus({
+      tenantId: String(tenantId),
+      workspaceId: String(workspaceId),
+      collection: COLLECTION_APPROVALS,
+      documentId: String(approvalId),
+      expectedStatus,
       payload: approval,
     });
   }

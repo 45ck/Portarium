@@ -115,7 +115,7 @@
         },
         "output": {
           "name": "SubmitApprovalOutput",
-          "sha256": "b571cf6776feb24c773f15a1fe5c6c955dfad472fb89f1f88775d53c437821d6"
+          "sha256": "894c746ad5865366cbc0e6542b3ef08ac47f40bf2274e0d1a7f46b2e8c98eefc"
         },
         "error": {
           "name": "SubmitApprovalError",

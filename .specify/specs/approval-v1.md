@@ -47,8 +47,32 @@ One of:
 
 - `Pending`
 - `Approved`
+- `Executing`
 - `Denied`
+- `Executed`
+- `Expired`
 - `RequestChanges`
+
+`Executing` is a short-lived internal claim state used by approved agent-action
+execution. It prevents two callers from dispatching the same approved action at
+the same time. Operator surfaces may display it, but clients do not submit it as
+an approval decision.
+
+### Status Transitions
+
+| From                            | To                                                | Rule                                                                      |
+| ------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------- |
+| `Pending`                       | `Approved`, `Denied`, `Expired`, `RequestChanges` | Human decision or scheduler expiry.                                       |
+| `Approved`                      | `Executing`                                       | Atomic storage claim before external dispatch.                            |
+| `Executing`                     | `Executed`                                        | Dispatch succeeded and execution evidence/event are recorded.             |
+| `Executing`                     | `Approved`                                        | Dispatch failed before an external side effect and the claim is released. |
+| `RequestChanges`                | `Pending`                                         | Revised plan is resubmitted for review.                                   |
+| `Denied`, `Executed`, `Expired` | none                                              | Terminal.                                                                 |
+
+Approval decision writes and execution claims MUST use storage-level
+compare-and-set semantics. Only the caller that wins the expected-status update
+may emit the corresponding event, append evidence, or cache the idempotency
+result.
 
 ## Escalation and Expiry (bead-0910)
 

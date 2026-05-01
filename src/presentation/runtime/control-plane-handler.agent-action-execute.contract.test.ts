@@ -19,7 +19,11 @@ import {
   UserId,
   WorkspaceId,
 } from '../../domain/primitives/index.js';
-import type { ApprovalDecidedV1, ApprovalPendingV1 } from '../../domain/approvals/index.js';
+import type {
+  ApprovalDecidedV1,
+  ApprovalPendingV1,
+  ApprovalV1,
+} from '../../domain/approvals/index.js';
 import { createControlPlaneHandler } from './control-plane-handler.js';
 import type { ControlPlaneDeps } from './control-plane-handler.shared.js';
 import { startHealthServer } from './health-server.js';
@@ -60,6 +64,8 @@ const APPROVED_APPROVAL: ApprovalDecidedV1 = {
 };
 
 function makeDeps(overrides: Partial<ControlPlaneDeps> = {}): ControlPlaneDeps {
+  let approval: ApprovalV1 = APPROVED_APPROVAL;
+
   return {
     authentication: {
       authenticateBearerToken: async () => ok(makeCtx()),
@@ -77,8 +83,17 @@ function makeDeps(overrides: Partial<ControlPlaneDeps> = {}): ControlPlaneDeps {
       saveRun: async () => undefined,
     },
     approvalStore: {
-      getApprovalById: async () => APPROVED_APPROVAL,
-      saveApproval: async () => undefined,
+      getApprovalById: async () => approval,
+      saveApproval: async (_tenantId, next) => {
+        approval = next;
+      },
+      saveApprovalIfStatus: async (_tenantId, _workspaceId, _approvalId, expectedStatus, next) => {
+        if (approval.status !== expectedStatus) {
+          return false;
+        }
+        approval = next;
+        return true;
+      },
     },
     actionRunner: {
       dispatchAction: async () => ({ ok: true as const, output: { executed: true } }),

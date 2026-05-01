@@ -67,7 +67,15 @@ const ALL_RUN_STATUSES: RunStatus[] = [
 const TERMINAL_RUN_STATUSES: RunStatus[] = ['Succeeded', 'Failed', 'Cancelled'];
 const ACTIVE_RUN_STATUSES: RunStatus[] = ['Pending', 'Running', 'WaitingForApproval', 'Paused'];
 
-const ALL_APPROVAL_STATUSES: ApprovalStatus[] = ['Pending', 'Approved', 'Denied', 'RequestChanges'];
+const ALL_APPROVAL_STATUSES: ApprovalStatus[] = [
+  'Pending',
+  'Approved',
+  'Executing',
+  'Denied',
+  'Executed',
+  'Expired',
+  'RequestChanges',
+];
 
 const ALL_WORK_ITEM_STATUSES: WorkItemSummary['status'][] = [
   'Open',
@@ -131,8 +139,8 @@ describe('Type conformance matrix', () => {
   });
 
   describe('ApprovalStatus', () => {
-    it('has exactly 4 values', () => {
-      expect(ALL_APPROVAL_STATUSES).toHaveLength(4);
+    it('has exactly 7 values', () => {
+      expect(ALL_APPROVAL_STATUSES).toHaveLength(7);
     });
 
     it('includes terminal statuses Approved and Denied', () => {

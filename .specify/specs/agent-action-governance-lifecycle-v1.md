@@ -133,7 +133,18 @@ Before dispatching a tool invocation, `executeApprovedAgentAction` enforces:
 3. The approval's workspaceId must match the caller's workspaceId.
 4. The caller must have the `agent-action:execute` permission.
 
-Only after all guards pass does dispatch occur through the configured `ActionRunnerPort`.
+After all guards pass, the command atomically claims execution by moving the
+approval from `Approved` to `Executing` with storage-level compare-and-set
+semantics. Only the caller that wins that claim may dispatch through the
+configured `ActionRunnerPort`. The claim must be short-lived and must not hold a
+database transaction open across the external dispatch.
+
+On successful dispatch, the command finalizes the approval from `Executing` to
+`Executed`. If dispatch fails before an external side effect is accepted, the
+command releases the claim back to `Approved` and records the failure event and
+evidence. Callers that lose the claim return a conflict or replay from
+idempotency; they do not dispatch, publish events, append evidence, or overwrite
+approval state.
 
 Execution is retry-safe:
 
@@ -142,7 +153,7 @@ Execution is retry-safe:
 - A matching replay returns the cached execution response without a second action dispatch, event publish, evidence append, or approval state write.
 - Reusing the same idempotency key with a different execution fingerprint returns `Conflict`.
 - The dispatch key is used as the stable `actionId` and is forwarded through `ActionRunnerPort` and `MachineInvokerPort`; OpenClaw gateway requests carry it as `Idempotency-Key`.
-- This command-level replay protection does not replace datastore compare-and-set for highly concurrent first submissions; first-submission atomic claim/locking remains a storage-layer hardening requirement.
+- First-submission concurrency is closed by the approval execution claim: concurrent callers that all observe `Approved` still converge through a single storage-level `Approved -> Executing` winner before any external dispatch.
 
 ## Evidence Chain Requirements
 

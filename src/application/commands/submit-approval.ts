@@ -11,6 +11,7 @@ import {
 } from '../../domain/primitives/index.js';
 import {
   parseApprovalV1,
+  type ApprovalStatus,
   type ApprovalDecidedV1,
   type ApprovalPendingV1,
 } from '../../domain/approvals/index.js';
@@ -74,7 +75,7 @@ export type SubmitApprovalInput = Readonly<{
 
 export type SubmitApprovalOutput = Readonly<{
   approvalId: ApprovalIdType;
-  status: ApprovalDecidedV1['status'];
+  status: ApprovalDecision;
   /** Internal marker used by transports to avoid duplicate push broadcasts. */
   replayed?: boolean;
 }>;
@@ -479,13 +480,47 @@ type PersistArgs = Readonly<{
   domainEvent: DomainEventV1;
 }>;
 
+async function saveApprovalIfStatus(
+  deps: SubmitApprovalDeps,
+  ctx: AppContext,
+  ids: ParsedIds,
+  expectedStatus: ApprovalStatus,
+  decided: ApprovalDecidedV1,
+): Promise<boolean> {
+  if (deps.approvalStore.saveApprovalIfStatus) {
+    return deps.approvalStore.saveApprovalIfStatus(
+      ctx.tenantId,
+      ids.workspaceId,
+      ids.approvalId,
+      expectedStatus,
+      decided,
+    );
+  }
+
+  const latest = await deps.approvalStore.getApprovalById(
+    ctx.tenantId,
+    ids.workspaceId,
+    ids.approvalId,
+  );
+  if (latest?.status !== expectedStatus) return false;
+  await deps.approvalStore.saveApproval(ctx.tenantId, decided);
+  return true;
+}
+
 async function persistDecision(
   args: PersistArgs,
-): Promise<Result<SubmitApprovalOutput, DependencyFailure>> {
+): Promise<Result<SubmitApprovalOutput, Conflict | DependencyFailure>> {
   const { deps, ctx, ids, decided, domainEvent } = args;
   try {
     return await deps.unitOfWork.execute(async () => {
-      await deps.approvalStore.saveApproval(ctx.tenantId, decided);
+      const wonDecisionClaim = await saveApprovalIfStatus(deps, ctx, ids, 'Pending', decided);
+      if (!wonDecisionClaim) {
+        return err({
+          kind: 'Conflict',
+          message: `Approval ${String(ids.approvalId)} is already decided.`,
+        });
+      }
+
       await deps.eventPublisher.publish(
         domainEventToPortariumCloudEvent(domainEvent, SUBMIT_APPROVAL_SOURCE, ctx.traceparent),
       );
@@ -510,7 +545,7 @@ async function persistDecision(
         });
       }
 
-      return ok({ approvalId: ids.approvalId, status: decided.status });
+      return ok({ approvalId: ids.approvalId, status: decided.status as ApprovalDecision });
     });
   } catch (error) {
     return err({

@@ -335,6 +335,7 @@ export interface DiffHunk {
 export type ApprovalStatus =
   | 'Pending'
   | 'Approved'
+  | 'Executing'
   | 'Denied'
   | 'Executed'
   | 'Expired'

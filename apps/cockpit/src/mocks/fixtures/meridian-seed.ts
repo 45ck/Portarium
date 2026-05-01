@@ -153,7 +153,15 @@ const RUN_STATUSES: RunStatus[] = [
 ];
 const RUN_STATUS_WEIGHTS = [0.05, 0.1, 0.1, 0.05, 0.5, 0.12, 0.08];
 
-const APPROVAL_STATUSES: ApprovalStatus[] = ['Pending', 'Approved', 'Denied', 'RequestChanges'];
+const APPROVAL_STATUSES: ApprovalStatus[] = [
+  'Pending',
+  'Approved',
+  'Executing',
+  'Denied',
+  'Executed',
+  'Expired',
+  'RequestChanges',
+];
 const APPROVAL_STATUS_WEIGHTS = [0.2, 0.55, 0.15, 0.1];
 
 const EVIDENCE_CATEGORIES: EvidenceCategory[] = [
