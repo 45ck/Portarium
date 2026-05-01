@@ -38,12 +38,13 @@ If `PORTARIUM_LIVE_MODEL_PROVIDER` is omitted, the runner detects a provider fro
 the available credential env vars. If no credential is present, the experiment is
 skipped before setup or execution.
 
-The result bundle records the provider, model, credential env var name, base URL,
-probe endpoint kind, HTTP status, and failure kind. Credential values are never
-written to `results/outcome.json`.
+The result bundle records the provider, model, probe endpoint kind, HTTP status,
+and failure kind. Credential values, credential env var names, provider base
+URLs, expected credential source lists, and CLI auth details are never written
+to `results/outcome.json`.
 
 For the Codex route without API-key env vars, the preflight runs a read-only
-`codex exec` probe and records `credentialSource: { kind: "cli", name: "codex" }`
+`codex exec` probe and records only `provider: "codex"` plus probe metadata
 when local Codex auth is available.
 
 Failure handling:

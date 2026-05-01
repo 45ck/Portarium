@@ -34,6 +34,11 @@ type Iteration2Manifest = Readonly<{
     contractPath: string;
     comparesTo: string;
     validates: readonly string[];
+    artifactExpectations?: Readonly<{
+      requiredArtifacts: readonly string[];
+      redactedArtifacts: readonly string[];
+      forbiddenFragments: readonly string[];
+    }>;
   }>[];
 }>;
 
@@ -61,7 +66,8 @@ describe('Iteration 2 governed experiment suite manifest', () => {
             scenario.scenarioId !== 'openclaw-concurrent-sessions' &&
             scenario.scenarioId !== 'approval-backlog-soak' &&
             scenario.scenarioId !== 'micro-saas-agent-stack-v2' &&
-            scenario.scenarioId !== 'governed-resume-recovery',
+            scenario.scenarioId !== 'governed-resume-recovery' &&
+            scenario.scenarioId !== 'execution-reservation-recovery',
         )
         .every((scenario) => scenario.status === 'planned'),
     ).toBe(true);
@@ -108,7 +114,14 @@ describe('Iteration 2 governed experiment suite manifest', () => {
       manifest.scenarios.map((scenario) => [scenario.beadId, scenario]),
     );
 
-    for (const beadId of ['bead-1042', 'bead-1043', 'bead-1044', 'bead-1045', 'bead-1059']) {
+    for (const beadId of [
+      'bead-1042',
+      'bead-1043',
+      'bead-1044',
+      'bead-1045',
+      'bead-1059',
+      'bead-1142',
+    ]) {
       const scenario = scenarioByBead.get(beadId);
       expect(scenario).toBeDefined();
       expect(scenario?.validates.length).toBeGreaterThanOrEqual(4);
@@ -181,5 +194,41 @@ describe('Iteration 2 governed experiment suite manifest', () => {
     );
     expect(scenario?.comparesTo).toBe('growth-studio-openclaw-live-v2');
     expect(existsSync(join(repoRoot, scenario?.runnerPath ?? 'missing'))).toBe(true);
+  });
+
+  it('marks execution-reservation-recovery as runnable with a checked runner', () => {
+    const manifest = readManifest();
+    const scenario = manifest.scenarios.find(
+      (candidate) => candidate.scenarioId === 'execution-reservation-recovery',
+    );
+
+    expect(scenario?.status).toBe('runnable-deterministic');
+    expect(scenario?.beadId).toBe('bead-1142');
+    expect(scenario?.runnerPath).toBe(
+      'experiments/iteration-2/scenarios/execution-reservation-recovery/run.mjs',
+    );
+    expect(scenario?.comparesTo).toBe('governed-resume-recovery');
+    expect(existsSync(join(repoRoot, scenario?.runnerPath ?? 'missing'))).toBe(true);
+    expect(scenario?.artifactExpectations?.requiredArtifacts).toEqual([
+      'outcome.json',
+      'queue-metrics.json',
+      'evidence-summary.json',
+      'report.md',
+      'reservation-ledger-redacted.json',
+      'dispatch-attempts-redacted.json',
+      'recovery-decisions-redacted.json',
+    ]);
+    expect(scenario?.artifactExpectations?.redactedArtifacts).toEqual([
+      'reservation-ledger-redacted.json',
+      'dispatch-attempts-redacted.json',
+      'recovery-decisions-redacted.json',
+    ]);
+    expect(scenario?.artifactExpectations?.forbiddenFragments).toEqual([
+      'Bearer source-authorization-value',
+      'source-oauth-token',
+      'operator@example.test',
+      'customer@example.test',
+      'https://api.vendor.example/customers/private-123',
+    ]);
   });
 });

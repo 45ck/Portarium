@@ -20,3 +20,6 @@ This uses the demo policy proxy on a random local port and the control-plane-sha
 SSE endpoint at `/v1/workspaces/ws-proxy-demo/events:stream`. It is intended as
 the fast OSS confidence check for the agent governance path; `npm run ci:pr`
 remains the full release gate.
+
+For the broader deterministic approval and optional live LLM evaluation runbook,
+see [Run Approval Evaluations](run-approval-evaluations.md).

@@ -192,7 +192,7 @@
     "test:watch": "node node_modules/vitest/vitest.mjs",
     "test:coverage": "node node_modules/vitest/vitest.mjs run --coverage",
     "test:unit": "npm run test:coverage && npm run cockpit:test:coverage",
-    "test:scenarios": "node node_modules/vitest/vitest.mjs run scripts/integration/scenario-*.test.ts",
+    "test:scenarios": "node node_modules/vitest/vitest.mjs run scripts/integration/scenario",
     "ci:scenario-gate": "node scripts/ci/scenario-gate.mjs",
     "ci:validate-k8s-policies": "node scripts/ci/validate-k8s-policies.mjs",
     "ci:validate-egress-env": "node scripts/ci/validate-egress-env-config.mjs",

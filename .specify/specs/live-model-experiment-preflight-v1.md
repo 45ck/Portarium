@@ -14,8 +14,8 @@ experiment setup or execution step.
    auto-detected from credential env vars when no provider is forced.
 4. Supported provider selectors are `openai`, `openrouter`, and `codex`.
 5. Credential values must never be written to logs or result bundles.
-6. Result bundles must record provider, model, base URL or CLI route,
-   credential source, probe kind, HTTP status when available, and failure kind.
+6. Result bundles must record provider, model, probe kind, HTTP status when
+   available, and failure kind.
 7. Missing credentials skip the experiment before setup/execute/verify and
    produce `outcome: "skipped"`.
 8. When `codex` is forced and API-key env vars are absent, the preflight may use
@@ -28,6 +28,14 @@ experiment setup or execution step.
    - all other non-2xx provider responses => `unexpected_response`
 10. A failed preflight produces `outcome: "inconclusive"` and does not execute
     the experiment body.
+11. Live approval evaluations that use provider-backed proposal or planning
+    behavior must follow `approval-evaluation-scenarios-v1`; deterministic
+    approval evaluations remain the default release evidence.
+12. Result bundles for live approval evaluations must record redacted
+    provider/model metadata only and must not store credential values,
+    credential env var names, expected credential source lists, base URLs, CLI
+    auth details, secret-bearing prompts, customer data, or proprietary source
+    text.
 
 ## Result Bundle Shape
 
@@ -38,8 +46,7 @@ experiment setup or execution step.
     "status": "skipped",
     "providerSelection": "forced",
     "provider": "openrouter",
-    "failureKind": "missing_credentials",
-    "expectedCredentialSources": ["OPENROUTER_API_KEY"]
+    "failureKind": "missing_credentials"
   }
 }
 ```

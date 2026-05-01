@@ -19,10 +19,11 @@ These docs focus on the core tested governance loop.
 1. `docs/getting-started/hello-portarium.md` - fastest local validation
 2. `docs/tutorials/hello-governed-workflow.md` - guided end-to-end flow
 3. [Core governance eval](how-to/run-core-governance-eval.md) - simulated agent plus approval stream check
-4. [Evidence trace](tutorials/evidence-trace.md) - inspect evidence from a governed action
-5. [Quality gates](how-to/run-quality-gates.md) - local verification commands
-6. [CI and quality reference](reference/ci-and-quality.md) - what the gates cover
-7. [Scenario traceability](internal/governance/scenario-traceability-matrix.md) - maintainer-only test coverage mapping
+4. [Approval evaluations](how-to/run-approval-evaluations.md) - deterministic approval scenarios and optional live LLM boundary
+5. [Evidence trace](tutorials/evidence-trace.md) - inspect evidence from a governed action
+6. [Quality gates](how-to/run-quality-gates.md) - local verification commands
+7. [CI and quality reference](reference/ci-and-quality.md) - what the gates cover
+8. [Scenario traceability](internal/governance/scenario-traceability-matrix.md) - maintainer-only test coverage mapping
 
 ## Run It Locally
 

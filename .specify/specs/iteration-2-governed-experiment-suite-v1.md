@@ -27,6 +27,10 @@ have completed.
    by experiment `verify` steps.
 10. Planned scenarios remain marked `planned` until their owner Beads add runnable
     experiment scripts and result reports.
+11. Approval evaluation scenario artifacts and safety boundaries are governed by
+    `approval-evaluation-scenarios-v1`. Iteration 2 approval recovery scenarios
+    must remain append-only and deterministic unless explicitly routed through
+    the live model preflight.
 
 ## Telemetry Helper
 
@@ -52,6 +56,11 @@ It records:
 | `openclaw-concurrent-sessions`   | `bead-1044` | concurrent governed sessions             |
 | `approval-backlog-soak`          | `bead-1045` | backlog pressure, escalation, and expiry |
 | `governed-resume-recovery`       | `bead-1059` | pending approval recovery and resume     |
+
+The `governed-resume-recovery` scenario is also a required approval evaluation
+artifact under `approval-evaluation-scenarios-v1`; it anchors the public
+runbook's append-only result bundle expectations for pending Approval Gate
+recovery.
 
 ## Required Metric Names
 

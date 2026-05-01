@@ -46,12 +46,12 @@ describe('live model experiment preflight', () => {
       provider: 'openai',
       providerSelection: 'auto',
       model: 'gpt-test',
-      baseUrl: 'https://api.example.test/v1',
-      credentialSource: { kind: 'env', name: 'OPENAI_API_KEY' },
       probe: 'chat-completions',
       httpStatus: 200,
     });
     expect(JSON.stringify(result)).not.toContain('sk-test-secret');
+    expect(JSON.stringify(result)).not.toContain('https://api.example.test');
+    expect(JSON.stringify(result)).not.toContain('OPENAI_API_KEY');
     expect(String(calls[0]?.input)).toBe('https://api.example.test/v1/chat/completions');
     expect(calls[0]?.init?.headers).toMatchObject({
       authorization: 'Bearer sk-test-secret',
@@ -79,8 +79,33 @@ describe('live model experiment preflight', () => {
       provider: 'openrouter',
       providerSelection: 'forced',
       failureKind: 'missing_credentials',
-      expectedCredentialSources: ['OPENROUTER_API_KEY'],
     });
+    expect(JSON.stringify(result)).not.toContain('OPENROUTER_API_KEY');
+    expect(calls).toHaveLength(0);
+  });
+
+  it('can require an explicit provider instead of auto-detecting ambient credentials', async () => {
+    const calls: unknown[] = [];
+    const fetchImpl: typeof fetch = async (input) => {
+      calls.push(input);
+      return new Response('{}', { status: 200 });
+    };
+
+    const result = await runLiveModelPreflight({
+      env: {
+        PORTARIUM_EXPERIMENT_LIVE_LLM: 'true',
+        OPENAI_API_KEY: 'sk-test-secret',
+      },
+      fetchImpl,
+      requireProvider: true,
+    });
+
+    expect(result).toMatchObject({
+      status: 'skipped',
+      providerSelection: 'none',
+      failureKind: 'unsupported_provider',
+    });
+    expect(JSON.stringify(result)).not.toContain('sk-test-secret');
     expect(calls).toHaveLength(0);
   });
 
@@ -109,10 +134,9 @@ describe('live model experiment preflight', () => {
       provider: 'codex',
       providerSelection: 'forced',
       model: 'codex-cli',
-      baseUrl: 'codex-cli',
-      credentialSource: { kind: 'cli', name: 'codex' },
       probe: 'codex-exec',
     });
+    expect(JSON.stringify(result)).not.toContain('codex CLI auth');
     expect(calls).toHaveLength(0);
   });
 
@@ -148,10 +172,10 @@ describe('live model experiment preflight', () => {
       expect(outcome.liveModelPreflight).toMatchObject({
         status: 'failed',
         provider: 'codex',
-        credentialSource: { kind: 'cli', name: 'codex' },
         probe: 'codex-exec',
         failureKind: 'credential_rejected',
       });
+      expect(JSON.stringify(outcome.liveModelPreflight)).not.toContain('CODEX_API_KEY');
     } finally {
       rmSync(resultsDir, { recursive: true, force: true });
     }
