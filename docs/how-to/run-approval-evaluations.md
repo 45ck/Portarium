@@ -7,10 +7,16 @@ scenario assertions.
 
 ## Deterministic Path
 
-Run the full deterministic scenario gate:
+Run the full deterministic scenario test set:
 
 ```bash
 npm run test:scenarios
+```
+
+Run the same scenario gate used by `ci:pr`:
+
+```bash
+npm run ci:scenario-gate
 ```
 
 For a shorter approval-focused pass, run these artifacts directly:
@@ -18,24 +24,35 @@ For a shorter approval-focused pass, run these artifacts directly:
 ```bash
 node node_modules/vitest/vitest.mjs run scripts/integration/scenario-core-governance-eval.test.ts
 node node_modules/vitest/vitest.mjs run scripts/integration/scenario-approval-execute-lifecycle.test.ts
+node node_modules/vitest/vitest.mjs run scripts/integration/scenario-execution-reservation-recovery.test.ts
+node node_modules/vitest/vitest.mjs run scripts/integration/scenario-policy-approval-routing-eval.test.ts
 node node_modules/vitest/vitest.mjs run src/application/commands/execute-approved-agent-action.test.ts
 node node_modules/vitest/vitest.mjs run src/presentation/runtime/control-plane-handler.agent-action-execute.contract.test.ts
 ```
 
 These cover:
 
-| Artifact                                                             | What it proves                                                                |
-| -------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| `scenario-core-governance-eval.test.ts`                              | safe action allow, governed action routing, event stream, approval, resume    |
-| `scenario-approval-execute-lifecycle.test.ts`                        | approve-then-execute, double-execute rejection, denied approval rejection     |
-| `execute-approved-agent-action.test.ts`                              | concurrent execute, active reservation retry, crash-after-dispatch recovery   |
-| `control-plane-handler.agent-action-execute.contract.test.ts`        | HTTP execute contract, including `Executing` replay and response shape        |
-| `experiments/iteration-2/scenarios/governed-resume-recovery/run.mjs` | pending Approval Gate recovery and exactly-once governed resume result bundle |
+| Artifact                                                                   | What it proves                                                                   |
+| -------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `scenario-core-governance-eval.test.ts`                                    | safe action allow, governed action routing, event stream, approval, resume       |
+| `scenario-approval-execute-lifecycle.test.ts`                              | approve-then-execute, double-execute rejection, denied approval rejection        |
+| `scenario-execution-reservation-recovery.test.ts`                          | active reservation retry, crash-after-dispatch retry, terminal replay            |
+| `scenario-policy-approval-routing-eval.test.ts`                            | tier policy matrix, approval routing, maker-checker approval and denial paths    |
+| `execute-approved-agent-action.test.ts`                                    | concurrent execute, active reservation retry, crash-after-dispatch recovery      |
+| `control-plane-handler.agent-action-execute.contract.test.ts`              | HTTP execute contract, including `Executing` replay and response shape           |
+| `experiments/iteration-2/scenarios/governed-resume-recovery/run.mjs`       | pending Approval Gate recovery and exactly-once governed resume result bundle    |
+| `experiments/iteration-2/scenarios/execution-reservation-recovery/run.mjs` | execution reservation recovery result bundle with redacted reservation artifacts |
 
 When you need the Iteration 2 resume result bundle, run:
 
 ```bash
 node experiments/iteration-2/scenarios/governed-resume-recovery/run.mjs
+```
+
+When you need the execution reservation result bundle, run:
+
+```bash
+node experiments/iteration-2/scenarios/execution-reservation-recovery/run.mjs
 ```
 
 The result artifacts are append-only under:
@@ -44,8 +61,10 @@ The result artifacts are append-only under:
 experiments/iteration-2/results/governed-resume-recovery/<attempt-id>/
 ```
 
-Expected files are `outcome.json`, `evidence-summary.json`,
-`queue-metrics.json`, and `report.md`.
+Expected common files are `outcome.json`, `evidence-summary.json`,
+`queue-metrics.json`, and `report.md`. The execution reservation bundle also
+writes `reservation-ledger-redacted.json`, `dispatch-attempts-redacted.json`,
+and `recovery-decisions-redacted.json`.
 
 ## Optional Live LLM Path
 
@@ -92,8 +111,9 @@ Supported provider selectors are documented in
   proprietary source text.
 - Do not write credential values to logs, `outcome.json`, reports, screenshots,
   or traces.
-- Record only provider, model, credential source name, base URL or CLI route,
-  probe kind, HTTP status, failure kind, and redacted run metadata.
+- Record only provider, model, probe kind, HTTP status, failure kind, and
+  redacted run metadata. Do not store credential env var names, base URLs, CLI
+  auth details, or expected credential source lists in public result bundles.
 - Keep CI deterministic: live provider calls require
   `PORTARIUM_EXPERIMENT_LIVE_LLM=true` or `PORTARIUM_LIVE_MODEL_RUNS=true`.
 - Approval evaluations must prove both approval and rejection paths; successful

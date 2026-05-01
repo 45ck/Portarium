@@ -41,6 +41,7 @@ export interface LiveModelPreflightOptions {
   readonly codexExecImpl?: CodexExecProbe;
   readonly timeoutMs?: number;
   readonly requireOptIn?: boolean;
+  readonly requireProvider?: boolean;
 }
 
 export interface LiveModelPreflightResult {
@@ -49,9 +50,6 @@ export interface LiveModelPreflightResult {
   readonly providerSelection: 'forced' | 'auto' | 'none';
   readonly provider?: LiveModelProvider;
   readonly model?: string;
-  readonly baseUrl?: string;
-  readonly credentialSource?: LiveModelCredentialSource;
-  readonly expectedCredentialSources?: readonly string[];
   readonly probe?: 'chat-completions' | 'codex-exec';
   readonly httpStatus?: number;
   readonly failureKind?: LiveModelPreflightFailureKind;
@@ -65,7 +63,6 @@ interface ProviderConfig {
   readonly baseUrl: string;
   readonly apiKey?: string;
   readonly credentialSource: LiveModelCredentialSource;
-  readonly expectedCredentialSources: readonly string[];
   readonly probe: 'chat-completions' | 'codex-exec';
 }
 
@@ -160,12 +157,9 @@ export async function runLiveModelPreflight(
       provider: config.provider,
       providerSelection: config.providerSelection,
       model: config.model,
-      baseUrl: config.baseUrl,
-      credentialSource: config.credentialSource,
-      expectedCredentialSources: config.expectedCredentialSources,
       probe: 'chat-completions',
       failureKind: 'network_error',
-      reason: error instanceof Error ? error.message : String(error),
+      reason: redactDetail(error instanceof Error ? error.message : String(error), config),
     };
   }
 }
@@ -186,6 +180,16 @@ function resolveProviderConfig(
     };
   }
 
+  if (options.requireProvider === true && forcedProvider === undefined) {
+    return {
+      status: 'skipped',
+      checkedAt,
+      providerSelection: 'none',
+      failureKind: 'unsupported_provider',
+      reason: `Live model provider is required; set ${PROVIDER_ENV_KEYS[0]}.`,
+    };
+  }
+
   const provider = forcedProvider ?? detectProviderFromCredentials(env);
   const providerSelection = forcedProvider === undefined ? 'auto' : 'forced';
 
@@ -195,8 +199,7 @@ function resolveProviderConfig(
       checkedAt,
       providerSelection: 'none',
       failureKind: 'missing_credentials',
-      expectedCredentialSources: allCredentialEnvKeys(),
-      reason: `No live model credentials found; set one of ${allCredentialEnvKeys().join(', ')}.`,
+      reason: 'No live model credentials found for the selected provider set.',
     };
   }
 
@@ -212,7 +215,6 @@ function resolveProviderConfig(
         model: options.model ?? readFirstEnv(env, defaults.modelEnvKeys) ?? 'codex-cli',
         baseUrl: 'codex-cli',
         credentialSource: { kind: 'cli', name: 'codex' },
-        expectedCredentialSources: [...defaults.credentialEnvKeys, 'codex CLI auth'],
         probe: 'codex-exec',
       },
     };
@@ -225,7 +227,6 @@ function resolveProviderConfig(
       provider,
       providerSelection,
       failureKind: 'missing_credentials',
-      expectedCredentialSources: defaults.credentialEnvKeys,
       reason: `No credentials found for provider "${provider}".`,
     };
   }
@@ -239,7 +240,6 @@ function resolveProviderConfig(
       baseUrl: trimTrailingSlash(readFirstEnv(env, defaults.baseUrlEnvKeys) ?? defaults.baseUrl),
       apiKey: credential.value,
       credentialSource: { kind: 'env', name: credential.envKey },
-      expectedCredentialSources: defaults.credentialEnvKeys,
       probe: 'chat-completions',
     },
   };
@@ -287,10 +287,6 @@ function isLiveModelProvider(value: string): value is LiveModelProvider {
   return value === 'openai' || value === 'openrouter' || value === 'codex';
 }
 
-function allCredentialEnvKeys(): readonly string[] {
-  return [...new Set(AUTO_PROVIDER_ORDER.flatMap((p) => PROVIDER_DEFAULTS[p].credentialEnvKeys))];
-}
-
 function chatCompletionsUrl(baseUrl: string): string {
   return `${trimTrailingSlash(baseUrl)}/chat/completions`;
 }
@@ -332,9 +328,6 @@ function readyResult(
     provider: config.provider,
     providerSelection: config.providerSelection,
     model: config.model,
-    baseUrl: config.baseUrl,
-    credentialSource: config.credentialSource,
-    expectedCredentialSources: config.expectedCredentialSources,
     probe: config.probe,
     httpStatus,
   };
@@ -352,13 +345,10 @@ function failedHttpResult(
     provider: config.provider,
     providerSelection: config.providerSelection,
     model: config.model,
-    baseUrl: config.baseUrl,
-    credentialSource: config.credentialSource,
-    expectedCredentialSources: config.expectedCredentialSources,
     probe: config.probe,
     httpStatus,
     failureKind: classifyHttpFailure(httpStatus),
-    ...(detail ? { reason: detail } : {}),
+    ...(detail ? { reason: redactDetail(detail, config) } : {}),
   };
 }
 
@@ -408,6 +398,14 @@ function truncateDetail(value: string): string {
   return value.length <= 240 ? value : `${value.slice(0, 237)}...`;
 }
 
+function redactDetail(value: string, config: ProviderConfig): string {
+  let redacted = value;
+  for (const sensitiveValue of [config.apiKey, config.baseUrl, config.credentialSource.name]) {
+    if (hasValue(sensitiveValue)) redacted = redacted.replaceAll(sensitiveValue, '[redacted]');
+  }
+  return truncateDetail(redacted);
+}
+
 async function runCodexCliPreflight(
   checkedAt: string,
   config: ProviderConfig,
@@ -424,9 +422,6 @@ async function runCodexCliPreflight(
         provider: config.provider,
         providerSelection: config.providerSelection,
         model: config.model,
-        baseUrl: config.baseUrl,
-        credentialSource: config.credentialSource,
-        expectedCredentialSources: config.expectedCredentialSources,
         probe: 'codex-exec',
       };
     }
@@ -437,15 +432,12 @@ async function runCodexCliPreflight(
       provider: config.provider,
       providerSelection: config.providerSelection,
       model: config.model,
-      baseUrl: config.baseUrl,
-      credentialSource: config.credentialSource,
-      expectedCredentialSources: config.expectedCredentialSources,
       probe: 'codex-exec',
       failureKind:
         output.includes('login') || output.includes('auth')
           ? 'credential_rejected'
           : 'unexpected_response',
-      reason: truncateDetail(output.trim() || `codex exited with ${String(result.exitCode)}`),
+      reason: redactDetail(output.trim() || `codex exited with ${String(result.exitCode)}`, config),
     };
   } catch (error: unknown) {
     return {
@@ -454,12 +446,9 @@ async function runCodexCliPreflight(
       provider: config.provider,
       providerSelection: config.providerSelection,
       model: config.model,
-      baseUrl: config.baseUrl,
-      credentialSource: config.credentialSource,
-      expectedCredentialSources: config.expectedCredentialSources,
       probe: 'codex-exec',
       failureKind: 'network_error',
-      reason: error instanceof Error ? error.message : String(error),
+      reason: redactDetail(error instanceof Error ? error.message : String(error), config),
     };
   }
 }

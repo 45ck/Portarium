@@ -120,6 +120,52 @@
         "exactly-once governed resume",
         "defect and limitation classification"
       ]
+    },
+    {
+      "scenarioId": "execution-reservation-recovery",
+      "beadId": "bead-1142",
+      "status": "runnable-deterministic",
+      "blockedBy": [],
+      "runnerPath": "experiments/iteration-2/scenarios/execution-reservation-recovery/run.mjs",
+      "contractPath": "experiments/iteration-2/scenarios/execution-reservation-recovery/README.md",
+      "comparesTo": "governed-resume-recovery",
+      "validates": [
+        "active execution reservation recovery",
+        "completed reservation replay",
+        "fingerprint conflict fail-closed behaviour",
+        "lost claim reservation release",
+        "redacted execution artifacts"
+      ],
+      "metricExpectations": {
+        "maxDuplicateExecutionCount": 0,
+        "maxPendingAgeMsP95": 80000,
+        "maxResumeLatencyMs": 1000,
+        "minEvidenceCompletenessCount": 7,
+        "minSuccessfulResumeCount": 1
+      },
+      "artifactExpectations": {
+        "requiredArtifacts": [
+          "outcome.json",
+          "queue-metrics.json",
+          "evidence-summary.json",
+          "report.md",
+          "reservation-ledger-redacted.json",
+          "dispatch-attempts-redacted.json",
+          "recovery-decisions-redacted.json"
+        ],
+        "redactedArtifacts": [
+          "reservation-ledger-redacted.json",
+          "dispatch-attempts-redacted.json",
+          "recovery-decisions-redacted.json"
+        ],
+        "forbiddenFragments": [
+          "Bearer source-authorization-value",
+          "source-oauth-token",
+          "operator@example.test",
+          "customer@example.test",
+          "https://api.vendor.example/customers/private-123"
+        ]
+      }
     }
   ]
 }

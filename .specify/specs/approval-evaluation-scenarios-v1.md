@@ -19,9 +19,12 @@ Required deterministic artifacts:
 | -------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
 | `scripts/integration/scenario-core-governance-eval.test.ts`                            | policy routing, approval event stream, approval decision, governed resume                             |
 | `scripts/integration/scenario-approval-execute-lifecycle.test.ts`                      | approve-then-execute, denied approval rejection, double-execute rejection                             |
+| `scripts/integration/scenario-execution-reservation-recovery.test.ts`                  | active reservation retry, crash-after-dispatch retry, terminal replay, incompatible replay conflict   |
+| `scripts/integration/scenario-policy-approval-routing-eval.test.ts`                    | tier policy matrix, approval routing, maker-checker approval and denial paths                         |
 | `src/application/commands/execute-approved-agent-action.test.ts`                       | concurrent execute, active `Executing` reservation retry, crash-after-dispatch-before-finalize replay |
 | `src/presentation/runtime/control-plane-handler.agent-action-execute.contract.test.ts` | HTTP execute contract and `Executing` response shape                                                  |
 | `experiments/iteration-2/scenarios/governed-resume-recovery/run.mjs`                   | pending Approval Gate recovery and exactly-once governed resume result artifacts                      |
+| `experiments/iteration-2/scenarios/execution-reservation-recovery/run.mjs`             | execution reservation recovery result artifacts and redaction audit                                   |
 
 The Iteration 2 recovery runner writes append-only artifacts under:
 
@@ -31,6 +34,11 @@ experiments/iteration-2/results/governed-resume-recovery/<attempt-id>/
 
 Required files are `outcome.json`, `evidence-summary.json`,
 `queue-metrics.json`, and `report.md`.
+
+The execution reservation recovery runner must additionally write
+`reservation-ledger-redacted.json`, `dispatch-attempts-redacted.json`, and
+`recovery-decisions-redacted.json`. Those artifacts must be checked for
+synthetic forbidden fragments before the scenario can report `confirmed`.
 
 ## Live LLM Boundary
 
@@ -46,8 +54,9 @@ Live evaluations must:
 2. Skip before setup or execution when credentials are missing.
 3. Mark provider rejection, quota, unavailable model, network, or unexpected
    provider responses as inconclusive.
-4. Record provider, model, credential source name, base URL or CLI route, probe
-   kind, HTTP status, failure kind, and redacted run metadata only.
+4. Record provider, model, probe kind, HTTP status, failure kind, and redacted
+   run metadata only. Public result bundles must not record credential env var
+   names, base URLs, CLI auth details, or expected credential source lists.
 5. Never store credential values, secret-bearing prompts, customer data, or
    proprietary source text in result bundles, traces, reports, screenshots, or
    logs.
