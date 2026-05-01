@@ -1,4 +1,5 @@
 import {
+  SQL_JSON_DOC_INSERT_IF_ABSENT,
   SQL_JSON_DOC_SELECT_BY_IDS,
   SQL_JSON_DOC_SELECT_MANY,
   SQL_JSON_DOC_SELECT_ONE,
@@ -29,6 +30,9 @@ export class InMemorySqlClient implements SqlClient {
     if (statement.startsWith(SQL_JSON_DOC_UPSERT)) {
       this.#upsert(params);
       return Promise.resolve({ rows: [], rowCount: 1 });
+    }
+    if (statement.startsWith(SQL_JSON_DOC_INSERT_IF_ABSENT)) {
+      return Promise.resolve(this.#insertIfAbsent<Row>(params));
     }
     if (statement.startsWith(SQL_JSON_DOC_SELECT_ONE)) {
       return Promise.resolve(this.#selectOne<Row>(params));
@@ -65,6 +69,38 @@ export class InMemorySqlClient implements SqlClient {
             workspaceId,
           };
     this.#rows.set(keyFor(stored), stored);
+  }
+
+  #insertIfAbsent<Row extends SqlRow>(params: readonly unknown[]): SqlQueryResult<Row> {
+    const [tenantId, workspaceId, collection, documentId, payloadJson] = params;
+    const key = keyFor({
+      tenantId: String(tenantId),
+      collection: String(collection),
+      documentId: String(documentId),
+    });
+    if (this.#rows.has(key)) {
+      return { rows: [] as unknown as readonly Row[], rowCount: 0 };
+    }
+
+    const parsedPayload = JSON.parse(String(payloadJson)) as unknown;
+    const storedBase = {
+      tenantId: String(tenantId),
+      collection: String(collection),
+      documentId: String(documentId),
+      payload: parsedPayload,
+    };
+    if (workspaceId !== null && typeof workspaceId !== 'string') {
+      throw new Error('workspaceId must be string or null.');
+    }
+    const stored: Stored =
+      workspaceId === null
+        ? storedBase
+        : {
+            ...storedBase,
+            workspaceId,
+          };
+    this.#rows.set(key, stored);
+    return { rows: [] as unknown as readonly Row[], rowCount: 1 };
   }
 
   #selectOne<Row extends SqlRow>(params: readonly unknown[]): SqlQueryResult<Row> {
@@ -150,16 +186,14 @@ export class InMemorySqlClient implements SqlClient {
     });
     const row = this.#rows.get(key);
     const payload = row?.payload as { status?: unknown } | undefined;
-    if (
-      row?.workspaceId !== String(workspaceId) ||
-      String(payload?.status ?? '') !== String(expectedStatus)
-    ) {
+    const workspaceMatches = workspaceId === null || row?.workspaceId === String(workspaceId);
+    if (!workspaceMatches || String(payload?.status ?? '') !== String(expectedStatus)) {
       return { rows: [], rowCount: 0 };
     }
 
     this.#rows.set(key, {
       tenantId: String(tenantId),
-      workspaceId: String(workspaceId),
+      ...(workspaceId === null ? {} : { workspaceId: String(workspaceId) }),
       collection: String(collection),
       documentId: String(documentId),
       payload: JSON.parse(String(payloadJson)) as unknown,

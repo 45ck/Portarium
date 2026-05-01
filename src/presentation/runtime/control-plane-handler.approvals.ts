@@ -46,6 +46,7 @@ import {
 const APPROVAL_STATUS_QUERY_VALUES = [
   'Pending',
   'Approved',
+  'Executing',
   'Denied',
   'Executed',
   'Expired',

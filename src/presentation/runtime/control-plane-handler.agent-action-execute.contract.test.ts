@@ -267,6 +267,32 @@ describe('POST /agent-actions/:approvalId/execute — wrong approval status', ()
     expect(body.type).toMatch(/conflict/);
     expect(body.detail).toMatch(/Approved/);
   });
+
+  it('returns 200 with Executing when approval is already being executed', async () => {
+    const executingApproval: ApprovalDecidedV1 = {
+      ...APPROVED_APPROVAL,
+      status: 'Executing',
+      rationale: 'Execution claimed.',
+    };
+    await startWith({
+      approvalStore: {
+        getApprovalById: async () => executingApproval,
+        saveApproval: async () => undefined,
+      },
+    });
+    const res = await fetch(executeUrl(), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ flowRef: 'machine-1/tool-name' }),
+    });
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { executionId: string; status: string };
+    expect(body.status).toBe('Executing');
+    expect(body.executionId).toBe(
+      `ExecuteApprovedAgentAction:${WORKSPACE_ID}:${WORKSPACE_ID}:${APPROVAL_ID}:machine-1/tool-name`,
+    );
+  });
 });
 
 describe('POST /agent-actions/:approvalId/execute — dependency failure hygiene', () => {

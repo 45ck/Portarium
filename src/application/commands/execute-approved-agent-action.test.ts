@@ -353,6 +353,99 @@ describe('executeApprovedAgentAction', () => {
     );
   });
 
+  it('returns Executing for an active execution reservation without dispatching again', async () => {
+    const reservationKey = 'tenant-1:ExecuteApprovedAgentAction:execute-active-1';
+    const reservations = new Map<string, unknown>([
+      [
+        reservationKey,
+        {
+          status: 'InProgress',
+          fingerprint:
+            '{"approvalId":"appr-1","flowRef":"flow-abc","payload":{"key":"value"},"principalId":"agent-1","workspaceId":"ws-1"}',
+          reservedAtIso: '2026-03-01T00:04:00.000Z',
+          leaseExpiresAtIso: '2026-03-01T00:19:00.000Z',
+        },
+      ],
+    ]);
+    idempotency = {
+      get: async <T>(key: Parameters<IdempotencyStore['get']>[0]) =>
+        (reservations.get(`${key.tenantId}:${key.commandName}:${key.requestKey}`) as
+          | T
+          | undefined) ?? null,
+      set: vi.fn(async () => undefined),
+    };
+
+    const result = await executeApprovedAgentAction({ ...makeDeps(), idempotency }, makeCtx(), {
+      ...makeInput(),
+      idempotencyKey: 'execute-active-1',
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('Expected in-progress response.');
+    expect(result.value).toEqual({
+      executionId: 'execute-active-1',
+      approvalId: ApprovalId('appr-1'),
+      status: 'Executing',
+    });
+    expect(actionRunner.dispatchAction).not.toHaveBeenCalled();
+    expect(eventPublisher.publish).not.toHaveBeenCalled();
+  });
+
+  it('does not dispatch again after dispatch succeeds but persistence fails before finalization', async () => {
+    const reservations = new Map<string, unknown>();
+    idempotency = {
+      get: async <T>(key: Parameters<IdempotencyStore['get']>[0]) =>
+        (reservations.get(`${key.tenantId}:${key.commandName}:${key.requestKey}`) as
+          | T
+          | undefined) ?? null,
+      set: vi.fn(async () => undefined),
+      begin: vi.fn(async (key, input) => {
+        const mapKey = `${key.tenantId}:${key.commandName}:${key.requestKey}`;
+        if (reservations.has(mapKey)) {
+          return {
+            status: 'InProgress' as const,
+            fingerprint: input.fingerprint,
+            leaseExpiresAtIso: input.leaseExpiresAtIso,
+          };
+        }
+        reservations.set(mapKey, {
+          status: 'InProgress',
+          fingerprint: input.fingerprint,
+          reservedAtIso: input.reservedAtIso,
+          leaseExpiresAtIso: input.leaseExpiresAtIso,
+        });
+        return { status: 'Began' as const };
+      }),
+      complete: vi.fn(async (key, input) => {
+        reservations.set(`${key.tenantId}:${key.commandName}:${key.requestKey}`, {
+          status: 'Completed',
+          fingerprint: input.fingerprint,
+          completedAtIso: input.completedAtIso,
+          value: input.value,
+        });
+        return true;
+      }),
+    };
+    unitOfWork.execute = vi.fn(async () => {
+      throw new Error('event store unavailable');
+    });
+
+    const deps = { ...makeDeps(), idempotency };
+    const ctx = makeCtx();
+    const input = { ...makeInput(), idempotencyKey: 'execute-crash-before-finalize' };
+
+    const first = await executeApprovedAgentAction(deps, ctx, input);
+    const second = await executeApprovedAgentAction(deps, ctx, input);
+
+    expect(first.ok).toBe(false);
+    expect(second.ok).toBe(true);
+    if (!second.ok) throw new Error('Expected in-progress retry response.');
+    expect(second.value.status).toBe('Executing');
+    expect(actionRunner.dispatchAction).toHaveBeenCalledTimes(1);
+    expect(eventPublisher.publish).not.toHaveBeenCalled();
+    expect(storedApproval.status).toBe('Executing');
+  });
+
   it('replays matching idempotency key without duplicate dispatch, event, or evidence', async () => {
     const cache = new Map<string, unknown>();
     idempotency = {

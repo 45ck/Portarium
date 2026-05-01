@@ -52,6 +52,7 @@ import type {
 
 const EXECUTE_SOURCE = 'portarium.control-plane.agent-actions';
 const EXECUTE_COMMAND = 'ExecuteApprovedAgentAction';
+const EXECUTION_RESERVATION_LEASE_MS = 15 * 60 * 1000;
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -71,7 +72,7 @@ export type ExecuteApprovedAgentActionInput = Readonly<{
 export type ExecuteApprovedAgentActionOutput = Readonly<{
   executionId: string;
   approvalId: ApprovalIdType;
-  status: 'Executed' | 'Failed';
+  status: 'Executing' | 'Executed' | 'Failed';
   output?: unknown;
   errorMessage?: string;
   /** Internal marker used by transports and tests to identify replayed command results. */
@@ -101,6 +102,20 @@ type ExecuteIdempotencyEnvelope = Readonly<{
   fingerprint: string;
   output: ExecuteApprovedAgentActionOutput;
 }>;
+
+type ExistingExecutionReservation =
+  | Readonly<{ status: 'None' }>
+  | Readonly<{
+      status: 'InProgress';
+      fingerprint: string;
+      leaseExpiresAtIso?: string;
+    }>
+  | Readonly<{
+      status: 'Completed';
+      fingerprint: string;
+      output: ExecuteApprovedAgentActionOutput;
+    }>
+  | Readonly<{ status: 'Conflict'; fingerprint?: string }>;
 
 async function saveApprovalIfStatus(
   deps: ExecuteApprovedAgentActionDeps,
@@ -143,7 +158,7 @@ function normalizeCachedOutput(value: unknown): ExecuteApprovedAgentActionOutput
   if (typeof value !== 'object' || value === null) return null;
   const record = value as Record<string, unknown>;
   const status = record['status'];
-  if (status !== 'Executed' && status !== 'Failed') return null;
+  if (status !== 'Executing' && status !== 'Executed' && status !== 'Failed') return null;
   if (typeof record['executionId'] !== 'string' || record['executionId'].trim() === '') {
     return null;
   }
@@ -160,6 +175,17 @@ function normalizeCachedOutput(value: unknown): ExecuteApprovedAgentActionOutput
   };
 }
 
+function buildInProgressOutput(
+  approvalId: ApprovalIdType,
+  executionId: string,
+): ExecuteApprovedAgentActionOutput {
+  return {
+    executionId,
+    approvalId,
+    status: 'Executing',
+  };
+}
+
 function normalizeCachedEnvelope(value: unknown): ExecuteIdempotencyEnvelope | null {
   if (typeof value !== 'object' || value === null) return null;
   const record = value as Record<string, unknown>;
@@ -167,6 +193,135 @@ function normalizeCachedEnvelope(value: unknown): ExecuteIdempotencyEnvelope | n
   const output = normalizeCachedOutput(record['output']);
   if (!output) return null;
   return { fingerprint: record['fingerprint'], output };
+}
+
+function normalizeExistingReservation(value: unknown): ExistingExecutionReservation {
+  if (value === null) return { status: 'None' };
+  if (typeof value !== 'object' || value === null) return { status: 'Conflict' };
+  const record = value as Record<string, unknown>;
+  const fingerprint = typeof record['fingerprint'] === 'string' ? record['fingerprint'] : undefined;
+
+  if (record['status'] === 'InProgress') {
+    return {
+      status: 'InProgress',
+      fingerprint: fingerprint ?? '',
+      ...(typeof record['leaseExpiresAtIso'] === 'string'
+        ? { leaseExpiresAtIso: record['leaseExpiresAtIso'] }
+        : {}),
+    };
+  }
+
+  if (record['status'] === 'Completed') {
+    const output = normalizeCachedOutput(record['value']);
+    if (!output) return { status: 'Conflict', ...(fingerprint ? { fingerprint } : {}) };
+    return {
+      status: 'Completed',
+      fingerprint: fingerprint ?? '',
+      output,
+    };
+  }
+
+  const envelope = normalizeCachedEnvelope(value);
+  if (envelope) {
+    return {
+      status: 'Completed',
+      fingerprint: envelope.fingerprint,
+      output: envelope.output,
+    };
+  }
+
+  const output = normalizeCachedOutput(value);
+  if (output) {
+    return { status: 'Completed', fingerprint: fingerprint ?? '', output };
+  }
+
+  return { status: 'Conflict', ...(fingerprint ? { fingerprint } : {}) };
+}
+
+function addMillisecondsIso(baseIso: string, milliseconds: number): string | undefined {
+  const epochMs = Date.parse(baseIso);
+  if (!Number.isFinite(epochMs)) return undefined;
+  return new Date(epochMs + milliseconds).toISOString();
+}
+
+async function readExistingReservation(
+  deps: ExecuteApprovedAgentActionDeps,
+  commandKey: Parameters<IdempotencyStore['get']>[0],
+): Promise<ExistingExecutionReservation> {
+  if (!deps.idempotency) return { status: 'None' };
+  return normalizeExistingReservation(await deps.idempotency.get<unknown>(commandKey));
+}
+
+async function beginExecutionReservation(
+  deps: ExecuteApprovedAgentActionDeps,
+  commandKey: Parameters<IdempotencyStore['get']>[0],
+  fingerprint: string,
+  reservedAtIso: string,
+): Promise<ExistingExecutionReservation | { status: 'Began' }> {
+  const leaseExpiresAtIso = addMillisecondsIso(reservedAtIso, EXECUTION_RESERVATION_LEASE_MS);
+  if (!deps.idempotency?.begin) {
+    return { status: 'Began' };
+  }
+
+  const result = await deps.idempotency.begin(commandKey, {
+    fingerprint,
+    reservedAtIso,
+    ...(leaseExpiresAtIso ? { leaseExpiresAtIso } : {}),
+  });
+
+  if (result.status === 'Began') return result;
+  if (result.status === 'Completed') {
+    const output = normalizeCachedOutput(result.value);
+    if (!output) return { status: 'Conflict', fingerprint: result.fingerprint };
+    return {
+      status: 'Completed',
+      fingerprint: result.fingerprint,
+      output,
+    };
+  }
+  return result;
+}
+
+async function completeExecutionReservation(
+  deps: ExecuteApprovedAgentActionDeps,
+  commandKey: Parameters<IdempotencyStore['get']>[0],
+  fingerprint: string,
+  completedAtIso: string,
+  output: ExecuteApprovedAgentActionOutput,
+): Promise<void> {
+  if (!deps.idempotency) return;
+  if (deps.idempotency.complete) {
+    const completed = await deps.idempotency.complete(commandKey, {
+      fingerprint,
+      completedAtIso,
+      value: output,
+    });
+    if (!completed) {
+      throw new Error('Approved action execution reservation was lost before completion.');
+    }
+    return;
+  }
+
+  await deps.idempotency.set(commandKey, {
+    fingerprint,
+    output,
+  });
+}
+
+async function releaseExecutionReservation(
+  deps: ExecuteApprovedAgentActionDeps,
+  commandKey: Parameters<IdempotencyStore['get']>[0],
+  fingerprint: string,
+  releasedAtIso: string,
+  reason: string,
+): Promise<void> {
+  if (deps.idempotency?.release) {
+    await deps.idempotency.release(commandKey, {
+      fingerprint,
+      releasedAtIso,
+      reason,
+    });
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -265,26 +420,41 @@ export async function executeApprovedAgentAction(
     principalId: String(ctx.principalId),
   });
 
-  if (deps.idempotency) {
-    const cached = await deps.idempotency.get<unknown>(commandKey);
-    const cachedEnvelope = normalizeCachedEnvelope(cached);
-    if (cachedEnvelope) {
-      if (cachedEnvelope.fingerprint !== idempotencyFingerprint) {
-        return err({
-          kind: 'Conflict',
-          message:
-            'Idempotency-Key was already used for a different approved action execution request.',
-        });
-      }
-      return ok({ ...cachedEnvelope.output, replayed: true });
+  const existingReservation = await readExistingReservation(deps, commandKey);
+  if (existingReservation.status === 'Completed') {
+    if (
+      existingReservation.fingerprint !== '' &&
+      existingReservation.fingerprint !== idempotencyFingerprint
+    ) {
+      return err({
+        kind: 'Conflict',
+        message:
+          'Idempotency-Key was already used for a different approved action execution request.',
+      });
     }
-    const cachedOutput = normalizeCachedOutput(cached);
-    if (cachedOutput) {
-      return ok({ ...cachedOutput, replayed: true });
+    return ok({ ...existingReservation.output, replayed: true });
+  }
+  if (existingReservation.status === 'InProgress') {
+    if (existingReservation.fingerprint !== idempotencyFingerprint) {
+      return err({
+        kind: 'Conflict',
+        message:
+          'Idempotency-Key is already reserved for a different approved action execution request.',
+      });
     }
+    return ok(buildInProgressOutput(approvalId, dispatchIdempotencyKey));
+  }
+  if (existingReservation.status === 'Conflict') {
+    return err({
+      kind: 'Conflict',
+      message: 'Idempotency-Key is already used by an incompatible execution record.',
+    });
   }
 
   if (approval.status !== 'Approved') {
+    if (approval.status === 'Executing') {
+      return ok(buildInProgressOutput(approvalId, dispatchIdempotencyKey));
+    }
     return err({
       kind: 'Conflict',
       message: `Approval ${input.approvalId} is not in Approved status (current: ${approval.status}).`,
@@ -296,6 +466,42 @@ export async function executeApprovedAgentAction(
   const executedAtIso = deps.clock.nowIso();
   if (executedAtIso.trim() === '') {
     return err({ kind: 'DependencyFailure', message: 'Clock returned an invalid timestamp.' });
+  }
+
+  const begunReservation = await beginExecutionReservation(
+    deps,
+    commandKey,
+    idempotencyFingerprint,
+    executedAtIso,
+  );
+  if (begunReservation.status === 'Completed') {
+    if (
+      begunReservation.fingerprint !== '' &&
+      begunReservation.fingerprint !== idempotencyFingerprint
+    ) {
+      return err({
+        kind: 'Conflict',
+        message:
+          'Idempotency-Key was already used for a different approved action execution request.',
+      });
+    }
+    return ok({ ...begunReservation.output, replayed: true });
+  }
+  if (begunReservation.status === 'InProgress') {
+    if (begunReservation.fingerprint !== idempotencyFingerprint) {
+      return err({
+        kind: 'Conflict',
+        message:
+          'Idempotency-Key is already reserved for a different approved action execution request.',
+      });
+    }
+    return ok(buildInProgressOutput(approvalId, dispatchIdempotencyKey));
+  }
+  if (begunReservation.status === 'Conflict') {
+    return err({
+      kind: 'Conflict',
+      message: 'Idempotency-Key is already used by an incompatible execution record.',
+    });
   }
 
   const executionClaim: ApprovalDecidedV1 = parseApprovalV1({
@@ -316,12 +522,26 @@ export async function executeApprovedAgentAction(
       executionClaim,
     );
     if (!claimed) {
+      await releaseExecutionReservation(
+        deps,
+        commandKey,
+        idempotencyFingerprint,
+        executedAtIso,
+        'approval-claim-lost',
+      );
       return err({
         kind: 'Conflict',
         message: `Approval ${input.approvalId} is already being executed or is no longer Approved.`,
       });
     }
   } catch (error) {
+    await releaseExecutionReservation(
+      deps,
+      commandKey,
+      idempotencyFingerprint,
+      executedAtIso,
+      'approval-claim-failed',
+    );
     return err({
       kind: 'DependencyFailure',
       message:
@@ -428,25 +648,26 @@ export async function executeApprovedAgentAction(
         });
       }
 
-      if (deps.idempotency) {
-        const output: ExecuteApprovedAgentActionOutput = dispatchResult.ok
-          ? {
-              executionId,
-              approvalId,
-              status: 'Executed',
-              output: dispatchResult.output,
-            }
-          : {
-              executionId,
-              approvalId,
-              status: 'Failed',
-              errorMessage: dispatchResult.message,
-            };
-        await deps.idempotency.set(commandKey, {
-          fingerprint: idempotencyFingerprint,
-          output,
-        });
-      }
+      const output: ExecuteApprovedAgentActionOutput = dispatchResult.ok
+        ? {
+            executionId,
+            approvalId,
+            status: 'Executed',
+            output: dispatchResult.output,
+          }
+        : {
+            executionId,
+            approvalId,
+            status: 'Failed',
+            errorMessage: dispatchResult.message,
+          };
+      await completeExecutionReservation(
+        deps,
+        commandKey,
+        idempotencyFingerprint,
+        executedAtIso,
+        output,
+      );
     });
   } catch (error) {
     return err({

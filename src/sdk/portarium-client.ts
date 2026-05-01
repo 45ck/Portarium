@@ -92,6 +92,7 @@ export type ApprovalDecisionInput = Readonly<{
 export type ApprovalStatus =
   | 'Pending'
   | 'Approved'
+  | 'Executing'
   | 'Denied'
   | 'Executed'
   | 'Expired'
@@ -167,15 +168,18 @@ export type ProposeAgentActionResult = Readonly<{
 }>;
 
 export type ExecuteAgentActionInput = Readonly<{
+  flowRef: string;
+  payload?: Record<string, unknown>;
   rationale?: string;
+  idempotencyKey?: string;
 }>;
 
 export type ExecuteAgentActionResult = Readonly<{
-  proposalId: string;
+  executionId: string;
   approvalId: string;
-  status: 'Executed';
-  executedAt: string;
-  result?: unknown;
+  status: 'Executing' | 'Executed' | 'Failed';
+  output?: unknown;
+  errorMessage?: string;
 }>;
 
 // ---------- health ----------
@@ -632,12 +636,13 @@ class AgentActionsNamespace {
 
   async execute(
     approvalId: string,
-    input: ExecuteAgentActionInput = {},
+    input: ExecuteAgentActionInput,
   ): Promise<ExecuteAgentActionResult> {
     return this.#client.request<ExecuteAgentActionResult>(
       'POST',
       `/v1/workspaces/${encodeURIComponent(this.#client.workspaceId)}/agent-actions/${encodeURIComponent(approvalId)}/execute`,
       input,
+      input.idempotencyKey,
     );
   }
 
@@ -647,7 +652,7 @@ class AgentActionsNamespace {
    */
   async waitForApproval(
     approvalId: string,
-    executeInput: ExecuteAgentActionInput = {},
+    executeInput: ExecuteAgentActionInput,
     opts: { pollInterval?: number; timeout?: number } = {},
   ): Promise<ExecuteAgentActionResult> {
     const pollIntervalMs = opts.pollInterval ?? 2_000;

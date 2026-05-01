@@ -3,6 +3,10 @@ import type {
   ApprovalListPage,
   ApprovalQueryStore,
   ApprovalStore,
+  IdempotencyReservationBeginInput,
+  IdempotencyReservationBeginResult,
+  IdempotencyReservationCompleteInput,
+  IdempotencyReservationReleaseInput,
   IdempotencyKey,
   IdempotencyStore,
   ListApprovalsFilter,
@@ -469,10 +473,144 @@ export class PostgresIdempotencyStore implements IdempotencyStore {
       payload: value,
     });
   }
+
+  public async begin(
+    key: IdempotencyKey,
+    input: IdempotencyReservationBeginInput,
+  ): Promise<IdempotencyReservationBeginResult> {
+    const inserted = await this.#documents.insertIfAbsent({
+      tenantId: String(key.tenantId),
+      collection: COLLECTION_IDEMPOTENCY,
+      documentId: formatIdempotencyDocumentId(key),
+      payload: {
+        status: 'InProgress',
+        fingerprint: input.fingerprint,
+        reservedAtIso: input.reservedAtIso,
+        ...(input.leaseExpiresAtIso ? { leaseExpiresAtIso: input.leaseExpiresAtIso } : {}),
+      },
+    });
+    if (inserted) {
+      return { status: 'Began' };
+    }
+
+    const existing = await this.get<unknown>(key);
+    if (isReleasedReservation(existing)) {
+      if (existing.fingerprint !== input.fingerprint) {
+        return { status: 'Conflict', fingerprint: existing.fingerprint };
+      }
+      const reclaimed = await this.#documents.updatePayloadIfStatus({
+        tenantId: String(key.tenantId),
+        collection: COLLECTION_IDEMPOTENCY,
+        documentId: formatIdempotencyDocumentId(key),
+        expectedStatus: 'Released',
+        payload: {
+          status: 'InProgress',
+          fingerprint: input.fingerprint,
+          reservedAtIso: input.reservedAtIso,
+          ...(input.leaseExpiresAtIso ? { leaseExpiresAtIso: input.leaseExpiresAtIso } : {}),
+        },
+      });
+      return reclaimed
+        ? { status: 'Began' }
+        : toIdempotencyReservationBeginResult(await this.get<unknown>(key));
+    }
+    return toIdempotencyReservationBeginResult(existing);
+  }
+
+  public async complete<T>(
+    key: IdempotencyKey,
+    input: IdempotencyReservationCompleteInput<T>,
+  ): Promise<boolean> {
+    const existing = await this.get<unknown>(key);
+    if (!isInProgressReservationWithFingerprint(existing, input.fingerprint)) {
+      return false;
+    }
+    return this.#documents.updatePayloadIfStatus({
+      tenantId: String(key.tenantId),
+      collection: COLLECTION_IDEMPOTENCY,
+      documentId: formatIdempotencyDocumentId(key),
+      expectedStatus: 'InProgress',
+      payload: {
+        status: 'Completed',
+        fingerprint: input.fingerprint,
+        completedAtIso: input.completedAtIso,
+        value: input.value,
+      },
+    });
+  }
+
+  public async release(
+    key: IdempotencyKey,
+    input: IdempotencyReservationReleaseInput,
+  ): Promise<boolean> {
+    const existing = await this.get<unknown>(key);
+    if (!isInProgressReservationWithFingerprint(existing, input.fingerprint)) {
+      return false;
+    }
+    return this.#documents.updatePayloadIfStatus({
+      tenantId: String(key.tenantId),
+      collection: COLLECTION_IDEMPOTENCY,
+      documentId: formatIdempotencyDocumentId(key),
+      expectedStatus: 'InProgress',
+      payload: {
+        status: 'Released',
+        fingerprint: input.fingerprint,
+        releasedAtIso: input.releasedAtIso,
+        reason: input.reason,
+      },
+    });
+  }
 }
 
 function formatIdempotencyDocumentId(key: IdempotencyKey): string {
   return `${key.commandName}:${key.requestKey}`;
+}
+
+function toIdempotencyReservationBeginResult(value: unknown): IdempotencyReservationBeginResult {
+  if (typeof value !== 'object' || value === null) {
+    return { status: 'Conflict' };
+  }
+
+  const record = value as Record<string, unknown>;
+  const fingerprint = typeof record['fingerprint'] === 'string' ? record['fingerprint'] : undefined;
+  if (record['status'] === 'Completed') {
+    return {
+      status: 'Completed',
+      fingerprint: fingerprint ?? '',
+      value: record['value'],
+    };
+  }
+  if (record['status'] === 'InProgress') {
+    return {
+      status: 'InProgress',
+      fingerprint: fingerprint ?? '',
+      ...(typeof record['leaseExpiresAtIso'] === 'string'
+        ? { leaseExpiresAtIso: record['leaseExpiresAtIso'] }
+        : {}),
+    };
+  }
+  if (fingerprint && 'output' in record) {
+    return {
+      status: 'Completed',
+      fingerprint,
+      value: record,
+    };
+  }
+  return { status: 'Conflict', ...(fingerprint ? { fingerprint } : {}) };
+}
+
+function isInProgressReservationWithFingerprint(value: unknown, fingerprint: string): boolean {
+  if (typeof value !== 'object' || value === null) return false;
+  const record = value as Record<string, unknown>;
+  return record['status'] === 'InProgress' && record['fingerprint'] === fingerprint;
+}
+
+function isReleasedReservation(
+  value: unknown,
+): value is Readonly<{ status: 'Released'; fingerprint: string }> {
+  if (typeof value !== 'object' || value === null) return false;
+  const record = value as Record<string, unknown>;
+  return record['status'] === 'Released' && typeof record['fingerprint'] === 'string';
 }
 
 function matchRunFieldFilter(

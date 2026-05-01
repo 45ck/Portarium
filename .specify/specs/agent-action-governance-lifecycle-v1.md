@@ -133,11 +133,12 @@ Before dispatching a tool invocation, `executeApprovedAgentAction` enforces:
 3. The approval's workspaceId must match the caller's workspaceId.
 4. The caller must have the `agent-action:execute` permission.
 
-After all guards pass, the command atomically claims execution by moving the
-approval from `Approved` to `Executing` with storage-level compare-and-set
-semantics. Only the caller that wins that claim may dispatch through the
-configured `ActionRunnerPort`. The claim must be short-lived and must not hold a
-database transaction open across the external dispatch.
+After all guards pass, the command creates or observes a durable execution
+reservation, then atomically claims execution by moving the approval from
+`Approved` to `Executing` with storage-level compare-and-set semantics. Only the
+caller that owns the reservation and wins that claim may dispatch through the
+configured `ActionRunnerPort`. The claim must not hold a database transaction
+open across the external dispatch.
 
 On successful dispatch, the command finalizes the approval from `Executing` to
 `Executed`. If dispatch fails before an external side effect is accepted, the
@@ -150,7 +151,8 @@ Execution is retry-safe:
 
 - If a caller supplies an `idempotencyKey`, `executeApprovedAgentAction` uses that key for both command replay and downstream dispatch.
 - If the caller omits `idempotencyKey`, the command derives a stable dispatch key from `(tenantId, workspaceId, approvalId, flowRef)`.
-- A matching replay returns the cached execution response without a second action dispatch, event publish, evidence append, or approval state write.
+- A matching retry while the reservation is active returns `Executing` without a second action dispatch, event publish, evidence append, or approval state write.
+- A matching replay after completion returns the cached execution response without a second action dispatch, event publish, evidence append, or approval state write.
 - Reusing the same idempotency key with a different execution fingerprint returns `Conflict`.
 - The dispatch key is used as the stable `actionId` and is forwarded through `ActionRunnerPort` and `MachineInvokerPort`; OpenClaw gateway requests carry it as `Idempotency-Key`.
 - First-submission concurrency is closed by the approval execution claim: concurrent callers that all observe `Approved` still converge through a single storage-level `Approved -> Executing` winner before any external dispatch.

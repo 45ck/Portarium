@@ -137,7 +137,9 @@ Execution rules:
 
 - Action idempotency key MUST remain stable across retries.
 - Human-approved agent actions MUST reuse either the caller's `Idempotency-Key` or the derived `(tenantId, workspaceId, approvalId, flowRef)` execution key as the stable execution `actionId`, dispatch idempotency key, and approval execution claim key when crossing machine/adapter boundaries.
-- Before external dispatch, human-approved agent actions MUST win a storage-level approval claim (`Approved -> Executing`). Claim losers MUST NOT dispatch, publish duplicate events, or append duplicate evidence.
+- Before external dispatch, human-approved agent actions MUST create or observe a durable reservation and win a storage-level approval claim (`Approved -> Executing`). Claim losers MUST NOT dispatch, publish duplicate events, or append duplicate evidence.
+- A retry that finds an active matching reservation MUST return `Executing` and MUST NOT dispatch again. A retry with a different request fingerprint MUST return `Conflict`.
+- If the process fails after dispatch but before local finalization, the next retry MUST use the durable reservation and stable downstream key to avoid duplicate dispatch while reconciliation is pending.
 - A successful command replay MUST return the cached execution result without publishing duplicate events or appending duplicate evidence.
 - Scheduler decisions must be deterministic for equivalent input state.
 - Every attempt and terminal transition must produce evidence with:

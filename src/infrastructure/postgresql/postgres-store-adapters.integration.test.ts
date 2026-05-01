@@ -256,6 +256,91 @@ describe('PostgreSQL store adapters', () => {
     expect(loaded?.status).toBe('Approved');
   });
 
+  it('supports execution idempotency reservation begin, complete, replay, and release', async () => {
+    const client = new InMemorySqlClient();
+    const idempotency = new PostgresIdempotencyStore(client);
+    const key = {
+      tenantId: TenantId('tenant-1'),
+      commandName: 'ExecuteApprovedAgentAction',
+      requestKey: 'execute-1',
+    };
+
+    await expect(
+      idempotency.begin(key, {
+        fingerprint: 'fingerprint-1',
+        reservedAtIso: '2026-03-01T00:00:00.000Z',
+        leaseExpiresAtIso: '2026-03-01T00:15:00.000Z',
+      }),
+    ).resolves.toEqual({ status: 'Began' });
+    await expect(
+      idempotency.begin(key, {
+        fingerprint: 'fingerprint-1',
+        reservedAtIso: '2026-03-01T00:01:00.000Z',
+      }),
+    ).resolves.toEqual({
+      status: 'InProgress',
+      fingerprint: 'fingerprint-1',
+      leaseExpiresAtIso: '2026-03-01T00:15:00.000Z',
+    });
+    await expect(
+      idempotency.begin(key, {
+        fingerprint: 'fingerprint-2',
+        reservedAtIso: '2026-03-01T00:02:00.000Z',
+      }),
+    ).resolves.toEqual({
+      status: 'InProgress',
+      fingerprint: 'fingerprint-1',
+      leaseExpiresAtIso: '2026-03-01T00:15:00.000Z',
+    });
+    await expect(
+      idempotency.complete(key, {
+        fingerprint: 'fingerprint-2',
+        completedAtIso: '2026-03-01T00:03:00.000Z',
+        value: { executionId: 'execute-1', status: 'Executed' },
+      }),
+    ).resolves.toBe(false);
+    await expect(
+      idempotency.complete(key, {
+        fingerprint: 'fingerprint-1',
+        completedAtIso: '2026-03-01T00:04:00.000Z',
+        value: { executionId: 'execute-1', status: 'Executed' },
+      }),
+    ).resolves.toBe(true);
+    await expect(
+      idempotency.begin(key, {
+        fingerprint: 'fingerprint-1',
+        reservedAtIso: '2026-03-01T00:05:00.000Z',
+      }),
+    ).resolves.toEqual({
+      status: 'Completed',
+      fingerprint: 'fingerprint-1',
+      value: { executionId: 'execute-1', status: 'Executed' },
+    });
+
+    const releasedKey = {
+      tenantId: TenantId('tenant-1'),
+      commandName: 'ExecuteApprovedAgentAction',
+      requestKey: 'execute-release-1',
+    };
+    await idempotency.begin(releasedKey, {
+      fingerprint: 'fingerprint-release',
+      reservedAtIso: '2026-03-01T00:00:00.000Z',
+    });
+    await expect(
+      idempotency.release(releasedKey, {
+        fingerprint: 'fingerprint-release',
+        releasedAtIso: '2026-03-01T00:01:00.000Z',
+        reason: 'approval-claim-lost',
+      }),
+    ).resolves.toBe(true);
+    await expect(
+      idempotency.begin(releasedKey, {
+        fingerprint: 'fingerprint-release',
+        reservedAtIso: '2026-03-01T00:02:00.000Z',
+      }),
+    ).resolves.toEqual({ status: 'Began' });
+  });
+
   it('supports work-item and workforce stores', async () => {
     const client = new InMemorySqlClient();
     const workItems = new PostgresWorkItemStore(client);

@@ -53,10 +53,11 @@ One of:
 - `Expired`
 - `RequestChanges`
 
-`Executing` is a short-lived internal claim state used by approved agent-action
+`Executing` is an internal execution claim state used by approved agent-action
 execution. It prevents two callers from dispatching the same approved action at
 the same time. Operator surfaces may display it, but clients do not submit it as
-an approval decision.
+an approval decision. Every `Executing` approval MUST be linked to the stable
+execution key and durable idempotency reservation used for downstream dispatch.
 
 ### Status Transitions
 
@@ -73,6 +74,21 @@ Approval decision writes and execution claims MUST use storage-level
 compare-and-set semantics. Only the caller that wins the expected-status update
 may emit the corresponding event, append evidence, or cache the idempotency
 result.
+
+### Execution Reservation and Recovery
+
+Approved action execution MUST create or observe a durable reservation before
+external dispatch. The reservation stores a canonical request fingerprint,
+reserved timestamp, optional lease expiry, and terminal replay value when
+completed.
+
+- Matching retries while the reservation is `InProgress` return `Executing` and
+  do not dispatch again.
+- Mismatched retries for the same idempotency key return `Conflict`.
+- Terminal completion replays the stored execution result.
+- Timeout alone MUST NOT release `Executing -> Approved`; recovery must prove
+  the external side effect was not accepted or reconcile through the downstream
+  stable `ActionId`/`Idempotency-Key`.
 
 ## Escalation and Expiry (bead-0910)
 

@@ -5,6 +5,7 @@ export const SQL_JSON_DOC_SELECT_ONE = '/* portarium:json-doc-select-one */';
 export const SQL_JSON_DOC_SELECT_MANY = '/* portarium:json-doc-select-many */';
 export const SQL_JSON_DOC_SELECT_BY_IDS = '/* portarium:json-doc-select-by-ids */';
 export const SQL_JSON_DOC_UPDATE_IF_STATUS = '/* portarium:json-doc-update-if-status */';
+export const SQL_JSON_DOC_INSERT_IF_ABSENT = '/* portarium:json-doc-insert-if-absent */';
 
 export type JsonDocument = Readonly<{
   tenantId: string;
@@ -38,6 +39,23 @@ DO UPDATE SET workspace_id = EXCLUDED.workspace_id, payload = EXCLUDED.payload, 
     );
   }
 
+  public async insertIfAbsent(document: JsonDocument): Promise<boolean> {
+    const result = await this.#client.query(
+      `${SQL_JSON_DOC_INSERT_IF_ABSENT}
+INSERT INTO domain_documents (tenant_id, workspace_id, collection, document_id, payload)
+VALUES ($1, $2, $3, $4, $5::jsonb)
+ON CONFLICT (tenant_id, collection, document_id) DO NOTHING;`,
+      [
+        document.tenantId,
+        document.workspaceId ?? null,
+        document.collection,
+        document.documentId,
+        JSON.stringify(document.payload),
+      ],
+    );
+    return result.rowCount === 1;
+  }
+
   public async get(
     tenantId: string,
     collection: string,
@@ -63,7 +81,7 @@ LIMIT 1;`,
   public async updatePayloadIfStatus(
     params: Readonly<{
       tenantId: string;
-      workspaceId: string;
+      workspaceId?: string;
       collection: string;
       documentId: string;
       expectedStatus: string;
@@ -75,13 +93,13 @@ LIMIT 1;`,
 UPDATE domain_documents
 SET workspace_id = $2, payload = $6::jsonb, updated_at = NOW()
 WHERE tenant_id = $1
-  AND workspace_id = $2
+  AND ($2::text IS NULL OR workspace_id = $2)
   AND collection = $3
   AND document_id = $4
   AND payload->>'status' = $5;`,
       [
         params.tenantId,
-        params.workspaceId,
+        params.workspaceId ?? null,
         params.collection,
         params.documentId,
         params.expectedStatus,

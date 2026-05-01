@@ -1058,7 +1058,7 @@ paths:
               $ref: '#/components/schemas/ExecuteApprovedAgentActionRequest'
       responses:
         '200':
-          description: Executed or failed under governance
+          description: Executing, executed, or failed under governance
           content:
             application/json:
               schema:
@@ -3752,7 +3752,7 @@ components:
           $ref: '#/components/schemas/ApprovalId'
         status:
           type: string
-          enum: [Executed, Failed]
+          enum: [Executing, Executed, Failed]
         output: {}
         errorMessage:
           type: string

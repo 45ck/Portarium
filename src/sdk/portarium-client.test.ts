@@ -419,51 +419,57 @@ describe('PortariumClient', () => {
   describe('agentActions.execute', () => {
     it('sends POST to the agent-actions/:approvalId/execute endpoint', async () => {
       const execResult: ExecuteAgentActionResult = {
-        proposalId: 'prop-1',
+        executionId: 'exec-1',
         approvalId: 'appr-10',
         status: 'Executed',
-        executedAt: '2026-03-11T10:00:00Z',
       };
       const fetchFn = mockFetch(200, execResult);
       const client = makeClient({ fetchFn });
 
-      const result = await client.agentActions.execute('appr-10', { rationale: 'approved' });
+      const result = await client.agentActions.execute('appr-10', {
+        flowRef: 'machine-1/tool-name',
+        idempotencyKey: 'execute-sdk-1',
+      });
 
       expect(result.status).toBe('Executed');
       expect(result.approvalId).toBe('appr-10');
       const [url, options] = getCallArgs(fetchFn);
       expect(url).toContain('/agent-actions/appr-10/execute');
       expect(options.method).toBe('POST');
+      expect((options.headers as Record<string, string>)['idempotency-key']).toBe('execute-sdk-1');
     });
 
-    it('accepts empty input (no rationale)', async () => {
+    it('accepts an in-progress execution response', async () => {
       const execResult: ExecuteAgentActionResult = {
-        proposalId: 'prop-2',
+        executionId: 'exec-2',
         approvalId: 'appr-20',
-        status: 'Executed',
-        executedAt: '2026-03-11T11:00:00Z',
+        status: 'Executing',
       };
       const fetchFn = mockFetch(200, execResult);
       const client = makeClient({ fetchFn });
 
-      const result = await client.agentActions.execute('appr-20');
+      const result = await client.agentActions.execute('appr-20', {
+        flowRef: 'machine-1/tool-name',
+      });
 
       expect(result.approvalId).toBe('appr-20');
+      expect(result.status).toBe('Executing');
       const [url] = getCallArgs(fetchFn);
       expect(url).toContain('/agent-actions/appr-20/execute');
     });
 
     it('URL-encodes the approvalId', async () => {
       const execResult: ExecuteAgentActionResult = {
-        proposalId: 'prop-3',
+        executionId: 'exec-3',
         approvalId: 'appr with spaces',
         status: 'Executed',
-        executedAt: '2026-03-11T12:00:00Z',
       };
       const fetchFn = mockFetch(200, execResult);
       const client = makeClient({ fetchFn });
 
-      await client.agentActions.execute('appr with spaces');
+      await client.agentActions.execute('appr with spaces', {
+        flowRef: 'machine-1/tool-name',
+      });
 
       const [url] = getCallArgs(fetchFn);
       expect(url).toContain('/agent-actions/appr%20with%20spaces/execute');
@@ -543,10 +549,9 @@ describe('PortariumClient', () => {
         decidedAt: '2026-03-11T10:00:00Z',
       };
       const execResult: ExecuteAgentActionResult = {
-        proposalId: 'prop-1',
+        executionId: 'exec-1',
         approvalId: 'appr-10',
         status: 'Executed',
-        executedAt: '2026-03-11T10:01:00Z',
       };
       // First call returns the approval GET; second call returns execute result
       let callCount = 0;
@@ -561,7 +566,9 @@ describe('PortariumClient', () => {
       });
       const client = makeClient({ fetchFn, maxRetries: 0 });
 
-      const result = await client.agentActions.waitForApproval('appr-10', { rationale: 'ready' });
+      const result = await client.agentActions.waitForApproval('appr-10', {
+        flowRef: 'machine-1/tool-name',
+      });
 
       expect(result.status).toBe('Executed');
       expect(result.approvalId).toBe('appr-10');
@@ -582,7 +589,9 @@ describe('PortariumClient', () => {
       const fetchFn = mockFetch(200, approvalSummary);
       const client = makeClient({ fetchFn, maxRetries: 0 });
 
-      await expect(client.agentActions.waitForApproval('appr-20')).rejects.toThrow(/denied/i);
+      await expect(
+        client.agentActions.waitForApproval('appr-20', { flowRef: 'machine-1/tool-name' }),
+      ).rejects.toThrow(/denied/i);
     });
 
     it('throws when approval is Expired', async () => {
@@ -593,7 +602,9 @@ describe('PortariumClient', () => {
       const fetchFn = mockFetch(200, approvalSummary);
       const client = makeClient({ fetchFn, maxRetries: 0 });
 
-      await expect(client.agentActions.waitForApproval('appr-30')).rejects.toThrow(/expired/i);
+      await expect(
+        client.agentActions.waitForApproval('appr-30', { flowRef: 'machine-1/tool-name' }),
+      ).rejects.toThrow(/expired/i);
     });
   });
 
