@@ -28,6 +28,12 @@ experiment setup or execution step.
    - all other non-2xx provider responses => `unexpected_response`
 10. A failed preflight produces `outcome: "inconclusive"` and does not execute
     the experiment body.
+11. Live approval evaluations that use provider-backed proposal or planning
+    behavior must follow `approval-evaluation-scenarios-v1`; deterministic
+    approval evaluations remain the default release evidence.
+12. Result bundles for live approval evaluations must record redacted
+    provider/model metadata only and must not store credential values,
+    secret-bearing prompts, customer data, or proprietary source text.
 
 ## Result Bundle Shape
 
