@@ -2551,6 +2551,8 @@ components:
           items:
             type: string
             minLength: 1
+        hostContract:
+          $ref: '#/components/schemas/CockpitExtensionHostContract'
         issuedAtIso:
           $ref: '#/components/schemas/IsoTimestamp'
         expiresAtIso:
@@ -2565,8 +2567,117 @@ components:
         - availablePrivacyClasses
         - activePackIds
         - quarantinedExtensionIds
+        - hostContract
         - issuedAtIso
         - expiresAtIso
+    CockpitExtensionHostContract:
+      type: object
+      additionalProperties: false
+      properties:
+        schemaVersion:
+          type: integer
+          const: 1
+        browserEgress:
+          type: string
+          enum: [host-api-origins-only]
+        credentialAccess:
+          type: string
+          enum: [none]
+        failureMode:
+          type: string
+          enum: [fail-closed]
+        dataQueries:
+          type: array
+          items:
+            $ref: '#/components/schemas/CockpitExtensionDataQueryContract'
+        governedCommandRequests:
+          type: array
+          items:
+            $ref: '#/components/schemas/CockpitExtensionGovernedCommandContract'
+      required:
+        - schemaVersion
+        - browserEgress
+        - credentialAccess
+        - failureMode
+        - dataQueries
+        - governedCommandRequests
+    CockpitExtensionBackendSurface:
+      type: object
+      properties:
+        id:
+          type: string
+          minLength: 1
+        method:
+          type: string
+          enum: [GET, POST]
+        pathTemplate:
+          type: string
+          minLength: 1
+        requiredApiScopes:
+          type: array
+          items:
+            type: string
+            minLength: 1
+        requiredCapabilities:
+          type: array
+          items:
+            type: string
+            minLength: 1
+        requiredAppActions:
+          type: array
+          items:
+            type: string
+            minLength: 1
+        isolation:
+          type: string
+          enum: [workspace-scoped, workspace-and-principal-scoped]
+        policySemantics:
+          type: string
+          enum: [authorization-required, policy-approval-evidence-required]
+        evidenceSemantics:
+          type: string
+          enum: [read-audited-by-control-plane, evidence-required-before-response]
+        failClosed:
+          type: boolean
+          const: true
+      required:
+        - id
+        - method
+        - pathTemplate
+        - requiredApiScopes
+        - requiredCapabilities
+        - requiredAppActions
+        - isolation
+        - policySemantics
+        - evidenceSemantics
+        - failClosed
+    CockpitExtensionDataQueryContract:
+      allOf:
+        - $ref: '#/components/schemas/CockpitExtensionBackendSurface'
+        - type: object
+          properties:
+            kind:
+              type: string
+              enum: [data-query]
+          required: [kind]
+    CockpitExtensionGovernedCommandContract:
+      allOf:
+        - $ref: '#/components/schemas/CockpitExtensionBackendSurface'
+        - type: object
+          properties:
+            kind:
+              type: string
+              enum: [governed-command-request]
+            approvalSemantics:
+              type: string
+              enum: [policy-determined]
+            idempotency:
+              type: string
+              enum: [caller-or-host-key-required]
+          required:
+            - kind
+            - approvalSemantics
+            - idempotency
     UserRole:
       type: string
       enum: [admin, operator, approver, auditor]

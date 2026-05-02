@@ -199,6 +199,15 @@ For each primary screen, show dedicated state components for:
 - Denied Browser Egress must expose deterministic audit-ready metadata including policy ID/version, decision, reason, extension ID, route or command ID when known, Workspace, principal, correlation ID, request kind, method, attempted origin, redacted attempted path, and configured Host/API Origins.
 - Browser Egress policy and tests must remain generic and must not encode tenant, customer, vertical, system-of-record, provider, vault, gateway, or runtime daemon endpoints.
 
+### R14c Cockpit extension backend host contract
+
+- The control plane must issue a typed `hostContract` inside the workspace-scoped Cockpit extension context.
+- `hostContract.dataQueries` must list only configured, authorized, effectively scoped Portarium query surfaces. Extension packages must treat absence from this list as a deny decision, not as permission to synthesize a direct browser call.
+- `hostContract.governedCommandRequests` must list only configured, authorized, effectively scoped command-request surfaces that preserve Portarium policy, Approval Gate, SoD, evidence, tenancy, and audit semantics.
+- Governed command requests must not execute authoritative side effects in the browser. They may only submit requests to control-plane endpoints that evaluate policy, create or reuse required approvals, and append evidence before returning an allow, deny, or needs-approval result.
+- Missing command governance dependencies, missing API scopes, missing capabilities, workspace mismatch, activation-source failure, or malformed activation state must fail closed by omitting the surface or returning Problem Details before any extension route receives a partial permission context.
+- The backend host contract must not expose credentials, system-of-record endpoints, vault paths, provider APIs, gateway management APIs, runtime daemon endpoints, tenant-specific endpoints, or manifest-defined egress grants.
+
 ## Acceptance signals
 
 - Screen rendering remains stable with partial API failures.

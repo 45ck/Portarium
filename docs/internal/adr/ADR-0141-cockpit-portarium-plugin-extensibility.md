@@ -322,6 +322,9 @@ Negative:
 - Deferred source decision: `docs/internal/ADRs-v0.md` ADR-024.
 - Mission-control integration: `docs/internal/adr/ADR-0140-mission-control-integration.md`.
 - Cockpit v1 route host: `docs/internal/adr/ADR-0126-cockpit-extension-host.md`.
+- Backend host contract: `GET /v1/workspaces/{workspaceId}/cockpit/extension-context`
+  returns a typed `hostContract` that advertises only configured, authorized,
+  effectively scoped data-query and governed-command request surfaces.
 - External package handoff: `docs/how-to/install-cockpit-extension-package.md`.
 - Operator model: `.specify/specs/operator-interaction-model-v1.md`.
 - Cockpit presentation contract: `.specify/specs/presentation-layer-reference-cockpit-v1.md`.
@@ -344,5 +347,7 @@ Negative:
 - Browser egress is not production-ready until denied-origin enforcement is
   tested and missing policy fails closed before any extension fetch or preview.
 - Generated surface proposal schemas need `bead-1055`.
+- `bead-1123` still needs to graduate this backend contract into reusable SDK
+  helpers and conformance tests for third-party extension packages.
 - Runtime marketplace behavior is explicitly deferred until SDK/conformance work
   proves the v1 host model.
