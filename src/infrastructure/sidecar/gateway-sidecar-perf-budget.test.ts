@@ -369,10 +369,13 @@ describe('AC2: Pass/fail thresholds — p95 latency, throughput, error rate', ()
 
 describe('AC3: Rate limits, retries, and timeout behavior under stress', () => {
   it('rate limiter correctly throttles above configured capacity', async () => {
-    const limiter = new TokenBucketRateLimiter({
-      maxTokens: 10,
-      refillRatePerSecond: 100,
-    });
+    const limiter = new TokenBucketRateLimiter(
+      {
+        maxTokens: 10,
+        refillRatePerSecond: 100,
+      },
+      () => 0,
+    );
 
     let allowed = 0;
     let denied = 0;

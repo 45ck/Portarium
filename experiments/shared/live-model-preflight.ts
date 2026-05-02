@@ -7,7 +7,13 @@
 
 import { spawn } from 'node:child_process';
 
-export type LiveModelProvider = 'openai' | 'openrouter' | 'codex';
+export type LiveModelProvider = 'openai' | 'openrouter' | 'codex' | 'claude' | 'gemini';
+
+export type LiveModelProbe =
+  | 'chat-completions'
+  | 'claude-messages'
+  | 'gemini-generate-content'
+  | 'codex-exec';
 
 export type LiveModelPreflightStatus = 'disabled' | 'skipped' | 'ready' | 'failed';
 
@@ -50,7 +56,7 @@ export interface LiveModelPreflightResult {
   readonly providerSelection: 'forced' | 'auto' | 'none';
   readonly provider?: LiveModelProvider;
   readonly model?: string;
-  readonly probe?: 'chat-completions' | 'codex-exec';
+  readonly probe?: LiveModelProbe;
   readonly httpStatus?: number;
   readonly failureKind?: LiveModelPreflightFailureKind;
   readonly reason?: string;
@@ -63,7 +69,7 @@ interface ProviderConfig {
   readonly baseUrl: string;
   readonly apiKey?: string;
   readonly credentialSource: LiveModelCredentialSource;
-  readonly probe: 'chat-completions' | 'codex-exec';
+  readonly probe: LiveModelProbe;
 }
 
 interface ProviderDefaults {
@@ -72,6 +78,13 @@ interface ProviderDefaults {
   readonly modelEnvKeys: readonly string[];
   readonly baseUrlEnvKeys: readonly string[];
   readonly credentialEnvKeys: readonly string[];
+  readonly probe: Exclude<LiveModelProbe, 'codex-exec'>;
+}
+
+interface ProbeRequest {
+  readonly url: string;
+  readonly headers: Record<string, string>;
+  readonly body: unknown;
 }
 
 const TRUE_VALUES = new Set(['1', 'true', 'yes', 'on']);
@@ -86,6 +99,7 @@ const PROVIDER_DEFAULTS: Record<LiveModelProvider, ProviderDefaults> = {
     modelEnvKeys: ['PORTARIUM_LIVE_MODEL', 'OPENAI_MODEL'],
     baseUrlEnvKeys: ['OPENAI_BASE_URL'],
     credentialEnvKeys: ['OPENAI_API_KEY'],
+    probe: 'chat-completions',
   },
   openrouter: {
     model: 'openai/gpt-4o',
@@ -93,6 +107,7 @@ const PROVIDER_DEFAULTS: Record<LiveModelProvider, ProviderDefaults> = {
     modelEnvKeys: ['PORTARIUM_LIVE_MODEL', 'OPENROUTER_MODEL'],
     baseUrlEnvKeys: ['OPENROUTER_BASE_URL'],
     credentialEnvKeys: ['OPENROUTER_API_KEY'],
+    probe: 'chat-completions',
   },
   codex: {
     model: 'gpt-4o',
@@ -100,10 +115,37 @@ const PROVIDER_DEFAULTS: Record<LiveModelProvider, ProviderDefaults> = {
     modelEnvKeys: ['PORTARIUM_LIVE_MODEL', 'CODEX_MODEL', 'OPENAI_MODEL'],
     baseUrlEnvKeys: ['CODEX_BASE_URL', 'OPENAI_BASE_URL'],
     credentialEnvKeys: ['CODEX_API_KEY', 'OPENAI_API_KEY'],
+    probe: 'chat-completions',
+  },
+  claude: {
+    model: 'claude-sonnet-4-6',
+    baseUrl: 'https://api.anthropic.com/v1',
+    modelEnvKeys: ['PORTARIUM_LIVE_MODEL', 'CLAUDE_MODEL', 'ANTHROPIC_MODEL'],
+    baseUrlEnvKeys: ['CLAUDE_BASE_URL', 'ANTHROPIC_BASE_URL'],
+    credentialEnvKeys: ['CLAUDE_API_KEY', 'ANTHROPIC_API_KEY'],
+    probe: 'claude-messages',
+  },
+  gemini: {
+    model: 'gemini-2.0-flash',
+    baseUrl: 'https://generativelanguage.googleapis.com/v1beta',
+    modelEnvKeys: ['PORTARIUM_LIVE_MODEL', 'GEMINI_MODEL', 'GOOGLE_MODEL'],
+    baseUrlEnvKeys: [
+      'GEMINI_BASE_URL',
+      'GOOGLE_AI_BASE_URL',
+      'GOOGLE_GENERATIVE_LANGUAGE_BASE_URL',
+    ],
+    credentialEnvKeys: ['GEMINI_API_KEY', 'GOOGLE_API_KEY', 'GOOGLE_VERTEX_API_KEY'],
+    probe: 'gemini-generate-content',
   },
 };
 
-const AUTO_PROVIDER_ORDER: readonly LiveModelProvider[] = ['openai', 'openrouter', 'codex'];
+const AUTO_PROVIDER_ORDER: readonly LiveModelProvider[] = [
+  'openai',
+  'openrouter',
+  'codex',
+  'claude',
+  'gemini',
+];
 
 export async function runLiveModelPreflight(
   options: LiveModelPreflightOptions = {},
@@ -133,15 +175,11 @@ export async function runLiveModelPreflight(
   }
 
   try {
-    const response = await fetchImpl(chatCompletionsUrl(config.baseUrl), {
+    const request = buildProbeRequest(config, env);
+    const response = await fetchImpl(request.url, {
       method: 'POST',
-      headers: buildHeaders(config, env),
-      body: JSON.stringify({
-        model: config.model,
-        messages: [{ role: 'user', content: 'Return the single word ready.' }],
-        max_tokens: 1,
-        temperature: 0,
-      }),
+      headers: request.headers,
+      body: JSON.stringify(request.body),
       signal: AbortSignal.timeout(timeoutMs),
     });
 
@@ -157,7 +195,7 @@ export async function runLiveModelPreflight(
       provider: config.provider,
       providerSelection: config.providerSelection,
       model: config.model,
-      probe: 'chat-completions',
+      probe: config.probe,
       failureKind: 'network_error',
       reason: redactDetail(error instanceof Error ? error.message : String(error), config),
     };
@@ -240,7 +278,7 @@ function resolveProviderConfig(
       baseUrl: trimTrailingSlash(readFirstEnv(env, defaults.baseUrlEnvKeys) ?? defaults.baseUrl),
       apiKey: credential.value,
       credentialSource: { kind: 'env', name: credential.envKey },
-      probe: 'chat-completions',
+      probe: defaults.probe,
     },
   };
 }
@@ -284,21 +322,49 @@ function hasValue(value: string | undefined): value is string {
 }
 
 function isLiveModelProvider(value: string): value is LiveModelProvider {
-  return value === 'openai' || value === 'openrouter' || value === 'codex';
+  return (
+    value === 'openai' ||
+    value === 'openrouter' ||
+    value === 'codex' ||
+    value === 'claude' ||
+    value === 'gemini'
+  );
 }
 
 function chatCompletionsUrl(baseUrl: string): string {
   return `${trimTrailingSlash(baseUrl)}/chat/completions`;
 }
 
+function claudeMessagesUrl(baseUrl: string): string {
+  return `${trimTrailingSlash(baseUrl)}/messages`;
+}
+
+function geminiGenerateContentUrl(baseUrl: string, model: string): string {
+  const modelPath = model.startsWith('models/') ? model : `models/${model}`;
+  return `${trimTrailingSlash(baseUrl)}/${encodeGeminiModelPath(modelPath)}:generateContent`;
+}
+
+function encodeGeminiModelPath(modelPath: string): string {
+  return modelPath.split('/').map(encodeURIComponent).join('/');
+}
+
 function trimTrailingSlash(value: string): string {
   return value.replace(/\/+$/, '');
 }
 
-function buildHeaders(
+function buildProbeRequest(
   config: ProviderConfig,
   env: NodeJS.ProcessEnv | Record<string, string | undefined>,
-): Record<string, string> {
+): ProbeRequest {
+  if (config.probe === 'claude-messages') return buildClaudeMessagesRequest(config);
+  if (config.probe === 'gemini-generate-content') return buildGeminiGenerateContentRequest(config);
+  return buildChatCompletionsRequest(config, env);
+}
+
+function buildChatCompletionsRequest(
+  config: ProviderConfig,
+  env: NodeJS.ProcessEnv | Record<string, string | undefined>,
+): ProbeRequest {
   if (!config.apiKey) {
     throw new Error('HTTP live model preflight requires an API key');
   }
@@ -314,7 +380,62 @@ function buildHeaders(
     if (hasValue(referer)) headers['http-referer'] = referer;
   }
 
-  return headers;
+  return {
+    url: chatCompletionsUrl(config.baseUrl),
+    headers,
+    body: {
+      model: config.model,
+      messages: [{ role: 'user', content: 'Return the single word ready.' }],
+      max_tokens: 1,
+      temperature: 0,
+    },
+  };
+}
+
+function buildClaudeMessagesRequest(config: ProviderConfig): ProbeRequest {
+  if (!config.apiKey) {
+    throw new Error('HTTP live model preflight requires an API key');
+  }
+
+  return {
+    url: claudeMessagesUrl(config.baseUrl),
+    headers: {
+      'x-api-key': config.apiKey,
+      'anthropic-version': '2023-06-01',
+      'content-type': 'application/json',
+    },
+    body: {
+      model: config.model,
+      max_tokens: 1,
+      messages: [{ role: 'user', content: 'Return the single word ready.' }],
+    },
+  };
+}
+
+function buildGeminiGenerateContentRequest(config: ProviderConfig): ProbeRequest {
+  if (!config.apiKey) {
+    throw new Error('HTTP live model preflight requires an API key');
+  }
+
+  return {
+    url: geminiGenerateContentUrl(config.baseUrl, config.model),
+    headers: {
+      'x-goog-api-key': config.apiKey,
+      'content-type': 'application/json',
+    },
+    body: {
+      contents: [
+        {
+          role: 'user',
+          parts: [{ text: 'Return the single word ready.' }],
+        },
+      ],
+      generationConfig: {
+        maxOutputTokens: 1,
+        temperature: 0,
+      },
+    },
+  };
 }
 
 function readyResult(
@@ -400,10 +521,34 @@ function truncateDetail(value: string): string {
 
 function redactDetail(value: string, config: ProviderConfig): string {
   let redacted = value;
-  for (const sensitiveValue of [config.apiKey, config.baseUrl, config.credentialSource.name]) {
+  for (const sensitiveValue of sensitiveDetailValues(config)) {
     if (hasValue(sensitiveValue)) redacted = redacted.replaceAll(sensitiveValue, '[redacted]');
   }
   return truncateDetail(redacted);
+}
+
+function sensitiveDetailValues(config: ProviderConfig): readonly (string | undefined)[] {
+  const baseUrl = trimTrailingSlash(config.baseUrl);
+  return [
+    config.apiKey,
+    config.credentialSource.name,
+    config.baseUrl,
+    baseUrl,
+    readUrlOrigin(baseUrl),
+    stripUrlProtocol(baseUrl),
+  ];
+}
+
+function readUrlOrigin(value: string): string | undefined {
+  try {
+    return new URL(value).origin;
+  } catch {
+    return undefined;
+  }
+}
+
+function stripUrlProtocol(value: string): string {
+  return value.replace(/^[a-z][a-z\d+.-]*:\/\//i, '');
 }
 
 async function runCodexCliPreflight(

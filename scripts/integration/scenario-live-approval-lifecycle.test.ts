@@ -7,7 +7,10 @@
  */
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { runLiveModelPreflight } from '../../experiments/shared/live-model-preflight.js';
+import {
+  runLiveModelPreflight,
+  type LiveModelPreflightResult,
+} from '../../experiments/shared/live-model-preflight.js';
 import {
   createClaudeAdapter,
   createOpenAIAdapter,
@@ -51,7 +54,24 @@ const PROVIDER_MODEL: Record<LiveApprovalProvider, string> = {
   gemini: 'gemini-2.0-flash',
 };
 
+const PROVIDER_PREFLIGHT_PROBE: Record<
+  LiveApprovalProvider,
+  NonNullable<LiveModelPreflightResult['probe']>
+> = {
+  claude: 'claude-messages',
+  openai: 'chat-completions',
+  gemini: 'gemini-generate-content',
+};
+
 const liveApprovalConfig = resolveLiveApprovalConfig(process.env);
+
+interface RedactedPreflightMetadata {
+  readonly status: LiveModelPreflightResult['status'];
+  readonly provider: string | undefined;
+  readonly model: string | undefined;
+  readonly probe: LiveModelPreflightResult['probe'] | undefined;
+  readonly failureKind: LiveModelPreflightResult['failureKind'] | undefined;
+}
 
 function resolveLiveApprovalConfig(
   env: NodeJS.ProcessEnv | Record<string, string | undefined>,
@@ -98,12 +118,34 @@ function isLiveApprovalProvider(value: string | undefined): value is LiveApprova
   return value === 'claude' || value === 'openai' || value === 'gemini';
 }
 
+async function runLiveApprovalPreflight(
+  config: Extract<LiveApprovalConfig, { readonly status: 'ready' }>,
+): Promise<LiveModelPreflightResult> {
+  return runLiveModelPreflight({
+    provider: config.provider,
+    model: config.model,
+    env: process.env,
+    requireProvider: true,
+  });
+}
+
+function redactPreflightMetadata(preflight: LiveModelPreflightResult): RedactedPreflightMetadata {
+  return {
+    status: preflight.status,
+    provider: preflight.provider,
+    model: preflight.model,
+    probe: preflight.probe,
+    failureKind: preflight.failureKind,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Proxy lifecycle
 // ---------------------------------------------------------------------------
 
 let proxyUrl: string;
 let closeProxy: () => void;
+let liveApprovalPreflight: LiveModelPreflightResult | undefined;
 
 const SYSTEM_PROMPT =
   'You are a task runner. Execute the requested steps using the available tools. ' +
@@ -231,22 +273,52 @@ describe('live approval lifecycle gating', () => {
     expect(JSON.stringify(result)).not.toContain('OPENAI_API_KEY');
   });
 
-  it('records only redacted provider/model/probe metadata when configured', () => {
-    const result = resolveLiveApprovalConfig({
-      PORTARIUM_EXPERIMENT_LIVE_LLM: 'true',
-      PORTARIUM_LIVE_APPROVAL_LIFECYCLE: 'true',
-      PORTARIUM_LIVE_APPROVAL_PROVIDER: 'openai',
-      OPENAI_API_KEY: 'sk-test-secret',
-    });
+  it.each([
+    ['claude', 'ANTHROPIC_API_KEY', 'claude-sonnet-4-6'],
+    ['openai', 'OPENAI_API_KEY', 'gpt-4o'],
+    ['gemini', 'GOOGLE_VERTEX_API_KEY', 'gemini-2.0-flash'],
+  ] as const)(
+    'records only redacted provider/model/probe metadata for %s',
+    (provider, envKey, model) => {
+      const result = resolveLiveApprovalConfig({
+        PORTARIUM_EXPERIMENT_LIVE_LLM: 'true',
+        PORTARIUM_LIVE_APPROVAL_LIFECYCLE: 'true',
+        PORTARIUM_LIVE_APPROVAL_PROVIDER: provider,
+        [envKey]: 'test-secret',
+      });
 
-    expect(result).toEqual({
-      status: 'ready',
+      expect(result).toEqual({
+        status: 'ready',
+        provider,
+        model,
+        probe: 'agent-approval-lifecycle',
+      });
+      expect(JSON.stringify(result)).not.toContain('test-secret');
+      expect(JSON.stringify(result)).not.toContain(envKey);
+    },
+  );
+
+  it('redacts shared live-model preflight details before scenario metadata is recorded', () => {
+    const metadata = redactPreflightMetadata({
+      status: 'failed',
+      checkedAt: '2026-05-01T00:00:00.000Z',
+      providerSelection: 'forced',
       provider: 'openai',
       model: 'gpt-4o',
-      probe: 'agent-approval-lifecycle',
+      probe: 'chat-completions',
+      failureKind: 'credential_rejected',
+      reason: 'credential sk-test-secret from OPENAI_API_KEY was rejected',
     });
-    expect(JSON.stringify(result)).not.toContain('sk-test-secret');
-    expect(JSON.stringify(result)).not.toContain('OPENAI_API_KEY');
+
+    expect(metadata).toEqual({
+      status: 'failed',
+      provider: 'openai',
+      model: 'gpt-4o',
+      probe: 'chat-completions',
+      failureKind: 'credential_rejected',
+    });
+    expect(JSON.stringify(metadata)).not.toContain('sk-test-secret');
+    expect(JSON.stringify(metadata)).not.toContain('OPENAI_API_KEY');
   });
 });
 
@@ -265,23 +337,18 @@ describe.skipIf(liveApprovalConfig.status !== 'ready')(
     beforeAll(async () => {
       if (liveApprovalConfig.status !== 'ready') return;
 
-      if (liveApprovalConfig.provider === 'openai') {
-        const preflight = await runLiveModelPreflight({
-          provider: 'openai',
-          model: PROVIDER_MODEL.openai,
-          env: process.env,
-          requireProvider: true,
-        });
-        expect(preflight).toMatchObject({
-          status: 'ready',
-          provider: 'openai',
-          model: PROVIDER_MODEL.openai,
-          probe: 'chat-completions',
-        });
-        const openAiApiKey = process.env['OPENAI_API_KEY'];
-        if (openAiApiKey) expect(JSON.stringify(preflight)).not.toContain(openAiApiKey);
-        expect(JSON.stringify(preflight)).not.toContain('OPENAI_API_KEY');
-      }
+      liveApprovalPreflight = await runLiveApprovalPreflight(liveApprovalConfig);
+      const credential = process.env[PROVIDER_CREDENTIAL_ENV[liveApprovalConfig.provider]];
+      if (credential) expect(JSON.stringify(liveApprovalPreflight)).not.toContain(credential);
+      expect(JSON.stringify(liveApprovalPreflight)).not.toContain(
+        PROVIDER_CREDENTIAL_ENV[liveApprovalConfig.provider],
+      );
+      expect(liveApprovalPreflight).toMatchObject({
+        status: 'ready',
+        provider: liveApprovalConfig.provider,
+        model: liveApprovalConfig.model,
+        probe: PROVIDER_PREFLIGHT_PROBE[liveApprovalConfig.provider],
+      });
 
       // @ts-expect-error -- untyped .mjs demo module
       const proxyMod = await import('../demo/portarium-tool-proxy.mjs');
@@ -302,10 +369,17 @@ describe.skipIf(liveApprovalConfig.status !== 'ready')(
       });
       expect(JSON.stringify(metadata)).not.toContain('API_KEY');
       expect(JSON.stringify(metadata)).not.toContain('sk-');
+
+      if (liveApprovalPreflight) {
+        const preflightMetadata = redactPreflightMetadata(liveApprovalPreflight);
+        expect(JSON.stringify(preflightMetadata)).not.toContain('API_KEY');
+        expect(JSON.stringify(preflightMetadata)).not.toContain('sk-');
+      }
     });
 
     it('demonstrates proposal -> approval -> execute', { timeout: 120_000 }, async () => {
       if (liveApprovalConfig.status !== 'ready') return;
+      if (liveApprovalPreflight?.status !== 'ready') return;
       const adapter = await createSelectedAdapter(liveApprovalConfig.provider);
       expect(adapter).not.toBeNull();
       await runAndAssertApproved(adapter!);
@@ -313,6 +387,7 @@ describe.skipIf(liveApprovalConfig.status !== 'ready')(
 
     it('demonstrates proposal -> reject without execution', { timeout: 120_000 }, async () => {
       if (liveApprovalConfig.status !== 'ready') return;
+      if (liveApprovalPreflight?.status !== 'ready') return;
       const adapter = await createSelectedAdapter(liveApprovalConfig.provider);
       expect(adapter).not.toBeNull();
       await runAndAssertDenied(adapter!);

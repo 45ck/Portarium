@@ -6,6 +6,58 @@ import { describe, expect, it } from 'vitest';
 import { runExperiment } from '../../experiments/shared/experiment-runner.js';
 import { runLiveModelPreflight } from '../../experiments/shared/live-model-preflight.js';
 
+interface FetchCall {
+  readonly input: Parameters<typeof fetch>[0];
+  readonly init: RequestInit | undefined;
+}
+
+const providerCases = [
+  {
+    provider: 'claude',
+    envKey: 'ANTHROPIC_API_KEY',
+    secret: 'anthropic-test-secret',
+    baseUrlKey: 'ANTHROPIC_BASE_URL',
+    baseUrl: 'https://anthropic.example.test/v1/',
+    modelKey: 'ANTHROPIC_MODEL',
+    model: 'claude-test',
+    probe: 'claude-messages',
+    expectedUrl: 'https://anthropic.example.test/v1/messages',
+    expectedHeader: 'x-api-key',
+    expectedBody: {
+      model: 'claude-test',
+      max_tokens: 1,
+      messages: [{ role: 'user', content: 'Return the single word ready.' }],
+    },
+  },
+  {
+    provider: 'gemini',
+    envKey: 'GOOGLE_VERTEX_API_KEY',
+    secret: 'gemini-test-secret',
+    baseUrlKey: 'GEMINI_BASE_URL',
+    baseUrl: 'https://generativelanguage.example.test/v1beta/',
+    modelKey: 'GEMINI_MODEL',
+    model: 'gemini-test',
+    probe: 'gemini-generate-content',
+    expectedUrl:
+      'https://generativelanguage.example.test/v1beta/models/gemini-test:generateContent',
+    expectedHeader: 'x-goog-api-key',
+    expectedBody: {
+      contents: [{ role: 'user', parts: [{ text: 'Return the single word ready.' }] }],
+      generationConfig: {
+        maxOutputTokens: 1,
+        temperature: 0,
+      },
+    },
+  },
+] as const;
+
+function expectRedacted(result: unknown, forbidden: readonly string[]) {
+  const serialized = JSON.stringify(result);
+  for (const fragment of forbidden) {
+    expect(serialized).not.toContain(fragment);
+  }
+}
+
 describe('live model experiment preflight', () => {
   it('stays disabled unless live model runs are explicitly opted in', async () => {
     const calls: unknown[] = [];
@@ -25,7 +77,7 @@ describe('live model experiment preflight', () => {
   });
 
   it('auto-detects OpenAI credentials and records provider metadata without the secret', async () => {
-    const calls: { input: Parameters<typeof fetch>[0]; init: RequestInit | undefined }[] = [];
+    const calls: FetchCall[] = [];
     const fetchImpl: typeof fetch = async (input, init) => {
       calls.push({ input, init });
       return new Response(JSON.stringify({ id: 'cmpl-preflight' }), { status: 200 });
@@ -49,9 +101,7 @@ describe('live model experiment preflight', () => {
       probe: 'chat-completions',
       httpStatus: 200,
     });
-    expect(JSON.stringify(result)).not.toContain('sk-test-secret');
-    expect(JSON.stringify(result)).not.toContain('https://api.example.test');
-    expect(JSON.stringify(result)).not.toContain('OPENAI_API_KEY');
+    expectRedacted(result, ['sk-test-secret', 'https://api.example.test', 'OPENAI_API_KEY']);
     expect(String(calls[0]?.input)).toBe('https://api.example.test/v1/chat/completions');
     expect(calls[0]?.init?.headers).toMatchObject({
       authorization: 'Bearer sk-test-secret',
@@ -80,9 +130,37 @@ describe('live model experiment preflight', () => {
       providerSelection: 'forced',
       failureKind: 'missing_credentials',
     });
-    expect(JSON.stringify(result)).not.toContain('OPENROUTER_API_KEY');
+    expectRedacted(result, ['OPENROUTER_API_KEY']);
     expect(calls).toHaveLength(0);
   });
+
+  it.each(providerCases)(
+    'skips $provider before fetch when credentials are missing',
+    async ({ provider, envKey }) => {
+      const calls: unknown[] = [];
+      const fetchImpl: typeof fetch = async (input) => {
+        calls.push(input);
+        return new Response('{}', { status: 200 });
+      };
+
+      const result = await runLiveModelPreflight({
+        env: {
+          PORTARIUM_EXPERIMENT_LIVE_LLM: 'true',
+          PORTARIUM_LIVE_MODEL_PROVIDER: provider,
+        },
+        fetchImpl,
+      });
+
+      expect(result).toMatchObject({
+        status: 'skipped',
+        provider,
+        providerSelection: 'forced',
+        failureKind: 'missing_credentials',
+      });
+      expectRedacted(result, [envKey]);
+      expect(calls).toHaveLength(0);
+    },
+  );
 
   it('can require an explicit provider instead of auto-detecting ambient credentials', async () => {
     const calls: unknown[] = [];
@@ -105,9 +183,168 @@ describe('live model experiment preflight', () => {
       providerSelection: 'none',
       failureKind: 'unsupported_provider',
     });
-    expect(JSON.stringify(result)).not.toContain('sk-test-secret');
+    expectRedacted(result, ['sk-test-secret', 'OPENAI_API_KEY']);
     expect(calls).toHaveLength(0);
   });
+
+  it.each(providerCases)(
+    'can require explicit provider instead of auto-detecting ambient $provider credentials',
+    async ({ envKey, secret }) => {
+      const calls: unknown[] = [];
+      const fetchImpl: typeof fetch = async (input) => {
+        calls.push(input);
+        return new Response('{}', { status: 200 });
+      };
+
+      const result = await runLiveModelPreflight({
+        env: {
+          PORTARIUM_EXPERIMENT_LIVE_LLM: 'true',
+          [envKey]: secret,
+        },
+        fetchImpl,
+        requireProvider: true,
+      });
+
+      expect(result).toMatchObject({
+        status: 'skipped',
+        providerSelection: 'none',
+        failureKind: 'unsupported_provider',
+      });
+      expectRedacted(result, [secret, envKey]);
+      expect(calls).toHaveLength(0);
+    },
+  );
+
+  it.each(providerCases)(
+    'preflights $provider credentials without recording secrets or endpoints',
+    async ({
+      provider,
+      envKey,
+      secret,
+      baseUrlKey,
+      baseUrl,
+      modelKey,
+      model,
+      probe,
+      expectedUrl,
+      expectedHeader,
+      expectedBody,
+    }) => {
+      const calls: FetchCall[] = [];
+      const fetchImpl: typeof fetch = async (input, init) => {
+        calls.push({ input, init });
+        return new Response(JSON.stringify({ ok: true }), { status: 200 });
+      };
+
+      const result = await runLiveModelPreflight({
+        env: {
+          PORTARIUM_EXPERIMENT_LIVE_LLM: 'true',
+          PORTARIUM_LIVE_MODEL_PROVIDER: provider,
+          [envKey]: secret,
+          [baseUrlKey]: baseUrl,
+          [modelKey]: model,
+        },
+        fetchImpl,
+      });
+
+      expect(result).toMatchObject({
+        status: 'ready',
+        provider,
+        providerSelection: 'forced',
+        model,
+        probe,
+        httpStatus: 200,
+      });
+      expectRedacted(result, [secret, envKey, baseUrl, new URL(baseUrl).origin]);
+      expect(String(calls[0]?.input)).toBe(expectedUrl);
+      expect(calls[0]?.init?.headers).toMatchObject({
+        [expectedHeader]: secret,
+        'content-type': 'application/json',
+      });
+      expect(JSON.parse(String(calls[0]?.init?.body))).toEqual(expectedBody);
+    },
+  );
+
+  it.each(providerCases)(
+    'redacts $provider HTTP error details before returning preflight failure',
+    async ({ provider, envKey, secret, baseUrlKey, baseUrl }) => {
+      const fetchImpl: typeof fetch = async () =>
+        new Response(
+          JSON.stringify({
+            error: {
+              message: `Credential ${secret} from ${envKey} failed at ${baseUrl}`,
+            },
+          }),
+          { status: 403 },
+        );
+
+      const result = await runLiveModelPreflight({
+        env: {
+          PORTARIUM_EXPERIMENT_LIVE_LLM: 'true',
+          PORTARIUM_LIVE_MODEL_PROVIDER: provider,
+          [envKey]: secret,
+          [baseUrlKey]: baseUrl,
+        },
+        fetchImpl,
+      });
+
+      expect(result).toMatchObject({
+        status: 'failed',
+        provider,
+        failureKind: 'credential_rejected',
+        httpStatus: 403,
+      });
+      expect(result.reason).toContain('[redacted]');
+      expectRedacted(result, [secret, envKey, baseUrl, new URL(baseUrl).origin]);
+    },
+  );
+
+  it.each(providerCases)(
+    'classifies $provider quota, model, unexpected, and network failures',
+    async ({ provider, envKey, secret, baseUrlKey, baseUrl }) => {
+      for (const [status, failureKind] of [
+        [429, 'quota_or_rate_limit'],
+        [404, 'model_unavailable'],
+        [500, 'unexpected_response'],
+      ] as const) {
+        const result = await runLiveModelPreflight({
+          env: {
+            PORTARIUM_EXPERIMENT_LIVE_LLM: 'true',
+            PORTARIUM_LIVE_MODEL_PROVIDER: provider,
+            [envKey]: secret,
+          },
+          fetchImpl: async () =>
+            new Response(JSON.stringify({ message: 'provider failed' }), { status }),
+        });
+
+        expect(result).toMatchObject({
+          status: 'failed',
+          provider,
+          failureKind,
+          httpStatus: status,
+        });
+      }
+
+      const networkResult = await runLiveModelPreflight({
+        env: {
+          PORTARIUM_EXPERIMENT_LIVE_LLM: 'true',
+          PORTARIUM_LIVE_MODEL_PROVIDER: provider,
+          [envKey]: secret,
+          [baseUrlKey]: baseUrl,
+        },
+        fetchImpl: async () => {
+          throw new Error(`network lost for ${secret} via ${envKey} at ${baseUrl}`);
+        },
+      });
+
+      expect(networkResult).toMatchObject({
+        status: 'failed',
+        provider,
+        failureKind: 'network_error',
+      });
+      expectRedacted(networkResult, [secret, envKey, baseUrl, new URL(baseUrl).origin]);
+    },
+  );
 
   it('uses Codex CLI auth when the codex provider is forced without API-key credentials', async () => {
     const calls: unknown[] = [];
@@ -136,7 +373,7 @@ describe('live model experiment preflight', () => {
       model: 'codex-cli',
       probe: 'codex-exec',
     });
-    expect(JSON.stringify(result)).not.toContain('codex CLI auth');
+    expectRedacted(result, ['codex CLI auth']);
     expect(calls).toHaveLength(0);
   });
 
@@ -175,7 +412,7 @@ describe('live model experiment preflight', () => {
         probe: 'codex-exec',
         failureKind: 'credential_rejected',
       });
-      expect(JSON.stringify(outcome.liveModelPreflight)).not.toContain('CODEX_API_KEY');
+      expectRedacted(outcome.liveModelPreflight, ['CODEX_API_KEY']);
     } finally {
       rmSync(resultsDir, { recursive: true, force: true });
     }
