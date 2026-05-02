@@ -9,6 +9,7 @@ import {
   Link2,
   TrafficCone,
   Clock,
+  GitBranch,
   ShieldCheck,
   DollarSign,
   ClipboardCheck,
@@ -109,6 +110,14 @@ export const TRIAGE_MODES: TriageModeDefinition[] = [
     shortLabel: 'Story',
     icon: Clock,
     description: 'Horizontal chronology of the approval lifecycle',
+    relevance: () => 'available',
+  },
+  {
+    id: 'policy-precedent',
+    label: 'Policy Precedent',
+    shortLabel: 'Policy',
+    icon: GitBranch,
+    description: 'Convert runtime judgment into one-off or reusable policy guidance',
     relevance: () => 'available',
   },
   {

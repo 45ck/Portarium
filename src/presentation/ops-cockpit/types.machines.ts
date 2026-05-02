@@ -107,6 +107,78 @@ export interface SodConstraint {
   scope?: string;
 }
 
+export type ApprovalPolicyConversionAction =
+  | 'approve-once'
+  | 'approve-and-loosen-rule'
+  | 'deny-once'
+  | 'deny-and-create-rule'
+  | 'require-more-evidence-next-time'
+  | 'escalate-action-class';
+
+export type ApprovalPolicyConversionScope = 'CurrentRunOnly' | 'FutureSimilarCases';
+
+export type ApprovalPolicyConversionDimension =
+  | 'capability'
+  | 'environment'
+  | 'evidence'
+  | 'role'
+  | 'tier';
+
+export interface ApprovalPolicyConversionDiffEntry {
+  field: string;
+  fromValue: string;
+  toValue: string;
+  rationale: string;
+}
+
+export interface ApprovalPolicyConversionFeedbackReason {
+  code: string;
+  label: string;
+  dimension: ApprovalPolicyConversionDimension;
+}
+
+export interface ApprovalPolicyConversionAuditLink {
+  source: 'runtime-precedent';
+  approvalId: string;
+  runId: string;
+  planId: string;
+  workItemId?: string;
+  evidenceIds: string[];
+}
+
+export interface ApprovalPolicySimulationInput {
+  policyId?: string;
+  triggerAction: string;
+  triggerCondition: string;
+  tier: PolicyTier;
+  policyBlocked: boolean;
+  replaySubjectIds: string[];
+}
+
+export interface ApprovalPolicyConversionProposal {
+  schemaVersion: 1;
+  action: ApprovalPolicyConversionAction;
+  scope: ApprovalPolicyConversionScope;
+  decision: 'Approved' | 'Denied' | 'RequestChanges';
+  policyMutation: boolean;
+  policyId: string;
+  policyName: string;
+  suggestedDimension: ApprovalPolicyConversionDimension;
+  capability: string;
+  environment: string;
+  requiredEvidenceCount: number;
+  requiredRoles: string[];
+  currentTier: PolicyTier;
+  proposedTier: PolicyTier;
+  policyBlocked: boolean;
+  ruleText: string;
+  rationale: string;
+  feedbackReasons: ApprovalPolicyConversionFeedbackReason[];
+  diff: ApprovalPolicyConversionDiffEntry[];
+  auditLink: ApprovalPolicyConversionAuditLink;
+  simulation: ApprovalPolicySimulationInput;
+}
+
 export interface AdapterSummary {
   adapterId: string;
   name: string;

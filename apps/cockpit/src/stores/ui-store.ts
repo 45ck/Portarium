@@ -22,6 +22,7 @@ export type TriageViewMode =
   | 'action-replay'
   | 'evidence-chain'
   | 'story-timeline'
+  | 'policy-precedent'
   | 'robotics-safety'
   | 'finance-impact'
   | 'compliance-checklist'
@@ -58,6 +59,7 @@ const VALID_TRIAGE_MODES: TriageViewMode[] = [
   'action-replay',
   'evidence-chain',
   'story-timeline',
+  'policy-precedent',
   'robotics-safety',
   'finance-impact',
   'compliance-checklist',

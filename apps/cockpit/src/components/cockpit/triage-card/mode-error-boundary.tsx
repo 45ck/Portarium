@@ -9,6 +9,7 @@ import { DiffViewMode } from '@/components/cockpit/triage-modes/diff-view-mode';
 import { ActionReplayMode } from '@/components/cockpit/triage-modes/action-replay-mode';
 import { EvidenceChainMode } from '@/components/cockpit/triage-modes/evidence-chain-mode';
 import { StoryTimelineMode } from '@/components/cockpit/triage-modes/story-timeline-mode';
+import { PolicyPrecedentMode } from '@/components/cockpit/triage-modes/policy-precedent-mode';
 import { RoboticsSafetyMode } from '@/components/cockpit/triage-modes/robotics-safety-mode';
 import { FinanceImpactMode } from '@/components/cockpit/triage-modes/finance-impact-mode';
 import { ComplianceChecklistMode } from '@/components/cockpit/triage-modes/compliance-checklist-mode';
@@ -25,6 +26,7 @@ export const MODE_COMPONENTS: Partial<
   'action-replay': ActionReplayMode,
   'evidence-chain': EvidenceChainMode,
   'story-timeline': StoryTimelineMode,
+  'policy-precedent': PolicyPrecedentMode,
   'robotics-safety': RoboticsSafetyMode,
   'finance-impact': FinanceImpactMode,
   'compliance-checklist': ComplianceChecklistMode,
