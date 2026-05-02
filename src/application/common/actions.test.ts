@@ -28,6 +28,9 @@ describe('APP_ACTIONS contract', () => {
       'tool:invoke',
       'agent-action:propose',
       'agent-action:execute',
+      'autonomy-digest:generate',
+      'autonomy-digest:acknowledge',
+      'policy-calibration:draft',
     ]);
   });
 
