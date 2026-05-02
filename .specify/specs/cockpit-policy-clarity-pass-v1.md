@@ -185,6 +185,17 @@ The return path back to `Policy Studio` must remain explicit and must preserve t
 - capture updated screenshots
 - run a follow-up heuristic pass against the revised screens
 
+### Slice 5: live API-aligned authoring simulation
+
+- when Cockpit is connected to live tenant data, `Policy Studio` uses the Workspace policy,
+  approval, run, and SoD query APIs instead of fixture-backed policy editor data
+- authorized non-auditor personas can stage a local draft that changes the action class between
+  execution tiers or simulates a policy-blocked posture
+- the live surface must show the current rule, proposed diff, rationale capture, expected approval
+  impact, affected Workflow count, and related SoD constraints
+- backend mutation must remain visibly unavailable until a Control Plane policy lifecycle command
+  contract exists; the UI must not imply that local drafts are production-applied
+
 ## Test Focus
 
 - route rendering for `/config/policies`
@@ -192,6 +203,9 @@ The return path back to `Policy Studio` must remain explicit and must preserve t
 - preservation of round-trip draft state
 - presence of explicit context, time-horizon, and return cues
 - policy-linked review behavior does not break generic approvals flow
+- live-mode route rendering for `/config/policies` and `/config/policies/$policyId`
+- live-mode staged diffs and policy-blocked simulation remain local and keep publish controls
+  disabled
 
 ## Risks
 
