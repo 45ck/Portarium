@@ -188,6 +188,12 @@ const CORE_SHELL_SECTIONS: readonly CockpitShellNavigationSection[] = [
         to: '/workforce/queues',
         icon: <EntityIcon entityType="queue" size="sm" decorative />,
       },
+      {
+        id: 'workforce-coverage',
+        label: 'Coverage',
+        to: '/workforce/coverage',
+        icon: <ShieldCheck className="h-4 w-4" />,
+      },
     ],
   },
   {

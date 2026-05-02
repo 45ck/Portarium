@@ -12,6 +12,10 @@ import type {
   IntentPlanRequest,
   IntentPlanResponse,
   EvidenceEntry,
+  ApprovalCoverageRosterSummary,
+  CreateApprovalCoverageWindowRequest,
+  CreateApprovalDelegationRequest,
+  UpsertApprovalSpecialistRoutingRuleRequest,
   RunInterventionRequest,
   UpdateWorkflowRequest,
   UpdateWorkItemCommand,
@@ -39,6 +43,7 @@ let data: MeridianDataset | null = null;
 // In-memory mutable state for mutation demo
 let approvals: MeridianDataset['APPROVALS'] = [];
 let credentialGrants: CredentialGrantV1[] = [];
+let approvalCoverageRoster: ApprovalCoverageRosterSummary = emptyApprovalCoverageRoster('ws-demo');
 let humanTasks: HumanTaskSummary[] = [];
 let evidence: EvidenceEntry[] = [];
 let workItems: MeridianDataset['WORK_ITEMS'] = [];
@@ -60,12 +65,44 @@ export async function loadActiveDataset(): Promise<void> {
   evidence = [...data.EVIDENCE];
   workItems = [...data.WORK_ITEMS];
   credentialGrants = [...data.CREDENTIAL_GRANTS];
+  approvalCoverageRoster =
+    data.APPROVAL_COVERAGE_ROSTER ??
+    emptyApprovalCoverageRoster(data.RUNS[0]?.workspaceId ?? 'ws-demo');
   humanTasks = buildMockHumanTasks(data.RUNS, data.WORK_ITEMS, data.WORKFORCE_MEMBERS);
   agents = [...data.AGENTS];
   machines = [...(data.MACHINES ?? [])];
   runs = [...data.RUNS];
   missions = [...(data.MISSIONS ?? [])];
   workflowOverrides = new Map<string, Partial<WorkflowSummary>>();
+}
+
+function emptyApprovalCoverageRoster(workspaceId: string): ApprovalCoverageRosterSummary {
+  return {
+    schemaVersion: 1,
+    workspaceId,
+    coverageWindows: [],
+    delegations: [],
+    specialistRoutingRules: [],
+    auditTrail: [],
+    routingPreviews: [],
+  };
+}
+
+function appendCoverageAudit(
+  roster: ApprovalCoverageRosterSummary,
+  entry: Omit<ApprovalCoverageRosterSummary['auditTrail'][number], 'schemaVersion' | 'workspaceId'>,
+): ApprovalCoverageRosterSummary {
+  return {
+    ...roster,
+    auditTrail: [
+      {
+        schemaVersion: 1,
+        workspaceId: roster.workspaceId,
+        ...entry,
+      },
+      ...roster.auditTrail,
+    ],
+  };
 }
 
 function getWorkflows(): WorkflowSummary[] {
@@ -640,6 +677,206 @@ export const handlers = [
   ),
   http.get('/v1/workspaces/:wsId/workforce/queues', () =>
     HttpResponse.json({ items: data?.WORKFORCE_QUEUES ?? [] }),
+  ),
+  http.get('/v1/workspaces/:wsId/workforce/approval-coverage', ({ params }) => {
+    const wsId = String(params['wsId'] ?? approvalCoverageRoster.workspaceId);
+    if (approvalCoverageRoster.workspaceId !== wsId) {
+      approvalCoverageRoster = emptyApprovalCoverageRoster(wsId);
+    }
+    return HttpResponse.json(approvalCoverageRoster);
+  }),
+  http.post(
+    '/v1/workspaces/:wsId/workforce/approval-coverage/windows',
+    async ({ request, params }) => {
+      const wsId = String(params['wsId'] ?? approvalCoverageRoster.workspaceId);
+      const body = (await request.json()) as CreateApprovalCoverageWindowRequest;
+      const nowIso = new Date().toISOString();
+      const id = `cov-${Date.now()}`;
+      const nextRoster =
+        approvalCoverageRoster.workspaceId === wsId
+          ? approvalCoverageRoster
+          : emptyApprovalCoverageRoster(wsId);
+
+      approvalCoverageRoster = appendCoverageAudit(
+        {
+          ...nextRoster,
+          coverageWindows: [
+            {
+              schemaVersion: 1,
+              coverageWindowId: id,
+              workspaceId: wsId,
+              name: body.name,
+              approvalClass: body.approvalClass,
+              startsAtIso: body.startsAtIso,
+              endsAtIso: body.endsAtIso,
+              timezone: body.timezone,
+              queueId: body.queueId,
+              primaryMemberIds: body.primaryMemberIds,
+              ...(body.fallbackQueueId ? { fallbackQueueId: body.fallbackQueueId } : {}),
+              state: 'active',
+              updatedByUserId: 'user-ops-alex',
+              updatedAtIso: nowIso,
+            },
+            ...nextRoster.coverageWindows,
+          ],
+          routingPreviews: [
+            {
+              schemaVersion: 1,
+              approvalId: `preview-${id}`,
+              approvalClass: body.approvalClass,
+              state: 'assigned',
+              primaryTargetLabel: body.primaryMemberIds[0] ?? body.queueId,
+              fallbackTargetLabel: body.fallbackQueueId,
+              explanation: `New coverage window '${body.name}' would route matching approvals to the selected primary roster.`,
+              authoritySource: 'workspace-rbac',
+              auditEvidenceId: `evd-${id}`,
+            },
+            ...nextRoster.routingPreviews,
+          ],
+        },
+        {
+          auditId: `aud-${id}`,
+          changedAtIso: nowIso,
+          changedByUserId: 'user-ops-alex',
+          governanceFunction: 'operator',
+          authoritySource: 'workspace-rbac',
+          action: 'coverage-window-created',
+          targetType: 'coverage-window',
+          targetId: id,
+          summary: `Created coverage window '${body.name}': ${body.rationale}`,
+          evidenceId: `evd-${id}`,
+        },
+      );
+
+      return HttpResponse.json(approvalCoverageRoster, { status: 201 });
+    },
+  ),
+  http.post(
+    '/v1/workspaces/:wsId/workforce/approval-coverage/delegations',
+    async ({ request, params }) => {
+      const wsId = String(params['wsId'] ?? approvalCoverageRoster.workspaceId);
+      const body = (await request.json()) as CreateApprovalDelegationRequest;
+      const nowIso = new Date().toISOString();
+      const id = `del-${Date.now()}`;
+      const nextRoster =
+        approvalCoverageRoster.workspaceId === wsId
+          ? approvalCoverageRoster
+          : emptyApprovalCoverageRoster(wsId);
+
+      approvalCoverageRoster = appendCoverageAudit(
+        {
+          ...nextRoster,
+          delegations: [
+            {
+              schemaVersion: 1,
+              delegationId: id,
+              workspaceId: wsId,
+              delegatorUserId: body.delegatorUserId,
+              delegateUserId: body.delegateUserId,
+              approvalClass: body.approvalClass,
+              startsAtIso: body.startsAtIso,
+              expiresAtIso: body.expiresAtIso,
+              reason: body.reason,
+              active: true,
+              updatedByUserId: 'user-ops-alex',
+              updatedAtIso: nowIso,
+            },
+            ...nextRoster.delegations,
+          ],
+          routingPreviews: [
+            {
+              schemaVersion: 1,
+              approvalId: `preview-${id}`,
+              approvalClass: body.approvalClass,
+              state: 'delegated',
+              primaryTargetLabel: body.delegateUserId,
+              explanation: `Matching approvals can be decided by delegate ${body.delegateUserId} until ${body.expiresAtIso}.`,
+              authoritySource: 'queue-delegation',
+              auditEvidenceId: `evd-${id}`,
+            },
+            ...nextRoster.routingPreviews,
+          ],
+        },
+        {
+          auditId: `aud-${id}`,
+          changedAtIso: nowIso,
+          changedByUserId: 'user-ops-alex',
+          governanceFunction: 'operator',
+          authoritySource: 'queue-delegation',
+          action: 'delegate-created',
+          targetType: 'delegation',
+          targetId: id,
+          summary: `Delegated ${body.approvalClass} from ${body.delegatorUserId} to ${body.delegateUserId}: ${body.reason}`,
+          evidenceId: `evd-${id}`,
+        },
+      );
+
+      return HttpResponse.json(approvalCoverageRoster, { status: 201 });
+    },
+  ),
+  http.post(
+    '/v1/workspaces/:wsId/workforce/approval-coverage/specialist-routes',
+    async ({ request, params }) => {
+      const wsId = String(params['wsId'] ?? approvalCoverageRoster.workspaceId);
+      const body = (await request.json()) as UpsertApprovalSpecialistRoutingRuleRequest;
+      const nowIso = new Date().toISOString();
+      const id = `route-${Date.now()}`;
+      const nextRoster =
+        approvalCoverageRoster.workspaceId === wsId
+          ? approvalCoverageRoster
+          : emptyApprovalCoverageRoster(wsId);
+
+      approvalCoverageRoster = appendCoverageAudit(
+        {
+          ...nextRoster,
+          specialistRoutingRules: [
+            {
+              schemaVersion: 1,
+              routingRuleId: id,
+              workspaceId: wsId,
+              approvalClass: body.approvalClass,
+              matchLabel: body.matchLabel,
+              queueId: body.queueId,
+              specialistMemberIds: body.specialistMemberIds,
+              fallbackQueueId: body.fallbackQueueId,
+              priority: body.priority ?? 10,
+              active: body.active ?? true,
+              updatedByUserId: 'user-ops-alex',
+              updatedAtIso: nowIso,
+            },
+            ...nextRoster.specialistRoutingRules,
+          ],
+          routingPreviews: [
+            {
+              schemaVersion: 1,
+              approvalId: `preview-${id}`,
+              approvalClass: body.approvalClass,
+              state: 'assigned',
+              primaryTargetLabel: body.specialistMemberIds[0] ?? body.queueId,
+              fallbackTargetLabel: body.fallbackQueueId,
+              explanation: `Specialist route '${body.matchLabel}' would send matching approvals to the configured specialist roster.`,
+              authoritySource: 'queue-delegation',
+              auditEvidenceId: `evd-${id}`,
+            },
+            ...nextRoster.routingPreviews,
+          ],
+        },
+        {
+          auditId: `aud-${id}`,
+          changedAtIso: nowIso,
+          changedByUserId: 'user-ops-alex',
+          governanceFunction: 'operator',
+          authoritySource: 'queue-delegation',
+          action: 'specialist-route-updated',
+          targetType: 'specialist-routing-rule',
+          targetId: id,
+          summary: `Updated specialist route '${body.matchLabel}': ${body.rationale}`,
+          evidenceId: `evd-${id}`,
+        },
+      );
+
+      return HttpResponse.json(approvalCoverageRoster, { status: 201 });
+    },
   ),
 
   // Agents

@@ -10,7 +10,8 @@ type Feature =
   | 'credentials'
   | 'settings'
   | 'workflows:edit'
-  | 'workforce:edit';
+  | 'workforce:edit'
+  | 'approval-coverage:manage';
 
 const ACCESS_MATRIX: Record<Feature, PersonaId[]> = {
   users: ['Admin'],
@@ -23,6 +24,7 @@ const ACCESS_MATRIX: Record<Feature, PersonaId[]> = {
   settings: ['Admin'],
   'workflows:edit': ['Admin', 'Operator'],
   'workforce:edit': ['Admin'],
+  'approval-coverage:manage': ['Admin', 'Operator'],
 };
 
 export function canAccess(persona: PersonaId, feature: Feature): boolean {

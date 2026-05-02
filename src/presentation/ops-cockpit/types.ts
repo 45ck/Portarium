@@ -588,6 +588,131 @@ export interface WorkforceQueueSummary {
   tenantId: string;
 }
 
+export type ApprovalCoverageState = 'active' | 'scheduled' | 'lapsed' | 'disabled';
+
+export type ApprovalRoutingState = 'assigned' | 'delegated' | 'waiting-for-coverage' | 'escalated';
+
+export interface ApprovalCoverageWindowSummary {
+  schemaVersion: 1;
+  coverageWindowId: string;
+  workspaceId: string;
+  name: string;
+  approvalClass: string;
+  startsAtIso: string;
+  endsAtIso: string;
+  timezone: string;
+  queueId: string;
+  primaryMemberIds: string[];
+  fallbackQueueId?: string;
+  state: ApprovalCoverageState;
+  updatedByUserId: string;
+  updatedAtIso: string;
+}
+
+export interface ApprovalDelegationSummary {
+  schemaVersion: 1;
+  delegationId: string;
+  workspaceId: string;
+  delegatorUserId: string;
+  delegateUserId: string;
+  approvalClass: string;
+  startsAtIso: string;
+  expiresAtIso: string;
+  reason: string;
+  active: boolean;
+  updatedByUserId: string;
+  updatedAtIso: string;
+}
+
+export interface ApprovalSpecialistRoutingRuleSummary {
+  schemaVersion: 1;
+  routingRuleId: string;
+  workspaceId: string;
+  approvalClass: string;
+  matchLabel: string;
+  queueId: string;
+  specialistMemberIds: string[];
+  fallbackQueueId: string;
+  priority: number;
+  active: boolean;
+  updatedByUserId: string;
+  updatedAtIso: string;
+}
+
+export interface ApprovalCoverageAuditEntry {
+  schemaVersion: 1;
+  auditId: string;
+  workspaceId: string;
+  changedAtIso: string;
+  changedByUserId: string;
+  governanceFunction: 'operator' | 'approver' | 'policy-owner' | 'platform-admin';
+  authoritySource: RunInterventionAuthoritySource;
+  action:
+    | 'coverage-window-created'
+    | 'coverage-window-updated'
+    | 'delegate-created'
+    | 'specialist-route-updated'
+    | 'fallback-queue-changed';
+  targetType: 'coverage-window' | 'delegation' | 'specialist-routing-rule' | 'workforce-queue';
+  targetId: string;
+  summary: string;
+  evidenceId: string;
+}
+
+export interface ApprovalRoutingPreview {
+  schemaVersion: 1;
+  approvalId: string;
+  approvalClass: string;
+  state: ApprovalRoutingState;
+  primaryTargetLabel: string;
+  fallbackTargetLabel?: string;
+  explanation: string;
+  authoritySource: RunInterventionAuthoritySource;
+  auditEvidenceId?: string;
+}
+
+export interface ApprovalCoverageRosterSummary {
+  schemaVersion: 1;
+  workspaceId: string;
+  coverageWindows: ApprovalCoverageWindowSummary[];
+  delegations: ApprovalDelegationSummary[];
+  specialistRoutingRules: ApprovalSpecialistRoutingRuleSummary[];
+  auditTrail: ApprovalCoverageAuditEntry[];
+  routingPreviews: ApprovalRoutingPreview[];
+}
+
+export interface CreateApprovalCoverageWindowRequest {
+  name: string;
+  approvalClass: string;
+  startsAtIso: string;
+  endsAtIso: string;
+  timezone: string;
+  queueId: string;
+  primaryMemberIds: string[];
+  fallbackQueueId?: string;
+  rationale: string;
+}
+
+export interface CreateApprovalDelegationRequest {
+  delegatorUserId: string;
+  delegateUserId: string;
+  approvalClass: string;
+  startsAtIso: string;
+  expiresAtIso: string;
+  reason: string;
+}
+
+export interface UpsertApprovalSpecialistRoutingRuleRequest {
+  approvalClass: string;
+  matchLabel: string;
+  queueId: string;
+  specialistMemberIds: string[];
+  fallbackQueueId: string;
+  priority?: number;
+  active?: boolean;
+  rationale: string;
+}
+
 export type HumanTaskStatus = 'pending' | 'assigned' | 'in-progress' | 'completed' | 'escalated';
 
 export interface HumanTaskSummary {

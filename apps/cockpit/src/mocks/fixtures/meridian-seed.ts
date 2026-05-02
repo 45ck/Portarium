@@ -26,6 +26,7 @@ import type {
   PolicyRule,
   DecisionHistoryEntry,
   AgentActionProposalMeta,
+  ApprovalCoverageRosterSummary,
 } from '@portarium/cockpit-types';
 import type {
   RobotSummary,
@@ -577,6 +578,7 @@ export interface MeridianDataset {
   EVIDENCE: EvidenceEntry[];
   WORKFORCE_MEMBERS: WorkforceMemberSummary[];
   WORKFORCE_QUEUES: WorkforceQueueSummary[];
+  APPROVAL_COVERAGE_ROSTER?: ApprovalCoverageRosterSummary;
   AGENTS: AgentV1[];
   MACHINES: MachineV1[];
   ADAPTERS: AdapterSummary[];
