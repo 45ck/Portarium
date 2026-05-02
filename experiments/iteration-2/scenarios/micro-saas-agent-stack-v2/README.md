@@ -27,6 +27,9 @@ node experiments/iteration-2/scenarios/micro-saas-agent-stack-v2/run.mjs
 ```
 
 The script writes `outcome.json`, `queue-metrics.json`,
-`evidence-summary.json`, and `report.md` under this scenario's `results/`
-directory. CI runs the same experiment with a temporary result directory through
+`evidence-summary.json`, `demo-machine-preflight.json`, and `report.md` under
+this scenario's `results/` directory. The report includes an Experiment
+Toolchain Preflight section that distinguishes runnable tools from
+intentionally skipped optional tools. CI runs the same experiment with a
+temporary result directory through
 `scripts/integration/scenario-micro-saas-agent-stack-v2.test.ts`.

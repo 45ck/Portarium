@@ -2,7 +2,7 @@
  * Iteration 2: deterministic micro-SaaS operator-team handoff.
  */
 
-import { existsSync, mkdtempSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -27,6 +27,16 @@ describe('micro-saas-agent-stack-v2 experiment', () => {
     const outcome = await mod.runMicroSaasAgentStackV2({
       resultsDir,
       log: () => {},
+      toolPreflightImpl: async () => ({
+        tool: 'demo-machine',
+        status: 'intentionally-skipped',
+        checkedAt: '2026-04-29T02:00:00.000Z',
+        command: 'demo-machine',
+        probe: 'cli-help',
+        rationale: 'AppLocker blocks the local demo-machine binary.',
+        clipSpecPath:
+          'docs/internal/ui/cockpit/demo-machine/clips/01-approval-gate-unblocks-run.demo.yaml',
+      }),
     });
 
     expect(outcome.outcome).toBe('confirmed');
@@ -36,6 +46,7 @@ describe('micro-saas-agent-stack-v2 experiment', () => {
 
     const trace = outcome.trace as Record<string, any>;
     expect(trace['comparesTo']).toBe('micro-saas-agent-stack');
+    expect(trace['toolchainPreflight'].demoMachine.status).toBe('intentionally-skipped');
     expect(trace['approvals']).toHaveLength(5);
     expect(trace['handoff']).toEqual({ operatorA: 3, operatorB: 2 });
     expect(trace['queueSnapshots']).toHaveLength(3);
@@ -49,8 +60,14 @@ describe('micro-saas-agent-stack-v2 experiment', () => {
       'queue-metrics.json',
       'evidence-summary.json',
       'report.md',
+      'demo-machine-preflight.json',
     ]) {
       expect(existsSync(join(resultsDir, artifactName))).toBe(true);
     }
+
+    const report = readFileSync(join(resultsDir, 'report.md'), 'utf8');
+    expect(report).toContain('Experiment Toolchain Preflight');
+    expect(report).toContain('demo-machine');
+    expect(report).toContain('intentionally-skipped');
   });
 });

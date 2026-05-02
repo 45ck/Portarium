@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
 import { createIteration2Telemetry } from '../../../shared/iteration2-telemetry.js';
+import { runExperimentToolPreflight } from '../../../shared/toolchain-preflight.js';
 
 const EXPERIMENT_NAME = 'micro-saas-agent-stack-v2';
 const DEFAULT_RESULTS_DIR = join(dirname(fileURLToPath(import.meta.url)), 'results');
@@ -51,6 +52,7 @@ const FIXED_STARTED_AT_ISO = '2026-04-29T02:00:00.000Z';
  *   resultsDir?: string;
  *   writeResults?: boolean;
  *   log?: (line: string) => void;
+ *   toolPreflightImpl?: typeof runExperimentToolPreflight;
  * }} RunMicroSaasHandoffOptions
  */
 
@@ -256,6 +258,24 @@ function writeOutcome(resultsDir, outcome) {
   writeFileSync(join(resultsDir, 'outcome.json'), `${JSON.stringify(outcome, null, 2)}\n`);
 }
 
+function writeJsonArtifact(resultsDir, artifactName, value) {
+  mkdirSync(resultsDir, { recursive: true });
+  writeFileSync(join(resultsDir, artifactName), `${JSON.stringify(value, null, 2)}\n`);
+}
+
+function buildToolchainReportSections(toolchainPreflight) {
+  return [
+    '## Experiment Toolchain Preflight',
+    '',
+    '| Tool | Status | Rationale |',
+    '| --- | --- | --- |',
+    `| ${toolchainPreflight.tool} | ${toolchainPreflight.status} | ${toolchainPreflight.rationale ?? 'n/a'} |`,
+    '',
+    `Demo-machine clip spec: \`${toolchainPreflight.clipSpecPath ?? 'n/a'}\``,
+    '',
+  ];
+}
+
 /**
  * Run the deterministic micro-SaaS operator handoff experiment.
  *
@@ -274,6 +294,9 @@ export async function runMicroSaasAgentStackV2(options = {}) {
 
   try {
     log('[micro-saas-agent-stack-v2] simulating operator-team handoff');
+    const toolPreflightImpl = options.toolPreflightImpl ?? runExperimentToolPreflight;
+    const toolchainPreflight = await toolPreflightImpl({ tool: 'demo-machine' });
+
     const telemetry = createIteration2Telemetry({
       scenarioId: EXPERIMENT_NAME,
       attemptId,
@@ -283,6 +306,7 @@ export async function runMicroSaasAgentStackV2(options = {}) {
         'queue-metrics.json',
         'evidence-summary.json',
         'report.md',
+        'demo-machine-preflight.json',
       ],
     });
 
@@ -292,6 +316,10 @@ export async function runMicroSaasAgentStackV2(options = {}) {
     telemetry.recordEvidenceArtifact({ artifactName: 'queue-metrics.json', present: true });
     telemetry.recordEvidenceArtifact({ artifactName: 'evidence-summary.json', present: true });
     telemetry.recordEvidenceArtifact({ artifactName: 'report.md', present: true });
+    telemetry.recordEvidenceArtifact({
+      artifactName: 'demo-machine-preflight.json',
+      present: true,
+    });
 
     const observedAtIso = addMs(FIXED_STARTED_AT_ISO, 40_000);
     const thresholdAssertions = telemetry.evaluateThresholds(
@@ -304,12 +332,20 @@ export async function runMicroSaasAgentStackV2(options = {}) {
       },
       observedAtIso,
     );
-    const artifactPaths = writeResults ? telemetry.writeArtifacts(observedAtIso) : {};
+    if (writeResults) {
+      writeJsonArtifact(resultsDir, 'demo-machine-preflight.json', toolchainPreflight);
+    }
+    const artifactPaths = writeResults
+      ? telemetry.writeArtifacts(observedAtIso, buildToolchainReportSections(toolchainPreflight))
+      : {};
     const queueMetrics = telemetry.buildQueueMetrics(observedAtIso);
     const evidenceSummary = telemetry.buildEvidenceSummary(observedAtIso);
 
     trace = {
       comparesTo: 'micro-saas-agent-stack',
+      toolchainPreflight: {
+        demoMachine: toolchainPreflight,
+      },
       approvals,
       queueSnapshots: snapshots,
       queueMetrics,
