@@ -43,6 +43,12 @@ const ACTION_MATRIX: Readonly<Record<AppAction, readonly WorkspaceUserRole[]>> =
   'agent-action:propose': ['admin', 'operator'],
   /** Execute an approved agent action — operators can execute, admins always can. */
   'agent-action:execute': ['admin', 'operator'],
+  /** Generate weekly autonomy digest artifacts. */
+  'autonomy-digest:generate': ['admin', 'operator'],
+  /** Acknowledge weekly autonomy digest review. */
+  'autonomy-digest:acknowledge': ['admin', 'operator', 'approver', 'auditor'],
+  /** Draft policy calibration intent from digest recommendations. */
+  'policy-calibration:draft': ['admin', 'operator', 'approver'],
 };
 
 export function isAllowedWorkspaceAction(

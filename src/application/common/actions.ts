@@ -27,6 +27,12 @@ export const APP_ACTIONS = {
   agentActionPropose: 'agent-action:propose',
   /** Execute an approved agent action through the action-gated tool invoker. */
   agentActionExecute: 'agent-action:execute',
+  /** Generate the weekly autonomy digest artifact for operator review. */
+  autonomyDigestGenerate: 'autonomy-digest:generate',
+  /** Acknowledge review of a weekly autonomy digest artifact. */
+  autonomyDigestAcknowledge: 'autonomy-digest:acknowledge',
+  /** Draft a policy calibration change from an autonomy digest recommendation. */
+  policyCalibrationDraft: 'policy-calibration:draft',
 } as const;
 
 export type AppAction = (typeof APP_ACTIONS)[keyof typeof APP_ACTIONS];
