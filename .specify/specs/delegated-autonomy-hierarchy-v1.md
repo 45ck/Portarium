@@ -101,9 +101,108 @@ This is intentionally structured so Cockpit can display why a tier, budget, or p
 the API can return the same details; policy authoring can preview a draft; simulation can compare
 outcomes; and audit flows can reconstruct blocked or overridden weakening attempts.
 
+## Exception and Anomaly Routing
+
+Delegated autonomy must also define what happens after a Run or Action produces a non-routine
+exception signal. Version 1 models those signals as typed anomaly triggers so the platform can
+preserve calm operations without hiding risk.
+
+### Exception classes
+
+`AutonomyExceptionClassV1` is the canonical taxonomy for delegated-autonomy exceptions:
+
+- `policy-violation`
+- `evidence-gap`
+- `anomaly-signal`
+- `execution-failure`
+- `capability-drift`
+- `budget-threshold`
+- `approval-fatigue`
+- `stale-or-degraded-state`
+- `unknown-risk`
+
+Unknown or unmatched exception classes fail closed to alert routing for platform-admin review.
+
+### Routing targets
+
+Exception routing targets are typed and must remain domain concepts:
+
+- `weekly-autonomy-digest`
+- `work-item`
+- `workforce-queue`
+- `workspace-user`
+- `approval-gate`
+- `policy-owner-review`
+- `audit-review`
+- `platform-admin`
+
+Calm handling may route only to `weekly-autonomy-digest`, `work-item`, or `audit-review`.
+Alert handling may route to live authority targets such as a Workforce Queue, Workspace User,
+Approval Gate, policy owner review, or platform admin review.
+
+### Calm versus alert handling
+
+Routing rules choose `calm` or `alert` handling:
+
+- `calm` records the Evidence Log expectation and creates reviewable context without interrupting
+  live work.
+- `alert` interrupts a specific authority target and must carry an evidence packet expectation and
+  explicit next-step options.
+
+Critical alert routes must not be suppressed unless a rule explicitly sets `suppressAlerts: true`.
+Alert routes cannot enable batching.
+
+### Suppression, deduplication, and batching order
+
+Routing is deterministic:
+
+1. Select the most specific matching rule by exception class, severity, Action class scope, and
+   optional Execution Tier filter.
+2. Assess the evidence packet against the rule's required expectations.
+3. Apply suppression if enabled and a matching fingerprint exists inside the suppression window.
+   Suppression prevents repeated operator notification, not Evidence Log recording.
+4. Apply deduplication if enabled and an unresolved matching route exists inside the deduplication
+   window. Deduplication must not create a second Approval Gate, Work Item, queue item, or alert.
+5. Apply batching only for calm routes. Batching groups repeated low-noise signals until the batch
+   reaches `maxBatchSize` or `flushAfterMinutes`, then emits one calm route.
+6. Otherwise emit `route-calm` or `route-alert`.
+
+### Evidence packet expectations
+
+Each routing rule declares `evidenceExpectations`. A trigger carries an
+`AutonomyExceptionEvidencePacketV1` with:
+
+- packet ID
+- assembly timestamp
+- Evidence IDs included in the packet
+- consulted Evidence IDs
+- missing evidence signals
+
+If required evidence is missing, the routing decision must mark evidence as `missing-required` and
+prepend `request-more-evidence` and `escalate` to the available next-step options.
+
+### Next-step options
+
+Routing decisions expose typed next-step options so operator surfaces do not infer authority from
+free text:
+
+- `observe`
+- `annotate`
+- `acknowledge-digest`
+- `open-work-item`
+- `request-more-evidence`
+- `pause-run`
+- `reroute`
+- `escalate`
+- `freeze`
+- `emergency-disable`
+- `draft-policy-change`
+
 ## Traceability
 
 - [Operator Interaction Model v1](./operator-interaction-model-v1.md)
 - [Policy Change Workflow v1](./policy-change-workflow-v1.md)
 - [Agent Action Governance Lifecycle v1](./agent-action-governance-lifecycle-v1.md)
 - Implementation: `src/domain/policy/delegated-autonomy-hierarchy-v1.ts`
+- Exception routing implementation:
+  `src/domain/policy/delegated-autonomy-exceptions-v1.ts`
