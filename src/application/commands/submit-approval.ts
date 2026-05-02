@@ -10,6 +10,11 @@ import {
   type WorkspaceId as WorkspaceIdType,
 } from '../../domain/primitives/index.js';
 import {
+  createApprovalFeedbackV1,
+  type ApprovalFeedbackDecision,
+  type ApprovalFeedbackReason,
+  type ApprovalFeedbackRouteDestination,
+  type ApprovalFeedbackV1,
   parseApprovalV1,
   type ApprovalStatus,
   type ApprovalDecidedV1,
@@ -57,11 +62,21 @@ export type SubmitApprovalRobotContextInput = Readonly<{
   estopRequesterUserId?: string;
 }>;
 
+export type SubmitApprovalFeedbackInput = Readonly<{
+  decision?: ApprovalFeedbackDecision;
+  reason: ApprovalFeedbackReason;
+  routes: readonly ApprovalFeedbackRouteDestination[];
+  evidenceRefs?: readonly string[];
+  calibrationSurfaces?: ApprovalFeedbackV1['calibrationSurfaces'];
+}>;
+
 export type SubmitApprovalInput = Readonly<{
   workspaceId: string;
   approvalId: string;
   decision: ApprovalDecision;
   rationale: string;
+  /** Structured denial/revision feedback for audit, routing, and future calibration. */
+  feedback?: SubmitApprovalFeedbackInput;
   /** SoD constraints to enforce before accepting the decision.  Sourced from the policy
    *  attached to the run.  When absent, no SoD check is performed. */
   sodConstraints?: readonly SodConstraintV1[];
@@ -198,6 +213,42 @@ function validateInput(input: SubmitApprovalInput): Err<SubmitApprovalError> | n
       });
     }
   }
+  if (input.feedback !== undefined) {
+    const feedbackError = validateFeedbackInput(input.feedback);
+    if (feedbackError) return feedbackError;
+  }
+  return null;
+}
+
+function validateFeedbackInput(
+  feedback: SubmitApprovalFeedbackInput,
+): Err<SubmitApprovalError> | null {
+  if (typeof feedback !== 'object' || feedback === null || Array.isArray(feedback)) {
+    return err({ kind: 'ValidationFailed', message: 'feedback must be an object.' });
+  }
+  if (typeof feedback.reason !== 'string' || feedback.reason.trim() === '') {
+    return err({ kind: 'ValidationFailed', message: 'feedback.reason is required.' });
+  }
+  if (!Array.isArray(feedback.routes) || feedback.routes.length === 0) {
+    return err({
+      kind: 'ValidationFailed',
+      message: 'feedback.routes must be a non-empty array.',
+    });
+  }
+  if (feedback.evidenceRefs !== undefined) {
+    if (!Array.isArray(feedback.evidenceRefs)) {
+      return err({
+        kind: 'ValidationFailed',
+        message: 'feedback.evidenceRefs must be an array when provided.',
+      });
+    }
+    if (feedback.evidenceRefs.some((id) => typeof id !== 'string' || id.trim() === '')) {
+      return err({
+        kind: 'ValidationFailed',
+        message: 'feedback.evidenceRefs must contain only non-empty strings.',
+      });
+    }
+  }
   return null;
 }
 
@@ -234,6 +285,7 @@ function fingerprintInput(ctx: AppContext, input: SubmitApprovalInput): string {
     approvalId: input.approvalId,
     decision: input.decision,
     rationale: input.rationale,
+    feedback: input.feedback ?? {},
     principalId: String(ctx.principalId),
     sodConstraints: input.sodConstraints ?? [],
     previousApproverIds: input.previousApproverIds ?? [],
@@ -429,6 +481,7 @@ function buildDecidedApproval(
   input: SubmitApprovalInput,
   decidedAtIso: string,
   decidedByUserId: string,
+  feedback: ApprovalFeedbackV1 | undefined,
 ): ApprovalDecidedV1 {
   return {
     ...current,
@@ -436,7 +489,72 @@ function buildDecidedApproval(
     decidedAtIso,
     decidedByUserId: UserId(decidedByUserId),
     rationale: input.rationale,
+    ...(feedback !== undefined ? { feedback } : {}),
   };
+}
+
+function defaultFeedbackDecision(decision: ApprovalDecision): ApprovalFeedbackDecision {
+  if (decision === 'Denied') return 'Denied';
+  return 'RequestChanges';
+}
+
+function isFeedbackDecisionCompatible(
+  approvalDecision: ApprovalDecision,
+  feedbackDecision: ApprovalFeedbackDecision,
+): boolean {
+  if (approvalDecision === 'Denied') return feedbackDecision === 'Denied';
+  if (approvalDecision === 'RequestChanges') {
+    return (
+      feedbackDecision === 'RequestChanges' ||
+      feedbackDecision === 'LowerScope' ||
+      feedbackDecision === 'Escalate'
+    );
+  }
+  return false;
+}
+
+function buildFeedback(
+  approval: ApprovalPendingV1,
+  input: SubmitApprovalInput,
+): Result<ApprovalFeedbackV1 | undefined, ValidationFailed> {
+  if (input.feedback === undefined) return ok(undefined);
+  const feedbackDecision = input.feedback.decision ?? defaultFeedbackDecision(input.decision);
+  if (!isFeedbackDecisionCompatible(input.decision, feedbackDecision)) {
+    return err({
+      kind: 'ValidationFailed',
+      message: 'feedback.decision is not compatible with the submitted approval decision.',
+    });
+  }
+
+  try {
+    const evidenceRefs =
+      input.feedback.evidenceRefs !== undefined
+        ? input.feedback.evidenceRefs.map((id) => EvidenceId(id))
+        : undefined;
+    return ok(
+      createApprovalFeedbackV1({
+        decision: feedbackDecision,
+        reason: input.feedback.reason,
+        rationale: input.rationale,
+        target: {
+          approvalId: approval.approvalId,
+          runId: approval.runId,
+          planId: approval.planId,
+          ...(approval.workItemId !== undefined ? { workItemId: approval.workItemId } : {}),
+        },
+        routes: input.feedback.routes,
+        ...(evidenceRefs !== undefined ? { evidenceRefs } : {}),
+        ...(input.feedback.calibrationSurfaces !== undefined
+          ? { calibrationSurfaces: input.feedback.calibrationSurfaces }
+          : {}),
+      }),
+    );
+  } catch (error) {
+    return err({
+      kind: 'ValidationFailed',
+      message: error instanceof Error ? error.message : 'feedback is invalid.',
+    });
+  }
 }
 
 type EventBuildArgs = Readonly<{
@@ -659,6 +777,9 @@ export async function submitApproval(
   );
   if (sodError) return sodError;
 
+  const feedbackResult = buildFeedback(pending, input);
+  if (!feedbackResult.ok) return feedbackResult;
+
   const decidedAtIso = deps.clock.nowIso();
   if (decidedAtIso.trim() === '') {
     return err({ kind: 'DependencyFailure', message: 'Clock returned an invalid timestamp.' });
@@ -669,7 +790,13 @@ export async function submitApproval(
     return err({ kind: 'DependencyFailure', message: 'Unable to generate event identifier.' });
   }
 
-  const decided = buildDecidedApproval(current, input, decidedAtIso, ctx.principalId.toString());
+  const decided = buildDecidedApproval(
+    current,
+    input,
+    decidedAtIso,
+    ctx.principalId.toString(),
+    feedbackResult.value,
+  );
   const domainEvent = buildDomainEvent({
     decision: input.decision,
     ids,

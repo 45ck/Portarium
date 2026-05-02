@@ -20,6 +20,7 @@ import type {
   UserId as UserIdType,
   WorkspaceId as WorkspaceIdType,
 } from '../primitives/index.js';
+import type { ApprovalFeedbackV1 } from './approval-feedback-v1.js';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -96,6 +97,8 @@ export type ApprovalDecisionRecordV1 = Readonly<{
   policyEvaluations: readonly PolicyEvaluationRefV1[];
   /** Evidence considered during the decision. */
   evidenceRefs: readonly EvidenceRefV1[];
+  /** Structured denial/revision feedback for routing and calibration. */
+  feedback?: ApprovalFeedbackV1;
   /** AI assistance context (if method is 'ai_assisted'). */
   aiContext?: AiAssistanceContextV1;
   /** Optional: conditions or caveats attached to the decision. */
@@ -131,6 +134,7 @@ export interface DecisionRecordInput {
   snapshotBindingHash?: HashSha256Type;
   policyEvaluations?: readonly PolicyEvaluationRefV1[];
   evidenceRefs?: readonly EvidenceRefV1[];
+  feedback?: ApprovalFeedbackV1;
   aiContext?: AiAssistanceContextV1;
   conditions?: readonly string[];
 }
@@ -195,6 +199,7 @@ export function createDecisionRecord(input: DecisionRecordInput): ApprovalDecisi
       : {}),
     policyEvaluations: [...(input.policyEvaluations ?? [])],
     evidenceRefs: [...(input.evidenceRefs ?? [])],
+    ...(input.feedback !== undefined ? { feedback: input.feedback } : {}),
     ...(input.aiContext !== undefined ? { aiContext: input.aiContext } : {}),
     conditions: [...(input.conditions ?? [])],
   };

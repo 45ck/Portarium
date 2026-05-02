@@ -668,6 +668,19 @@ Minimum feedback reasons:
 - insufficient quality
 - domain-correctness failure
 
+These map to the `ApprovalFeedbackV1.reason` taxonomy:
+
+| Operator-facing reason     | Contract value               | Calibration surface                         |
+| -------------------------- | ---------------------------- | ------------------------------------------- |
+| wrong goal                 | `wrong-goal`                 | goal selection                              |
+| wrong evidence             | `wrong-evidence`             | evidence quality                            |
+| wrong risk level           | `wrong-risk-level`           | risk classification                         |
+| wrong execution plan       | `wrong-execution-plan`       | execution plan                              |
+| missing context            | `missing-context`            | context completeness                        |
+| policy violation           | `policy-violation`           | policy compliance                           |
+| insufficient quality       | `insufficient-quality`       | artifact quality                            |
+| domain-correctness failure | `domain-correctness-failure` | domain correctness and operator calibration |
+
 Feedback must also capture where the correction should land:
 
 - current Run only
@@ -675,6 +688,21 @@ Feedback must also capture where the correction should land:
 - prompt or agent strategy
 - Policy or approval rule
 - operator training or runbook
+
+These map to `ApprovalFeedbackV1.routes`:
+
+| Destination                   | Contract value        | Effect                 |
+| ----------------------------- | --------------------- | ---------------------- |
+| current Run only              | `current-run`         | `current-run-effect`   |
+| reusable playbook or workflow | `workflow-definition` | `future-policy-effect` |
+| prompt or agent strategy      | `prompt-strategy`     | `future-policy-effect` |
+| Policy or approval rule       | `policy-rule`         | `future-policy-effect` |
+| operator training or runbook  | `operator-enablement` | `context-only`         |
+
+Cockpit should make the fast path structured: one required reason, one or more
+route chips, optional cited Evidence Artifacts, and the existing rationale text.
+The UI must not turn every denial into a Policy change; `current-run` means the
+feedback applies only to the active Run, Plan, Approval Gate, or queue route.
 
 ### R12 Handoff and exception context
 

@@ -669,6 +669,108 @@ describe('submitApproval', () => {
     expect(published['type']).toBe('com.portarium.approval.ApprovalDenied');
   });
 
+  it('persists structured feedback routing for a denied approval', async () => {
+    const result = await submitApproval(
+      { authorization, clock, idGenerator, approvalStore, unitOfWork, eventPublisher, evidenceLog },
+      toAppContext({
+        tenantId: 'tenant-1',
+        principalId: 'user-1',
+        correlationId: 'corr-1',
+        roles: ['approver'],
+      }),
+      {
+        workspaceId: 'ws-1',
+        approvalId: 'approval-1',
+        decision: 'Denied',
+        rationale: 'Risk classification does not match the external write.',
+        feedback: {
+          reason: 'wrong-risk-level',
+          routes: ['current-run', 'policy-rule'],
+          evidenceRefs: ['evidence-risk-1'],
+        },
+      },
+    );
+
+    expect(result.ok).toBe(true);
+    const saved = (approvalStore.saveApproval as ReturnType<typeof vi.fn>).mock
+      .calls[0]?.[1] as ReturnType<typeof parseApprovalV1>;
+    expect(saved.status).toBe('Denied');
+    expect('feedback' in saved ? saved.feedback?.decision : undefined).toBe('Denied');
+    expect('feedback' in saved ? saved.feedback?.routes : undefined).toEqual([
+      { destination: 'current-run', effect: 'current-run-effect' },
+      { destination: 'policy-rule', effect: 'future-policy-effect' },
+    ]);
+    expect('feedback' in saved ? saved.feedback?.calibrationSurfaces : undefined).toEqual([
+      'risk-classification',
+    ]);
+    expect('feedback' in saved ? saved.feedback?.target : undefined).toMatchObject({
+      approvalId: ApprovalId('approval-1'),
+      runId: 'run-1',
+      planId: 'plan-1',
+    });
+  });
+
+  it('allows lower-scope feedback for a request-changes decision', async () => {
+    const result = await submitApproval(
+      { authorization, clock, idGenerator, approvalStore, unitOfWork, eventPublisher },
+      toAppContext({
+        tenantId: 'tenant-1',
+        principalId: 'user-1',
+        correlationId: 'corr-1',
+        roles: ['approver'],
+      }),
+      {
+        workspaceId: 'ws-1',
+        approvalId: 'approval-1',
+        decision: 'RequestChanges',
+        rationale: 'Limit this run to invoices under AUD 5,000.',
+        feedback: {
+          decision: 'LowerScope',
+          reason: 'wrong-execution-plan',
+          routes: ['current-run', 'workflow-definition'],
+        },
+      },
+    );
+
+    expect(result.ok).toBe(true);
+    const saved = (approvalStore.saveApproval as ReturnType<typeof vi.fn>).mock
+      .calls[0]?.[1] as ReturnType<typeof parseApprovalV1>;
+    expect('feedback' in saved ? saved.feedback?.decision : undefined).toBe('LowerScope');
+    expect('feedback' in saved ? saved.feedback?.calibrationSurfaces : undefined).toEqual([
+      'execution-plan',
+    ]);
+  });
+
+  it('rejects structured feedback that conflicts with the approval decision', async () => {
+    const result = await submitApproval(
+      { authorization, clock, idGenerator, approvalStore, unitOfWork, eventPublisher, evidenceLog },
+      toAppContext({
+        tenantId: 'tenant-1',
+        principalId: 'user-1',
+        correlationId: 'corr-1',
+        roles: ['approver'],
+      }),
+      {
+        workspaceId: 'ws-1',
+        approvalId: 'approval-1',
+        decision: 'Denied',
+        rationale: 'Escalation cannot be represented as a denial.',
+        feedback: {
+          decision: 'Escalate',
+          reason: 'missing-context',
+          routes: ['operator-enablement'],
+        },
+      },
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('Expected validation failure.');
+    expect(result.error.kind).toBe('ValidationFailed');
+    expect(approvalStore.saveApproval).not.toHaveBeenCalled();
+    expect(eventPublisher.publish).not.toHaveBeenCalled();
+    expect(evidenceLog.appendEntry).not.toHaveBeenCalled();
+  });
+
   it('records evidence when evidenceLog is provided', async () => {
     const result = await submitApproval(
       { authorization, clock, idGenerator, approvalStore, unitOfWork, eventPublisher, evidenceLog },

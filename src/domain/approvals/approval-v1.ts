@@ -22,6 +22,7 @@ import {
   readRecord,
   readString,
 } from '../validation/parse-utils.js';
+import { parseApprovalFeedbackV1, type ApprovalFeedbackV1 } from './approval-feedback-v1.js';
 
 export type ApprovalExecutionStatus = 'Executing';
 export type ApprovalStatus = 'Pending' | ApprovalDecision | ApprovalExecutionStatus;
@@ -59,6 +60,7 @@ export type ApprovalDecidedV1 = Readonly<
     decidedAtIso: string;
     decidedByUserId: UserIdType;
     rationale: string;
+    feedback?: ApprovalFeedbackV1;
   }
 >;
 
@@ -143,7 +145,10 @@ function parseDecisionFields(
   value: Record<string, unknown>,
   status: ApprovalDecision | ApprovalExecutionStatus,
   requestedAtIso: string,
-): Pick<ApprovalDecidedV1, 'status' | 'decidedAtIso' | 'decidedByUserId' | 'rationale'> {
+): Pick<
+  ApprovalDecidedV1,
+  'status' | 'decidedAtIso' | 'decidedByUserId' | 'rationale' | 'feedback'
+> {
   const decidedAtIso = readIsoString(value, 'decidedAtIso', ApprovalParseError);
   const requestedAt = parseIsoDate(requestedAtIso, 'requestedAtIso', ApprovalParseError);
   const decidedAt = parseIsoDate(decidedAtIso, 'decidedAtIso', ApprovalParseError);
@@ -152,7 +157,15 @@ function parseDecisionFields(
   }
   const decidedByUserId = UserId(readString(value, 'decidedByUserId', ApprovalParseError));
   const rationale = readString(value, 'rationale', ApprovalParseError);
-  return { status, decidedAtIso, decidedByUserId, rationale };
+  const feedbackRaw = value['feedback'];
+  const feedback = feedbackRaw === undefined ? undefined : parseApprovalFeedbackV1(feedbackRaw);
+  return {
+    status,
+    decidedAtIso,
+    decidedByUserId,
+    rationale,
+    ...(feedback !== undefined ? { feedback } : {}),
+  };
 }
 
 function assertNoDecisionFields(value: Record<string, unknown>): void {
@@ -163,6 +176,9 @@ function assertNoDecisionFields(value: Record<string, unknown>): void {
     throw new ApprovalParseError('Pending approvals must not include decision fields.');
   }
   if (value['rationale'] !== undefined) {
+    throw new ApprovalParseError('Pending approvals must not include decision fields.');
+  }
+  if (value['feedback'] !== undefined) {
     throw new ApprovalParseError('Pending approvals must not include decision fields.');
   }
 }
