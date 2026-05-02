@@ -75,6 +75,11 @@ The mission-control-ui research, theme convergence, three-panel engineering shel
 
 Prompt-language exploration for governed coding workflows is an experimental future layer. It should remain separate until the core governance model is stable and there is clear evidence of need.
 
+The exploration sequence is tracked separately in
+`docs/internal/governance/prompt-language-exploration-sequence.md`: evidence
+before architecture fit, policy and audit before proof of concept, and proof of
+concept before any integration consideration.
+
 ### Pilot And Operator Research
 
 Pilot readiness, usefulness scorecards, trust calibration, approval-fatigue studies, operator onboarding, and incident playbooks are go-to-market and adoption work. They are valuable before larger deployments, but they should not block the core technical release.

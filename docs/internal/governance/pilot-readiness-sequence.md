@@ -49,7 +49,8 @@ The following remain future work unless a pilot specifically selects them:
 
 - Growth Studio and other showcase dashboards
 - generated operator cards from arbitrary plugins
-- prompt-language governed coding workflows
+- prompt-language governed coding workflows; their separate gate order is
+  tracked in `prompt-language-exploration-sequence.md`
 - multi-project venture portfolio surfaces
 - demo-machine media automation
 
