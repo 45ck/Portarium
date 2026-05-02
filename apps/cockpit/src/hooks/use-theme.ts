@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 
 export type ThemeId =
   | 'theme-arctic'
+  | 'theme-mission-control'
   | 'theme-midnight'
   | 'theme-warm'
   | 'theme-quantum'
@@ -11,6 +12,7 @@ const STORAGE_KEY = 'cockpit-theme';
 const DEFAULT_THEME: ThemeId = 'theme-arctic';
 export const ALL_THEMES: ThemeId[] = [
   'theme-arctic',
+  'theme-mission-control',
   'theme-midnight',
   'theme-warm',
   'theme-quantum',
