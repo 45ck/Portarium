@@ -23,6 +23,7 @@ const ACTION_MATRIX: Readonly<Record<AppAction, readonly WorkspaceUserRole[]>> =
   'policy-change:propose': ['admin', 'operator'],
   'policy-change:approve': ['admin', 'approver'],
   'policy-change:rollback': ['admin', 'operator'],
+  'policy-change:replay': ['admin', 'operator'],
   'evidence:read': ['admin', 'operator', 'approver', 'auditor'],
   'plan:read': ['admin', 'operator', 'approver', 'auditor'],
   'run:read': ['admin', 'operator', 'approver', 'auditor'],

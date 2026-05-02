@@ -82,6 +82,7 @@ export type ProposePolicyChangeInput = Readonly<{
   expiresAtIso?: string;
   approvalId?: string;
   approvalRequired?: boolean;
+  replayReportRequired?: boolean;
   supersedesPolicyChangeId?: string;
 }>;
 
@@ -181,6 +182,9 @@ export async function proposePolicyChange(
       approvalRequired: input.approvalRequired ?? input.risk === 'High',
       ...(input.approvalId !== undefined ? { approvalId: input.approvalId } : {}),
     },
+    ...(input.replayReportRequired === true
+      ? { activationRequirements: { replayReportRequired: true } }
+      : {}),
     ...(input.supersedesPolicyChangeId !== undefined
       ? { supersedesPolicyChangeId: input.supersedesPolicyChangeId }
       : {}),
@@ -188,9 +192,11 @@ export async function proposePolicyChange(
 
   const parsed = parsePolicyChange(rawChange);
   if (!parsed.ok) return parsed;
-  const applied = requiresPolicyChangeApproval(parsed.value)
-    ? parsed.value
-    : applyStandardPolicyChangeV1(parsed.value);
+  const applied =
+    requiresPolicyChangeApproval(parsed.value) ||
+    parsed.value.activationRequirements?.replayReportRequired === true
+      ? parsed.value
+      : applyStandardPolicyChangeV1(parsed.value);
 
   return persistPolicyChange({
     deps,
@@ -329,6 +335,9 @@ export async function rollbackPolicyChange(
       approvalRequired: target.risk === 'High',
       ...(input.approvalId !== undefined ? { approvalId: input.approvalId } : {}),
     },
+    ...(target.activationRequirements?.replayReportRequired === true
+      ? { activationRequirements: { replayReportRequired: true } }
+      : {}),
     rollbackOfPolicyChangeId: String(target.policyChangeId),
   };
 

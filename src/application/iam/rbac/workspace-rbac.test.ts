@@ -42,6 +42,11 @@ describe('Workspace RBAC (IAM MVP)', () => {
     expect(isAllowedWorkspaceAction(actor(['operator']), 'approval:submit')).toBe(false);
   });
 
+  it('allows operators to replay policy changes but keeps auditors read-only', () => {
+    expect(isAllowedWorkspaceAction(actor(['operator']), 'policy-change:replay')).toBe(true);
+    expect(isAllowedWorkspaceAction(actor(['auditor']), 'policy-change:replay')).toBe(false);
+  });
+
   it('allows auditor for approval:read', () => {
     expect(isAllowedWorkspaceAction(actor(['auditor']), 'approval:read')).toBe(true);
   });

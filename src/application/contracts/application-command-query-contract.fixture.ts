@@ -7,6 +7,7 @@ export type ActionKey =
   | 'policyChangePropose'
   | 'policyChangeApprove'
   | 'policyChangeRollback'
+  | 'policyChangeReplay'
   | 'evidenceRead'
   | 'planRead'
   | 'runRead'
@@ -138,6 +139,17 @@ export const APPLICATION_OPERATION_CONTRACTS = [
       input: 'RollbackPolicyChangeInput',
       output: 'PolicyChangeOutput',
       error: 'PolicyChangeCommandError',
+    },
+  },
+  {
+    kind: 'command',
+    name: 'recordPolicyChangeReplayReport',
+    sourcePath: 'src/application/commands/record-policy-change-replay-report.ts',
+    actionKey: 'policyChangeReplay',
+    types: {
+      input: 'RecordPolicyChangeReplayReportInput',
+      output: 'RecordPolicyChangeReplayReportOutput',
+      error: 'RecordPolicyChangeReplayReportError',
     },
   },
   {
@@ -325,6 +337,17 @@ export const APPLICATION_OPERATION_CONTRACTS = [
       input: 'ListRunEvidenceInput',
       output: 'ListRunEvidenceOutput',
       error: 'ListRunEvidenceError',
+    },
+  },
+  {
+    kind: 'query',
+    name: 'previewPolicyChangeReplay',
+    sourcePath: 'src/application/queries/preview-policy-change-replay.ts',
+    actionKey: 'policyChangeReplay',
+    types: {
+      input: 'PreviewPolicyChangeReplayInput',
+      output: 'PreviewPolicyChangeReplayOutput',
+      error: 'PreviewPolicyChangeReplayError',
     },
   },
   {
