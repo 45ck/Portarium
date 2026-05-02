@@ -96,6 +96,17 @@
   --color-info: var(--info);
   --color-info-foreground: var(--info-foreground);
 
+  /* Mission Control surface tokens */
+  --color-mission-background: var(--mission-background);
+  --color-mission-panel: var(--mission-panel);
+  --color-mission-panel-foreground: var(--mission-panel-foreground);
+  --color-mission-line: var(--mission-line);
+  --color-mission-glow: var(--mission-glow);
+  --color-mission-cyan: var(--mission-cyan);
+  --color-mission-lime: var(--mission-lime);
+  --color-mission-amber: var(--mission-amber);
+  --color-mission-red: var(--mission-red);
+
   /* Chart */
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
@@ -122,6 +133,7 @@
   /* Fonts */
   --font-sans: 'Geist Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono: 'Geist Mono', ui-monospace, 'SF Mono', monospace;
+  --font-display: var(--display-font);
 
   /* Accordion animations (added by shadcn) */
   --animate-accordion-down: accordion-down 0.2s ease-out;
@@ -304,6 +316,108 @@
   --sidebar-ring: hsl(221 83% 53%);
 
   --radius: 0.75rem;
+  --display-font: 'Geist Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  --mission-background: hsl(210 40% 98%);
+  --mission-panel: hsl(0 0% 100%);
+  --mission-panel-foreground: hsl(222.2 47.4% 11.2%);
+  --mission-line: hsl(214.3 31.8% 91.4%);
+  --mission-glow: hsl(221 83% 53% / 0.2);
+  --mission-cyan: hsl(221 83% 53%);
+  --mission-lime: oklch(0.72 0.19 150);
+  --mission-amber: oklch(0.84 0.16 84);
+  --mission-red: hsl(0 84% 60%);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Optional Mission Control theme
+   Dense operator console · Orbitron/Rajdhani · cyan/lime/amber status cues
+───────────────────────────────────────────────────────────────────────────── */
+.theme-mission-control {
+  --background: oklch(0.12 0.02 255);
+  --foreground: oklch(0.92 0.02 220);
+
+  --card: oklch(0.16 0.025 250);
+  --card-foreground: oklch(0.92 0.02 220);
+
+  --popover: oklch(0.14 0.025 250);
+  --popover-foreground: oklch(0.92 0.02 220);
+
+  --primary: oklch(0.74 0.14 195);
+  --primary-foreground: oklch(0.12 0.02 255);
+
+  --secondary: oklch(0.22 0.03 250);
+  --secondary-foreground: oklch(0.9 0.02 220);
+
+  --muted: oklch(0.2 0.025 250);
+  --muted-foreground: oklch(0.68 0.025 225);
+
+  --accent: oklch(0.24 0.05 195);
+  --accent-foreground: oklch(0.88 0.06 195);
+
+  --destructive: oklch(0.65 0.2 28);
+  --destructive-foreground: oklch(0.98 0.02 28);
+
+  --border: oklch(0.34 0.045 235);
+  --input: oklch(0.24 0.035 245);
+  --ring: oklch(0.74 0.14 195);
+
+  --success: oklch(0.76 0.18 142);
+  --success-foreground: oklch(0.12 0.02 142);
+  --warning: oklch(0.79 0.16 72);
+  --warning-foreground: oklch(0.18 0.04 72);
+  --info: oklch(0.74 0.14 195);
+  --info-foreground: oklch(0.12 0.02 195);
+
+  --chart-1: oklch(0.74 0.14 195);
+  --chart-2: oklch(0.76 0.18 142);
+  --chart-3: oklch(0.79 0.16 72);
+  --chart-4: oklch(0.68 0.13 285);
+  --chart-5: oklch(0.65 0.2 28);
+
+  --sidebar: oklch(0.1 0.02 255);
+  --sidebar-foreground: oklch(0.9 0.02 220);
+  --sidebar-primary: oklch(0.74 0.14 195);
+  --sidebar-primary-foreground: oklch(0.12 0.02 255);
+  --sidebar-accent: oklch(0.18 0.025 250);
+  --sidebar-accent-foreground: oklch(0.9 0.02 220);
+  --sidebar-border: oklch(0.28 0.04 235);
+  --sidebar-ring: oklch(0.74 0.14 195);
+
+  --radius: 0.5rem;
+  --font-sans: 'Rajdhani', 'Geist Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, monospace;
+  --display-font: 'Orbitron', 'Rajdhani', sans-serif;
+
+  --mission-background: oklch(0.12 0.02 255);
+  --mission-panel: oklch(0.16 0.025 250);
+  --mission-panel-foreground: oklch(0.92 0.02 220);
+  --mission-line: oklch(0.36 0.06 235);
+  --mission-glow: oklch(0.74 0.14 195 / 0.28);
+  --mission-cyan: oklch(0.74 0.14 195);
+  --mission-lime: oklch(0.76 0.18 142);
+  --mission-amber: oklch(0.79 0.16 72);
+  --mission-red: oklch(0.65 0.2 28);
+}
+
+.theme-mission-control,
+.theme-mission-control body {
+  background-image:
+    linear-gradient(oklch(0.74 0.14 195 / 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, oklch(0.74 0.14 195 / 0.05) 1px, transparent 1px),
+    radial-gradient(circle at 80% 0%, oklch(0.76 0.18 142 / 0.08), transparent 32%),
+    linear-gradient(180deg, var(--background), oklch(0.09 0.02 255));
+  background-size:
+    32px 32px,
+    32px 32px,
+    auto,
+    auto;
+  background-attachment: fixed;
+}
+
+.theme-mission-control .mission-display {
+  font-family: var(--display-font);
+  font-weight: 700;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────

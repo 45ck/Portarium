@@ -1,5 +1,9 @@
+import { Monitor, Radar } from 'lucide-react';
 import { useTheme, type ThemeId } from '@/hooks/use-theme';
 import { cn } from '@/lib/utils';
+
+export const STANDARD_THEME_ID: ThemeId = 'theme-arctic';
+export const MISSION_CONTROL_THEME_ID: ThemeId = 'theme-mission-control';
 
 const themeInfo: Record<
   ThemeId,
@@ -17,6 +21,16 @@ const themeInfo: Record<
       'oklch(0.6 0.12 220)',
       'oklch(0.98 0.01 240)',
       'oklch(0.9 0.02 240)',
+    ],
+  },
+  'theme-mission-control': {
+    name: 'Mission Control',
+    description: 'Dense operator console',
+    swatches: [
+      'oklch(0.12 0.02 255)',
+      'oklch(0.74 0.14 195)',
+      'oklch(0.76 0.18 142)',
+      'oklch(0.79 0.16 72)',
     ],
   },
   'theme-midnight': {
@@ -63,38 +77,80 @@ const themeInfo: Record<
 
 export function ThemePicker() {
   const { theme, setTheme, themes } = useTheme();
+  const isMissionControl = theme === MISSION_CONTROL_THEME_ID;
 
   return (
-    <div className="grid grid-cols-2 gap-3">
-      {themes.map((id) => {
-        const info = themeInfo[id];
-        const isActive = theme === id;
-        return (
-          <button
-            key={id}
-            onClick={() => setTheme(id)}
-            aria-pressed={isActive}
-            className={cn(
-              'rounded-lg border p-3 text-left transition-all',
-              isActive
-                ? 'ring-2 ring-primary border-primary'
-                : 'border-border hover:border-muted-foreground/40',
-            )}
-          >
-            <p className="text-xs font-medium">{info.name}</p>
-            <p className="text-[11px] text-muted-foreground">{info.description}</p>
-            <div className="flex gap-1.5 mt-2">
-              {info.swatches.map((color, i) => (
-                <div
-                  key={i}
-                  className="h-4 w-4 rounded-full border border-border"
-                  style={{ backgroundColor: color }}
-                />
-              ))}
-            </div>
-          </button>
-        );
-      })}
+    <div className="space-y-3">
+      <div className="grid grid-cols-2 gap-2" role="group" aria-label="Cockpit appearance mode">
+        <button
+          type="button"
+          onClick={() => setTheme(STANDARD_THEME_ID)}
+          aria-pressed={!isMissionControl}
+          className={cn(
+            'flex min-h-16 items-center gap-3 rounded-md border p-3 text-left transition-all',
+            !isMissionControl
+              ? 'border-primary ring-2 ring-primary'
+              : 'border-border hover:border-muted-foreground/40',
+          )}
+        >
+          <Monitor className="h-4 w-4 text-primary" aria-hidden="true" />
+          <span className="min-w-0">
+            <span className="block text-xs font-medium">Standard</span>
+            <span className="block text-[11px] text-muted-foreground">Cockpit default</span>
+          </span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setTheme(MISSION_CONTROL_THEME_ID)}
+          aria-pressed={isMissionControl}
+          className={cn(
+            'flex min-h-16 items-center gap-3 rounded-md border p-3 text-left transition-all',
+            isMissionControl
+              ? 'border-primary ring-2 ring-primary'
+              : 'border-border hover:border-muted-foreground/40',
+          )}
+        >
+          <Radar className="h-4 w-4 text-primary" aria-hidden="true" />
+          <span className="min-w-0">
+            <span className="block text-xs font-medium">Mission Control</span>
+            <span className="block text-[11px] text-muted-foreground">Operator density</span>
+          </span>
+        </button>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        {themes.map((id) => {
+          const info = themeInfo[id];
+          const isActive = theme === id;
+          return (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setTheme(id)}
+              aria-pressed={isActive}
+              className={cn(
+                'rounded-md border p-3 text-left transition-all',
+                isActive
+                  ? 'border-primary ring-2 ring-primary'
+                  : 'border-border hover:border-muted-foreground/40',
+              )}
+            >
+              <p className="text-xs font-medium">{info.name}</p>
+              <p className="text-[11px] text-muted-foreground">{info.description}</p>
+              <div className="mt-2 flex gap-1.5">
+                {info.swatches.map((color, i) => (
+                  <span
+                    key={i}
+                    className="h-4 w-4 rounded-full border border-border"
+                    style={{ backgroundColor: color }}
+                    aria-hidden="true"
+                  />
+                ))}
+              </div>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

@@ -10,6 +10,7 @@ import { DataTable } from '@/components/cockpit/data-table';
 import { RunStatusBadge } from '@/components/cockpit/run-status-badge';
 import { ApprovalStatusBadge } from '@/components/cockpit/approval-status-badge';
 import { ExecutionTierBadge } from '@/components/cockpit/execution-tier-badge';
+import { MissionCard } from '@/components/cockpit/mission-card';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -228,34 +229,36 @@ export function AgentObservabilityBoard({ title = 'Mission Control' }: { title?:
       />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <div className="rounded-md border border-border bg-card p-4">
-          <div className="flex items-center gap-2 text-sm font-medium">
-            <CheckCircle2 className="h-4 w-4 text-success" aria-hidden="true" />
-            Evidence Integrity
-          </div>
-          <div className="mt-3 flex items-center justify-between gap-3">
+        <MissionCard
+          eyebrow="Evidence"
+          title="Evidence Integrity"
+          status={model.evidenceChainHealth === 'intact' ? 'nominal' : 'critical'}
+          metric={<>{model.evidenceBreakCount}</>}
+          footer="hash-chain breaks"
+        >
+          <div className="flex items-center justify-between gap-3">
             <ChainHealthBadge health={model.evidenceChainHealth} />
-            <span className="text-xs text-muted-foreground tabular-nums">
-              {model.evidenceBreakCount} breaks
-            </span>
+            <CheckCircle2 className="h-4 w-4 text-success" aria-hidden="true" />
           </div>
-        </div>
-        <div className="rounded-md border border-border bg-card p-4">
-          <div className="flex items-center gap-2 text-sm font-medium">
-            <Clock className="h-4 w-4 text-warning" aria-hidden="true" />
-            Approval Waits
-          </div>
-          <p className="mt-3 text-2xl font-bold tabular-nums">{waitingSessions}</p>
-          <p className="text-xs text-muted-foreground">agent sessions blocked on human approval</p>
-        </div>
-        <div className="rounded-md border border-border bg-card p-4">
-          <div className="flex items-center gap-2 text-sm font-medium">
-            <AlertTriangle className="h-4 w-4 text-destructive" aria-hidden="true" />
-            Needs Attention
-          </div>
-          <p className="mt-3 text-2xl font-bold tabular-nums">{attentionSessions}</p>
-          <p className="text-xs text-muted-foreground">paused or blocked agent sessions</p>
-        </div>
+        </MissionCard>
+        <MissionCard
+          eyebrow="Approval Gates"
+          title="Approval Waits"
+          status={waitingSessions > 0 ? 'waiting' : 'nominal'}
+          metric={<>{waitingSessions}</>}
+          footer="agent sessions blocked on human approval"
+        >
+          <Clock className="h-4 w-4 text-warning" aria-hidden="true" />
+        </MissionCard>
+        <MissionCard
+          eyebrow="Operator Queue"
+          title="Needs Attention"
+          status={attentionSessions > 0 ? 'critical' : 'active'}
+          metric={<>{attentionSessions}</>}
+          footer="paused or blocked agent sessions"
+        >
+          <AlertTriangle className="h-4 w-4 text-destructive" aria-hidden="true" />
+        </MissionCard>
       </div>
 
       <Card className="shadow-none">
