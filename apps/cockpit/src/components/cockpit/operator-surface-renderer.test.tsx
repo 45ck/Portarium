@@ -3,7 +3,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import type { OperatorSurface } from '@portarium/cockpit-types';
+import type { OperatorSurface, OperatorSurfaceAction } from '@portarium/cockpit-types';
 import { OperatorSurfaceRenderer } from './operator-surface-renderer';
 
 afterEach(() => cleanup());
@@ -128,5 +128,50 @@ describe('OperatorSurfaceRenderer', () => {
 
     expect(screen.getByText('<img src=x onerror=alert(1)>')).toBeTruthy();
     expect(container.querySelector('img')).toBeNull();
+  });
+
+  it('renders suspicious action labels as inert text and dispatches only schema fields', async () => {
+    const user = userEvent.setup();
+    const onInteraction = vi.fn();
+    const surface: OperatorSurface = {
+      ...SURFACE,
+      blocks: [
+        {
+          blockType: 'actions',
+          actions: [
+            {
+              actionId: 'record-taste',
+              label: '<img src=x onerror=alert(1)>',
+              intentKind: 'Taste',
+              privilegedCommandId: 'workspace.emergency-disable',
+            } as OperatorSurfaceAction & { privilegedCommandId: string },
+          ],
+        },
+      ],
+    };
+    const { container } = render(
+      <OperatorSurfaceRenderer
+        surface={surface}
+        operatorUserId="user-operator"
+        nowIso={() => '2026-04-02T10:03:00.000Z'}
+        onInteraction={onInteraction}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: '<img src=x onerror=alert(1)>' }));
+
+    expect(container.querySelector('img')).toBeNull();
+    expect(onInteraction).toHaveBeenCalledWith({
+      schemaVersion: 1,
+      surfaceId: 'surface-1',
+      workspaceId: 'ws-1',
+      runId: 'run-1',
+      approvalId: 'approval-1',
+      actionId: 'record-taste',
+      intentKind: 'Taste',
+      submittedByUserId: 'user-operator',
+      submittedAtIso: '2026-04-02T10:03:00.000Z',
+      values: {},
+    });
   });
 });
