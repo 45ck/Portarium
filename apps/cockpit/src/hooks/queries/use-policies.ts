@@ -64,7 +64,7 @@ export function usePolicy(wsId: string, policyId: string) {
   return useQuery({
     queryKey: ['policies', wsId, policyId],
     queryFn: () => fetchPolicy(wsId, policyId),
-    enabled: !!policyId,
+    enabled: Boolean(wsId) && Boolean(policyId),
   });
 }
 
