@@ -19,6 +19,16 @@ import {
   readString,
 } from '../validation/parse-utils.js';
 
+const ARTIFACT_MEDIA_TYPES = ['gif', 'mp4', 'png'] as const;
+
+export type ArtifactMediaRefType = (typeof ARTIFACT_MEDIA_TYPES)[number];
+
+export type ArtifactMediaRefV1 = Readonly<{
+  type: ArtifactMediaRefType;
+  url: string;
+  sha256: HashSha256Type;
+}>;
+
 export type ArtifactV1 = Readonly<{
   schemaVersion: 1;
   artifactId: ArtifactIdType;
@@ -28,6 +38,7 @@ export type ArtifactV1 = Readonly<{
   sizeBytes: number;
   storageRef: string;
   hashSha256: HashSha256Type;
+  mediaRefs?: readonly ArtifactMediaRefV1[];
   retentionSchedule?: RetentionScheduleV1;
   createdAtIso: string;
   /**
@@ -60,6 +71,7 @@ export function parseArtifactV1(value: unknown): ArtifactV1 {
   const sizeBytes = readNonNegativeInteger(record, 'sizeBytes', ArtifactParseError);
   const storageRef = readString(record, 'storageRef', ArtifactParseError);
   const hashSha256 = HashSha256(readString(record, 'hashSha256', ArtifactParseError));
+  const mediaRefs = parseOptionalMediaRefs(record);
   const createdAtIso = readIsoString(record, 'createdAtIso', ArtifactParseError);
   const signatureBase64 = readOptionalString(record, 'signatureBase64', ArtifactParseError);
 
@@ -82,6 +94,7 @@ export function parseArtifactV1(value: unknown): ArtifactV1 {
     sizeBytes,
     storageRef,
     hashSha256,
+    ...(mediaRefs !== undefined ? { mediaRefs } : {}),
     ...(retentionSchedule !== undefined ? { retentionSchedule } : {}),
     createdAtIso,
     ...(signatureBase64 !== undefined ? { signatureBase64 } : {}),
@@ -95,4 +108,31 @@ function parseOptionalId<T>(
 ): T | undefined {
   const raw = readOptionalString(obj, key, ArtifactParseError);
   return raw === undefined ? undefined : ctor(raw);
+}
+
+function parseOptionalMediaRefs(
+  obj: Record<string, unknown>,
+): readonly ArtifactMediaRefV1[] | undefined {
+  const raw = obj['mediaRefs'];
+  if (raw === undefined) return undefined;
+  if (!Array.isArray(raw)) {
+    throw new ArtifactParseError('mediaRefs must be an array when provided.');
+  }
+
+  return raw.map((item, index) => {
+    const media = readRecord(item, `mediaRefs[${index}]`, ArtifactParseError);
+    const type = parseMediaType(readString(media, 'type', ArtifactParseError));
+    const url = readString(media, 'url', ArtifactParseError);
+    const sha256 = HashSha256(readString(media, 'sha256', ArtifactParseError));
+    return { type, url, sha256 };
+  });
+}
+
+function parseMediaType(type: string): ArtifactMediaRefType {
+  if (!ARTIFACT_MEDIA_TYPES.includes(type as ArtifactMediaRefType)) {
+    throw new ArtifactParseError(
+      `mediaRef type must be one of: ${ARTIFACT_MEDIA_TYPES.join(', ')}.`,
+    );
+  }
+  return type as ArtifactMediaRefType;
 }

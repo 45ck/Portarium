@@ -11,6 +11,18 @@ const VALID_ARTIFACT = {
   sizeBytes: 1024,
   storageRef: 's3://bucket/key',
   hashSha256: 'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
+  mediaRefs: [
+    {
+      type: 'gif',
+      url: './clips/approval-gate-demo.gif',
+      sha256: '1111111111111111111111111111111111111111111111111111111111111111',
+    },
+    {
+      type: 'mp4',
+      url: './clips/approval-gate-demo.mp4',
+      sha256: '2222222222222222222222222222222222222222222222222222222222222222',
+    },
+  ],
   retentionSchedule: {
     retentionClass: 'Compliance',
     retainUntilIso: '2030-12-31T23:59:59.000Z',
@@ -33,6 +45,18 @@ describe('parseArtifactV1: happy path', () => {
     expect(artifact.hashSha256).toBe(
       'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
     );
+    expect(artifact.mediaRefs).toEqual([
+      {
+        type: 'gif',
+        url: './clips/approval-gate-demo.gif',
+        sha256: '1111111111111111111111111111111111111111111111111111111111111111',
+      },
+      {
+        type: 'mp4',
+        url: './clips/approval-gate-demo.mp4',
+        sha256: '2222222222222222222222222222222222222222222222222222222222222222',
+      },
+    ]);
     expect(artifact.retentionSchedule).toEqual({
       retentionClass: 'Compliance',
       retainUntilIso: '2030-12-31T23:59:59.000Z',
@@ -57,6 +81,7 @@ describe('parseArtifactV1: happy path', () => {
     expect(artifact.artifactId).toBe('art-2');
     expect(artifact.evidenceId).toBeUndefined();
     expect(artifact.sizeBytes).toBe(0);
+    expect(artifact.mediaRefs).toBeUndefined();
     expect(artifact.retentionSchedule).toBeUndefined();
   });
 });
@@ -119,5 +144,29 @@ describe('parseArtifactV1: validation', () => {
         retentionSchedule: { retentionClass: 'Invalid' },
       }),
     ).toThrow(/retentionSchedule/i);
+  });
+
+  it('rejects invalid mediaRefs', () => {
+    expect(() => parseArtifactV1({ ...VALID_ARTIFACT, mediaRefs: 'not-array' })).toThrow(
+      /mediaRefs/i,
+    );
+    expect(() =>
+      parseArtifactV1({
+        ...VALID_ARTIFACT,
+        mediaRefs: [{ type: 'webm', url: './clip.webm', sha256: VALID_ARTIFACT.hashSha256 }],
+      }),
+    ).toThrow(/mediaRef type/i);
+    expect(() =>
+      parseArtifactV1({
+        ...VALID_ARTIFACT,
+        mediaRefs: [{ type: 'gif', url: '', sha256: VALID_ARTIFACT.hashSha256 }],
+      }),
+    ).toThrow(/url/i);
+    expect(() =>
+      parseArtifactV1({
+        ...VALID_ARTIFACT,
+        mediaRefs: [{ type: 'mp4', url: './clip.mp4', sha256: '' }],
+      }),
+    ).toThrow(/sha256/i);
   });
 });

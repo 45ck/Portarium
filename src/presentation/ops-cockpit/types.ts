@@ -71,6 +71,27 @@ export interface PlanArtifact {
   markdown: string;
 }
 
+export type ArtifactMediaRefType = 'gif' | 'mp4' | 'png';
+
+export interface ArtifactMediaRef {
+  type: ArtifactMediaRefType;
+  url: string;
+  sha256: string;
+}
+
+export interface ArtifactV1 {
+  schemaVersion: 1;
+  artifactId: string;
+  runId: string;
+  evidenceId?: string;
+  mimeType: string;
+  sizeBytes: number;
+  storageRef: string;
+  hashSha256: string;
+  mediaRefs?: ArtifactMediaRef[];
+  createdAtIso: string;
+}
+
 export interface IntentPlanRequest {
   triggerText: string;
   source?: IntentTriggerSource;

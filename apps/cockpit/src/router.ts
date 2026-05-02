@@ -37,6 +37,7 @@ import { Route as engineeringMissionControlRoute } from './routes/engineering/mi
 import { Route as engineeringBeadsRoute } from './routes/engineering/beads/index';
 import { Route as engineeringBeadRoute } from './routes/engineering/beads/$beadId/index';
 import { Route as engineeringBeadApprovalRoute } from './routes/engineering/beads/$beadId/approval';
+import { Route as engineeringBeadArtifactRoute } from './routes/engineering/beads/$beadId/artifact';
 
 // Search (retrieval)
 import { Route as searchRoute } from './routes/search/index';
@@ -107,6 +108,7 @@ export const routeTree = rootRoute.addChildren([
   engineeringBeadsRoute,
   engineeringBeadRoute,
   engineeringBeadApprovalRoute,
+  engineeringBeadArtifactRoute,
   searchRoute,
   workforceRoute,
   workforceMemberRoute,
