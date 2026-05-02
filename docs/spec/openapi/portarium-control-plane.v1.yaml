@@ -3368,7 +3368,7 @@ components:
       required: [schemaVersion, planId, workspaceId, createdAtIso, createdByUserId, plannedEffects]
     EvidenceCategory:
       type: string
-      enum: [Plan, Action, Approval, Policy, PolicyViolation, System]
+      enum: [Plan, Action, Approval, OperatorSurface, Policy, PolicyViolation, System]
     EvidenceActorUser:
       type: object
       additionalProperties: false

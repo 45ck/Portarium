@@ -25,6 +25,7 @@ const EVIDENCE_CATEGORIES = [
   'Plan',
   'Action',
   'Approval',
+  'OperatorSurface',
   'Policy',
   'PolicyViolation',
   'System',

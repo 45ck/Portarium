@@ -255,6 +255,7 @@ export type EvidenceCategory =
   | 'Plan'
   | 'Action'
   | 'Approval'
+  | 'OperatorSurface'
   | 'Policy'
   | 'PolicyViolation'
   | 'System';
@@ -263,6 +264,7 @@ export interface EvidenceLinks {
   runId?: string;
   planId?: string;
   workItemId?: string;
+  approvalId?: string;
   externalRefs?: ExternalObjectRef[];
 }
 
@@ -310,6 +312,129 @@ export interface EvidenceEntry {
   payloadRefs?: EvidencePayloadRef[];
   previousHash?: string;
   hashSha256: string;
+}
+
+export type OperatorSurfaceKind = 'Card' | 'Form' | 'Panel';
+export type OperatorSurfaceLifecycleStatus = 'Proposed' | 'Approved' | 'Rendered' | 'Used';
+export type OperatorSurfaceIntentKind = 'Intent' | 'Taste' | 'Insight';
+export type OperatorSurfaceTextTone = 'neutral' | 'info' | 'warning' | 'success' | 'critical';
+export type OperatorSurfaceFieldWidget = 'text' | 'textarea' | 'select' | 'checkbox' | 'number';
+
+export type OperatorSurfaceContext =
+  | { kind: 'Run'; runId: string }
+  | { kind: 'Approval'; runId: string; approvalId: string };
+
+export type OperatorSurfaceActor =
+  | { kind: 'Machine'; machineId: string }
+  | { kind: 'User'; userId: string }
+  | { kind: 'System' };
+
+export interface OperatorSurfaceAttribution {
+  proposedBy: OperatorSurfaceActor;
+  proposedAtIso: string;
+  rationale: string;
+}
+
+export interface OperatorSurfaceLifecycle {
+  status: OperatorSurfaceLifecycleStatus;
+  proposedAtIso: string;
+  approvedAtIso?: string;
+  approvedByUserId?: string;
+  renderedAtIso?: string;
+  renderedByUserId?: string;
+  usedAtIso?: string;
+  usedByUserId?: string;
+  evidenceIds?: string[];
+}
+
+export interface OperatorSurfaceTextBlock {
+  blockType: 'text';
+  text: string;
+  tone?: OperatorSurfaceTextTone;
+}
+
+export interface OperatorSurfaceKeyValueItem {
+  label: string;
+  value: string;
+}
+
+export interface OperatorSurfaceKeyValueListBlock {
+  blockType: 'keyValueList';
+  items: OperatorSurfaceKeyValueItem[];
+}
+
+export interface OperatorSurfaceMetricBlock {
+  blockType: 'metric';
+  label: string;
+  value: string;
+  unit?: string;
+  tone?: OperatorSurfaceTextTone;
+}
+
+export interface OperatorSurfaceSelectOption {
+  value: string;
+  label: string;
+}
+
+export interface OperatorSurfaceField {
+  fieldId: string;
+  label: string;
+  widget: OperatorSurfaceFieldWidget;
+  required?: boolean;
+  helpText?: string;
+  placeholder?: string;
+  options?: OperatorSurfaceSelectOption[];
+}
+
+export interface OperatorSurfaceFormBlock {
+  blockType: 'form';
+  fields: OperatorSurfaceField[];
+}
+
+export interface OperatorSurfaceAction {
+  actionId: string;
+  label: string;
+  intentKind: OperatorSurfaceIntentKind;
+  submitsForm?: boolean;
+}
+
+export interface OperatorSurfaceActionsBlock {
+  blockType: 'actions';
+  actions: OperatorSurfaceAction[];
+}
+
+export type OperatorSurfaceBlock =
+  | OperatorSurfaceTextBlock
+  | OperatorSurfaceKeyValueListBlock
+  | OperatorSurfaceMetricBlock
+  | OperatorSurfaceFormBlock
+  | OperatorSurfaceActionsBlock;
+
+export interface OperatorSurface {
+  schemaVersion: 1;
+  surfaceId: string;
+  workspaceId: string;
+  correlationId: string;
+  surfaceKind: OperatorSurfaceKind;
+  context: OperatorSurfaceContext;
+  title: string;
+  description?: string;
+  attribution: OperatorSurfaceAttribution;
+  lifecycle: OperatorSurfaceLifecycle;
+  blocks: OperatorSurfaceBlock[];
+}
+
+export interface OperatorSurfaceInteraction {
+  schemaVersion: 1;
+  surfaceId: string;
+  workspaceId: string;
+  runId: string;
+  approvalId?: string;
+  actionId: string;
+  intentKind: OperatorSurfaceIntentKind;
+  submittedByUserId: string;
+  submittedAtIso: string;
+  values: Record<string, string | number | boolean>;
 }
 
 export type DiffLineKind = 'context' | 'add' | 'remove';
