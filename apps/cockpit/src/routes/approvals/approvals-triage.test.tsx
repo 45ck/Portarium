@@ -259,7 +259,7 @@ describe('Approvals triage page', () => {
     expect(await screen.findByText(/immediate Approval decision/i, { exact: false })).toBeTruthy();
     const backLink = await screen.findByRole('link', { name: /Back to Policy Studio/i });
     const href = backLink.getAttribute('href') ?? '';
-    expect(href).toContain('/config/policies');
+    expect(href).toContain('/config/policies/studio');
     expect(href).toContain('slice=CRON-CREATE-BLOCK-001');
     expect(href).toContain('precedent=precedent-persistent-cron');
     expect(href).toContain('draftTier=ManualOnly');

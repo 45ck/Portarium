@@ -55,6 +55,7 @@ import { Route as configAdaptersRoute } from './routes/config/adapters';
 import { Route as configCredentialsRoute } from './routes/config/credentials';
 import { Route as configUsersRoute } from './routes/config/users';
 import { Route as configPoliciesRoute } from './routes/config/policies';
+import { Route as configPoliciesStudioRoute } from './routes/config/policies-studio';
 import { Route as configPolicyDetailRoute } from './routes/config/policy-detail';
 import { Route as configCapabilityPostureRoute } from './routes/config/capability-posture';
 import { Route as configBlastRadiusRoute } from './routes/config/blast-radius';
@@ -118,6 +119,7 @@ export const routeTree = rootRoute.addChildren([
   configCredentialsRoute,
   configUsersRoute,
   configPoliciesRoute,
+  configPoliciesStudioRoute,
   configPolicyDetailRoute,
   configCapabilityPostureRoute,
   configBlastRadiusRoute,

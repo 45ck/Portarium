@@ -393,7 +393,7 @@ function ApprovalsPage() {
             <div className="flex flex-wrap justify-center gap-2">
               {policyLinkedMode ? (
                 <Button variant="outline" size="sm" asChild>
-                  <Link to="/config/policies" search={returnPolicyStudioSearch}>
+                  <Link to="/config/policies/studio" search={returnPolicyStudioSearch}>
                     Back to Policy Studio
                   </Link>
                 </Button>
@@ -423,7 +423,7 @@ function ApprovalsPage() {
             <div className="flex flex-wrap justify-center gap-2">
               {policyLinkedMode ? (
                 <Button variant="outline" size="sm" asChild>
-                  <Link to="/config/policies" search={returnPolicyStudioSearch}>
+                  <Link to="/config/policies/studio" search={returnPolicyStudioSearch}>
                     Back to Policy Studio
                   </Link>
                 </Button>
@@ -463,7 +463,7 @@ function ApprovalsPage() {
               ) : null}
               {policyLinkedMode ? (
                 <Button variant="outline" size="sm" asChild>
-                  <Link to="/config/policies" search={returnPolicyStudioSearch}>
+                  <Link to="/config/policies/studio" search={returnPolicyStudioSearch}>
                     Back to Policy Studio
                   </Link>
                 </Button>
@@ -676,7 +676,7 @@ function ApprovalsPage() {
               <p className="text-sm text-muted-foreground">{policyStudioFocusDescription}</p>
             </div>
             <Button variant="outline" size="sm" asChild>
-              <Link to="/config/policies" search={returnPolicyStudioSearch}>
+              <Link to="/config/policies/studio" search={returnPolicyStudioSearch}>
                 Back to Policy Studio
               </Link>
             </Button>
