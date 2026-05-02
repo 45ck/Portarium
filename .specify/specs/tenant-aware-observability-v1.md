@@ -106,3 +106,6 @@ Per-tenant retention is configured via a JSON schema:
 2. The collector MUST hash `tenant.id` before exporting to external backends.
 3. Retention enforcement is the responsibility of the storage backend (Tempo, Loki, Mimir), not the collector.
 4. Platform operators MUST NOT query cross-tenant data without explicit authorization.
+5. Cockpit agent observability payloads MUST evaluate `agent-observability-data-lifecycle-v1`
+   before exposing transcripts, tool traces, screenshots, timelines, or Evidence Artifact
+   metadata.

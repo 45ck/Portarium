@@ -69,3 +69,11 @@ The control plane exposes governance-focused evidence operations separately from
 - `GET` / `PATCH` / `DELETE` `/v1/workspaces/{workspaceId}/legal-holds/{holdId}`
 
 These contracts are governance and operator surfaces only. They complement, and do not replace, the existing evidence durability and WORM enforcement semantics.
+
+## Agent observability lifecycle
+
+Cockpit observability uses the typed lifecycle policy in
+`agent-observability-data-lifecycle-v1.md` for agent transcripts, tool traces,
+screenshots, timelines, and Evidence Artifacts. That policy maps experimental
+deep trace capture to production-safe defaults while preserving Evidence Log
+retention, disposition, and legal-hold rules.
