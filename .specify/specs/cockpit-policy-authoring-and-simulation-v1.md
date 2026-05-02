@@ -1,8 +1,8 @@
 # Cockpit Policy Authoring and Simulation v1
 
 **Status:** Proposed  
-**Related Beads:** bead-1060, bead-1068, bead-1073, bead-1074, bead-1075, bead-1078, bead-1081
-**Extends:** [Operator Interaction Model v1](./operator-interaction-model-v1.md)
+**Related Beads:** bead-1060, bead-1068, bead-1073, bead-1074, bead-1075, bead-1078, bead-1081, bead-1086
+**Extends:** [Operator Interaction Model v1](./operator-interaction-model-v1.md), [Cockpit Policy Operator Language v1](./cockpit-policy-operator-language-v1.md)
 
 ## Purpose
 
@@ -473,6 +473,22 @@ Primary components:
 
 ## Interaction Principles
 
+### I0 Use the Policy Explanation Ladder
+
+Policy Studio, Approvals, Simulation, and audit views must use the operator-facing
+terminology and progressive-disclosure order from [Cockpit Policy Operator Language v1](./cockpit-policy-operator-language-v1.md).
+
+The required order is:
+
+1. current work
+2. effective decision
+3. required evidence and authority
+4. future policy effect
+5. deeper mechanics
+
+Do not introduce new first-level labels for Policy concepts when the operator-language
+spec already defines a canonical label.
+
 ### I1 Start from examples, not blankness
 
 Use:
@@ -526,3 +542,4 @@ Cross-surface navigation between `Policy Studio` and `Approvals` must keep the o
 - [README.md](../../README.md)
 - [docs/internal/ui/cockpit/governance-policy-design.md](../../docs/internal/ui/cockpit/governance-policy-design.md)
 - [Operator Interaction Model v1](./operator-interaction-model-v1.md)
+- [Cockpit Policy Operator Language v1](./cockpit-policy-operator-language-v1.md)

@@ -7,6 +7,7 @@ This folder contains a low-fidelity, clickable prototype for the Portarium Cockp
 - `mission-control-convergence.md` defines the agent-first operator surface direction: Cockpit is the place humans observe, approve, steer, and recover governed agent work.
 - `.specify/specs/operator-interaction-model-v1.md` defines the canonical operator inputs: intent, constraint, taste, insight, steering, approval, escalation, override, and annotation.
 - The same operator interaction spec also defines the authority and accountability contract for who may exercise each oversight function.
+- `.specify/specs/cockpit-policy-operator-language-v1.md` defines the Policy Explanation Ladder and canonical operator-facing labels for Policy Studio, Approvals, Simulation, and audit views.
 - `agent-machine-runtime-design.md` covers agent and machine capability visibility.
 - `governance-policy-design.md` covers Policy and Execution Tier control surfaces.
 - `ia-baseline.md` covers the navigation and information architecture baseline.

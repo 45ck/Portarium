@@ -2,7 +2,7 @@
 
 **Status:** Proposed  
 **Related Beads:** bead-1086, bead-1088, bead-1089, bead-1090  
-**Extends:** [Cockpit Policy Authoring and Simulation v1](./cockpit-policy-authoring-and-simulation-v1.md)
+**Extends:** [Cockpit Policy Authoring and Simulation v1](./cockpit-policy-authoring-and-simulation-v1.md), [Cockpit Policy Operator Language v1](./cockpit-policy-operator-language-v1.md)
 
 ## Purpose
 
@@ -58,6 +58,17 @@ The operator should be able to answer these questions within a few seconds on ea
 - deeper role or authority model work already tracked under upstream governance beads
 
 ## Working Principles
+
+### P0 Follow the Policy Explanation Ladder
+
+This clarity pass must apply the [Cockpit Policy Operator Language v1](./cockpit-policy-operator-language-v1.md)
+model before changing screen copy ad hoc. The default explanation order is:
+
+1. current work
+2. effective decision
+3. required evidence and authority
+4. future policy effect
+5. deeper mechanics
 
 ### P1 Primary task first
 
@@ -225,3 +236,4 @@ The return path back to `Policy Studio` must remain explicit and must preserve t
 - route tests cover the new cues
 - screenshots are captured for both pages after the change
 - the follow-up review can explain the improved mental model in concrete terms
+- first-level policy labels and summary ordering match the Policy Explanation Ladder
