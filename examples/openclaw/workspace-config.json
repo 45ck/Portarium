@@ -53,10 +53,10 @@
 
   "plugins": {
     "load": {
-      "paths": ["<REPO_ROOT>/packages/openclaw-plugin"]
+      "paths": ["<REPO_ROOT>/packages/portarium"]
     },
     "entries": {
-      "openclaw-plugin": {
+      "portarium": {
         "enabled": true,
         "config": {
           "portariumUrl": "http://localhost:3000",

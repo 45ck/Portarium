@@ -97,7 +97,7 @@ const outcome = await runExperiment({
   name: 'openclaw-governance',
 
   hypothesis:
-    'A tool call intercepted by the openclaw-plugin is blocked for human approval and the agent ' +
+    'A tool call intercepted by the portarium plugin is blocked for human approval and the agent ' +
     'is unblocked exactly when the operator approves it via the Portarium control plane.',
 
   // ── Phase 1: verify control plane is reachable ─────────────────────────

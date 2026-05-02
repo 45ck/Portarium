@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-01T01:24:19.303Z",
+  "generatedAt": "2026-05-02T12:38:13.382Z",
   "files": {
     "scripts/ci/check-gate-baseline.mjs": "d0489776b30b5dd5365d238e65ab1086d4423fe5a371c656558634fbcbe099fd",
     "scripts/ci/check-cockpit-extension-egress.mjs": "6475b6c76f82bfc77c5ab00e86796ceb80a3b41a64d55ab332ee136ca8cc8dc1",
@@ -12,7 +12,7 @@
     "tsconfig.json": "d2e4634ccae8fd4f7d5358709819512b342e335f509b5cc21b504808566eeea4",
     "tsconfig.eslint.json": "a7a19e65d39a5f952031ac17444972fa67b468b83e69b37a938394f85db946ae",
     "tsconfig.build.json": "ff9f797a051799dfd303017febbfa8d52186d3d3c7f61d139af7b02430c8828c",
-    "vitest.config.ts": "f3d64e834a33b5b1fcdf1fa7d6baf23b111820369b510ae7963706bc3947c4a8",
+    "vitest.config.ts": "bc75f31ca8bb81a05915e3ee5a94a1591eabbcc93741edbc3d3dce626c39c6c3",
     "stryker.conf.json": "e8c6b2ea3e660c6c4a0443c0dd80897c6bdb39c1936320d9d097887fa7decefb",
     "knip.json": "67abc22830acf527ecda03c57e6df3e37f87a89e64fcdd1f15d239d4914b994f",
     "cspell.json": "36d553d7fe67421c7049d1c175809856262e3ef9d325a9e37c1f46dcc13c7831",

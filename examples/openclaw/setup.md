@@ -77,10 +77,10 @@ Create an isolated OpenClaw profile so experiments do not touch your real OpenCl
   },
   "plugins": {
     "load": {
-      "paths": ["<repo>/packages/openclaw-plugin"]
+      "paths": ["<repo>/packages/portarium"]
     },
     "entries": {
-      "openclaw-plugin": {
+      "portarium": {
         "enabled": true,
         "config": {
           "portariumUrl": "http://localhost:3000",

@@ -17,10 +17,10 @@ Any actor (human / ops / agent)
   ↓
 [WorktreeExecutor]      infrastructure/ ← Temporal workflow
   bd issue start → .trees/<id>/ worktree
-  Provisions sandbox (openclaw-plugin loaded, junction links)
+  Provisions sandbox (portarium plugin loaded, junction links)
   Streams stdout to RunV1 evidence chain
   │
-  └─ Every tool call → openclaw-plugin before_tool_call hook (priority 1000)
+  └─ Every tool call → portarium plugin before_tool_call hook (priority 1000)
        → @portarium/engine.validate() → ValidationDecision
        → AUTO: execute immediately
        → ASSISTED: execute + notify cockpit
@@ -56,7 +56,7 @@ Any actor (human / ops / agent)
 | `BeadProposal/v1` domain event       | `src/domain/`                  | New — versioned                  |
 | `WorktreeExecutor` Temporal activity | `src/infrastructure/temporal/` | New                              |
 | `WorktreePort` interface             | `src/infrastructure/`          | New — thin adapter over `bd` CLI |
-| openclaw-plugin sandbox              | `packages/openclaw-plugin/`    | Extend (beads 0959/0960)         |
+| portarium plugin sandbox             | `packages/portarium/`          | Extend (beads 0959/0960)         |
 | `@portarium/engine`                  | `packages/engine/`             | Stable                           |
 | `ArtifactCollector`                  | `src/infrastructure/`          | New                              |
 | `DiffApprovalSurface` API endpoint   | `src/presentation/`            | New                              |
@@ -83,12 +83,12 @@ Temporal is NOT used for BeadPlanner (synchronous) or IntentRouter (HTTP handler
 
 ---
 
-## openclaw-plugin placement
+## portarium plugin placement
 
 Plugin lives inside the **agent execution sandbox** (the worktree). Not at the intent layer.
 
 ```
-WorktreeExecutor spins up agent → loads openclaw-plugin
+WorktreeExecutor spins up agent → loads portarium plugin
 → plugin registers before_tool_call hook (priority 1000)
 → every tool call → hook POSTs to /v1/workspaces/:id/agent-actions:propose
 → @portarium/engine evaluates ValidationDecision

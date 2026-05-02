@@ -40,5 +40,5 @@
       "detail": "approved=true"
     }
   ],
-  "notes": "A tool call intercepted by the openclaw-plugin is blocked for human approval and the agent is unblocked exactly when the operator approves it via the Portarium control plane."
+  "notes": "A tool call intercepted by the portarium plugin is blocked for human approval and the agent is unblocked exactly when the operator approves it via the Portarium control plane."
 }

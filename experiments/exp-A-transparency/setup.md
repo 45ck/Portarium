@@ -8,7 +8,7 @@ Run from the repository root:
 node experiments/exp-A-transparency/run.mjs
 ```
 
-The script builds the real `packages/openclaw-plugin` TypeScript package, loads
+The script builds the real `packages/portarium` TypeScript package, loads
 the built hook/client modules, starts a deterministic local Portarium-compatible
 HTTP surface, and registers the hook in a minimal OpenClaw-compatible harness.
 

@@ -51,7 +51,7 @@ function repoRoot() {
 function ensurePluginBuild(root) {
   execFileSync(
     process.execPath,
-    ['node_modules/typescript/bin/tsc', '-p', 'packages/openclaw-plugin/tsconfig.json'],
+    ['node_modules/typescript/bin/tsc', '-p', 'packages/portarium/tsconfig.json'],
     {
       cwd: root,
       stdio: 'pipe',
@@ -62,10 +62,10 @@ function ensurePluginBuild(root) {
 async function loadBuiltPlugin(root) {
   ensurePluginBuild(root);
   const hookUrl = pathToFileURL(
-    join(root, 'packages/openclaw-plugin/dist/hooks/before-tool-call.js'),
+    join(root, 'packages/portarium/dist/hooks/before-tool-call.js'),
   ).href;
   const clientUrl = pathToFileURL(
-    join(root, 'packages/openclaw-plugin/dist/client/portarium-client.js'),
+    join(root, 'packages/portarium/dist/client/portarium-client.js'),
   ).href;
   const [{ registerBeforeToolCallHook }, { PortariumClient }] = await Promise.all([
     import(`${hookUrl}?t=${Date.now()}`),

@@ -29,7 +29,7 @@ The same instruction can cause different tool calls to be chosen between runs. T
 
 ## Experiment 1: Normal approval lifecycle (automated)
 
-**Hypothesis:** A tool call routed through the openclaw-plugin is blocked for human approval
+**Hypothesis:** A tool call routed through the `portarium` plugin is blocked for human approval
 and the agent is unblocked exactly when the operator approves it.
 
 **Location:** `experiments/openclaw-governance/run.mjs`
@@ -117,4 +117,4 @@ tool calls with a clear error rather than allowing them through.
 - `before_tool_call` hook returns `{ block: true, blockReason: '...' }` when `failClosed=true`
 - `before_tool_call` hook returns `undefined` (allow) when `failClosed=false`
 
-The code path is covered by unit tests in `packages/openclaw-plugin/src/hooks/before-tool-call.test.ts`.
+The code path is covered by unit tests in `packages/portarium/src/hooks/before-tool-call.test.ts`.

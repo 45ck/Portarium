@@ -53,7 +53,7 @@ Portarium's wedge: **policy evaluation at the action boundary, not the commit bo
 The governance core has known theater gaps that must close first:
 
 1. **Noop stubs must fail-closed** — `ControlPlaneDeps` optional fields (policyStore, evidenceLog, actionRunner) currently silently noop. Must throw at startup or return 503 with an explicit "not configured" message. → bead-0972
-2. **openclaw-plugin `before_tool_call` hook must actually register** — beads 0958/0959/0960 are P0 and unimplemented. The plugin exists but intercepts nothing.
+2. **portarium plugin `before_tool_call` hook must actually register** — beads 0958/0959/0960 are P0 and unimplemented. The plugin exists but intercepts nothing.
 3. **`actionRunner` absence must be audit-logged** — currently returns 503 with no evidence entry. Governance bypass must be visible in the chain. → bead-0972
 4. **LLM output sanitization at the MCP boundary** — tool call arguments are passed unsanitized into policy evaluation. → bead-0973
 5. **`workspaceId` must be session-bound** — currently environment-variable-scoped, allowing cross-workspace escalation. → bead-0973

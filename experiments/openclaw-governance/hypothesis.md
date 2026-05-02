@@ -4,12 +4,12 @@
 
 ## Statement
 
-A tool call intercepted by the `openclaw-plugin` is blocked for human approval and the agent is
+A tool call intercepted by the `portarium` plugin is blocked for human approval and the agent is
 unblocked exactly when the operator approves it via the Portarium control plane.
 
 ## Rationale
 
-The `registerBeforeToolCallHook` handler in `packages/openclaw-plugin/src/hooks/before-tool-call.ts`
+The `registerBeforeToolCallHook` handler in `packages/portarium/src/hooks/before-tool-call.ts`
 calls `client.proposeAction(...)` for every non-bypassed tool call. When the Portarium control plane
 returns `{ decision: 'NeedsApproval', approvalId }`, the hook delegates to `ApprovalPoller`, which
 polls `GET .../approvals/:approvalId` until the status transitions to `approved` or `denied`.

@@ -20,7 +20,7 @@ Ordered by dependency. Each phase must be complete before the next starts. Phase
 
 ---
 
-## Phase 1 — openclaw-plugin hooks (already planned, P0)
+## Phase 1 — portarium plugin hooks (already planned, P0)
 
 **bead-0958** — Scaffold package structure (claimed by worker-terraform)
 **bead-0959** — `before_tool_call` governance hook — must actually register the hook

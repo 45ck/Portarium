@@ -320,7 +320,7 @@ mention is in `.beads/issues.jsonl` (this research bead).
 However, several Portarium subsystems are designed for exactly this kind of
 integration:
 
-1. **OpenClaw Plugin (`packages/openclaw-plugin/`)** -- The plugin pattern
+1. **OpenClaw Plugin (`packages/portarium/`)** -- The plugin pattern
    (before_tool_call hook, approval polling, capability lookup) maps directly
    to T3 Code's `ProviderAdapter.respondToRequest` flow. A T3 Code adapter
    plugin could reuse the same `PortariumClient` and `ApprovalPoller`.

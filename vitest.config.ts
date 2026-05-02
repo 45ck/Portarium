@@ -60,7 +60,7 @@ export default defineConfig({
           functions: 70,
           lines: 70,
         },
-        'packages/openclaw-plugin/src/**': {
+        'packages/portarium/src/**': {
           statements: 80,
           branches: 75,
           functions: 85,
