@@ -42,6 +42,7 @@ The bead-1074 artifact is the authority and accountability contract in `.specify
 The bead-1058 eval is runnable with `node node_modules/vitest/vitest.mjs run scripts/integration/scenario-operator-trust-calibration.test.ts`.
 The bead-1075 artifact is the shared packet contract in `.specify/specs/decision-context-packet-v1.md`.
 The bead-1076 artifact is the Run intervention surface in `apps/cockpit/src/components/cockpit/run-intervention-panel.tsx`.
+The bead-1065 artifact is the operator onboarding and recovery guide in `docs/how-to/operate-cockpit-governed-workflows.md`, with traceability in `.specify/specs/cockpit-operator-onboarding-playbooks-v1.md`.
 
 ## Not Core For This Sequence
 

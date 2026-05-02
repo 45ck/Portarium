@@ -50,7 +50,8 @@ These docs focus on the core tested governance loop.
 3. [Security baseline gates](how-to/security-baseline-gates.md)
 4. [Supply-chain guardrails](how-to/supply-chain-guardrails.md)
 5. [Runtime and env vars](reference/runtime-and-env.md)
-6. [Compliance docs](compliance/vector-graph-embedding-license-gate.md)
+6. [Cockpit governed workflow operations](how-to/operate-cockpit-governed-workflows.md)
+7. [Compliance docs](compliance/vector-graph-embedding-license-gate.md)
 
 ## Contribute
 
