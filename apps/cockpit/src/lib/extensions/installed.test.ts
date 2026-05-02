@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   DEFAULT_ACTIVE_EXTENSION_PACK_IDS,
   DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT,
@@ -34,8 +34,8 @@ describe('installed cockpit extension catalog', () => {
   it('resolves enabled installed extensions only from workspace activation state', () => {
     const registry = resolveInstalledCockpitExtensionRegistry({
       activePackIds: ['example.reference'],
-      availableCapabilities: ['extension:read', 'extension:review', 'evidence:read'],
-      availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+      availableCapabilities: ['extension:read', 'extension:inspect'],
+      availableApiScopes: ['extensions.read', 'extensions.inspect'],
       availablePrivacyClasses: ['internal', 'restricted'],
     });
 
@@ -43,7 +43,7 @@ describe('installed cockpit extension catalog', () => {
     expect(registry.extensions.map((extension) => extension.status)).toEqual(['enabled']);
     expect(registry.routes.map((route) => route.id)).toEqual([
       'example-reference-overview',
-      'example-reference-review',
+      'example-reference-detail',
     ]);
   });
 
@@ -105,6 +105,44 @@ describe('installed cockpit extension catalog', () => {
     );
   });
 
+  it('marks installed catalog mismatches as invalid effective registry state', async () => {
+    vi.resetModules();
+    vi.doMock('./example-reference/route-loaders', () => ({
+      EXAMPLE_REFERENCE_ROUTE_LOADERS: {
+        'example-reference-overview': () => Promise.resolve({}),
+      },
+    }));
+
+    const installed = await import('./installed');
+    const registry = installed.resolveInstalledCockpitExtensionRegistry({
+      activePackIds: ['example.reference'],
+      availableCapabilities: ['extension:read', 'extension:inspect'],
+      availableApiScopes: ['extensions.read', 'extensions.inspect'],
+      availablePrivacyClasses: ['internal', 'restricted'],
+    });
+
+    expect(installed.INSTALLED_COCKPIT_EXTENSION_CATALOG_PROBLEMS).toEqual([
+      expect.objectContaining({
+        code: 'missing-route-module',
+        extensionId: 'example.reference',
+        itemId: 'example-reference-detail',
+      }),
+    ]);
+    expect(registry.extensions[0]?.status).toBe('invalid');
+    expect(registry.extensions[0]?.problems).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'missing-route-module',
+          itemId: 'example-reference-detail',
+        }),
+      ]),
+    );
+    expect(registry.routes).toEqual([]);
+
+    vi.doUnmock('./example-reference/route-loaders');
+    vi.resetModules();
+  });
+
   it('keeps installed manifests data-only without remote executable entry fields', () => {
     const forbiddenKeys = new Set([
       'entry',
@@ -146,8 +184,8 @@ describe('installed cockpit extension catalog', () => {
         definition.path,
       ]),
     ).toEqual([
+      ['example-reference-detail', '/external/example-reference/details/$itemId'],
       ['example-reference-overview', '/external/example-reference/overview'],
-      ['example-reference-review', '/external/example-reference/reviews/$proposalId'],
     ]);
   });
 });

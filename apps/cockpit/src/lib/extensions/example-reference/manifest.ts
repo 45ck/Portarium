@@ -12,8 +12,8 @@ export const EXAMPLE_REFERENCE_EXTENSION = {
     'Neutral reference extension proving Cockpit can surface installed extension metadata without tenant-specific code in core.',
   packIds: ['example.reference'],
   personas: allPersonas,
-  requiredCapabilities: ['extension:read', 'extension:review', 'evidence:read'],
-  requiredApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+  requiredCapabilities: ['extension:read', 'extension:inspect'],
+  requiredApiScopes: ['extensions.read', 'extensions.inspect'],
   routes: [
     {
       id: 'example-reference-overview',
@@ -28,14 +28,14 @@ export const EXAMPLE_REFERENCE_EXTENSION = {
       },
     },
     {
-      id: 'example-reference-review',
-      path: '/external/example-reference/reviews/$proposalId',
-      title: 'Reference Review',
-      description: 'Reference review route placeholder using generic proposal metadata.',
+      id: 'example-reference-detail',
+      path: '/external/example-reference/details/$itemId',
+      title: 'Reference Detail',
+      description: 'Reference detail route placeholder using generic item metadata.',
       guard: {
         personas: allPersonas,
-        requiredCapabilities: ['evidence:read'],
-        requiredApiScopes: ['approvals.read', 'evidence.read'],
+        requiredCapabilities: ['extension:inspect'],
+        requiredApiScopes: ['extensions.inspect'],
         privacyClasses: ['internal', 'restricted'],
       },
     },
@@ -57,7 +57,7 @@ export const EXAMPLE_REFERENCE_EXTENSION = {
   commands: [
     {
       id: 'example-reference-open-overview',
-      title: 'Open reference extension',
+      title: 'Open extension reference',
       routeId: 'example-reference-overview',
       guard: {
         personas: allPersonas,

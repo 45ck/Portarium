@@ -30,8 +30,8 @@ function routeLoadersFor(
 }
 
 const neutralAccessContext = {
-  availableCapabilities: ['extension:read', 'extension:review', 'evidence:read'],
-  availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+  availableCapabilities: ['extension:read', 'extension:inspect'],
+  availableApiScopes: ['extensions.read', 'extensions.inspect'],
   availablePrivacyClasses: ['internal', 'restricted'],
 } as const;
 
@@ -53,9 +53,9 @@ function cloneRenamedExtension(
   overrides: Partial<CockpitExtensionManifest> = {},
 ): CockpitExtensionManifest {
   const overviewRoute = NEUTRAL_REFERENCE_EXTENSION.routes[0]!;
-  const reviewRoute = NEUTRAL_REFERENCE_EXTENSION.routes[1]!;
+  const detailRoute = NEUTRAL_REFERENCE_EXTENSION.routes[1]!;
   const overviewRouteId = `${prefix}-overview`;
-  const reviewRouteId = `${prefix}-review`;
+  const detailRouteId = `${prefix}-detail`;
   const overviewPath = `/external/${prefix}/overview`;
 
   return cloneExtension({
@@ -63,7 +63,7 @@ function cloneRenamedExtension(
     packIds: ['example.reference'],
     routes: [
       { ...overviewRoute, id: overviewRouteId, path: overviewPath },
-      { ...reviewRoute, id: reviewRouteId, path: `/external/${prefix}/reviews/$proposalId` },
+      { ...detailRoute, id: detailRouteId, path: `/external/${prefix}/details/$itemId` },
     ],
     navItems: [
       {
@@ -90,7 +90,7 @@ describe('cockpit extension registry', () => {
     expect(COCKPIT_EXTENSION_FIXTURES).toEqual([NEUTRAL_REFERENCE_EXTENSION]);
     expect(NEUTRAL_REFERENCE_EXTENSION.routes.map((route) => route.id)).toEqual([
       'example-reference-overview',
-      'example-reference-review',
+      'example-reference-detail',
     ]);
   });
 
@@ -490,7 +490,7 @@ describe('cockpit extension registry', () => {
       navItems: [
         {
           ...NEUTRAL_REFERENCE_EXTENSION.navItems[0]!,
-          to: '/external/example-reference/reviews/$proposalId',
+          to: '/external/example-reference/details/$itemId',
         },
       ],
     });

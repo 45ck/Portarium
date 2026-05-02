@@ -5,8 +5,27 @@ import { cleanup, render, screen, within } from '@testing-library/react';
 import { RouterProvider, createMemoryHistory } from '@tanstack/react-router';
 import { createCockpitRouter } from '@/router';
 import { queryClient } from '@/lib/query-client';
+import { EXAMPLE_REFERENCE_EXTENSION } from '@/lib/extensions/example-reference/manifest';
 import { useAuthStore } from '@/stores/auth-store';
 import { useUIStore } from '@/stores/ui-store';
+
+const installedRegistryTestState = vi.hoisted(() => ({
+  resolveRegistry: undefined as undefined | ((input: unknown) => unknown),
+}));
+
+vi.mock('@/lib/extensions/installed', async (importActual) => {
+  const actual = await importActual<typeof import('@/lib/extensions/installed')>();
+
+  return {
+    ...actual,
+    resolveInstalledCockpitExtensionRegistry: (
+      input: Parameters<typeof actual.resolveInstalledCockpitExtensionRegistry>[0],
+    ) =>
+      (installedRegistryTestState.resolveRegistry?.(input) as
+        | ReturnType<typeof actual.resolveInstalledCockpitExtensionRegistry>
+        | undefined) ?? actual.resolveInstalledCockpitExtensionRegistry(input),
+  };
+});
 
 function createMemoryStorage(): Storage {
   const store = new Map<string, string>();
@@ -91,8 +110,8 @@ beforeAll(() => {
             principalId: 'user-1',
             persona: 'Operator',
             availablePersonas: ['Operator'],
-            availableCapabilities: ['extension:read', 'extension:review', 'evidence:read'],
-            availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+            availableCapabilities: ['extension:read', 'extension:inspect'],
+            availableApiScopes: ['extensions.read', 'extensions.inspect'],
             availablePrivacyClasses: ['internal', 'restricted'],
             activePackIds: ['example.reference'],
             quarantinedExtensionIds: [],
@@ -108,6 +127,7 @@ beforeAll(() => {
 });
 
 beforeEach(() => {
+  installedRegistryTestState.resolveRegistry = undefined;
   queryClient.clear();
   localStorage.clear();
   document.documentElement.className = '';
@@ -120,8 +140,8 @@ beforeEach(() => {
       workspaceId: 'ws-demo',
       roles: ['operator'],
       personas: ['Operator'],
-      capabilities: ['extension:read', 'extension:review', 'evidence:read'],
-      apiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+      capabilities: ['extension:read', 'extension:inspect'],
+      apiScopes: ['extensions.read', 'extensions.inspect'],
     },
     error: null,
   });
@@ -131,8 +151,8 @@ beforeEach(() => {
     principalId: 'user-1',
     persona: 'Operator',
     availablePersonas: ['Operator'],
-    availableCapabilities: ['extension:read', 'extension:review', 'evidence:read'],
-    availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+    availableCapabilities: ['extension:read', 'extension:inspect'],
+    availableApiScopes: ['extensions.read', 'extensions.inspect'],
     availablePrivacyClasses: ['internal', 'restricted'],
     activePackIds: ['example.reference'],
     quarantinedExtensionIds: [],
@@ -157,14 +177,18 @@ describe('external extensions route', () => {
     expect(screen.getByText('Reference Extension')).toBeTruthy();
     expect(screen.getByText('Host Rules')).toBeTruthy();
     expect(screen.getAllByText('example.reference').length).toBeGreaterThan(0);
+    expect(within(screen.getByLabelText('Installed extensions')).getByText('1')).toBeTruthy();
+    expect(within(screen.getByLabelText('Enabled extensions')).getByText('1')).toBeTruthy();
+    expect(within(screen.getByLabelText('Disabled extensions')).getByText('0')).toBeTruthy();
+    expect(within(screen.getByLabelText('Invalid extensions')).getByText('0')).toBeTruthy();
+    expect(screen.getByText('installed')).toBeTruthy();
     expect(screen.getByText('enabled')).toBeTruthy();
     expect(screen.getByText('/external/example-reference/overview')).toBeTruthy();
-    expect(screen.getByText('/external/example-reference/reviews/$proposalId')).toBeTruthy();
-    expect(screen.getByText('Open reference extension')).toBeTruthy();
+    expect(screen.getByText('/external/example-reference/details/$itemId')).toBeTruthy();
+    expect(screen.getByText('Open extension reference')).toBeTruthy();
     expect(screen.getByText('G X')).toBeTruthy();
     expect(screen.getByText('extension:read')).toBeTruthy();
-    expect(screen.getByText('extension:review')).toBeTruthy();
-    expect(screen.getByText('evidence:read')).toBeTruthy();
+    expect(screen.getByText('extension:inspect')).toBeTruthy();
 
     const primaryNavigation = screen.getByLabelText('Primary navigation');
     expect(
@@ -179,8 +203,8 @@ describe('external extensions route', () => {
       principalId: 'user-1',
       persona: 'Operator',
       availablePersonas: ['Operator'],
-      availableCapabilities: ['extension:read', 'extension:review', 'evidence:read'],
-      availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+      availableCapabilities: ['extension:read', 'extension:inspect'],
+      availableApiScopes: ['extensions.read', 'extensions.inspect'],
       availablePrivacyClasses: ['internal', 'restricted'],
       activePackIds: [],
       quarantinedExtensionIds: [],
@@ -192,12 +216,16 @@ describe('external extensions route', () => {
 
     expect(await screen.findByRole('heading', { name: 'External Extensions' })).toBeTruthy();
     expect(screen.getByText('Reference Extension')).toBeTruthy();
+    expect(within(screen.getByLabelText('Installed extensions')).getByText('1')).toBeTruthy();
+    expect(within(screen.getByLabelText('Enabled extensions')).getByText('0')).toBeTruthy();
+    expect(within(screen.getByLabelText('Disabled extensions')).getByText('1')).toBeTruthy();
+    expect(within(screen.getByLabelText('Invalid extensions')).getByText('0')).toBeTruthy();
     expect(screen.getByText('disabled')).toBeTruthy();
     expect(screen.getByText('workspace-pack-inactive')).toBeTruthy();
     expect(screen.getAllByText('example.reference').length).toBeGreaterThan(0);
     expect(screen.queryByText('Reference Overview')).toBeNull();
     expect(screen.queryByText('/external/example-reference/overview')).toBeNull();
-    expect(screen.queryByText('Open reference extension')).toBeNull();
+    expect(screen.queryByText('Open extension reference')).toBeNull();
     expect(screen.queryByText('G X')).toBeNull();
 
     const primaryNavigation = screen.getByLabelText('Primary navigation');
@@ -205,5 +233,48 @@ describe('external extensions route', () => {
     expect(
       within(primaryNavigation).queryByRole('link', { name: 'Reference Overview' }),
     ).toBeNull();
+  });
+
+  it('distinguishes invalid effective registry state from disabled activation state', async () => {
+    installedRegistryTestState.resolveRegistry = () => ({
+      extensions: [
+        {
+          manifest: EXAMPLE_REFERENCE_EXTENSION,
+          status: 'invalid',
+          disableReasons: [],
+          problems: [
+            {
+              code: 'missing-route-module',
+              message: 'Reference detail route is missing its host-owned route module.',
+              extensionId: 'example.reference',
+              itemId: 'example-reference-detail',
+            },
+          ],
+        },
+      ],
+      routes: [],
+      navItems: [],
+      commands: [],
+      problems: [
+        {
+          code: 'missing-route-module',
+          message: 'Reference detail route is missing its host-owned route module.',
+          extensionId: 'example.reference',
+          itemId: 'example-reference-detail',
+        },
+      ],
+    });
+
+    await renderRoute('/explore/extensions');
+
+    expect(await screen.findByRole('heading', { name: 'External Extensions' })).toBeTruthy();
+    expect(within(screen.getByLabelText('Installed extensions')).getByText('1')).toBeTruthy();
+    expect(within(screen.getByLabelText('Enabled extensions')).getByText('0')).toBeTruthy();
+    expect(within(screen.getByLabelText('Disabled extensions')).getByText('0')).toBeTruthy();
+    expect(within(screen.getByLabelText('Invalid extensions')).getByText('1')).toBeTruthy();
+    expect(screen.getByText('invalid')).toBeTruthy();
+    expect(screen.getByText('missing-route-module')).toBeTruthy();
+    expect(screen.queryByText('workspace-pack-inactive')).toBeNull();
+    expect(screen.queryByText('Open extension reference')).toBeNull();
   });
 });
