@@ -85,6 +85,31 @@ const API_SOD_CONSTRAINTS = [
   },
 ] as const;
 
+const API_EVIDENCE = [
+  {
+    schemaVersion: 1,
+    evidenceId: 'ev-policy-001',
+    workspaceId: 'ws-demo',
+    occurredAtIso: '2026-04-02T11:00:00.000Z',
+    category: 'PolicyViolation',
+    summary: 'pol-live-001 denied payment:create escalation after approval timeout drift',
+    actor: { kind: 'System' },
+    links: { runId: 'run-live-001' },
+    hashSha256: 'hash-policy-001',
+  },
+  {
+    schemaVersion: 1,
+    evidenceId: 'ev-policy-002',
+    workspaceId: 'ws-demo',
+    occurredAtIso: '2026-04-02T12:00:00.000Z',
+    category: 'Policy',
+    summary: 'break-glass override recorded for FinanceAccounting approval coverage',
+    actor: { kind: 'User', userId: 'user-admin' },
+    links: { runId: 'run-live-001' },
+    hashSha256: 'hash-policy-002',
+  },
+] as const;
+
 function createMemoryStorage(): Storage {
   const store = new Map<string, string>();
   return {
@@ -153,6 +178,14 @@ function createFetchMock() {
       return Promise.resolve(json({ items: API_SOD_CONSTRAINTS }));
     }
 
+    if (url.pathname === '/v1/workspaces/ws-demo/evidence') {
+      const category = url.searchParams.get('category');
+      const items = category
+        ? API_EVIDENCE.filter((entry) => entry.category === category)
+        : API_EVIDENCE;
+      return Promise.resolve(json({ items }));
+    }
+
     return Promise.resolve(json({ items: [] }));
   });
 }
@@ -211,10 +244,27 @@ afterAll(() => {
 });
 
 describe('Policy Studio route', () => {
-  it('shows an API-aligned authoring and simulation surface in dev-live mode', async () => {
+  it('makes policy management start from operational posture in dev-live mode', async () => {
     vi.stubEnv('VITE_PORTARIUM_ENABLE_MSW', 'false');
 
     await renderPoliciesRoute();
+
+    expect(await screen.findByRole('heading', { name: 'Policy Overview' })).toBeTruthy();
+    expect(screen.getByText(/Operational policy posture/i)).toBeTruthy();
+    expect(screen.getByText(/Posture By Execution Tier/i)).toBeTruthy();
+    expect(screen.getByText(/Risky Capabilities/i)).toBeTruthy();
+    expect(screen.getByText(/Noisy Approval Classes And Drift/i)).toBeTruthy();
+    expect(screen.getByText(/Recent Overrides And Incidents/i)).toBeTruthy();
+    expect(screen.getByText(/Ownership And Review State/i)).toBeTruthy();
+    expect(screen.getByRole('link', { name: /Open Policy Studio/i })).toBeTruthy();
+    expect(screen.getByRole('link', { name: /Capability Posture/i })).toBeTruthy();
+    expect(screen.getByText(/Outbound Payment Approval/i)).toBeTruthy();
+  });
+
+  it('shows an API-aligned authoring and simulation surface in dev-live mode', async () => {
+    vi.stubEnv('VITE_PORTARIUM_ENABLE_MSW', 'false');
+
+    await renderPoliciesRoute('/config/policies/studio');
 
     expect(await screen.findByRole('heading', { name: 'Policy Studio' })).toBeTruthy();
     expect(await screen.findByText(/Outbound Payment Approval/i)).toBeTruthy();
@@ -231,16 +281,13 @@ describe('Policy Studio route', () => {
   it('stages a local policy-blocked draft and rationale in dev-live mode', async () => {
     vi.stubEnv('VITE_PORTARIUM_ENABLE_MSW', 'false');
 
-    await renderPoliciesRoute();
+    await renderPoliciesRoute('/config/policies/studio');
 
     await userEvent.click(await screen.findByRole('button', { name: /Set Manual Only/i }));
     await userEvent.click(
       screen.getByLabelText(/Treat matching future actions as policy-blocked/i),
     );
-    await userEvent.type(
-      screen.getByLabelText(/Rationale/i),
-      'Escalate supplier payouts until finance contract is ready.',
-    );
+    await userEvent.type(screen.getByLabelText(/Rationale/i), 'Escalate payouts.');
 
     expect(screen.getAllByText(/Policy-blocked/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Risky change/i)).toBeTruthy();
@@ -274,13 +321,13 @@ describe('Policy Studio route', () => {
   });
 
   it('renders the prototype surface and its primary sections', async () => {
-    await renderPoliciesRoute();
+    vi.stubEnv('VITE_PORTARIUM_ENABLE_MSW', 'true');
+
+    await renderPoliciesRoute('/config/policies/studio');
 
     expect(await screen.findByRole('heading', { name: 'Policy Studio' })).toBeTruthy();
     expect(
-      await screen.findByText(
-        /Review the live case, stage the future default, then return to the approval/i,
-      ),
+      await screen.findByText(/Start from a live case, stage the future default/i),
     ).toBeTruthy();
     expect(await screen.findByText(/Applies now: decide the live approval/i)).toBeTruthy();
     expect(await screen.findByText(/Applies after publish: future Policy default/i)).toBeTruthy();
@@ -290,8 +337,10 @@ describe('Policy Studio route', () => {
   });
 
   it('shows explicit working context and time-horizon cues', async () => {
+    vi.stubEnv('VITE_PORTARIUM_ENABLE_MSW', 'true');
+
     await renderPoliciesRoute(
-      '/config/policies?slice=CRON-CREATE-BLOCK-001&precedent=precedent-persistent-cron&scenario=apr-oc-3205&draftTier=ManualOnly&draftEvidence=Diff%20artifact%7C%7CRollback%20plan%7C%7CConnector%20posture%20check%7C%7CPolicy%20trace&draftRationale=Escalate%20schedule%20creation%20to%20a%20control-room%20review%20path',
+      '/config/policies/studio?slice=CRON-CREATE-BLOCK-001&precedent=precedent-persistent-cron&scenario=apr-oc-3205&draftTier=ManualOnly&draftEvidence=Diff%20artifact%7C%7CRollback%20plan%7C%7CConnector%20posture%20check%7C%7CPolicy%20trace&draftRationale=Escalate%20schedule%20creation%20to%20a%20control-room%20review%20path',
     );
 
     expect(await screen.findByText(/Current live case/i)).toBeTruthy();
@@ -305,7 +354,9 @@ describe('Policy Studio route', () => {
   });
 
   it('applies a runtime precedent into the draft state', async () => {
-    await renderPoliciesRoute();
+    vi.stubEnv('VITE_PORTARIUM_ENABLE_MSW', 'true');
+
+    await renderPoliciesRoute('/config/policies/studio');
 
     await userEvent.click(
       await screen.findByRole('button', { name: /Persistent cron creation request/i }),
@@ -319,7 +370,9 @@ describe('Policy Studio route', () => {
   });
 
   it('offers a focused handoff into the approvals triage deck', async () => {
-    await renderPoliciesRoute();
+    vi.stubEnv('VITE_PORTARIUM_ENABLE_MSW', 'true');
+
+    await renderPoliciesRoute('/config/policies/studio');
 
     await userEvent.click(
       await screen.findByRole('button', { name: /Persistent cron creation request/i }),
@@ -340,8 +393,10 @@ describe('Policy Studio route', () => {
   });
 
   it('hydrates the staged draft from search params after a return trip', async () => {
+    vi.stubEnv('VITE_PORTARIUM_ENABLE_MSW', 'true');
+
     await renderPoliciesRoute(
-      '/config/policies?slice=CRON-CREATE-BLOCK-001&precedent=precedent-persistent-cron&scenario=apr-oc-3205&draftTier=ManualOnly&draftEvidence=Diff%20artifact%7C%7CRollback%20plan%7C%7CConnector%20posture%20check%7C%7CPolicy%20trace&draftRationale=Escalate%20schedule%20creation%20to%20a%20control-room%20review%20path',
+      '/config/policies/studio?slice=CRON-CREATE-BLOCK-001&precedent=precedent-persistent-cron&scenario=apr-oc-3205&draftTier=ManualOnly&draftEvidence=Diff%20artifact%7C%7CRollback%20plan%7C%7CConnector%20posture%20check%7C%7CPolicy%20trace&draftRationale=Escalate%20schedule%20creation%20to%20a%20control-room%20review%20path',
     );
 
     expect(

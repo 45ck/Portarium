@@ -420,7 +420,7 @@ function StatCard({
 
 export function DemoPolicyStudioPage() {
   const navigate = useNavigate();
-  const search = useSearch({ from: '/config/policies' }) as PolicyStudioSearch;
+  const search = useSearch({ from: '/config/policies/studio' }) as PolicyStudioSearch;
   const runtime = resolveCockpitRuntime();
   const slices = useMemo(() => buildPolicySlices(), []);
   const defaultSlice = slices[0];
@@ -523,7 +523,7 @@ export function DemoPolicyStudioPage() {
     }) => {
       const nextSlice = slices.find((slice) => slice.id === nextSliceId) ?? defaultSlice;
       navigate({
-        to: '/config/policies',
+        to: '/config/policies/studio',
         search: buildPolicyStudioSearchState({
           defaultSliceId: defaultSlice.id,
           defaultPrecedentId: defaultPrecedent.id,
