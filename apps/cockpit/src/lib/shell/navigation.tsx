@@ -231,6 +231,12 @@ const CORE_SHELL_SECTIONS: readonly CockpitShellNavigationSection[] = [
         icon: <EntityIcon entityType="policy" size="sm" decorative />,
       },
       {
+        id: 'config-capability-posture',
+        label: 'Capability Posture',
+        to: '/config/capability-posture',
+        icon: <Sliders className="h-4 w-4" />,
+      },
+      {
         id: 'config-blast-radius',
         label: 'Blast Radius',
         to: '/config/blast-radius',

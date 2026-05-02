@@ -296,6 +296,7 @@ const PAGE_CASES = [
   { path: '/config/settings', heading: 'Settings' },
   { path: '/config/policies', heading: 'Policy Studio' },
   { path: '/config/policies/EMAIL-DESTRUCTIVE-BLOCK-001', heading: 'Bulk Email Deletion Block' },
+  { path: '/config/capability-posture', heading: 'Capability Posture' },
   { path: '/config/blast-radius', heading: 'Tool Blast Radius' },
   { path: '/explore/objects', heading: 'Objects' },
   { path: '/explore/events', heading: 'Events' },
