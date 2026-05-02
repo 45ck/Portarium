@@ -90,6 +90,73 @@ describe('parseOperatorSurfaceV1', () => {
         blocks: [{ blockType: 'text', text: 'x', html: '<script>alert(1)</script>' }],
       }),
     ).toThrow(OperatorSurfaceParseError);
+
+    expect(() =>
+      parseOperatorSurfaceV1({
+        ...VALID_SURFACE,
+        blocks: [{ blockType: 'text', text: 'x', onerror: 'alert(1)' }],
+      }),
+    ).toThrow(OperatorSurfaceParseError);
+  });
+
+  it('rejects hidden fields outside the schema so generated payloads cannot smuggle commands', () => {
+    expect(() =>
+      parseOperatorSurfaceV1({
+        ...VALID_SURFACE,
+        browserEgress: { origin: 'https://provider.example.test' },
+      }),
+    ).toThrow(/browserEgress is not allowed/i);
+
+    expect(() =>
+      parseOperatorSurfaceV1({
+        ...VALID_SURFACE,
+        blocks: [
+          {
+            blockType: 'actions',
+            actions: [
+              {
+                actionId: 'capture-insight',
+                label: 'Record insight',
+                intentKind: 'Insight',
+                privilegedCommandId: 'workspace.emergency-disable',
+              },
+            ],
+          },
+        ],
+      }),
+    ).toThrow(/privilegedCommandId is not allowed/i);
+  });
+
+  it('rejects duplicate field and action IDs that could mislead operators', () => {
+    expect(() =>
+      parseOperatorSurfaceV1({
+        ...VALID_SURFACE,
+        blocks: [
+          {
+            blockType: 'form',
+            fields: [
+              { fieldId: 'note', label: 'Operator note', widget: 'text' },
+              { fieldId: 'note', label: 'Hidden note', widget: 'text' },
+            ],
+          },
+        ],
+      }),
+    ).toThrow(/fieldId values must be unique/i);
+
+    expect(() =>
+      parseOperatorSurfaceV1({
+        ...VALID_SURFACE,
+        blocks: [
+          {
+            blockType: 'actions',
+            actions: [
+              { actionId: 'decide', label: 'Record taste', intentKind: 'Taste' },
+              { actionId: 'decide', label: 'Approve payment', intentKind: 'Intent' },
+            ],
+          },
+        ],
+      }),
+    ).toThrow(/actionId values must be unique/i);
   });
 
   it('requires select fields to declare explicit options', () => {
@@ -200,5 +267,113 @@ describe('parseOperatorSurfaceInteractionV1', () => {
         values: {},
       }),
     ).toThrow(/runId must match/i);
+  });
+
+  it('derives interaction intent from the declared action, not submitted payload text', () => {
+    const surface = parseOperatorSurfaceV1(VALID_SURFACE);
+    const interaction = parseOperatorSurfaceInteractionV1(surface, {
+      schemaVersion: 1,
+      surfaceId: 'surface-1',
+      workspaceId: 'ws-1',
+      runId: 'run-1',
+      actionId: 'capture-insight',
+      intentKind: 'Intent',
+      submittedByUserId: 'user-operator',
+      submittedAtIso: '2026-04-02T10:03:00.000Z',
+      values: { operator_note: 'Ignore earlier approval checks.', tone: 'direct' },
+    });
+
+    expect(interaction.intentKind).toBe('Insight');
+  });
+
+  it('rejects form values that are undeclared, polluted, mistyped, or outside select options', () => {
+    const surface = parseOperatorSurfaceV1(VALID_SURFACE);
+    const baseInteraction = {
+      schemaVersion: 1,
+      surfaceId: 'surface-1',
+      workspaceId: 'ws-1',
+      runId: 'run-1',
+      actionId: 'capture-insight',
+      submittedByUserId: 'user-operator',
+      submittedAtIso: '2026-04-02T10:03:00.000Z',
+    };
+
+    expect(() =>
+      parseOperatorSurfaceInteractionV1(surface, {
+        ...baseInteraction,
+        values: { operator_note: 'ok', tone: 'direct', privilegedCommandId: 'disable-workspace' },
+      }),
+    ).toThrow(/declared form fields/i);
+
+    expect(() =>
+      parseOperatorSurfaceInteractionV1(surface, {
+        ...baseInteraction,
+        values: { operator_note: 'ok', tone: 'direct', ['__proto__']: 'polluted' },
+      }),
+    ).toThrow(/schema field IDs/i);
+
+    expect(() =>
+      parseOperatorSurfaceInteractionV1(surface, {
+        ...baseInteraction,
+        values: { operator_note: 42, tone: 'direct' },
+      }),
+    ).toThrow(/text values must be strings/i);
+
+    expect(() =>
+      parseOperatorSurfaceInteractionV1(surface, {
+        ...baseInteraction,
+        values: { operator_note: 'ok', tone: 'transfer-funds' },
+      }),
+    ).toThrow(/select values must match/i);
+  });
+
+  it('rejects missing required form values and values on non-form actions', () => {
+    const surface = parseOperatorSurfaceV1({
+      ...VALID_SURFACE,
+      blocks: [
+        {
+          blockType: 'form',
+          fields: [{ fieldId: 'note', label: 'Operator note', widget: 'text', required: true }],
+        },
+        {
+          blockType: 'actions',
+          actions: [
+            {
+              actionId: 'record-note',
+              label: 'Record note',
+              intentKind: 'Insight',
+              submitsForm: true,
+            },
+            { actionId: 'dismiss', label: 'Dismiss', intentKind: 'Taste' },
+          ],
+        },
+      ],
+    });
+
+    expect(() =>
+      parseOperatorSurfaceInteractionV1(surface, {
+        schemaVersion: 1,
+        surfaceId: 'surface-1',
+        workspaceId: 'ws-1',
+        runId: 'run-1',
+        actionId: 'record-note',
+        submittedByUserId: 'user-operator',
+        submittedAtIso: '2026-04-02T10:03:00.000Z',
+        values: {},
+      }),
+    ).toThrow(/required form fields/i);
+
+    expect(() =>
+      parseOperatorSurfaceInteractionV1(surface, {
+        schemaVersion: 1,
+        surfaceId: 'surface-1',
+        workspaceId: 'ws-1',
+        runId: 'run-1',
+        actionId: 'dismiss',
+        submittedByUserId: 'user-operator',
+        submittedAtIso: '2026-04-02T10:03:00.000Z',
+        values: { note: 'hidden command' },
+      }),
+    ).toThrow(/must not include values/i);
   });
 });

@@ -47,6 +47,66 @@ const EXECUTABLE_KEYS = new Set([
   'script',
   'scriptUrl',
 ]);
+const PROTOTYPE_POLLUTION_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+const ROOT_KEYS = [
+  'schemaVersion',
+  'surfaceId',
+  'workspaceId',
+  'correlationId',
+  'surfaceKind',
+  'context',
+  'title',
+  'description',
+  'attribution',
+  'lifecycle',
+  'blocks',
+] as const;
+const RUN_CONTEXT_KEYS = ['kind', 'runId'] as const;
+const APPROVAL_CONTEXT_KEYS = ['kind', 'runId', 'approvalId'] as const;
+const ATTRIBUTION_KEYS = ['proposedBy', 'proposedAtIso', 'rationale'] as const;
+const MACHINE_ACTOR_KEYS = ['kind', 'machineId'] as const;
+const USER_ACTOR_KEYS = ['kind', 'userId'] as const;
+const SYSTEM_ACTOR_KEYS = ['kind'] as const;
+const LIFECYCLE_KEYS = [
+  'status',
+  'proposedAtIso',
+  'approvedAtIso',
+  'approvedByUserId',
+  'renderedAtIso',
+  'renderedByUserId',
+  'usedAtIso',
+  'usedByUserId',
+  'evidenceIds',
+] as const;
+const TEXT_BLOCK_KEYS = ['blockType', 'text', 'tone'] as const;
+const KEY_VALUE_LIST_BLOCK_KEYS = ['blockType', 'items'] as const;
+const KEY_VALUE_ITEM_KEYS = ['label', 'value'] as const;
+const METRIC_BLOCK_KEYS = ['blockType', 'label', 'value', 'unit', 'tone'] as const;
+const FORM_BLOCK_KEYS = ['blockType', 'fields'] as const;
+const FIELD_KEYS = [
+  'fieldId',
+  'label',
+  'widget',
+  'required',
+  'helpText',
+  'placeholder',
+  'options',
+] as const;
+const SELECT_OPTION_KEYS = ['value', 'label'] as const;
+const ACTIONS_BLOCK_KEYS = ['blockType', 'actions'] as const;
+const ACTION_KEYS = ['actionId', 'label', 'intentKind', 'submitsForm'] as const;
+const INTERACTION_KEYS = [
+  'schemaVersion',
+  'surfaceId',
+  'workspaceId',
+  'runId',
+  'approvalId',
+  'actionId',
+  'intentKind',
+  'submittedByUserId',
+  'submittedAtIso',
+  'values',
+] as const;
 
 export type OperatorSurfaceKind = (typeof SURFACE_KINDS)[number];
 export type OperatorSurfaceBlockType = (typeof BLOCK_TYPES)[number];
@@ -183,6 +243,7 @@ export class OperatorSurfaceParseError extends Error {
 export function parseOperatorSurfaceV1(value: unknown): OperatorSurfaceV1 {
   assertNoExecutableFields(value, 'operatorSurface');
   const record = readRecord(value, 'OperatorSurfaceV1', OperatorSurfaceParseError);
+  assertOnlyAllowedKeys(record, ROOT_KEYS, 'operatorSurface');
   const schemaVersion = readInteger(record, 'schemaVersion', OperatorSurfaceParseError);
   if (schemaVersion !== OPERATOR_SURFACE_SCHEMA_VERSION) {
     throw new OperatorSurfaceParseError(`Unsupported schemaVersion: ${String(schemaVersion)}`);
@@ -202,6 +263,7 @@ export function parseOperatorSurfaceV1(value: unknown): OperatorSurfaceV1 {
     throw new OperatorSurfaceParseError('blocks must be a non-empty array.');
   }
   const blocks = blocksRaw.map((block, index) => parseBlock(block, `blocks[${String(index)}]`));
+  validateUniqueSurfaceIds(blocks);
   const description = readOptionalString(record, 'description', OperatorSurfaceParseError);
 
   return deepFreezeSurface({
@@ -229,6 +291,7 @@ export function parseOperatorSurfaceInteractionV1(
   }
 
   const record = readRecord(value, 'OperatorSurfaceInteractionV1', OperatorSurfaceParseError);
+  assertOnlyAllowedKeys(record, INTERACTION_KEYS, 'operatorSurfaceInteraction');
   const schemaVersion = readInteger(record, 'schemaVersion', OperatorSurfaceParseError);
   if (schemaVersion !== OPERATOR_SURFACE_SCHEMA_VERSION) {
     throw new OperatorSurfaceParseError(`Unsupported schemaVersion: ${String(schemaVersion)}`);
@@ -287,7 +350,11 @@ export function parseOperatorSurfaceInteractionV1(
     intentKind: action.intentKind,
     submittedByUserId: UserId(readString(record, 'submittedByUserId', OperatorSurfaceParseError)),
     submittedAtIso,
-    values: parseInteractionValues(readRecordField(record, 'values', OperatorSurfaceParseError)),
+    values: parseInteractionValues(
+      surface,
+      action,
+      readRecordField(record, 'values', OperatorSurfaceParseError),
+    ),
   });
 }
 
@@ -301,6 +368,11 @@ export function operatorSurfaceCanRender(surface: OperatorSurfaceV1): boolean {
 
 function parseContext(record: Record<string, unknown>): OperatorSurfaceContextV1 {
   const kind = readEnum(record, 'kind', ['Run', 'Approval'] as const, OperatorSurfaceParseError);
+  assertOnlyAllowedKeys(
+    record,
+    kind === 'Run' ? RUN_CONTEXT_KEYS : APPROVAL_CONTEXT_KEYS,
+    'context',
+  );
   const runId = RunId(readString(record, 'runId', OperatorSurfaceParseError));
   if (kind === 'Run') {
     if (record['approvalId'] !== undefined) {
@@ -316,6 +388,7 @@ function parseContext(record: Record<string, unknown>): OperatorSurfaceContextV1
 }
 
 function parseAttribution(record: Record<string, unknown>): OperatorSurfaceAttributionV1 {
+  assertOnlyAllowedKeys(record, ATTRIBUTION_KEYS, 'attribution');
   return {
     proposedBy: parseActor(readRecordField(record, 'proposedBy', OperatorSurfaceParseError)),
     proposedAtIso: readIsoString(record, 'proposedAtIso', OperatorSurfaceParseError),
@@ -331,18 +404,22 @@ function parseActor(record: Record<string, unknown>): OperatorSurfaceActorV1 {
     OperatorSurfaceParseError,
   );
   if (kind === 'Machine') {
+    assertOnlyAllowedKeys(record, MACHINE_ACTOR_KEYS, 'actor');
     return {
       kind,
       machineId: MachineId(readString(record, 'machineId', OperatorSurfaceParseError)),
     };
   }
   if (kind === 'User') {
+    assertOnlyAllowedKeys(record, USER_ACTOR_KEYS, 'actor');
     return { kind, userId: UserId(readString(record, 'userId', OperatorSurfaceParseError)) };
   }
+  assertOnlyAllowedKeys(record, SYSTEM_ACTOR_KEYS, 'actor');
   return { kind };
 }
 
 function parseLifecycle(record: Record<string, unknown>): OperatorSurfaceLifecycleV1 {
+  assertOnlyAllowedKeys(record, LIFECYCLE_KEYS, 'lifecycle');
   const status = readEnum(record, 'status', LIFECYCLE_STATUSES, OperatorSurfaceParseError);
   const proposedAtIso = readIsoString(record, 'proposedAtIso', OperatorSurfaceParseError);
   const approvedAtIso = readOptionalIsoString(record, 'approvedAtIso', OperatorSurfaceParseError);
@@ -420,6 +497,7 @@ function parseBlock(value: unknown, path: string): OperatorSurfaceBlockV1 {
   const record = readRecord(value, path, OperatorSurfaceParseError);
   const blockType = readEnum(record, 'blockType', BLOCK_TYPES, OperatorSurfaceParseError);
   if (blockType === 'text') {
+    assertOnlyAllowedKeys(record, TEXT_BLOCK_KEYS, path);
     const tone = readOptionalTone(record);
     return {
       blockType,
@@ -436,6 +514,7 @@ function parseBlock(value: unknown, path: string): OperatorSurfaceBlockV1 {
 function parseKeyValueListBlock(
   record: Record<string, unknown>,
 ): OperatorSurfaceKeyValueListBlockV1 {
+  assertOnlyAllowedKeys(record, KEY_VALUE_LIST_BLOCK_KEYS, 'keyValueListBlock');
   const itemsRaw = record['items'];
   if (!Array.isArray(itemsRaw) || itemsRaw.length === 0) {
     throw new OperatorSurfaceParseError('items must be a non-empty array.');
@@ -444,6 +523,7 @@ function parseKeyValueListBlock(
     blockType: 'keyValueList',
     items: itemsRaw.map((item, index) => {
       const parsed = readRecord(item, `items[${String(index)}]`, OperatorSurfaceParseError);
+      assertOnlyAllowedKeys(parsed, KEY_VALUE_ITEM_KEYS, `items[${String(index)}]`);
       return {
         label: readString(parsed, 'label', OperatorSurfaceParseError),
         value: readString(parsed, 'value', OperatorSurfaceParseError),
@@ -453,6 +533,7 @@ function parseKeyValueListBlock(
 }
 
 function parseMetricBlock(record: Record<string, unknown>): OperatorSurfaceMetricBlockV1 {
+  assertOnlyAllowedKeys(record, METRIC_BLOCK_KEYS, 'metricBlock');
   const tone = readOptionalTone(record);
   const unit = readOptionalString(record, 'unit', OperatorSurfaceParseError);
   return {
@@ -465,6 +546,7 @@ function parseMetricBlock(record: Record<string, unknown>): OperatorSurfaceMetri
 }
 
 function parseFormBlock(record: Record<string, unknown>): OperatorSurfaceFormBlockV1 {
+  assertOnlyAllowedKeys(record, FORM_BLOCK_KEYS, 'formBlock');
   const fieldsRaw = record['fields'];
   if (!Array.isArray(fieldsRaw) || fieldsRaw.length === 0) {
     throw new OperatorSurfaceParseError('fields must be a non-empty array.');
@@ -477,6 +559,7 @@ function parseFormBlock(record: Record<string, unknown>): OperatorSurfaceFormBlo
 
 function parseField(value: unknown, path: string): OperatorSurfaceFieldV1 {
   const record = readRecord(value, path, OperatorSurfaceParseError);
+  assertOnlyAllowedKeys(record, FIELD_KEYS, path);
   const widget = readEnum(record, 'widget', FIELD_WIDGETS, OperatorSurfaceParseError);
   const optionsRaw = record['options'];
   const options = optionsRaw === undefined ? undefined : parseSelectOptions(optionsRaw);
@@ -506,6 +589,7 @@ function parseSelectOptions(value: unknown): readonly OperatorSurfaceSelectOptio
   }
   return value.map((option, index) => {
     const record = readRecord(option, `options[${String(index)}]`, OperatorSurfaceParseError);
+    assertOnlyAllowedKeys(record, SELECT_OPTION_KEYS, `options[${String(index)}]`);
     return {
       value: readString(record, 'value', OperatorSurfaceParseError),
       label: readString(record, 'label', OperatorSurfaceParseError),
@@ -514,6 +598,7 @@ function parseSelectOptions(value: unknown): readonly OperatorSurfaceSelectOptio
 }
 
 function parseActionsBlock(record: Record<string, unknown>): OperatorSurfaceActionsBlockV1 {
+  assertOnlyAllowedKeys(record, ACTIONS_BLOCK_KEYS, 'actionsBlock');
   const actionsRaw = record['actions'];
   if (!Array.isArray(actionsRaw) || actionsRaw.length === 0) {
     throw new OperatorSurfaceParseError('actions must be a non-empty array.');
@@ -522,6 +607,7 @@ function parseActionsBlock(record: Record<string, unknown>): OperatorSurfaceActi
     blockType: 'actions',
     actions: actionsRaw.map((action, index) => {
       const parsed = readRecord(action, `actions[${String(index)}]`, OperatorSurfaceParseError);
+      assertOnlyAllowedKeys(parsed, ACTION_KEYS, `actions[${String(index)}]`);
       const submitsForm = readOptionalBoolean(parsed, 'submitsForm', OperatorSurfaceParseError);
       return {
         actionId: readString(parsed, 'actionId', OperatorSurfaceParseError),
@@ -534,19 +620,75 @@ function parseActionsBlock(record: Record<string, unknown>): OperatorSurfaceActi
 }
 
 function parseInteractionValues(
+  surface: OperatorSurfaceV1,
+  action: OperatorSurfaceActionV1,
   record: Record<string, unknown>,
 ): Readonly<Record<string, string | number | boolean>> {
+  const fields = getSurfaceFields(surface);
+  if (action.submitsForm !== true && Object.keys(record).length > 0) {
+    throw new OperatorSurfaceParseError(
+      'Actions that do not submit a form must not include values.',
+    );
+  }
   const values: Record<string, string | number | boolean> = {};
   for (const [key, value] of Object.entries(record)) {
     if (key.trim() === '') {
       throw new OperatorSurfaceParseError('values keys must be non-empty.');
     }
-    if (typeof value !== 'string' && typeof value !== 'number' && typeof value !== 'boolean') {
-      throw new OperatorSurfaceParseError('values may only contain strings, numbers, or booleans.');
+    if (PROTOTYPE_POLLUTION_KEYS.has(key)) {
+      throw new OperatorSurfaceParseError('values keys must be schema field IDs.');
     }
+    const field = fields.get(key);
+    if (field === undefined) {
+      throw new OperatorSurfaceParseError('values may only include declared form fields.');
+    }
+    validateInteractionValue(field, value);
     values[key] = value;
   }
+  if (action.submitsForm === true) {
+    for (const field of fields.values()) {
+      if (field.required === true && values[field.fieldId] === undefined) {
+        throw new OperatorSurfaceParseError('required form fields must be submitted.');
+      }
+    }
+  }
   return Object.freeze(values);
+}
+
+function validateInteractionValue(
+  field: OperatorSurfaceFieldV1,
+  value: unknown,
+): asserts value is string | number | boolean {
+  if (field.widget === 'checkbox') {
+    if (typeof value !== 'boolean') {
+      throw new OperatorSurfaceParseError('checkbox values must be booleans.');
+    }
+    return;
+  }
+  if (field.widget === 'number') {
+    if (typeof value !== 'number' || !Number.isFinite(value)) {
+      throw new OperatorSurfaceParseError('number values must be finite numbers.');
+    }
+    return;
+  }
+  if (field.widget === 'select') {
+    if (typeof value !== 'string' || !field.options?.some((option) => option.value === value)) {
+      throw new OperatorSurfaceParseError('select values must match a declared option.');
+    }
+    return;
+  }
+  if (typeof value !== 'string') {
+    throw new OperatorSurfaceParseError('text values must be strings.');
+  }
+}
+
+function getSurfaceFields(surface: OperatorSurfaceV1): ReadonlyMap<string, OperatorSurfaceFieldV1> {
+  const fields = new Map<string, OperatorSurfaceFieldV1>();
+  for (const block of surface.blocks) {
+    if (block.blockType !== 'form') continue;
+    for (const field of block.fields) fields.set(field.fieldId, field);
+  }
+  return fields;
 }
 
 function findAction(
@@ -580,10 +722,57 @@ function assertNoExecutableFields(value: unknown, path: string): void {
   }
   if (typeof value !== 'object' || value === null) return;
   for (const [key, nested] of Object.entries(value)) {
-    if (EXECUTABLE_KEYS.has(key)) {
+    if (isExecutableKey(key)) {
       throw new OperatorSurfaceParseError(`${path}.${key} is not allowed on operator surfaces.`);
     }
     assertNoExecutableFields(nested, `${path}.${key}`);
+  }
+}
+
+function isExecutableKey(key: string): boolean {
+  const normalized = key.toLowerCase();
+  const formActionKey = 'form' + 'action';
+  return (
+    EXECUTABLE_KEYS.has(key) ||
+    normalized.startsWith('on') ||
+    normalized === 'srcdoc' ||
+    normalized === formActionKey
+  );
+}
+
+function assertOnlyAllowedKeys(
+  record: Record<string, unknown>,
+  allowedKeys: readonly string[],
+  path: string,
+): void {
+  const allowed = new Set(allowedKeys);
+  for (const key of Object.keys(record)) {
+    if (!allowed.has(key)) {
+      throw new OperatorSurfaceParseError(`${path}.${key} is not allowed by OperatorSurfaceV1.`);
+    }
+  }
+}
+
+function validateUniqueSurfaceIds(blocks: readonly OperatorSurfaceBlockV1[]): void {
+  const fieldIds = new Set<string>();
+  const actionIds = new Set<string>();
+  for (const block of blocks) {
+    if (block.blockType === 'form') {
+      for (const field of block.fields) {
+        if (fieldIds.has(field.fieldId)) {
+          throw new OperatorSurfaceParseError('fieldId values must be unique.');
+        }
+        fieldIds.add(field.fieldId);
+      }
+    }
+    if (block.blockType === 'actions') {
+      for (const action of block.actions) {
+        if (actionIds.has(action.actionId)) {
+          throw new OperatorSurfaceParseError('actionId values must be unique.');
+        }
+        actionIds.add(action.actionId);
+      }
+    }
   }
 }
 
