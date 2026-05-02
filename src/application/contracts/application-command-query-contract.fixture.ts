@@ -4,6 +4,9 @@ export type ActionKey =
   | 'approvalCreate'
   | 'approvalRead'
   | 'approvalSubmit'
+  | 'policyChangePropose'
+  | 'policyChangeApprove'
+  | 'policyChangeRollback'
   | 'evidenceRead'
   | 'planRead'
   | 'runRead'
@@ -102,6 +105,39 @@ export const APPLICATION_OPERATION_CONTRACTS = [
       input: 'SubmitApprovalInput',
       output: 'SubmitApprovalOutput',
       error: 'SubmitApprovalError',
+    },
+  },
+  {
+    kind: 'command',
+    name: 'proposePolicyChange',
+    sourcePath: 'src/application/commands/policy-change-workflow.ts',
+    actionKey: 'policyChangePropose',
+    types: {
+      input: 'ProposePolicyChangeInput',
+      output: 'PolicyChangeOutput',
+      error: 'PolicyChangeCommandError',
+    },
+  },
+  {
+    kind: 'command',
+    name: 'approvePolicyChange',
+    sourcePath: 'src/application/commands/policy-change-workflow.ts',
+    actionKey: 'policyChangeApprove',
+    types: {
+      input: 'ApprovePolicyChangeInput',
+      output: 'PolicyChangeOutput',
+      error: 'PolicyChangeCommandError',
+    },
+  },
+  {
+    kind: 'command',
+    name: 'rollbackPolicyChange',
+    sourcePath: 'src/application/commands/policy-change-workflow.ts',
+    actionKey: 'policyChangeRollback',
+    types: {
+      input: 'RollbackPolicyChangeInput',
+      output: 'PolicyChangeOutput',
+      error: 'PolicyChangeCommandError',
     },
   },
   {

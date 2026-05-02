@@ -88,6 +88,9 @@ export type ActionId = Branded<string, 'ActionId'>;
 /** Unique identifier for a policy rule. */
 export type PolicyId = Branded<string, 'PolicyId'>;
 
+/** Unique identifier for a governed policy change request. */
+export type PolicyChangeId = Branded<string, 'PolicyChangeId'>;
+
 /** Unique identifier for an approval request. */
 export type ApprovalId = Branded<string, 'ApprovalId'>;
 
@@ -264,6 +267,8 @@ export const AdapterId = (value: string): AdapterId => brand<string, 'AdapterId'
 export const PortId = (value: string): PortId => brand<string, 'PortId'>(value);
 export const ActionId = (value: string): ActionId => brand<string, 'ActionId'>(value);
 export const PolicyId = (value: string): PolicyId => brand<string, 'PolicyId'>(value);
+export const PolicyChangeId = (value: string): PolicyChangeId =>
+  brand<string, 'PolicyChangeId'>(value);
 export const ApprovalId = (value: string): ApprovalId => brand<string, 'ApprovalId'>(value);
 export const PlanId = (value: string): PlanId => brand<string, 'PlanId'>(value);
 export const EffectId = (value: string): EffectId => brand<string, 'EffectId'>(value);
