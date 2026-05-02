@@ -1,7 +1,7 @@
 # Cockpit Policy Authoring and Simulation v1
 
 **Status:** Proposed  
-**Related Beads:** bead-1060, bead-1068, bead-1073, bead-1074, bead-1075, bead-1078  
+**Related Beads:** bead-1060, bead-1068, bead-1073, bead-1074, bead-1075, bead-1078, bead-1081
 **Extends:** [Operator Interaction Model v1](./operator-interaction-model-v1.md)
 
 ## Purpose
@@ -237,6 +237,8 @@ The matrix should support:
 - filtering by environment, system, and sensitivity
 - visible inheritance from higher-level policy layers
 - highlight of exception rules overriding the default posture
+- preset previews for common Workspace doctrines without mutating the published default
+- an effective-posture explanation that shows doctrine, default, preset, and exception layers
 
 ### R6 Progressive density
 
@@ -435,6 +437,8 @@ Primary components:
 - `EvidenceRequirementCell`
 - `RoleRequirementCell`
 - `PostureInheritanceInspector`
+- `CapabilityPosturePresetSelector`
+- `EffectivePostureExplanationPanel`
 
 ### Screen 3: Rule Builder
 
