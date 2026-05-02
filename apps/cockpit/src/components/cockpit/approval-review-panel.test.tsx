@@ -139,13 +139,13 @@ describe('ApprovalReviewPanel — rendering', () => {
 // ---------------------------------------------------------------------------
 
 describe('ApprovalReviewPanel — tabs', () => {
-  it('renders all four tab buttons', () => {
+  it('renders all five tab buttons', () => {
     const onDecide = vi.fn();
     render(<ApprovalReviewPanel approval={makeApproval()} onDecide={onDecide} />);
 
     const tablist = screen.getByRole('tablist');
     const tabs = within(tablist).getAllByRole('tab');
-    expect(tabs).toHaveLength(4);
+    expect(tabs).toHaveLength(5);
   });
 
   it('shows evidence tab selected by default', () => {
@@ -216,6 +216,20 @@ describe('ApprovalReviewPanel — tabs', () => {
     const tablist = screen.getByRole('tablist');
     const policyTab = within(tablist).getAllByRole('tab')[1]!;
     expect(policyTab.getAttribute('aria-selected')).toBe('true');
+  });
+
+  it('switches to precedent tab and shows policy conversion workflow', async () => {
+    const user = userEvent.setup();
+    const onDecide = vi.fn();
+    render(<ApprovalReviewPanel approval={makeApproval()} onDecide={onDecide} />);
+
+    const tablist = screen.getByRole('tablist');
+    const precedentTab = within(tablist).getAllByRole('tab')[4]!;
+    await user.click(precedentTab);
+
+    expect(screen.getByText('Convert judgment to Policy')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Approve once' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Future similar cases' })).toBeTruthy();
   });
 });
 

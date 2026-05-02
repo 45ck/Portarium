@@ -80,6 +80,9 @@ The presentation layer must have one typed entrypoint for HTTP interactions with
 - Approval action requires rationale when decision is deny or request-changes.
 - Decision errors must include actionable information and retain the operation `instance`.
 - The UI must show policy context alongside effect summaries before submission.
+- Approval review must let operators convert runtime judgment into either a one-off
+  Run decision or a staged reusable Policy proposal with structured feedback
+  reasons, audit linkage, and simulation inputs before activation.
 - Decision submission controls must be role-gated to approvers; non-approver personas see read-only approval context.
 - Phone-sized views must keep approve, deny, request-changes, and rationale controls reachable without horizontal scrolling.
 - Approval notifications and deep links should land on the focused approval card when an approval ID is available.

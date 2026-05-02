@@ -273,6 +273,14 @@ describe('getRelevantModes — mode visibility', () => {
     expect(ids).toContain('evidence-chain');
   });
 
+  it('shows policy-precedent for runtime-to-policy conversion', () => {
+    const ctx = resolveApprovalContext(makeApproval(), [], []);
+    const modes = getRelevantModes(ctx);
+    const precedentMode = modes.find((m) => m.id === 'policy-precedent');
+    expect(precedentMode).toBeDefined();
+    expect(precedentMode!.relevance(ctx)).toBe('available');
+  });
+
   it('shows robotics-safety as recommended for robotics domain', () => {
     const ctx = resolveApprovalContext(makeApproval(), [], [], makeRun({ robotIds: ['r-1'] }));
     const modes = getRelevantModes(ctx);

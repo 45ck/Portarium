@@ -29,6 +29,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { AgentActionContextPanel } from '@/components/cockpit/agent-action-context-panel';
+import { PolicyPrecedentMode } from '@/components/cockpit/triage-modes/policy-precedent-mode';
 import { cn } from '@/lib/utils';
 import {
   Link2,
@@ -41,13 +42,14 @@ import {
   ExternalLink,
   Hash,
   ChevronRight,
+  GitBranch,
 } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
-export type ReviewTab = 'evidence' | 'policy' | 'effects' | 'discussion';
+export type ReviewTab = 'evidence' | 'policy' | 'effects' | 'discussion' | 'precedent';
 
 /** Extended policy evaluation result for display in review mode. */
 export interface PolicyEvaluationDisplay {
@@ -86,6 +88,7 @@ const TABS: { id: ReviewTab; label: string; icon: typeof Link2 }[] = [
   { id: 'policy', label: 'Policy', icon: ShieldCheck },
   { id: 'effects', label: 'Effects', icon: Zap },
   { id: 'discussion', label: 'Discussion', icon: MessageCircle },
+  { id: 'precedent', label: 'Precedent', icon: GitBranch },
 ];
 
 // ---------------------------------------------------------------------------
@@ -356,6 +359,13 @@ export function ApprovalReviewPanel({
     policy: <PolicyEvaluationList evaluations={policyEvaluations} />,
     effects: <EffectsList effects={plannedEffects} />,
     discussion: <DiscussionPanel history={history} />,
+    precedent: (
+      <PolicyPrecedentMode
+        approval={approval}
+        plannedEffects={plannedEffects}
+        evidenceEntries={evidenceEntries}
+      />
+    ),
   };
 
   const tabCounts: Partial<Record<ReviewTab, number>> = {
