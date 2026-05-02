@@ -68,8 +68,8 @@ function buildServerAccess(
     activePackIds: ['example.reference'],
     quarantinedExtensionIds: [] as string[],
     accessContext: {
-      availableCapabilities: ['extension:read', 'extension:review', 'evidence:read'],
-      availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+      availableCapabilities: ['extension:read', 'extension:inspect'],
+      availableApiScopes: ['extensions.read', 'extensions.inspect'],
       availablePrivacyClasses: ['internal', 'restricted'],
       availablePersonas: ['Operator'],
     },
@@ -97,8 +97,8 @@ describe('CommandPalette', () => {
         workspaceId: 'ws-demo',
         roles: ['operator'],
         personas: ['Operator'],
-        capabilities: ['extension:read', 'extension:review', 'evidence:read'],
-        apiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+        capabilities: ['extension:read', 'extension:inspect'],
+        apiScopes: ['extensions.read', 'extensions.inspect'],
       },
       error: null,
     });
@@ -116,7 +116,7 @@ describe('CommandPalette', () => {
 
     expect(mockUseCockpitExtensionContext).toHaveBeenCalledWith('ws-demo', 'user-1');
 
-    const extensionCommand = screen.getByRole('button', { name: /open reference extension/i });
+    const extensionCommand = screen.getByRole('button', { name: /open extension reference/i });
     expect(extensionCommand).toBeTruthy();
     expect(screen.getByText('G X')).toBeTruthy();
 
@@ -135,7 +135,7 @@ describe('CommandPalette', () => {
 
     render(<CommandPalette />);
 
-    expect(screen.queryByRole('button', { name: /open reference extension/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /open extension reference/i })).toBeNull();
   });
 
   it('omits commands for installed extensions without workspace activation', () => {
@@ -147,7 +147,7 @@ describe('CommandPalette', () => {
 
     render(<CommandPalette />);
 
-    expect(screen.queryByRole('button', { name: /open reference extension/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /open extension reference/i })).toBeNull();
     expect(screen.queryByText('G X')).toBeNull();
     expect(screen.getByRole('button', { name: /inbox/i })).toBeTruthy();
     expect(screen.getByRole('button', { name: /dashboard/i })).toBeTruthy();
@@ -158,8 +158,8 @@ describe('CommandPalette', () => {
     mockResolveCockpitExtensionServerAccess.mockReturnValue(
       buildServerAccess({
         accessContext: {
-          availableCapabilities: ['extension:read', 'extension:review', 'evidence:read'],
-          availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+          availableCapabilities: ['extension:read', 'extension:inspect'],
+          availableApiScopes: ['extensions.read', 'extensions.inspect'],
           availablePrivacyClasses: [],
           availablePersonas: ['Operator'],
         },
@@ -168,7 +168,7 @@ describe('CommandPalette', () => {
 
     render(<CommandPalette />);
 
-    expect(screen.queryByRole('button', { name: /open reference extension/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /open extension reference/i })).toBeNull();
     expect(screen.queryByText('G X')).toBeNull();
     expect(screen.getByRole('button', { name: /^extensions$/i })).toBeTruthy();
   });
@@ -177,8 +177,8 @@ describe('CommandPalette', () => {
     mockResolveCockpitExtensionServerAccess.mockReturnValue(
       buildServerAccess({
         accessContext: {
-          availableCapabilities: ['extension:read', 'extension:review', 'evidence:read'],
-          availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+          availableCapabilities: ['extension:read', 'extension:inspect'],
+          availableApiScopes: ['extensions.read', 'extensions.inspect'],
           availablePrivacyClasses: ['internal', 'restricted'],
           availablePersonas: ['Auditor'],
         },
@@ -187,7 +187,7 @@ describe('CommandPalette', () => {
 
     render(<CommandPalette />);
 
-    expect(screen.queryByRole('button', { name: /open reference extension/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /open extension reference/i })).toBeNull();
     expect(screen.queryByText('G X')).toBeNull();
     expect(screen.getByRole('button', { name: /inbox/i })).toBeTruthy();
   });

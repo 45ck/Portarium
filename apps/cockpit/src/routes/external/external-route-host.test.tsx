@@ -11,13 +11,13 @@ import { useUIStore } from '@/stores/ui-store';
 const externalRouteHostTestState = vi.hoisted(() => ({
   omitHostedComponents: false,
   overviewRouteLoader: vi.fn(),
-  reviewRouteLoader: vi.fn(),
+  detailRouteLoader: vi.fn(),
 }));
 
 vi.mock('@/lib/extensions/example-reference/route-loaders', () => ({
   EXAMPLE_REFERENCE_ROUTE_LOADERS: {
     'example-reference-overview': externalRouteHostTestState.overviewRouteLoader,
-    'example-reference-review': externalRouteHostTestState.reviewRouteLoader,
+    'example-reference-detail': externalRouteHostTestState.detailRouteLoader,
   },
 }));
 
@@ -118,8 +118,8 @@ beforeAll(() => {
             principalId: 'user-1',
             persona: 'Operator',
             availablePersonas: ['Operator', 'Admin'],
-            availableCapabilities: ['extension:read', 'extension:review', 'evidence:read'],
-            availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+            availableCapabilities: ['extension:read', 'extension:inspect'],
+            availableApiScopes: ['extensions.read', 'extensions.inspect'],
             availablePrivacyClasses: ['internal', 'restricted'],
             activePackIds: ['example.reference'],
             quarantinedExtensionIds: [],
@@ -137,7 +137,7 @@ beforeAll(() => {
 beforeEach(() => {
   externalRouteHostTestState.omitHostedComponents = false;
   externalRouteHostTestState.overviewRouteLoader.mockReset();
-  externalRouteHostTestState.reviewRouteLoader.mockReset();
+  externalRouteHostTestState.detailRouteLoader.mockReset();
   externalRouteHostTestState.overviewRouteLoader.mockResolvedValue({
     default: () => (
       <div>
@@ -147,12 +147,12 @@ beforeEach(() => {
       </div>
     ),
   });
-  externalRouteHostTestState.reviewRouteLoader.mockResolvedValue({
+  externalRouteHostTestState.detailRouteLoader.mockResolvedValue({
     default: () => (
       <div>
-        <h1>Reference Review</h1>
-        <p>Review Contract</p>
-        <p>Route Loader Spy: review</p>
+        <h1>Reference Detail</h1>
+        <p>Detail Contract</p>
+        <p>Route Loader Spy: detail</p>
       </div>
     ),
   });
@@ -168,8 +168,8 @@ beforeEach(() => {
       workspaceId: 'ws-demo',
       roles: ['operator'],
       personas: ['Operator'],
-      capabilities: ['extension:read', 'extension:review', 'evidence:read'],
-      apiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+      capabilities: ['extension:read', 'extension:inspect'],
+      apiScopes: ['extensions.read', 'extensions.inspect'],
     },
     error: null,
   });
@@ -179,8 +179,8 @@ beforeEach(() => {
     principalId: 'user-1',
     persona: 'Operator',
     availablePersonas: ['Operator', 'Admin'],
-    availableCapabilities: ['extension:read', 'extension:review', 'evidence:read'],
-    availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+    availableCapabilities: ['extension:read', 'extension:inspect'],
+    availableApiScopes: ['extensions.read', 'extensions.inspect'],
     availablePrivacyClasses: ['internal', 'restricted'],
     activePackIds: ['example.reference'],
     quarantinedExtensionIds: [],
@@ -206,16 +206,16 @@ describe('external route host', () => {
     expect(await screen.findByText('Route Loader Spy: overview')).toBeTruthy();
     expect(screen.queryByText('Host Fallback')).toBeNull();
     expect(externalRouteHostTestState.overviewRouteLoader).toHaveBeenCalledTimes(1);
-    expect(externalRouteHostTestState.reviewRouteLoader).not.toHaveBeenCalled();
+    expect(externalRouteHostTestState.detailRouteLoader).not.toHaveBeenCalled();
   });
 
   it('loads parameterized neutral routes declared by the extension manifest', async () => {
-    await renderRoute('/external/example-reference/reviews/proposal-123');
+    await renderRoute('/external/example-reference/details/item-123');
 
-    expect(await screen.findByRole('heading', { name: 'Reference Review' })).toBeTruthy();
-    expect(await screen.findByText('Review Contract')).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'Reference Detail' })).toBeTruthy();
+    expect(await screen.findByText('Detail Contract')).toBeTruthy();
     expect(screen.queryByText('External Route Not Found')).toBeNull();
-    expect(externalRouteHostTestState.reviewRouteLoader).toHaveBeenCalledTimes(1);
+    expect(externalRouteHostTestState.detailRouteLoader).toHaveBeenCalledTimes(1);
   });
 
   it('fails closed when no installed extension declares the external path', async () => {
@@ -241,8 +241,8 @@ describe('external route host', () => {
       principalId: 'user-1',
       persona: 'Operator',
       availablePersonas: ['Operator', 'Admin'],
-      availableCapabilities: ['extension:read', 'extension:review', 'evidence:read'],
-      availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+      availableCapabilities: ['extension:read', 'extension:inspect'],
+      availableApiScopes: ['extensions.read', 'extensions.inspect'],
       availablePrivacyClasses: ['internal', 'restricted'],
       activePackIds: [],
       quarantinedExtensionIds: [],
@@ -257,7 +257,7 @@ describe('external route host', () => {
     expect(screen.queryByText('Reference Overview')).toBeNull();
     expect(screen.queryByText('Extension Boundary')).toBeNull();
     expect(externalRouteHostTestState.overviewRouteLoader).not.toHaveBeenCalled();
-    expect(externalRouteHostTestState.reviewRouteLoader).not.toHaveBeenCalled();
+    expect(externalRouteHostTestState.detailRouteLoader).not.toHaveBeenCalled();
   });
 
   it('fails closed when the active persona is forbidden from the external route', async () => {
@@ -275,7 +275,7 @@ describe('external route host', () => {
     expect(screen.getByText('persona')).toBeTruthy();
     expect(screen.queryByText('Extension Boundary')).toBeNull();
     expect(externalRouteHostTestState.overviewRouteLoader).not.toHaveBeenCalled();
-    expect(externalRouteHostTestState.reviewRouteLoader).not.toHaveBeenCalled();
+    expect(externalRouteHostTestState.detailRouteLoader).not.toHaveBeenCalled();
   });
 
   it('fails closed without importing route content when route privacy grants are missing', async () => {
@@ -285,8 +285,8 @@ describe('external route host', () => {
       principalId: 'user-1',
       persona: 'Operator',
       availablePersonas: ['Operator', 'Admin'],
-      availableCapabilities: ['extension:read', 'extension:review', 'evidence:read'],
-      availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+      availableCapabilities: ['extension:read', 'extension:inspect'],
+      availableApiScopes: ['extensions.read', 'extensions.inspect'],
       availablePrivacyClasses: [],
       activePackIds: ['example.reference'],
       quarantinedExtensionIds: [],
@@ -302,24 +302,24 @@ describe('external route host', () => {
     expect(screen.queryByText('Extension Boundary')).toBeNull();
     expect(screen.queryByText('Reference Overview')).toBeNull();
     expect(externalRouteHostTestState.overviewRouteLoader).not.toHaveBeenCalled();
-    expect(externalRouteHostTestState.reviewRouteLoader).not.toHaveBeenCalled();
+    expect(externalRouteHostTestState.detailRouteLoader).not.toHaveBeenCalled();
   });
 
   it('fails closed without route metadata when an active external route has no host-owned renderer', async () => {
     externalRouteHostTestState.omitHostedComponents = true;
 
-    await renderRoute('/external/example-reference/reviews/proposal-123');
+    await renderRoute('/external/example-reference/details/item-123');
 
     expect(await screen.findByRole('heading', { name: 'External Route Not Found' })).toBeTruthy();
     expect(screen.getByText('No enabled extension route matches this external path.')).toBeTruthy();
     expect(screen.getByText('Host Fallback')).toBeTruthy();
-    expect(screen.getByText('/external/example-reference/reviews/proposal-123')).toBeTruthy();
-    expect(screen.queryByText('Reference Review')).toBeNull();
+    expect(screen.getByText('/external/example-reference/details/item-123')).toBeTruthy();
+    expect(screen.queryByText('Reference Detail')).toBeNull();
     expect(screen.queryByText('Reference Extension')).toBeNull();
-    expect(screen.queryByText('example-reference-review')).toBeNull();
-    expect(screen.queryByText('proposalId=proposal-123')).toBeNull();
-    expect(screen.queryByText('Review Contract')).toBeNull();
+    expect(screen.queryByText('example-reference-detail')).toBeNull();
+    expect(screen.queryByText('itemId=item-123')).toBeNull();
+    expect(screen.queryByText('Detail Contract')).toBeNull();
     expect(externalRouteHostTestState.overviewRouteLoader).not.toHaveBeenCalled();
-    expect(externalRouteHostTestState.reviewRouteLoader).not.toHaveBeenCalled();
+    expect(externalRouteHostTestState.detailRouteLoader).not.toHaveBeenCalled();
   });
 });

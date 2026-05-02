@@ -117,8 +117,26 @@ function appendInstalledCatalogProblems(
 ): ResolvedCockpitExtensionRegistry {
   if (INSTALLED_COCKPIT_EXTENSION_CATALOG_PROBLEMS.length === 0) return registry;
 
+  const installedProblemsByExtension = new Map<string, CockpitExtensionRegistryProblem[]>();
+  for (const problem of INSTALLED_COCKPIT_EXTENSION_CATALOG_PROBLEMS) {
+    if (!problem.extensionId) continue;
+    const problems = installedProblemsByExtension.get(problem.extensionId) ?? [];
+    problems.push(problem);
+    installedProblemsByExtension.set(problem.extensionId, problems);
+  }
+
   return {
     ...registry,
+    extensions: registry.extensions.map((extension) => {
+      const installedProblems = installedProblemsByExtension.get(extension.manifest.id) ?? [];
+      if (installedProblems.length === 0) return extension;
+
+      return {
+        ...extension,
+        status: 'invalid',
+        problems: [...extension.problems, ...installedProblems],
+      };
+    }),
     routes: [],
     navItems: [],
     commands: [],

@@ -10,7 +10,7 @@ type ExampleReferenceRouteId = (typeof EXAMPLE_REFERENCE_EXTENSION.routes)[numbe
 
 export const EXAMPLE_REFERENCE_ROUTE_LOADERS = {
   'example-reference-overview': () => import('./routes/overview'),
-  'example-reference-review': () => import('./routes/action-review'),
+  'example-reference-detail': () => import('./routes/detail'),
 } satisfies Record<
   ExampleReferenceRouteId,
   CockpitExtensionRouteModuleLoader<CockpitExtensionRouteModule>

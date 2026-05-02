@@ -4,8 +4,8 @@ import { resolveCockpitExtensionRouteHostDefinitions } from './route-host';
 import type { CockpitExtensionManifest, CockpitExtensionRouteModuleLoader } from './types';
 
 const accessContext = {
-  availableCapabilities: ['extension:read', 'extension:review', 'evidence:read'],
-  availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+  availableCapabilities: ['extension:read', 'extension:inspect'],
+  availableApiScopes: ['extensions.read', 'extensions.inspect'],
   availablePrivacyClasses: ['internal', 'restricted'],
 } as const;
 
@@ -49,13 +49,13 @@ describe('cockpit extension route host definitions', () => {
     expect(resolution.definitions).toEqual([
       {
         extensionId: 'example.reference',
-        routeId: 'example-reference-overview',
-        path: '/external/example-reference/overview',
+        routeId: 'example-reference-detail',
+        path: '/external/example-reference/details/$itemId',
       },
       {
         extensionId: 'example.reference',
-        routeId: 'example-reference-review',
-        path: '/external/example-reference/reviews/$proposalId',
+        routeId: 'example-reference-overview',
+        path: '/external/example-reference/overview',
       },
     ]);
   });
@@ -91,7 +91,7 @@ describe('cockpit extension route host definitions', () => {
       expect.arrayContaining([
         expect.objectContaining({
           code: 'missing-route-module',
-          itemId: 'example-reference-review',
+          itemId: 'example-reference-detail',
         }),
       ]),
     );

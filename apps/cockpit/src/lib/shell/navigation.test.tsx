@@ -15,8 +15,8 @@ const neutralRouteLoaders = Object.fromEntries(
 );
 
 const neutralAccessContext = {
-  availableCapabilities: ['extension:read', 'extension:review', 'evidence:read'],
-  availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+  availableCapabilities: ['extension:read', 'extension:inspect'],
+  availableApiScopes: ['extensions.read', 'extensions.inspect'],
   availablePrivacyClasses: ['internal', 'restricted'],
   availablePersonas: ['Operator'],
 } as const;
@@ -67,13 +67,14 @@ describe('projectCockpitShellNavigation', () => {
     expect(projection.mobileMoreSections.map((section) => section.label)).toEqual([
       'Workspace',
       'Work',
+      'Engineering',
       'Workforce',
       'Config',
       'Explore',
       'Extensions',
     ]);
     expect(projection.commandTargets.map((target) => target.label)).toEqual(
-      expect.arrayContaining(['Inbox', 'Dashboard', 'Extensions', 'Open reference extension']),
+      expect.arrayContaining(['Inbox', 'Dashboard', 'Extensions', 'Open extension reference']),
     );
     const extensionTargets = [
       ...projection.sidebarSections.flatMap((section) => section.items ?? []),
@@ -98,7 +99,7 @@ describe('projectCockpitShellNavigation', () => {
       'Extensions',
     );
     expect(projection.commandTargets.map((target) => target.label)).not.toContain(
-      'Open reference extension',
+      'Open extension reference',
     );
     expect(projection.sidebarSections[0]?.items?.map((item) => item.label)).toEqual([
       'Inbox',
@@ -145,7 +146,7 @@ describe('projectCockpitShellNavigation', () => {
       'Extensions',
     );
     expect(projection.commandTargets.map((target) => target.label)).not.toContain(
-      'Open reference extension',
+      'Open extension reference',
     );
     expect(projectCockpitGChordMap(projection.commandTargets).x).toBeUndefined();
   });

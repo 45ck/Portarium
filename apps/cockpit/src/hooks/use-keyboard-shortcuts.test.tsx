@@ -35,8 +35,8 @@ function buildServerAccess(
     activePackIds: ['example.reference'],
     quarantinedExtensionIds: [] as string[],
     accessContext: {
-      availableCapabilities: ['extension:read', 'extension:review', 'evidence:read'],
-      availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+      availableCapabilities: ['extension:read', 'extension:inspect'],
+      availableApiScopes: ['extensions.read', 'extensions.inspect'],
       availablePrivacyClasses: ['internal', 'restricted'],
       availablePersonas: ['Operator'],
     },
@@ -64,8 +64,8 @@ describe('useKeyboardShortcuts', () => {
         workspaceId: 'ws-demo',
         roles: ['operator'],
         personas: ['Operator'],
-        capabilities: ['extension:read', 'extension:review', 'evidence:read'],
-        apiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+        capabilities: ['extension:read', 'extension:inspect'],
+        apiScopes: ['extensions.read', 'extensions.inspect'],
       },
       error: null,
     });
@@ -134,8 +134,8 @@ describe('useKeyboardShortcuts', () => {
     mockResolveCockpitExtensionServerAccess.mockReturnValue(
       buildServerAccess({
         accessContext: {
-          availableCapabilities: ['extension:read', 'extension:review', 'evidence:read'],
-          availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+          availableCapabilities: ['extension:read', 'extension:inspect'],
+          availableApiScopes: ['extensions.read', 'extensions.inspect'],
           availablePrivacyClasses: [],
           availablePersonas: ['Operator'],
         },
@@ -154,8 +154,8 @@ describe('useKeyboardShortcuts', () => {
     mockResolveCockpitExtensionServerAccess.mockReturnValue(
       buildServerAccess({
         accessContext: {
-          availableCapabilities: ['extension:read', 'extension:review', 'evidence:read'],
-          availableApiScopes: ['extensions.read', 'approvals.read', 'evidence.read'],
+          availableCapabilities: ['extension:read', 'extension:inspect'],
+          availableApiScopes: ['extensions.read', 'extensions.inspect'],
           availablePrivacyClasses: ['internal', 'restricted'],
           availablePersonas: ['Auditor'],
         },

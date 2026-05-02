@@ -33,6 +33,7 @@ function ExtensionsPage() {
     availableApiScopes: serverAccess.accessContext.availableApiScopes,
     availablePrivacyClasses: serverAccess.accessContext.availablePrivacyClasses,
   });
+  const statusCounts = getExtensionStatusCounts(registry.extensions);
 
   return (
     <div className="space-y-6 p-6">
@@ -40,6 +41,13 @@ function ExtensionsPage() {
         title="External Extensions"
         description="Compile-time installed Cockpit extension metadata, workspace activation, and declared capability boundaries"
       />
+
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <StatusSummaryCard label="Installed" value={statusCounts.installed} />
+        <StatusSummaryCard label="Enabled" value={statusCounts.enabled} />
+        <StatusSummaryCard label="Disabled" value={statusCounts.disabled} />
+        <StatusSummaryCard label="Invalid" value={statusCounts.invalid} />
+      </div>
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-4">
@@ -56,7 +64,7 @@ function ExtensionsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3 text-sm text-muted-foreground">
-            <p>External verticals are installed packages, not remote JavaScript bundles.</p>
+            <p>Cockpit extensions are installed packages, not remote JavaScript bundles.</p>
             <p>Routes, commands, and navigation declare capabilities before they are surfaced.</p>
             <p>
               Extension UI calls Portarium APIs or declared external APIs; it does not call systems
@@ -97,9 +105,10 @@ function ExtensionCard({ extension }: { extension: ResolvedCockpitExtension }) {
             </CardTitle>
             <p className="mt-1 max-w-3xl text-sm text-muted-foreground">{manifest.description}</p>
           </div>
-          <Badge variant={extension.status === 'enabled' ? 'default' : 'secondary'}>
-            {extension.status}
-          </Badge>
+          <div className="flex flex-wrap justify-end gap-2">
+            <Badge variant="outline">installed</Badge>
+            <Badge variant={getStatusBadgeVariant(extension.status)}>{extension.status}</Badge>
+          </div>
         </div>
         <div className="flex flex-wrap gap-2 text-xs">
           <Badge variant="outline">{manifest.id}</Badge>
@@ -194,6 +203,32 @@ function ExtensionSection({
       </div>
     </section>
   );
+}
+
+function StatusSummaryCard({ label, value }: { label: string; value: number }) {
+  return (
+    <Card aria-label={`${label} extensions`} className="shadow-none">
+      <CardContent className="p-4">
+        <p className="text-xs font-semibold uppercase text-muted-foreground">{label}</p>
+        <p className="mt-2 text-2xl font-semibold tabular-nums">{value}</p>
+      </CardContent>
+    </Card>
+  );
+}
+
+function getExtensionStatusCounts(extensions: readonly ResolvedCockpitExtension[]) {
+  return {
+    installed: extensions.length,
+    enabled: extensions.filter((extension) => extension.status === 'enabled').length,
+    disabled: extensions.filter((extension) => extension.status === 'disabled').length,
+    invalid: extensions.filter((extension) => extension.status === 'invalid').length,
+  };
+}
+
+function getStatusBadgeVariant(status: ResolvedCockpitExtension['status']) {
+  if (status === 'enabled') return 'success';
+  if (status === 'invalid' || status === 'quarantined') return 'destructive';
+  return 'secondary';
 }
 
 export const Route = createRoute({
