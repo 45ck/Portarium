@@ -221,6 +221,7 @@ describe('createControlPlaneHandler', () => {
       availablePrivacyClasses: string[];
       activePackIds: string[];
       quarantinedExtensionIds: string[];
+      hostContract: unknown;
       issuedAtIso: string;
       expiresAtIso: string;
     };
@@ -235,9 +236,153 @@ describe('createControlPlaneHandler', () => {
       availablePrivacyClasses: [],
       activePackIds: [],
       quarantinedExtensionIds: [],
+      hostContract: {
+        schemaVersion: 1,
+        browserEgress: 'host-api-origins-only',
+        credentialAccess: 'none',
+        failureMode: 'fail-closed',
+        dataQueries: [
+          expect.objectContaining({
+            id: 'cockpit.extensionContext.get',
+            kind: 'data-query',
+            pathTemplate: '/v1/workspaces/{workspaceId}/cockpit/extension-context',
+            requiredApiScopes: ['extensions.read'],
+            requiredAppActions: ['workspace:read'],
+            failClosed: true,
+          }),
+        ],
+        governedCommandRequests: [],
+      },
       issuedAtIso: '2026-04-30T02:00:00.000Z',
       expiresAtIso: '2026-04-30T02:05:00.000Z',
     });
+  });
+
+  it('advertises only configured, authorized, effectively scoped backend plugin surfaces', async () => {
+    await startWith(
+      makeDeps({
+        authentication: {
+          authenticateBearerToken: async () =>
+            ok(
+              makeCtx(
+                ['operator'],
+                ['extensions.read', 'approvals.read', 'evidence.read', 'agent-actions.propose'],
+                ['objects:read'],
+              ),
+            ),
+        },
+        cockpitExtensionActivationSource: {
+          getActivationState: async () => ({
+            activePackIds: ['example.pack'],
+            quarantinedExtensionIds: [],
+            availableCapabilities: [],
+            availableApiScopes: [
+              'extensions.read',
+              'approvals.read',
+              'evidence.read',
+              'agent-actions.propose',
+            ],
+          }),
+        },
+        approvalQueryStore: {
+          listApprovals: async () => ({ items: [] }),
+        },
+        approvalStore: {
+          getApprovalById: async () => null,
+          saveApproval: async () => undefined,
+        },
+        policyStore: {
+          getPolicyById: async () => null,
+          savePolicy: async () => undefined,
+        },
+        eventPublisher: {
+          publish: async () => undefined,
+        },
+      }),
+    );
+
+    const res = await fetch(
+      `http://${handle!.host}:${handle!.port}/v1/workspaces/tenant-1/cockpit/extension-context`,
+    );
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as {
+      hostContract: {
+        dataQueries: { id: string; failClosed: boolean }[];
+        governedCommandRequests: {
+          id: string;
+          policySemantics: string;
+          approvalSemantics: string;
+          evidenceSemantics: string;
+          failClosed: boolean;
+        }[];
+      };
+    };
+    expect(body.hostContract.dataQueries.map((query) => query.id)).toEqual([
+      'cockpit.extensionContext.get',
+      'approvals.list',
+      'evidence.list',
+    ]);
+    expect(body.hostContract.dataQueries.every((query) => query.failClosed)).toBe(true);
+    expect(body.hostContract.governedCommandRequests).toEqual([
+      expect.objectContaining({
+        id: 'agentActions.propose',
+        policySemantics: 'policy-approval-evidence-required',
+        approvalSemantics: 'policy-determined',
+        evidenceSemantics: 'evidence-required-before-response',
+        failClosed: true,
+      }),
+    ]);
+  });
+
+  it('fails closed by omitting governed commands when governance dependencies are unavailable', async () => {
+    await startWith(
+      makeDeps({
+        authentication: {
+          authenticateBearerToken: async () =>
+            ok(makeCtx(['operator'], ['extensions.read', 'agent-actions.propose'])),
+        },
+        cockpitExtensionActivationSource: {
+          getActivationState: async () => ({
+            activePackIds: ['example.pack'],
+            quarantinedExtensionIds: [],
+            availableApiScopes: ['extensions.read', 'agent-actions.propose'],
+          }),
+        },
+      }),
+    );
+
+    const res = await fetch(
+      `http://${handle!.host}:${handle!.port}/v1/workspaces/tenant-1/cockpit/extension-context`,
+    );
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as {
+      hostContract: { governedCommandRequests: unknown[] };
+    };
+    expect(body.hostContract.governedCommandRequests).toEqual([]);
+  });
+
+  it('fails closed when cockpit extension activation cannot be resolved', async () => {
+    await startWith(
+      makeDeps({
+        cockpitExtensionActivationSource: {
+          getActivationState: async () => {
+            throw new Error('activation source unavailable');
+          },
+        },
+      }),
+    );
+
+    const res = await fetch(
+      `http://${handle!.host}:${handle!.port}/v1/workspaces/tenant-1/cockpit/extension-context`,
+    );
+
+    expect(res.status).toBe(503);
+    expect(res.headers.get('content-type')).toMatch(/application\/problem\+json/i);
+    const body = (await res.json()) as { type: string; detail: string };
+    expect(body.type).toMatch(/service-unavailable/);
+    expect(body.detail).toContain('denied by default');
   });
 
   it('returns active and quarantined extension ids from the activation source', async () => {
