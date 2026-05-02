@@ -28,6 +28,7 @@ Decision fields (only when `status` is not `Pending`):
 - `decidedAtIso`: ISO-8601/RFC3339 UTC timestamp string
 - `decidedByUserId`: branded `UserId`
 - `rationale`: non-empty string (required)
+- `feedback?`: optional `ApprovalFeedbackV1` structured denial/revision/routing metadata
 
 Accountability metadata for Approval Gate decisions is defined by
 `operator-interaction-model-v1.md`. Implementations must be able to associate
@@ -40,6 +41,42 @@ each non-routine approval decision with:
 
 These fields may be stored directly on the approval record or linked through the
 Evidence Log, but they must be reconstructable for audit.
+
+### ApprovalFeedbackV1
+
+When an approval is denied or changes are requested, clients SHOULD include
+structured `feedback` in addition to `rationale`. `rationale` remains the human
+explanation; `feedback` makes the reason and routing machine-readable for audit,
+workflow improvement, Policy review, prompt strategy review, and operator
+calibration.
+
+Fields:
+
+- `schemaVersion`: `1`
+- `decision`: one of `Denied`, `RequestChanges`, `LowerScope`, `Escalate`
+- `reason`: one of `wrong-goal`, `wrong-evidence`, `wrong-risk-level`,
+  `wrong-execution-plan`, `missing-context`, `policy-violation`,
+  `insufficient-quality`, `domain-correctness-failure`
+- `rationale`: non-empty string matching or refining the approval rationale
+- `target`: links to the approval and, when known, `runId`, `planId`,
+  `policyId`/`policyVersion`, and `workItemId`
+- `routes`: non-empty list of destinations and effects
+- `evidenceRefs`: Evidence Artifact IDs consulted or cited by the feedback
+- `calibrationSurfaces`: derived or explicit future-learning surfaces
+
+Route destinations and effects:
+
+| Destination           | Effect                 | Semantics                                                            |
+| --------------------- | ---------------------- | -------------------------------------------------------------------- |
+| `current-run`         | `current-run-effect`   | Applies only to this Run, Plan, Approval Gate, or queue route.       |
+| `workflow-definition` | `future-policy-effect` | Updates reusable workflow/playbook behaviour.                        |
+| `prompt-strategy`     | `future-policy-effect` | Updates agent prompting, strategy, or machine instruction.           |
+| `policy-rule`         | `future-policy-effect` | Updates Policy, approval routing, evidence requirements, or tiering. |
+| `operator-enablement` | `context-only`         | Feeds operator training, runbook, or calibration review.             |
+
+`Denied` feedback must accompany a `Denied` approval decision. `LowerScope` and
+`Escalate` are feedback decisions that travel with `RequestChanges` because they
+change the next review path without approving the current Plan.
 
 ### ApprovalStatus
 

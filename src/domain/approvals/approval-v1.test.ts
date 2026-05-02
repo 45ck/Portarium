@@ -41,6 +41,45 @@ describe('parseApprovalV1: happy path', () => {
     expect(approval.status).toBe('Approved');
     expect('rationale' in approval ? approval.rationale : undefined).toBe('Looks correct.');
   });
+
+  it('parses a decided approval with structured feedback', () => {
+    const approval = parseApprovalV1({
+      schemaVersion: 1,
+      approvalId: 'approval-feedback-1',
+      workspaceId: 'ws-1',
+      runId: 'run-1',
+      planId: 'plan-1',
+      prompt: 'Approve Plan',
+      requestedAtIso: '2026-02-17T00:00:00.000Z',
+      requestedByUserId: 'user-1',
+      status: 'RequestChanges',
+      decidedAtIso: '2026-02-17T00:01:00.000Z',
+      decidedByUserId: 'user-2',
+      rationale: 'Attach missing evidence.',
+      feedback: {
+        schemaVersion: 1,
+        decision: 'RequestChanges',
+        reason: 'wrong-evidence',
+        rationale: 'Attach missing evidence.',
+        target: {
+          approvalId: 'approval-feedback-1',
+          runId: 'run-1',
+          planId: 'plan-1',
+        },
+        routes: [
+          { destination: 'current-run', effect: 'current-run-effect' },
+          { destination: 'prompt-strategy', effect: 'future-policy-effect' },
+        ],
+        evidenceRefs: ['evidence-1'],
+      },
+    });
+
+    expect(approval.status).toBe('RequestChanges');
+    expect('feedback' in approval ? approval.feedback?.reason : undefined).toBe('wrong-evidence');
+    expect('feedback' in approval ? approval.feedback?.calibrationSurfaces : undefined).toEqual([
+      'evidence-quality',
+    ]);
+  });
 });
 
 describe('parseApprovalV1: validation', () => {
@@ -170,6 +209,20 @@ describe('parseApprovalV1: validation', () => {
     expect(() => parseApprovalV1({ ...base, rationale: 'should not be here' })).toThrow(
       /decision fields/i,
     );
+
+    expect(() =>
+      parseApprovalV1({
+        ...base,
+        feedback: {
+          schemaVersion: 1,
+          decision: 'Denied',
+          reason: 'missing-context',
+          rationale: 'Should not be here.',
+          target: { approvalId: 'approval-1' },
+          routes: [{ destination: 'current-run', effect: 'current-run-effect' }],
+        },
+      }),
+    ).toThrow(/decision fields/i);
   });
 
   it('parses an approval with escalation chain', () => {

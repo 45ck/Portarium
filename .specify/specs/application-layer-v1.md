@@ -54,6 +54,8 @@ independent of transport/framework concerns.
   - `approvalId` (required branded `ApprovalId`)
   - `decision` (`Approved`, `Denied`, or `RequestChanges`)
   - `rationale` (required non-empty string)
+  - `feedback?` (optional structured `ApprovalFeedbackV1` input for denial,
+    request-changes, lower-scope, or escalation semantics)
   - `sodConstraints?` (optional `SodConstraintV1[]` carried with the approval decision)
   - `previousApproverIds?` (optional branded `UserId[]` for prior approvers on the same gate)
   - `robotContext?` (optional robot SoD context with hazardous/safety/e-stop qualifiers)
@@ -67,7 +69,11 @@ independent of transport/framework concerns.
   - A replay with the same request fingerprint returns the cached decision response without a second approval store write, domain event, evidence entry, or realtime approval broadcast.
   - Reusing an idempotency key with a different request fingerprint returns `Conflict`.
   - Existing `ApprovalDenied`/`ApprovalGranted` events are emitted.
-  - Approved/denied state is persisted in the approval record.
+  - Approved/denied/request-changes state is persisted in the approval record.
+  - Structured feedback, when supplied, is persisted with the decided approval and
+    included in the decision event payload.
+  - `Denied` feedback is valid only for a `Denied` decision; `LowerScope` and
+    `Escalate` feedback are valid only with `RequestChanges`.
 
 ## Queries
 

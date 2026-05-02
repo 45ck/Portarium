@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { ApprovalId, HashSha256, UserId, WorkspaceId } from '../primitives/index.js';
 
+import { createApprovalFeedbackV1 } from './approval-feedback-v1.js';
 import {
   createDecisionRecord,
   DecisionRecordValidationError,
@@ -74,6 +75,28 @@ describe('createDecisionRecord', () => {
 
     expect(record.evidenceRefs).toHaveLength(2);
     expect(record.evidenceRefs[0]!.decisive).toBe(true);
+  });
+
+  it('includes structured feedback when provided', () => {
+    const feedback = createApprovalFeedbackV1({
+      decision: 'Denied',
+      reason: 'policy-violation',
+      rationale: 'Policy requires a second approver.',
+      target: { approvalId: ApprovalId('apr-001') },
+      routes: ['current-run', 'policy-rule'],
+    });
+
+    const record = createDecisionRecord({
+      ...baseInput,
+      decision: 'Denied',
+      feedback,
+    });
+
+    expect(record.feedback?.reason).toBe('policy-violation');
+    expect(record.feedback?.routes.map((route) => route.destination)).toEqual([
+      'current-run',
+      'policy-rule',
+    ]);
   });
 
   it('includes AI context for ai_assisted decisions', () => {
