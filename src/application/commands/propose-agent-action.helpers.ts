@@ -10,7 +10,13 @@ import {
   type UserId as UserIdType,
   type WorkspaceId as WorkspaceIdType,
 } from '../../domain/primitives/index.js';
-import type { PolicyV1 } from '../../domain/policy/index.js';
+import {
+  evaluateOutboundCommunicationComplianceV1,
+  parseOutboundCommunicationComplianceFixtureV1,
+  type OutboundCommunicationComplianceEvaluationV1,
+  type OutboundCommunicationComplianceFixtureV1,
+  type PolicyV1,
+} from '../../domain/policy/index.js';
 import { evaluatePolicies, type PolicyEvaluationResultV1 } from '../../domain/services/index.js';
 import {
   classifyOpenClawToolBlastRadiusV1,
@@ -61,6 +67,7 @@ export type ParsedProposeAgentActionInput = Readonly<{
   rationale: string;
   requestedByUserId: UserIdType;
   idempotencyKey?: string;
+  outboundCompliance?: OutboundCommunicationComplianceFixtureV1;
 }>;
 
 export type ProposeAgentActionPolicyError = Forbidden | Conflict;
@@ -134,6 +141,8 @@ export function parseProposeAgentActionInput(
   if (!requestedByUserIdResult.ok) return requestedByUserIdResult;
   const policyIdsResult = parsePolicyIds(rawInput.policyIds);
   if (!policyIdsResult.ok) return policyIdsResult;
+  const outboundComplianceResult = parseOptionalOutboundCompliance(rawInput.parameters);
+  if (!outboundComplianceResult.ok) return outboundComplianceResult;
 
   if (!VALID_EXECUTION_TIERS.includes(rawInput.executionTier)) {
     return err({
@@ -154,12 +163,16 @@ export function parseProposeAgentActionInput(
     rationale: rationaleResult.value,
     requestedByUserId: UserId(requestedByUserIdResult.value),
     ...(rawInput.idempotencyKey ? { idempotencyKey: rawInput.idempotencyKey } : {}),
+    ...(outboundComplianceResult.value
+      ? { outboundCompliance: outboundComplianceResult.value }
+      : {}),
   });
 }
 
 export type AgentActionGovernanceEvaluation = Readonly<{
   policyEvaluation: PolicyEvaluationResultV1;
   toolClassification: OpenClawToolBlastRadiusPolicyV1;
+  outboundCompliance?: OutboundCommunicationComplianceEvaluationV1 | undefined;
   decision: 'Allow' | 'NeedsApproval' | 'Denied';
 }>;
 
@@ -170,6 +183,10 @@ export function evaluateAgentActionGovernance(params: {
   const { policies, input } = params;
 
   const toolClassification = classifyOpenClawToolBlastRadiusV1(input.toolName);
+  const outboundCompliance =
+    input.outboundCompliance && isGovernedOutboundAction(input)
+      ? evaluateOutboundCommunicationComplianceV1(input.outboundCompliance)
+      : undefined;
 
   const policyEvaluation = evaluatePolicies({
     policies,
@@ -183,22 +200,31 @@ export function evaluateAgentActionGovernance(params: {
 
   // Determine final decision from both tool classification and policy evaluation
   if (toolClassification.category === 'Dangerous') {
-    return { policyEvaluation, toolClassification, decision: 'Denied' };
+    return { policyEvaluation, toolClassification, outboundCompliance, decision: 'Denied' };
   }
 
   if (policyEvaluation.decision === 'Deny') {
-    return { policyEvaluation, toolClassification, decision: 'Denied' };
+    return { policyEvaluation, toolClassification, outboundCompliance, decision: 'Denied' };
+  }
+
+  if (
+    outboundCompliance?.decision === 'Block' ||
+    outboundCompliance?.decision === 'Defer' ||
+    outboundCompliance?.decision === 'ManualOnly'
+  ) {
+    return { policyEvaluation, toolClassification, outboundCompliance, decision: 'Denied' };
   }
 
   if (
     policyEvaluation.decision === 'RequireApproval' ||
+    outboundCompliance?.decision === 'HumanApprove' ||
     toolClassification.category === 'Mutation' ||
     toolClassification.category === 'Unknown'
   ) {
-    return { policyEvaluation, toolClassification, decision: 'NeedsApproval' };
+    return { policyEvaluation, toolClassification, outboundCompliance, decision: 'NeedsApproval' };
   }
 
-  return { policyEvaluation, toolClassification, decision: 'Allow' };
+  return { policyEvaluation, toolClassification, outboundCompliance, decision: 'Allow' };
 }
 
 export function toProposeAgentActionPolicyGateError(params: {
@@ -216,6 +242,24 @@ export function toProposeAgentActionPolicyGateError(params: {
   }
 
   if (evaluation.decision === 'Denied') {
+    if (evaluation.outboundCompliance?.decision === 'Defer') {
+      return {
+        kind: 'Conflict',
+        message: `Outbound compliance deferred agent action until ${evaluation.outboundCompliance.deferredUntilIso ?? 'the next allowed send window'}. ${formatOutboundComplianceRationale(evaluation.outboundCompliance)} Proposal evidence: ${evidenceId}.`,
+      };
+    }
+
+    if (
+      evaluation.outboundCompliance?.decision === 'Block' ||
+      evaluation.outboundCompliance?.decision === 'ManualOnly'
+    ) {
+      return {
+        kind: 'Forbidden',
+        action: APP_ACTIONS.agentActionPropose,
+        message: `Outbound compliance ${evaluation.outboundCompliance.decision} for agent action proposal. ${formatOutboundComplianceRationale(evaluation.outboundCompliance)} Evidence: ${evidenceId}.`,
+      };
+    }
+
     return {
       kind: 'Forbidden',
       action: APP_ACTIONS.agentActionPropose,
@@ -226,6 +270,46 @@ export function toProposeAgentActionPolicyGateError(params: {
   // NeedsApproval is not an error — it's a valid outcome that returns a proposal with an approval ID.
   // Allow is also not an error.
   return null;
+}
+
+export function formatOutboundComplianceRationale(
+  evaluation: OutboundCommunicationComplianceEvaluationV1,
+): string {
+  const reasons = evaluation.rationales.map((rationale) => rationale.message).join(' ');
+  const deferred = evaluation.deferredUntilIso
+    ? ` Deferred until ${evaluation.deferredUntilIso}.`
+    : '';
+  return `Outbound compliance ${evaluation.decision} (${evaluation.channel}/${evaluation.purpose}). ${reasons}${deferred}`;
+}
+
+function parseOptionalOutboundCompliance(
+  parameters: Record<string, unknown> | undefined,
+): Result<OutboundCommunicationComplianceFixtureV1 | undefined, ValidationFailed> {
+  if (parameters?.['outboundCompliance'] === undefined) {
+    return ok(undefined);
+  }
+
+  try {
+    return ok(parseOutboundCommunicationComplianceFixtureV1(parameters['outboundCompliance']));
+  } catch (error) {
+    return err({
+      kind: 'ValidationFailed',
+      message:
+        error instanceof Error
+          ? `outboundCompliance invalid: ${error.message}`
+          : 'outboundCompliance invalid.',
+    });
+  }
+}
+
+function isGovernedOutboundAction(input: ParsedProposeAgentActionInput): boolean {
+  const action = `${input.actionKind}:${input.toolName}`.toLowerCase();
+  return (
+    /(^|[:._-])(send|publish|post)([:._-]|$)/u.test(action) ||
+    /(^|[:._-])(email|sms|message|campaign|social)([:._-])?(send|publish|post)([:._-]|$)/u.test(
+      action,
+    )
+  );
 }
 
 // ---------------------------------------------------------------------------

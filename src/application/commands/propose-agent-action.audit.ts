@@ -23,11 +23,11 @@ function buildAgentActionEvidence(params: {
   evidenceId: string;
   occurredAtIso: string;
   input: ParsedProposeAgentActionInput;
-  decision: AgentActionGovernanceEvaluation['decision'];
+  evaluation: AgentActionGovernanceEvaluation;
   actorUserId: ParsedProposeAgentActionInput['requestedByUserId'];
   correlationId: CorrelationId;
 }): EvidenceEntryAppendInput {
-  const { proposalId, evidenceId, occurredAtIso, input, decision, actorUserId, correlationId } =
+  const { proposalId, evidenceId, occurredAtIso, input, evaluation, actorUserId, correlationId } =
     params;
 
   return {
@@ -37,7 +37,7 @@ function buildAgentActionEvidence(params: {
     correlationId,
     occurredAtIso,
     category: 'Policy',
-    summary: `Agent action proposal ${proposalId} (${input.actionKind}:${input.toolName}) evaluated as ${decision}.`,
+    summary: buildEvidenceSummary({ proposalId, input, evaluation }),
     actor: { kind: 'User', userId: actorUserId },
     links: {
       externalRefs: [
@@ -115,9 +115,31 @@ function buildAgentActionPolicyEvent(params: {
       policyDecision: evaluation.policyEvaluation.decision,
       policyIds: evaluation.policyEvaluation.evaluatedPolicyIds,
       violationKinds: evaluation.policyEvaluation.violations.map((v) => v.kind),
+      ...(evaluation.outboundCompliance
+        ? {
+            outboundCompliance: {
+              decision: evaluation.outboundCompliance.decision,
+              channel: evaluation.outboundCompliance.channel,
+              purpose: evaluation.outboundCompliance.purpose,
+              deferredUntilIso: evaluation.outboundCompliance.deferredUntilIso,
+              rationales: evaluation.outboundCompliance.rationales,
+            },
+          }
+        : {}),
       evidenceId: EvidenceId(evidenceId),
     },
   };
+}
+
+function buildEvidenceSummary(params: {
+  proposalId: string;
+  input: ParsedProposeAgentActionInput;
+  evaluation: AgentActionGovernanceEvaluation;
+}): string {
+  const compliance = params.evaluation.outboundCompliance
+    ? ` Outbound compliance ${params.evaluation.outboundCompliance.decision}: ${params.evaluation.outboundCompliance.rationales.map((rationale) => rationale.code).join(', ')}.`
+    : '';
+  return `Agent action proposal ${params.proposalId} (${params.input.actionKind}:${params.input.toolName}) evaluated as ${params.evaluation.decision}.${compliance}`;
 }
 
 export function buildAgentActionAuditArtifacts(params: {
@@ -141,7 +163,7 @@ export function buildAgentActionAuditArtifacts(params: {
       evidenceId,
       occurredAtIso,
       input,
-      decision: evaluation.decision,
+      evaluation,
       actorUserId: params.actorUserId,
       correlationId: params.correlationId,
     }),

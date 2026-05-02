@@ -123,6 +123,171 @@ describe('proposeAgentAction', () => {
     expect(approvalStore.saveApproval).toHaveBeenCalledTimes(1);
   });
 
+  it('blocks governed outbound email when consent is opted out and records evidence rationale', async () => {
+    const result = await proposeAgentAction(deps(), ctx(), {
+      workspaceId: 'ws-1',
+      agentId: 'agent-growth-studio',
+      actionKind: 'comms:sendEmail',
+      toolName: 'email:send',
+      executionTier: 'HumanApprove',
+      policyIds: ['pol-1'],
+      rationale: 'Send Growth Studio outreach.',
+      parameters: {
+        outboundCompliance: {
+          schemaVersion: 1,
+          channel: 'email',
+          purpose: 'growth-outreach',
+          workspaceTimezone: 'UTC',
+          nowIso: '2026-05-04T10:00:00.000Z',
+          recipients: [
+            {
+              recipientId: 'lead-1',
+              consent: { optInStatus: 'opted_out' },
+            },
+          ],
+        },
+      },
+    });
+
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('Expected rejection.');
+    expect(result.error.kind).toBe('Forbidden');
+    expect(result.error.message).toContain('Outbound compliance Block');
+    const evidence = vi.mocked(evidenceLog.appendEntry).mock.calls[0]![1];
+    expect(evidence.summary).toContain('Outbound compliance Block');
+    expect(evidence.summary).toContain('consent.not_opted_in');
+    expect(approvalStore.saveApproval).not.toHaveBeenCalled();
+  });
+
+  it('defers governed outbound email during recipient quiet hours', async () => {
+    const result = await proposeAgentAction(deps(), ctx(), {
+      workspaceId: 'ws-1',
+      agentId: 'agent-growth-studio',
+      actionKind: 'comms:sendEmail',
+      toolName: 'email:send',
+      executionTier: 'HumanApprove',
+      policyIds: ['pol-1'],
+      rationale: 'Send Growth Studio outreach.',
+      parameters: {
+        outboundCompliance: {
+          schemaVersion: 1,
+          channel: 'email',
+          purpose: 'growth-outreach',
+          workspaceTimezone: 'UTC',
+          nowIso: '2026-05-04T11:30:00.000Z',
+          recipients: [
+            {
+              recipientId: 'lead-ny',
+              timezone: 'America/New_York',
+              consent: { optInStatus: 'opted_in' },
+            },
+          ],
+          rules: {
+            quietHours: [{ startLocalTime: '20:00', endLocalTime: '08:00' }],
+          },
+        },
+      },
+    });
+
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('Expected deferral.');
+    expect(result.error.kind).toBe('Conflict');
+    expect(result.error.message).toContain('2026-05-04T12:00:00.000Z');
+    const evidence = vi.mocked(evidenceLog.appendEntry).mock.calls[0]![1];
+    expect(evidence.summary).toContain('Outbound compliance Defer');
+    expect(evidence.summary).toContain('quiet_hours.defer');
+    expect(approvalStore.saveApproval).not.toHaveBeenCalled();
+  });
+
+  it('escalates jurisdiction-constrained outbound publish actions to approval', async () => {
+    const result = await proposeAgentAction(deps(), ctx(), {
+      workspaceId: 'ws-1',
+      agentId: 'agent-growth-studio',
+      actionKind: 'marketing:publishCampaign',
+      toolName: 'campaign:publish',
+      executionTier: 'HumanApprove',
+      policyIds: ['pol-1'],
+      rationale: 'Publish micro-saas campaign.',
+      parameters: {
+        outboundCompliance: {
+          schemaVersion: 1,
+          channel: 'email',
+          purpose: 'micro-saas-trial-nurture',
+          workspaceTimezone: 'UTC',
+          nowIso: '2026-05-04T10:00:00.000Z',
+          recipients: [
+            {
+              recipientId: 'lead-ca',
+              jurisdiction: 'US-CA',
+              consent: { optInStatus: 'opted_in' },
+            },
+          ],
+          rules: {
+            jurisdictionRules: [
+              {
+                jurisdiction: 'US-CA',
+                channel: 'email',
+                effect: 'HumanApprove',
+                rationale: 'California outreach requires operator review.',
+              },
+            ],
+          },
+        },
+      },
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error('Expected approval escalation.');
+    expect(result.value.decision).toBe('NeedsApproval');
+    expect(result.value.message).toContain('Outbound compliance HumanApprove');
+    const savedApproval = vi.mocked(approvalStore.saveApproval).mock.calls[0]![1];
+    expect(savedApproval.prompt).toContain('California outreach requires operator review');
+  });
+
+  it('blocks jurisdiction-constrained outbound actions that must remain ManualOnly', async () => {
+    const result = await proposeAgentAction(deps(), ctx(), {
+      workspaceId: 'ws-1',
+      agentId: 'agent-growth-studio',
+      actionKind: 'comms:sendEmail',
+      toolName: 'email:send',
+      executionTier: 'HumanApprove',
+      policyIds: ['pol-1'],
+      rationale: 'Send regulated outreach.',
+      parameters: {
+        outboundCompliance: {
+          schemaVersion: 1,
+          channel: 'email',
+          purpose: 'regulated-outreach',
+          workspaceTimezone: 'UTC',
+          nowIso: '2026-05-04T10:00:00.000Z',
+          recipients: [
+            {
+              recipientId: 'lead-eu',
+              jurisdiction: 'EU-DE',
+              consent: { optInStatus: 'opted_in' },
+            },
+          ],
+          rules: {
+            jurisdictionRules: [
+              {
+                jurisdiction: 'EU-DE',
+                channel: 'email',
+                effect: 'ManualOnly',
+                rationale: 'Manual legal review is required before sending.',
+              },
+            ],
+          },
+        },
+      },
+    });
+
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('Expected rejection.');
+    expect(result.error.kind).toBe('Forbidden');
+    expect(result.error.message).toContain('Outbound compliance ManualOnly');
+    expect(approvalStore.saveApproval).not.toHaveBeenCalled();
+  });
+
   it('denies Dangerous tool (shell.exec)', async () => {
     const result = await proposeAgentAction(deps(), ctx(), {
       workspaceId: 'ws-1',

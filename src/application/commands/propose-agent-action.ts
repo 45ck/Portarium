@@ -39,6 +39,7 @@ import {
   type ProposeAgentActionOutput as ProposeAgentActionOutputFromHelpers,
   type ProposeAgentActionPolicyError,
   evaluateAgentActionGovernance,
+  formatOutboundComplianceRationale,
   generateIdempotencyKey,
   parseProposeAgentActionInput,
   toProposeAgentActionPolicyGateError,
@@ -215,6 +216,17 @@ function proposalToOutput(proposal: AgentActionProposalV1): ProposeAgentActionOu
   };
 }
 
+function approvalMessage(
+  parsedInput: ParsedProposeAgentActionInput,
+  evaluation: AgentActionGovernanceEvaluation,
+): string {
+  const base = `Tool '${parsedInput.toolName}' (${evaluation.toolClassification.category}) requires approval at tier ${evaluation.toolClassification.minimumTier}.`;
+  const compliance = evaluation.outboundCompliance
+    ? ` ${formatOutboundComplianceRationale(evaluation.outboundCompliance)}`
+    : '';
+  return `${base}${compliance}`;
+}
+
 /**
  * After saveProposalRecord completes, if an idempotencyKey was in play, re-read
  * the store to check whether a different proposal won the write (race loser
@@ -337,7 +349,7 @@ export async function proposeAgentAction(
       workspaceId: WorkspaceId(String(parsedWithKey.workspaceId)),
       runId: RunId(auditResult.value.proposalId),
       planId: PlanId(auditResult.value.proposalId),
-      prompt: `Tool '${parsedWithKey.toolName}' (${evaluation.toolClassification.category}) requires approval at tier ${evaluation.toolClassification.minimumTier}. Rationale: ${parsedWithKey.rationale}`,
+      prompt: `${approvalMessage(parsedWithKey, evaluation)} Rationale: ${parsedWithKey.rationale}`,
       requestedAtIso: requestedAtResult.value,
       requestedByUserId: parsedWithKey.requestedByUserId,
       status: 'Pending',
@@ -357,7 +369,7 @@ export async function proposeAgentAction(
       evidenceId: auditResult.value.evidenceId,
       decision: 'NeedsApproval',
       approvalId: approvalIdResult.value,
-      message: `Tool '${parsedWithKey.toolName}' (${evaluation.toolClassification.category}) requires approval at tier ${evaluation.toolClassification.minimumTier}.`,
+      message: approvalMessage(parsedWithKey, evaluation),
     };
 
     await saveProposalRecord(
@@ -386,6 +398,9 @@ export async function proposeAgentAction(
     proposalId: auditResult.value.proposalId,
     evidenceId: auditResult.value.evidenceId,
     decision: 'Allow',
+    ...(evaluation.outboundCompliance
+      ? { message: formatOutboundComplianceRationale(evaluation.outboundCompliance) }
+      : {}),
   };
 
   await saveProposalRecord(deps, ctx, parsedWithKey, evaluation, auditResult.value);
