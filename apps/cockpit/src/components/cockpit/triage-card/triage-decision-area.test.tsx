@@ -22,6 +22,14 @@ const defaultProps = {
   shouldShakeRationale: false,
   onRationaleFocus: vi.fn(),
   onRationaleBlur: vi.fn(),
+  reviewFriction: {
+    requireExpansion: false,
+    requireRationale: false,
+    requireSecondConfirm: false,
+    escalationLock: false,
+  },
+  approveAttempted: false,
+  approveConfirmArmed: false,
 };
 
 describe('TriageDecisionArea', () => {
@@ -44,11 +52,64 @@ describe('TriageDecisionArea', () => {
     expect(btn.disabled).toBe(true);
   });
 
+  it('disables approve button when escalation locked', () => {
+    render(
+      <TriageDecisionArea
+        {...defaultProps}
+        reviewFriction={{
+          requireExpansion: true,
+          requireRationale: true,
+          requireSecondConfirm: false,
+          escalationLock: true,
+          lockReason: 'Manual-only Actions must be escalated',
+        }}
+      />,
+    );
+    const btn = screen.getByTitle('Manual-only Actions must be escalated') as HTMLButtonElement;
+    expect(btn.disabled).toBe(true);
+  });
+
   it('shows deny validation alert when denyAttempted with no rationale', () => {
     render(<TriageDecisionArea {...defaultProps} denyAttempted={true} rationale="" />);
     expect(screen.getByRole('alert').textContent).toContain(
       'A rationale is required when denying an approval.',
     );
+  });
+
+  it('shows high-risk approval rationale requirement', () => {
+    render(
+      <TriageDecisionArea
+        {...defaultProps}
+        approveAttempted={true}
+        reviewFriction={{
+          requireExpansion: true,
+          requireRationale: true,
+          requireSecondConfirm: true,
+          escalationLock: false,
+        }}
+      />,
+    );
+    expect(screen.getByRole('alert').textContent).toContain(
+      'A rationale is required when approving high-risk Actions.',
+    );
+  });
+
+  it('labels armed high-risk approval as confirmation', () => {
+    render(
+      <TriageDecisionArea
+        {...defaultProps}
+        rationale="Reviewed evidence and blast radius"
+        approveConfirmArmed={true}
+        reviewFriction={{
+          requireExpansion: true,
+          requireRationale: true,
+          requireSecondConfirm: true,
+          escalationLock: false,
+        }}
+      />,
+    );
+    expect(screen.getByText('Confirm')).toBeTruthy();
+    expect(screen.getByRole('alert').textContent).toContain('Press Confirm');
   });
 
   it('shows rationale provided message when rationale has text', () => {

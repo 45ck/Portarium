@@ -5,6 +5,7 @@ import type {
   RunSummary,
   WorkflowSummary,
 } from '@portarium/cockpit-types';
+import { useMemo } from 'react';
 import { ModeSwitcher } from '../triage-modes/mode-switcher';
 import { useTriageCard } from './use-triage-card';
 import { TriageProgressDots } from './triage-progress-dots';
@@ -13,6 +14,7 @@ import { TriageCardBody } from './triage-card-body';
 import { TriageDecisionArea } from './triage-decision-area';
 import { TriageKeyboardHints } from './triage-keyboard-hints';
 import type { TriageAction, DragValidation } from './types';
+import { buildApprovalCardContract } from './approval-card-contract';
 
 export interface ApprovalTriageCardProps {
   approval: ApprovalSummary;
@@ -57,6 +59,18 @@ export function ApprovalTriageCard({
   dragRejection = null,
   policyLinkedMode = false,
 }: ApprovalTriageCardProps) {
+  const cardContract = useMemo(
+    () =>
+      buildApprovalCardContract({
+        approval,
+        plannedEffects,
+        evidenceEntries,
+        run,
+        workflow,
+      }),
+    [approval, evidenceEntries, plannedEffects, run, workflow],
+  );
+
   const card = useTriageCard({
     approval,
     onAction,
@@ -69,6 +83,7 @@ export function ApprovalTriageCard({
     onUndo,
     onValidationChange,
     dragRejection,
+    cardContract,
   });
 
   const proposedAction =
@@ -188,6 +203,9 @@ export function ApprovalTriageCard({
                   shouldShakeRationale={card.shouldShakeRationale}
                   onRationaleFocus={() => card.setRationaleHasFocus(true)}
                   onRationaleBlur={() => card.setRationaleHasFocus(false)}
+                  reviewFriction={cardContract.friction}
+                  approveAttempted={card.approveAttempted}
+                  approveConfirmArmed={card.approveConfirmArmed}
                 />
 
                 <div className="rounded-lg border border-border bg-muted/20 p-3">
@@ -218,6 +236,7 @@ export function ApprovalTriageCard({
                   sodEval={card.sodEval}
                   flashSodBanner={card.flashSodBanner}
                   prefersReducedMotion={card.prefersReducedMotion}
+                  cardContract={cardContract}
                 />
               </>
             ) : (
@@ -233,6 +252,7 @@ export function ApprovalTriageCard({
                   sodEval={card.sodEval}
                   flashSodBanner={card.flashSodBanner}
                   prefersReducedMotion={card.prefersReducedMotion}
+                  cardContract={cardContract}
                 />
 
                 <TriageDecisionArea
@@ -252,6 +272,9 @@ export function ApprovalTriageCard({
                   shouldShakeRationale={card.shouldShakeRationale}
                   onRationaleFocus={() => card.setRationaleHasFocus(true)}
                   onRationaleBlur={() => card.setRationaleHasFocus(false)}
+                  reviewFriction={cardContract.friction}
+                  approveAttempted={card.approveAttempted}
+                  approveConfirmArmed={card.approveConfirmArmed}
                 />
               </>
             )}

@@ -14,6 +14,7 @@ import { SodBanner } from '../sod-banner';
 import { ApprovalContextPanels } from '../approval-context-panels';
 import { ModeErrorBoundary, MODE_COMPONENTS } from './mode-error-boundary';
 import { TriageDefaultContent } from './triage-default-content';
+import type { ApprovalCardContract } from './approval-card-contract';
 
 export interface TriageCardBodyProps {
   approval: ApprovalSummary;
@@ -26,6 +27,7 @@ export interface TriageCardBodyProps {
   sodEval: SodEvaluation;
   flashSodBanner: boolean;
   prefersReducedMotion: boolean | null;
+  cardContract: ApprovalCardContract;
 }
 
 export function TriageCardBody({
@@ -39,6 +41,7 @@ export function TriageCardBody({
   sodEval,
   flashSodBanner,
   prefersReducedMotion,
+  cardContract,
 }: TriageCardBodyProps) {
   return (
     <>
@@ -84,6 +87,7 @@ export function TriageCardBody({
                   plannedEffects={plannedEffects}
                   run={run}
                   workflow={workflow}
+                  cardContract={cardContract}
                 />
               ) : (
                 (() => {
