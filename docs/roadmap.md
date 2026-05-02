@@ -43,6 +43,13 @@ Good OSS contributions should improve the core loop:
 
 These are intentionally not release blockers for the core control plane.
 
+### Software-First Proving
+
+- one builder-used Growth Studio, micro-SaaS, content, or media workflow
+- multiple governed Project types with truthful readiness labels
+- self-use evidence before public claims
+- clear separation between current proving work and demo-only storytelling
+
 ### Business Showcases
 
 - Growth Studio
@@ -76,6 +83,13 @@ The release-critical subset is tracked in `docs/internal/governance/pilot-readin
 - weekly autonomy digests
 - generated media artifacts
 - showcase automation
+
+### Speculative Robotics Expansion
+
+- robotics simulation and hardware access
+- physical safety case and stop-path evidence
+- fleet operations UI beyond demo fixtures
+- release-gate review for any robotics-enabled workflow
 
 ## Decision Rule
 

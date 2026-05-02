@@ -53,9 +53,19 @@ The remaining core work should stay focused on production readiness:
 
 The following are useful directions, but they are not required for the core Portarium control plane to be considered usable.
 
+### Software-First Proving Program
+
+The near-term proving path is software-first: Growth Studio, micro-SaaS, content, media, and operator-governance loops should prove that Portarium can govern real Projects that create useful software or digital Artifacts. At least one bounded workflow should be used by the builder before broader claims are made.
+
+This proving work is adjacent to the core platform. It can validate the control plane in self-use and demos, but it should not expand the core release bar beyond the tested agent governance loop.
+
 ### Growth Studio
 
 Autonomous B2B Growth Studio, prospect research, content creation, outreach execution, campaign measurement, dashboards, live demo recordings, and sample ICP/content templates are showcase work. They prove Portarium can govern a business loop, but they are not part of the core platform.
+
+### Robotics Expansion
+
+Robotics and physical actuation are later speculative expansion, not part of the current proving path. Existing `RoboticsActuation` specs and demo surfaces remain useful references, but robotics work should not block software-first proof until capital, representative hardware or validated simulation, site-specific safety evidence, and release-gate review exist.
 
 ### Mission Control UI
 
