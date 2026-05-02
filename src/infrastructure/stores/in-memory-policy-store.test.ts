@@ -1,6 +1,16 @@
 import { describe, expect, it } from 'vitest';
 
-import { PolicyId, TenantId, WorkspaceId } from '../../domain/primitives/index.js';
+import {
+  PolicyChangeId,
+  PolicyId,
+  TenantId,
+  UserId,
+  WorkspaceId,
+} from '../../domain/primitives/index.js';
+import {
+  parsePolicyChangeRequestV1,
+  toPolicyChangeAuditEntryV1,
+} from '../../domain/policy/index.js';
 import { parsePolicyV1 } from '../../domain/policy/policy-v1.js';
 import { InMemoryPolicyStore } from './in-memory-policy-store.js';
 
@@ -18,6 +28,28 @@ function makePolicy(id: string) {
     version: 1,
     createdAtIso: '2026-01-01T00:00:00Z',
     createdByUserId: 'user-1',
+  });
+}
+
+function makePolicyChange(id: string, policyId = 'pol-a') {
+  return parsePolicyChangeRequestV1({
+    schemaVersion: 1,
+    policyChangeId: id,
+    policyId,
+    workspaceId: 'ws-1',
+    operation: 'Update',
+    risk: 'Standard',
+    status: 'PendingApproval',
+    scope: { targetKind: 'Workspace', workspaceId: 'ws-1' },
+    basePolicy: makePolicy(policyId),
+    proposedPolicy: { ...makePolicy(policyId), version: 2, name: `Updated ${policyId}` },
+    proposedAtIso: '2026-01-01T00:00:00Z',
+    proposedByUserId: 'maker-1',
+    rationale: 'Tighten policy for this workspace.',
+    diff: [{ path: '/name', before: `Policy ${policyId}`, after: `Updated ${policyId}` }],
+    runEffect: 'FutureRunsOnly',
+    effectiveFromIso: '2026-01-01T01:00:00Z',
+    approval: { approvalRequired: false },
   });
 }
 
@@ -60,5 +92,38 @@ describe('InMemoryPolicyStore', () => {
     const secondPage = await store.listPolicies(T, WS, { limit: 10, cursor });
     expect(secondPage.items.map((policy) => String(policy.policyId))).toEqual(['pol-b']);
     expect(secondPage.nextCursor).toBeUndefined();
+  });
+
+  it('saves policy changes and lists durable audit entries by policy change', async () => {
+    const store = new InMemoryPolicyStore();
+    const first = makePolicyChange('pc-a');
+    const second = makePolicyChange('pc-b');
+    const otherPolicy = makePolicyChange('pc-c', 'pol-other');
+
+    await store.savePolicyChange(T, WS, first);
+    await store.savePolicyChange(T, WS, second);
+    await store.savePolicyChange(T, WS, otherPolicy);
+
+    expect(await store.getPolicyChangeById(T, WS, PolicyChangeId('pc-a'))).toEqual(first);
+    expect(
+      await store.getPolicyChangeById(TenantId('other'), WS, PolicyChangeId('pc-a')),
+    ).toBeNull();
+
+    const page = await store.listPolicyChanges(T, WS, PolicyId('pol-a'), { limit: 10 });
+    expect(page.items.map((change) => String(change.policyChangeId))).toEqual(['pc-a', 'pc-b']);
+
+    const audit = toPolicyChangeAuditEntryV1({
+      change: first,
+      eventType: 'PolicyChangeProposed',
+      occurredAtIso: first.proposedAtIso,
+      actorUserId: UserId('maker-1'),
+      rationale: first.rationale,
+    });
+    await store.appendPolicyChangeAuditEntry(T, WS, audit);
+
+    expect(await store.listPolicyChangeAuditEntries(T, WS, PolicyChangeId('pc-a'))).toEqual([
+      audit,
+    ]);
+    expect(await store.listPolicyChangeAuditEntries(T, WS, PolicyChangeId('pc-b'))).toEqual([]);
   });
 });

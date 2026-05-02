@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "specPath": ".specify/specs/application-command-query-contract-v1.md",
-  "operationCount": 29,
+  "operationCount": 32,
   "operations": [
     {
       "kind": "command",
@@ -119,6 +119,66 @@
         },
         "error": {
           "name": "SubmitApprovalError",
+          "sha256": "2cd01912da41ef034e15b99dea092fdbde099c1adf10c019eef9c186a11bc985"
+        }
+      }
+    },
+    {
+      "kind": "command",
+      "name": "proposePolicyChange",
+      "sourcePath": "src/application/commands/policy-change-workflow.ts",
+      "action": "policy-change:propose",
+      "types": {
+        "input": {
+          "name": "ProposePolicyChangeInput",
+          "sha256": "6536d228f71b5f80c7fb8545a90560b9cfd7c7edf18445612b3c92906a929248"
+        },
+        "output": {
+          "name": "PolicyChangeOutput",
+          "sha256": "918194426a32aa96a00a9a1d1e8e5bac5b2cea3695642f831ac3bb4fbc27020f"
+        },
+        "error": {
+          "name": "PolicyChangeCommandError",
+          "sha256": "2cd01912da41ef034e15b99dea092fdbde099c1adf10c019eef9c186a11bc985"
+        }
+      }
+    },
+    {
+      "kind": "command",
+      "name": "approvePolicyChange",
+      "sourcePath": "src/application/commands/policy-change-workflow.ts",
+      "action": "policy-change:approve",
+      "types": {
+        "input": {
+          "name": "ApprovePolicyChangeInput",
+          "sha256": "8ce6db2ec09a92d21103d363c27d1ad455a9d716bb4044328013c65aefd046d8"
+        },
+        "output": {
+          "name": "PolicyChangeOutput",
+          "sha256": "918194426a32aa96a00a9a1d1e8e5bac5b2cea3695642f831ac3bb4fbc27020f"
+        },
+        "error": {
+          "name": "PolicyChangeCommandError",
+          "sha256": "2cd01912da41ef034e15b99dea092fdbde099c1adf10c019eef9c186a11bc985"
+        }
+      }
+    },
+    {
+      "kind": "command",
+      "name": "rollbackPolicyChange",
+      "sourcePath": "src/application/commands/policy-change-workflow.ts",
+      "action": "policy-change:rollback",
+      "types": {
+        "input": {
+          "name": "RollbackPolicyChangeInput",
+          "sha256": "30947320f9274aa43d3d7466bbce47ee034340bece5d53af4182043da0191839"
+        },
+        "output": {
+          "name": "PolicyChangeOutput",
+          "sha256": "918194426a32aa96a00a9a1d1e8e5bac5b2cea3695642f831ac3bb4fbc27020f"
+        },
+        "error": {
+          "name": "PolicyChangeCommandError",
           "sha256": "2cd01912da41ef034e15b99dea092fdbde099c1adf10c019eef9c186a11bc985"
         }
       }

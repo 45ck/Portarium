@@ -105,18 +105,18 @@ describe('Application command/query contract surface', () => {
   });
 
   it('enforces authorization action and Forbidden.action alignment per source file', async () => {
-    const actionBySource = new Map<string, ActionKey>();
+    const actionsBySource = new Map<string, Set<ActionKey>>();
     for (const operation of APPLICATION_OPERATION_CONTRACTS) {
-      const existing = actionBySource.get(operation.sourcePath);
-      if (existing === undefined) {
-        actionBySource.set(operation.sourcePath, operation.actionKey);
-        continue;
+      const existing = actionsBySource.get(operation.sourcePath);
+      if (existing !== undefined) {
+        existing.add(operation.actionKey);
+      } else {
+        actionsBySource.set(operation.sourcePath, new Set([operation.actionKey]));
       }
-      expect(existing).toBe(operation.actionKey);
     }
 
     const repoRoot = resolveRepoRoot();
-    for (const [sourcePath, actionKey] of actionBySource) {
+    for (const [sourcePath, actionKeys] of actionsBySource) {
       const sourceText = await readFile(path.join(repoRoot, sourcePath), 'utf8');
       const isAllowedActions = collectMatches(
         sourceText,
@@ -127,8 +127,8 @@ describe('Application command/query contract surface', () => {
       expect(isAllowedActions.length).toBeGreaterThan(0);
       expect(forbiddenActions.length).toBeGreaterThan(0);
 
-      expect(new Set(isAllowedActions)).toEqual(new Set([actionKey]));
-      expect(new Set(forbiddenActions)).toEqual(new Set([actionKey]));
+      expect(new Set(isAllowedActions)).toEqual(actionKeys);
+      expect(new Set(forbiddenActions)).toEqual(actionKeys);
     }
   });
 

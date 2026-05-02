@@ -5,6 +5,7 @@ export * from './cancel-run.js';
 export * from './submit-run-intervention.js';
 export * from './create-approval.js';
 export * from './submit-approval.js';
+export * from './policy-change-workflow.js';
 export * from './submit-map-command-intent.js';
 export * from './assign-workforce-member.js';
 export * from './complete-human-task.js';

@@ -71,6 +71,12 @@ export type DomainEventType =
   | 'SodConstraintRemoved'
   | 'PolicyEvaluated'
   | 'SodViolationDetected'
+  | 'PolicyChangeProposed'
+  | 'PolicyChangeApproved'
+  | 'PolicyChangeApplied'
+  | 'PolicyChangeRejected'
+  | 'PolicyChangeRolledBack'
+  | 'PolicyChangeSuperseded'
   // Adapter aggregate
   | 'AdapterRegistered'
   | 'AdapterEnabled'
@@ -199,6 +205,12 @@ const EVENT_TYPES = new Set<DomainEventType>([
   'SodConstraintRemoved',
   'PolicyEvaluated',
   'SodViolationDetected',
+  'PolicyChangeProposed',
+  'PolicyChangeApproved',
+  'PolicyChangeApplied',
+  'PolicyChangeRejected',
+  'PolicyChangeRolledBack',
+  'PolicyChangeSuperseded',
   // Adapter aggregate
   'AdapterRegistered',
   'AdapterEnabled',
