@@ -76,6 +76,11 @@ describe('projectCockpitShellNavigation', () => {
     expect(projection.commandTargets.map((target) => target.label)).toEqual(
       expect.arrayContaining(['Inbox', 'Dashboard', 'Extensions', 'Open extension reference']),
     );
+    expect(
+      projection.sidebarSections
+        .find((section) => section.id === 'engineering')
+        ?.items?.map((item) => [item.label, item.to]),
+    ).toContainEqual(['Mission Control', '/engineering/mission-control']);
     const extensionTargets = [
       ...projection.sidebarSections.flatMap((section) => section.items ?? []),
       ...projection.mobileMoreSections.flatMap((section) => section.items ?? []),

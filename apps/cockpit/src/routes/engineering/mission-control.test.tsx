@@ -148,16 +148,18 @@ afterAll(() => {
 });
 
 describe('Mission Control route', () => {
-  it('renders active sessions, queue pressure, evidence health, tool activity, and run state', async () => {
+  it('renders the Portarium-native Mission Control shell with live governance data', async () => {
     await renderRoute();
 
     expect(await screen.findByRole('heading', { name: 'Mission Control' })).toBeTruthy();
-    expect(await screen.findByText('Agent Session Board')).toBeTruthy();
-    expect(await screen.findByText('Evidence Integrity')).toBeTruthy();
-    expect(await screen.findByText('Pending Queue')).toBeTruthy();
-    expect(await screen.findByText('Run Mix')).toBeTruthy();
-    expect(await screen.findByText('Invoice Analyzer')).toBeTruthy();
+    expect(await screen.findByText('Operator Shell')).toBeTruthy();
+    expect(await screen.findByText('Approval Gate Queue')).toBeTruthy();
+    expect(await screen.findByText('Run Status Board')).toBeTruthy();
+    expect(await screen.findByText('Evidence Stream')).toBeTruthy();
+    expect((await screen.findAllByText('Governance Signal')).length).toBeGreaterThan(1);
+    expect(await screen.findByText('Human Decisions')).toBeTruthy();
     expect((await screen.findAllByText('run-2001')).length).toBeGreaterThan(0);
-    expect((await screen.findAllByText('Waiting')).length).toBeGreaterThan(0);
+    expect(await screen.findByText('FINANCE-APPROVAL-001')).toBeTruthy();
+    expect(await screen.findByText('evd-4004')).toBeTruthy();
   });
 });
