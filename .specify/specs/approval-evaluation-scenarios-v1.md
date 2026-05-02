@@ -25,6 +25,7 @@ Required deterministic artifacts:
 | `src/presentation/runtime/control-plane-handler.agent-action-execute.contract.test.ts` | HTTP execute contract and `Executing` response shape                                                  |
 | `experiments/iteration-2/scenarios/governed-resume-recovery/run.mjs`                   | pending Approval Gate recovery and exactly-once governed resume result artifacts                      |
 | `experiments/iteration-2/scenarios/execution-reservation-recovery/run.mjs`             | execution reservation recovery result artifacts and redaction audit                                   |
+| `experiments/iteration-2/scenarios/shift-aware-approval-coverage/run.mjs`              | shift-aware approval routing, delegation evidence, after-hours escalation, and SoD after handoff      |
 
 The Iteration 2 recovery runner writes append-only artifacts under:
 

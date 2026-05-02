@@ -171,6 +171,53 @@ describe('Iteration 2 telemetry helper', () => {
     expect(assertions[2]?.label).toBe('resume latency within threshold');
   });
 
+  it('counts escalation history even when a later approval decision resumes the run', () => {
+    const telemetry = makeTelemetry();
+
+    telemetry.recordApprovalRequested({
+      approvalId: 'appr-escalate-then-approve',
+      sessionId: 'session-after-hours',
+      tier: 'Human-approve',
+      requestedAtIso: '2026-04-29T00:00:00.000Z',
+    });
+    telemetry.recordApprovalDecision({
+      approvalId: 'appr-escalate-then-approve',
+      status: 'escalated',
+      decidedAtIso: '2026-04-29T00:30:00.000Z',
+    });
+    telemetry.recordApprovalDecision({
+      approvalId: 'appr-escalate-then-approve',
+      status: 'approved',
+      decidedAtIso: '2026-04-29T00:45:00.000Z',
+    });
+
+    const metrics = telemetry.buildQueueMetrics('2026-04-29T00:46:00.000Z').metrics;
+
+    expect(metrics.escalation_count).toBe(1);
+    expect(metrics.pending_age_ms_max).toBe(2_700_000);
+  });
+
+  it('includes caller-provided comparison sections in report artifacts', () => {
+    const resultsDir = mkdtempSync(join(tmpdir(), 'portarium-iteration2-report-'));
+    tempDirs.push(resultsDir);
+    const telemetry = createIteration2Telemetry({
+      scenarioId: 'openclaw-concurrent-sessions',
+      attemptId: '20260429T111600Z-test',
+      resultsDir,
+    });
+
+    const paths = telemetry.writeArtifacts('2026-04-29T00:00:00.000Z', [
+      '## Comparison',
+      '',
+      'After-hours behavior compared with operator-team handoff.',
+      '',
+    ]);
+
+    const report = readFileSync(paths.reportPath, 'utf8');
+    expect(report).toContain('## Comparison');
+    expect(report).toContain('operator-team handoff');
+  });
+
   it('rejects unknown scenarios, orphan decisions, and artifact overwrites', () => {
     const unknownResultsDir = mkdtempSync(join(tmpdir(), 'portarium-iteration2-unknown-'));
     tempDirs.push(unknownResultsDir);

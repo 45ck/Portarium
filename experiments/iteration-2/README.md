@@ -14,6 +14,7 @@ agents running and returns later to review decisions:
 
 - long-pending approvals and exact resume
 - team handoff and out-of-order decisions
+- shift-aware approval coverage, delegation windows, and after-hours escalation
 - multiple simultaneous governed sessions
 - approval backlog, escalation, and expiry pressure
 - stronger content-machine and demo-machine realism where those tools are
@@ -47,6 +48,9 @@ belong to the dependent implementation Beads.
 | `micro-saas-agent-stack-v2`      | `bead-1043` | Runnable deterministic |
 | `openclaw-concurrent-sessions`   | `bead-1044` | Runnable deterministic |
 | `approval-backlog-soak`          | `bead-1045` | Runnable deterministic |
+| `governed-resume-recovery`       | `bead-1059` | Runnable deterministic |
+| `shift-aware-approval-coverage`  | `bead-1069` | Runnable deterministic |
+| `execution-reservation-recovery` | `bead-1142` | Runnable deterministic |
 
 ## Result Layout
 

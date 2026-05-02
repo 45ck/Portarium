@@ -122,6 +122,33 @@
       ]
     },
     {
+      "scenarioId": "shift-aware-approval-coverage",
+      "beadId": "bead-1069",
+      "status": "runnable-deterministic",
+      "blockedBy": [],
+      "runnerPath": "experiments/iteration-2/scenarios/shift-aware-approval-coverage/run.mjs",
+      "contractPath": "experiments/iteration-2/scenarios/shift-aware-approval-coverage/README.md",
+      "comparesTo": "micro-saas-agent-stack-v2",
+      "validates": [
+        "shift-aware approval routing",
+        "bounded delegation windows",
+        "after-hours escalation",
+        "separation of duties after handoff",
+        "coverage evidence completeness"
+      ],
+      "artifactExpectations": {
+        "requiredArtifacts": [
+          "outcome.json",
+          "queue-metrics.json",
+          "evidence-summary.json",
+          "report.md",
+          "assignment-evidence.json"
+        ],
+        "redactedArtifacts": [],
+        "forbiddenFragments": []
+      }
+    },
+    {
       "scenarioId": "execution-reservation-recovery",
       "beadId": "bead-1142",
       "status": "runnable-deterministic",

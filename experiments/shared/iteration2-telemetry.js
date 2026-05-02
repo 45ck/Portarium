@@ -76,6 +76,7 @@ export function createIteration2Telemetry(options) {
   const resumeEvents = [];
   const evidenceEvents = [];
   const restartEvents = [];
+  const decisionEvents = [];
   const executionKeys = new Set();
   let duplicateExecutionCount = 0;
 
@@ -88,6 +89,7 @@ export function createIteration2Telemetry(options) {
     if (!existing) {
       throw new Error(`Approval decision without request: ${event.approvalId}`);
     }
+    decisionEvents.push(event);
     approvals.set(event.approvalId, { ...existing, ...event });
   }
 
@@ -153,11 +155,13 @@ export function createIteration2Telemetry(options) {
       incrementCounter(approvalCountByTier, approval.tier);
       incrementCounter(approvalCountBySession, approval.sessionId);
       pendingAges.push(durationMs(approval.requestedAtIso, approval.decidedAtIso ?? observedAtIso));
+    }
 
-      if (approval.status === 'denied') denialCount += 1;
-      if (approval.status === 'request_changes') requestChangesCount += 1;
-      if (approval.status === 'escalated') escalationCount += 1;
-      if (approval.status === 'expired') expiryCount += 1;
+    for (const event of decisionEvents) {
+      if (event.status === 'denied') denialCount += 1;
+      if (event.status === 'request_changes') requestChangesCount += 1;
+      if (event.status === 'escalated') escalationCount += 1;
+      if (event.status === 'expired') expiryCount += 1;
     }
 
     const resumeLatencies = resumeEvents.map((event) =>
@@ -247,7 +251,7 @@ export function createIteration2Telemetry(options) {
     return assertions;
   }
 
-  function writeArtifacts(observedAtIso = new Date().toISOString()) {
+  function writeArtifacts(observedAtIso = new Date().toISOString(), reportSections = []) {
     mkdirSync(options.resultsDir, { recursive: true });
 
     const queueMetrics = buildQueueMetrics(observedAtIso);
@@ -276,6 +280,7 @@ export function createIteration2Telemetry(options) {
         `Present: ${evidenceSummary.evidenceCompletenessCount}`,
         `Missing: ${evidenceSummary.missingArtifacts.length}`,
         '',
+        ...reportSections,
       ].join('\n'),
     );
 
