@@ -1,7 +1,7 @@
 # Operator Interaction Model v1
 
 **Status:** Proposed  
-**Related Beads:** bead-1048, bead-1050, bead-1056, bead-1074
+**Related Beads:** bead-1048, bead-1050, bead-1056, bead-1073, bead-1074
 **Extends:** [HCI Principles: Autonomy with Ease of Mind](../../docs/internal/engineering-layer/hci-principles.md)
 
 ## Purpose
@@ -800,6 +800,7 @@ The following must not be user-disableable:
 - [.specify/specs/approval-v1.md](./approval-v1.md)
 - [.specify/specs/evidence-v1.md](./evidence-v1.md)
 - [.specify/specs/agent-action-governance-lifecycle-v1.md](./agent-action-governance-lifecycle-v1.md)
+- [.specify/specs/delegated-autonomy-hierarchy-v1.md](./delegated-autonomy-hierarchy-v1.md)
 - [.specify/specs/plan-v1.md](./plan-v1.md)
 - [.specify/specs/presentation-layer-reference-cockpit-v1.md](./presentation-layer-reference-cockpit-v1.md)
 - [.specify/specs/run-v1.md](./run-v1.md)
