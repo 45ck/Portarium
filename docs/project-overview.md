@@ -78,12 +78,13 @@ The remaining core work should stay narrow:
 
 The following are useful, but they should not be confused with core completion:
 
-- Growth Studio and business-loop demos
+- software-first proving workflows such as Growth Studio, micro-SaaS, content, and media loops
 - mission-control UI experiments
 - prompt-language exploration
 - pilot-readiness studies
 - advanced delegated autonomy research
 - demo-machine, media, and showcase tooling
+- robotics and physical actuation expansion until hardware, safety, and release gates exist
 
 See [project scope](project-scope.md) and [roadmap](roadmap.md).
 
