@@ -250,6 +250,9 @@ export type ExecutionEvidenceId = Branded<string, 'ExecutionEvidenceId'>;
 /** Unique identifier for an intent command. */
 export type IntentId = Branded<string, 'IntentId'>;
 
+/** Unique identifier for a governed generated operator surface. */
+export type OperatorSurfaceId = Branded<string, 'OperatorSurfaceId'>;
+
 /** Unique identifier for a domain event. */
 export type EventId = Branded<string, 'EventId'>;
 
@@ -342,6 +345,8 @@ export const CapabilityKey = (value: string): CapabilityKey =>
 export const ExecutionEvidenceId = (value: string): ExecutionEvidenceId =>
   brand<string, 'ExecutionEvidenceId'>(value);
 export const IntentId = (value: string): IntentId => brand<string, 'IntentId'>(value);
+export const OperatorSurfaceId = (value: string): OperatorSurfaceId =>
+  brand<string, 'OperatorSurfaceId'>(value);
 export const EventId = (value: string): EventId => brand<string, 'EventId'>(value);
 
 // ---------------------------------------------------------------------------

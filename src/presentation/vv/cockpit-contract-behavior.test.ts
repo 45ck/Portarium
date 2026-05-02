@@ -89,6 +89,7 @@ const ALL_EVIDENCE_CATEGORIES: EvidenceCategory[] = [
   'Plan',
   'Action',
   'Approval',
+  'OperatorSurface',
   'Policy',
   'PolicyViolation',
   'System',
@@ -199,13 +200,14 @@ describe('Type conformance matrix', () => {
   });
 
   describe('EvidenceCategory', () => {
-    it('has exactly 6 values', () => {
-      expect(ALL_EVIDENCE_CATEGORIES).toHaveLength(6);
+    it('has exactly 7 values', () => {
+      expect(ALL_EVIDENCE_CATEGORIES).toHaveLength(7);
     });
 
     it('includes audit-critical categories', () => {
       expect(ALL_EVIDENCE_CATEGORIES).toContain('Plan');
       expect(ALL_EVIDENCE_CATEGORIES).toContain('Approval');
+      expect(ALL_EVIDENCE_CATEGORIES).toContain('OperatorSurface');
       expect(ALL_EVIDENCE_CATEGORIES).toContain('PolicyViolation');
     });
 

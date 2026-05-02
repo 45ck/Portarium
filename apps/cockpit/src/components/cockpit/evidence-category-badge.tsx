@@ -15,6 +15,10 @@ const config: Record<EvidenceCategory, { label: string; className: string }> = {
     label: 'Policy Violation',
     className: 'bg-destructive text-destructive-foreground',
   },
+  OperatorSurface: {
+    label: 'Operator Surface',
+    className: 'bg-accent text-accent-foreground',
+  },
   System: { label: 'System', className: 'bg-muted text-muted-foreground' },
 };
 

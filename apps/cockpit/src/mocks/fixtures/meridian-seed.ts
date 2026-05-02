@@ -171,6 +171,7 @@ const EVIDENCE_CATEGORIES: EvidenceCategory[] = [
   'Plan',
   'Policy',
   'PolicyViolation',
+  'OperatorSurface',
 ];
 
 const ROBOT_CLASSES: RobotClass[] = ['AMR', 'AGV', 'Manipulator', 'UAV', 'PLC'];
@@ -539,6 +540,12 @@ function evidenceSummary(
         `Policy violation detected: temperature excursion at ${extra}`,
         `Policy violation detected: SoD gate blocked run ${runId}`,
         `Policy violation detected: unauthorized write attempt at ${extra}`,
+      ]);
+    case 'OperatorSurface':
+      return pick(rand, [
+        `Operator surface proposed for run ${runId} — ${extra}`,
+        `Operator surface rendered with governed interaction capture — ${extra}`,
+        `Operator surface feedback recorded for run ${runId}`,
       ]);
   }
 }

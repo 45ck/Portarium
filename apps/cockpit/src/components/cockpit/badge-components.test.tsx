@@ -21,6 +21,7 @@ describe('EvidenceCategoryBadge', () => {
     'Approval',
     'Policy',
     'PolicyViolation',
+    'OperatorSurface',
     'System',
   ];
 
@@ -32,6 +33,7 @@ describe('EvidenceCategoryBadge', () => {
       Approval: 'Approval',
       Policy: 'Policy',
       PolicyViolation: 'Policy Violation',
+      OperatorSurface: 'Operator Surface',
       System: 'System',
     };
     expect(screen.getByText(expectedLabels[category])).toBeTruthy();

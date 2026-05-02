@@ -133,6 +133,7 @@ describe('OpenAPI contract', () => {
       'Plan',
       'Action',
       'Approval',
+      'OperatorSurface',
       'Policy',
       'PolicyViolation',
       'System',
