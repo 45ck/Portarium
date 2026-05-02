@@ -67,6 +67,7 @@ describe('Iteration 2 governed experiment suite manifest', () => {
             scenario.scenarioId !== 'approval-backlog-soak' &&
             scenario.scenarioId !== 'micro-saas-agent-stack-v2' &&
             scenario.scenarioId !== 'governed-resume-recovery' &&
+            scenario.scenarioId !== 'shift-aware-approval-coverage' &&
             scenario.scenarioId !== 'execution-reservation-recovery',
         )
         .every((scenario) => scenario.status === 'planned'),
@@ -120,6 +121,7 @@ describe('Iteration 2 governed experiment suite manifest', () => {
       'bead-1044',
       'bead-1045',
       'bead-1059',
+      'bead-1069',
       'bead-1142',
     ]) {
       const scenario = scenarioByBead.get(beadId);
@@ -229,6 +231,28 @@ describe('Iteration 2 governed experiment suite manifest', () => {
       'operator@example.test',
       'customer@example.test',
       'https://api.vendor.example/customers/private-123',
+    ]);
+  });
+
+  it('marks shift-aware-approval-coverage as runnable with assignment evidence expectations', () => {
+    const manifest = readManifest();
+    const scenario = manifest.scenarios.find(
+      (candidate) => candidate.scenarioId === 'shift-aware-approval-coverage',
+    );
+
+    expect(scenario?.status).toBe('runnable-deterministic');
+    expect(scenario?.beadId).toBe('bead-1069');
+    expect(scenario?.runnerPath).toBe(
+      'experiments/iteration-2/scenarios/shift-aware-approval-coverage/run.mjs',
+    );
+    expect(scenario?.comparesTo).toBe('micro-saas-agent-stack-v2');
+    expect(existsSync(join(repoRoot, scenario?.runnerPath ?? 'missing'))).toBe(true);
+    expect(scenario?.artifactExpectations?.requiredArtifacts).toEqual([
+      'outcome.json',
+      'queue-metrics.json',
+      'evidence-summary.json',
+      'report.md',
+      'assignment-evidence.json',
     ]);
   });
 });

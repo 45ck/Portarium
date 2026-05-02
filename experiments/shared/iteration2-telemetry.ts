@@ -175,6 +175,7 @@ export function createIteration2Telemetry(options: Iteration2TelemetryOptions) {
   const resumeEvents: ResumeEvent[] = [];
   const evidenceEvents: EvidenceArtifactEvent[] = [];
   const restartEvents: RestartEvent[] = [];
+  const decisionEvents: ApprovalDecisionEvent[] = [];
   const executionKeys = new Set<string>();
   let duplicateExecutionCount = 0;
 
@@ -187,6 +188,7 @@ export function createIteration2Telemetry(options: Iteration2TelemetryOptions) {
     if (!existing) {
       throw new Error(`Approval decision without request: ${event.approvalId}`);
     }
+    decisionEvents.push(event);
     approvals.set(event.approvalId, { ...existing, ...event });
   }
 
@@ -232,11 +234,13 @@ export function createIteration2Telemetry(options: Iteration2TelemetryOptions) {
       incrementCounter(approvalCountBySession, approval.sessionId);
 
       pendingAges.push(durationMs(approval.requestedAtIso, approval.decidedAtIso ?? observedAtIso));
+    }
 
-      if (approval.status === 'denied') denialCount += 1;
-      if (approval.status === 'request_changes') requestChangesCount += 1;
-      if (approval.status === 'escalated') escalationCount += 1;
-      if (approval.status === 'expired') expiryCount += 1;
+    for (const event of decisionEvents) {
+      if (event.status === 'denied') denialCount += 1;
+      if (event.status === 'request_changes') requestChangesCount += 1;
+      if (event.status === 'escalated') escalationCount += 1;
+      if (event.status === 'expired') expiryCount += 1;
     }
 
     const resumeLatencies = resumeEvents.map((event) =>
@@ -352,7 +356,10 @@ export function createIteration2Telemetry(options: Iteration2TelemetryOptions) {
     return assertions;
   }
 
-  function writeArtifacts(observedAtIso = new Date().toISOString()): {
+  function writeArtifacts(
+    observedAtIso = new Date().toISOString(),
+    reportSections: readonly string[] = [],
+  ): {
     queueMetricsPath: string;
     evidenceSummaryPath: string;
     reportPath: string;
@@ -385,6 +392,7 @@ export function createIteration2Telemetry(options: Iteration2TelemetryOptions) {
         `Present: ${evidenceSummary.evidenceCompletenessCount}`,
         `Missing: ${evidenceSummary.missingArtifacts.length}`,
         '',
+        ...reportSections,
       ].join('\n'),
     );
 
