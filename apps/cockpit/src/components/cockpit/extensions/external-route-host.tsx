@@ -30,6 +30,7 @@ export function ExternalRouteHost({ pathname }: { pathname: string }) {
   const registry = resolveInstalledCockpitExtensionRegistry({
     activePackIds: serverAccess.activePackIds,
     quarantinedExtensionIds: serverAccess.quarantinedExtensionIds,
+    emergencyDisabledExtensionIds: serverAccess.emergencyDisabledExtensionIds,
     availableCapabilities: serverAccess.accessContext.availableCapabilities,
     availableApiScopes: serverAccess.accessContext.availableApiScopes,
     availablePrivacyClasses: serverAccess.accessContext.availablePrivacyClasses,

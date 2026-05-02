@@ -14,6 +14,8 @@ Cockpit build.
 - `CockpitExtensionManifest` export.
 - Route module exports for every route declared by the manifest.
 - Workspace-scoped activation grant for the pack ID or IDs.
+- Governance metadata covering publisher identity, attestation digest, version
+  pin, permission grants, emergency disable, rollback, and audit events.
 - Guard metadata for routes, navigation items, commands, and shortcuts.
 - Browser Egress review notes covering the Host/API Origins the package expects
   and any denied-egress evidence captured during validation.
@@ -138,6 +140,7 @@ privacy classes remain hidden from navigation, commands, shortcuts, and direct
     "roleIncludes": ["admin"],
     "scopeIncludes": ["extensions.read"],
     "activePackIds": ["example.ops-demo"],
+    "emergencyDisabledExtensionIds": [],
     "availableCapabilities": ["asset:read", "incident:read", "evidence:read"],
     "availableApiScopes": ["extensions.read", "approvals.read", "evidence.read"],
     "availablePrivacyClasses": ["internal", "restricted"]
@@ -147,7 +150,10 @@ privacy classes remain hidden from navigation, commands, shortcuts, and direct
 
 Set the JSON as `PORTARIUM_COCKPIT_EXTENSION_GRANTS_JSON`. Use
 `quarantinedExtensionIds` to suppress a specific installed extension by manifest
-ID without uninstalling its package.
+ID without uninstalling its package. Use `emergencyDisabledExtensionIds` for the
+fast kill switch path; Cockpit resolves it from the same activation state and
+suppresses routes, navigation, commands, shortcuts, and data loading before any
+extension route component is rendered.
 
 Cockpit treats activation as fail-closed. Installed extensions are disabled
 until their pack IDs are explicitly active for the current workspace, unknown

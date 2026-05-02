@@ -73,6 +73,7 @@ describe('cockpit extension access context', () => {
     ).toEqual({
       activePackIds: ['demo.pack'],
       quarantinedExtensionIds: [],
+      emergencyDisabledExtensionIds: [],
       accessContext: {
         persona: 'Operator',
         availablePersonas: ['Operator'],
@@ -88,6 +89,7 @@ describe('cockpit extension access context', () => {
     const emptyAccess = {
       activePackIds: [],
       quarantinedExtensionIds: [],
+      emergencyDisabledExtensionIds: [],
       accessContext: {
         availablePersonas: [],
         availableCapabilities: [],
@@ -153,6 +155,7 @@ describe('cockpit extension access context', () => {
     ).toEqual({
       activePackIds: [],
       quarantinedExtensionIds: [],
+      emergencyDisabledExtensionIds: [],
       accessContext: {
         availablePersonas: [],
         availableCapabilities: [],

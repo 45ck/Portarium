@@ -1,6 +1,7 @@
 export type CockpitExtensionActivationState = Readonly<{
   activePackIds: readonly string[];
   quarantinedExtensionIds: readonly string[];
+  emergencyDisabledExtensionIds?: readonly string[];
   availableCapabilities?: readonly string[];
   availableApiScopes?: readonly string[];
   availablePrivacyClasses?: readonly string[];
@@ -26,6 +27,7 @@ export const EMPTY_COCKPIT_EXTENSION_ACTIVATION_SOURCE: CockpitExtensionActivati
   getActivationState: async () => ({
     activePackIds: [],
     quarantinedExtensionIds: [],
+    emergencyDisabledExtensionIds: [],
     availableCapabilities: [],
     availableApiScopes: [],
     availablePrivacyClasses: [],

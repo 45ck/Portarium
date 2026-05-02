@@ -72,6 +72,10 @@ describe('installed cockpit extension catalog', () => {
   it('requires host-reviewed package refs and workspace pack refs for installed modules', () => {
     for (const extension of INSTALLED_COCKPIT_EXTENSION_MODULES) {
       expect(extension.packageRef.packageName).toMatch(/^@portarium\/cockpit-/);
+      expect(extension.packageRef.version).toBe(extension.manifest.governance.versionPin.version);
+      expect(extension.packageRef.packageName).toBe(
+        extension.manifest.governance.versionPin.packageName,
+      );
       expect(extension.workspacePackRefs.map((ref) => ref.packId).sort()).toEqual(
         [...extension.manifest.packIds].sort(),
       );
@@ -96,6 +100,7 @@ describe('installed cockpit extension catalog', () => {
     expect(validateInstalledCockpitExtensionModules([invalid])).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ code: 'missing-package-ref' }),
+        expect.objectContaining({ code: 'governance-package-ref-mismatch' }),
         expect.objectContaining({ code: 'install-pack-ref-mismatch', itemId: 'example.reference' }),
         expect.objectContaining({ code: 'install-pack-ref-mismatch', itemId: 'wrong.pack' }),
         expect.objectContaining({ code: 'duplicate-route-module' }),

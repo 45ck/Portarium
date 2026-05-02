@@ -23,6 +23,7 @@ export const INSTALLED_COCKPIT_EXTENSION_MODULES = [
     manifest: EXAMPLE_REFERENCE_EXTENSION,
     packageRef: {
       packageName: '@portarium/cockpit-example-reference-extension',
+      version: '0.1.0',
       workspacePath: 'apps/cockpit/src/lib/extensions/example-reference',
     },
     routeModules: Object.entries(EXAMPLE_REFERENCE_ROUTE_LOADERS).map(([routeId, loadModule]) => ({
@@ -181,6 +182,17 @@ function validateInstalledCockpitExtensionModule(
       code: 'missing-package-ref',
       message: `Installed extension "${extensionId}" must declare a host-reviewed package reference.`,
       extensionId,
+    });
+  }
+  if (
+    extension.manifest.governance.versionPin.packageName !== extension.packageRef.packageName ||
+    extension.manifest.governance.versionPin.version !== extension.packageRef.version
+  ) {
+    problems.push({
+      code: 'governance-package-ref-mismatch',
+      message: `Installed extension "${extensionId}" governance version pin must match its host-reviewed package reference.`,
+      extensionId,
+      itemId: extension.manifest.governance.versionPin.packageName,
     });
   }
 

@@ -14,6 +14,7 @@ export type EnvCockpitExtensionActivationGrant = Readonly<{
   scopeIncludes?: readonly string[];
   activePackIds?: readonly string[];
   quarantinedExtensionIds?: readonly string[];
+  emergencyDisabledExtensionIds?: readonly string[];
   availableCapabilities?: readonly string[];
   availableApiScopes?: readonly string[];
   availablePrivacyClasses?: readonly string[];
@@ -34,6 +35,10 @@ export class EnvCockpitExtensionActivationSource implements CockpitExtensionActi
     return Promise.resolve({
       activePackIds: mergeGrantLists(matchingGrants, 'activePackIds'),
       quarantinedExtensionIds: mergeGrantLists(matchingGrants, 'quarantinedExtensionIds'),
+      emergencyDisabledExtensionIds: mergeGrantLists(
+        matchingGrants,
+        'emergencyDisabledExtensionIds',
+      ),
       availableCapabilities: mergeGrantLists(matchingGrants, 'availableCapabilities'),
       availableApiScopes: mergeGrantLists(matchingGrants, 'availableApiScopes'),
       availablePrivacyClasses: mergeGrantLists(matchingGrants, 'availablePrivacyClasses'),
@@ -61,6 +66,7 @@ function parseGrantList(value: string | undefined): readonly EnvCockpitExtension
       scopeIncludes: readStringList(grant, 'scopeIncludes'),
       activePackIds: readStringList(grant, 'activePackIds'),
       quarantinedExtensionIds: readStringList(grant, 'quarantinedExtensionIds'),
+      emergencyDisabledExtensionIds: readStringList(grant, 'emergencyDisabledExtensionIds'),
       availableCapabilities: readStringList(grant, 'availableCapabilities'),
       availableApiScopes: readStringList(grant, 'availableApiScopes'),
       availablePrivacyClasses: readStringList(grant, 'availablePrivacyClasses'),
@@ -93,6 +99,7 @@ function normalizeGrant(
     scopeIncludes: normalizeList(grant.scopeIncludes ?? []),
     activePackIds: normalizeList(grant.activePackIds ?? []),
     quarantinedExtensionIds: normalizeList(grant.quarantinedExtensionIds ?? []),
+    emergencyDisabledExtensionIds: normalizeList(grant.emergencyDisabledExtensionIds ?? []),
     availableCapabilities: normalizeList(grant.availableCapabilities ?? []),
     availableApiScopes: normalizeList(grant.availableApiScopes ?? []),
     availablePrivacyClasses: normalizeList(grant.availablePrivacyClasses ?? []),
@@ -131,6 +138,7 @@ function mergeGrantLists(
     EnvCockpitExtensionActivationGrant,
     | 'activePackIds'
     | 'quarantinedExtensionIds'
+    | 'emergencyDisabledExtensionIds'
     | 'availableCapabilities'
     | 'availableApiScopes'
     | 'availablePrivacyClasses'
