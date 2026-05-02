@@ -45,6 +45,7 @@ import { Route as searchRoute } from './routes/search/index';
 import { Route as workforceRoute } from './routes/workforce/index';
 import { Route as workforceMemberRoute } from './routes/workforce/$memberId';
 import { Route as workforceQueuesRoute } from './routes/workforce/queues';
+import { Route as workforceCoverageRoute } from './routes/workforce/coverage';
 
 // Config
 import { Route as configMachinesRoute } from './routes/config/machines';
@@ -108,6 +109,7 @@ export const routeTree = rootRoute.addChildren([
   workforceRoute,
   workforceMemberRoute,
   workforceQueuesRoute,
+  workforceCoverageRoute,
   configMachinesRoute,
   configAgentsRoute,
   configAgentDetailRoute,

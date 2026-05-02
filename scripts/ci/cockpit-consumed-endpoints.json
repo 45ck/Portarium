@@ -296,6 +296,50 @@
       "consumers": ["apps/cockpit/src/hooks/queries/use-workforce.ts"]
     },
     {
+      "id": "workforce.approvalCoverage.get",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/workforce/approval-coverage",
+      "openapi": "pending",
+      "runtime": "pending",
+      "mock": "required",
+      "trackingBead": "bead-1072",
+      "reason": "Approval coverage roster management is fixture-backed in Cockpit until the live coverage API is mounted.",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-workforce.ts"]
+    },
+    {
+      "id": "workforce.approvalCoverage.windows.create",
+      "method": "POST",
+      "path": "/v1/workspaces/{workspaceId}/workforce/approval-coverage/windows",
+      "openapi": "pending",
+      "runtime": "pending",
+      "mock": "required",
+      "trackingBead": "bead-1072",
+      "reason": "Approval coverage window edits are fixture-backed in Cockpit until the live coverage API is mounted.",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-workforce.ts"]
+    },
+    {
+      "id": "workforce.approvalCoverage.delegations.create",
+      "method": "POST",
+      "path": "/v1/workspaces/{workspaceId}/workforce/approval-coverage/delegations",
+      "openapi": "pending",
+      "runtime": "pending",
+      "mock": "required",
+      "trackingBead": "bead-1072",
+      "reason": "Approval delegation edits are fixture-backed in Cockpit until the live coverage API is mounted.",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-workforce.ts"]
+    },
+    {
+      "id": "workforce.approvalCoverage.specialistRoutes.upsert",
+      "method": "POST",
+      "path": "/v1/workspaces/{workspaceId}/workforce/approval-coverage/specialist-routes",
+      "openapi": "pending",
+      "runtime": "pending",
+      "mock": "required",
+      "trackingBead": "bead-1072",
+      "reason": "Approval specialist routing edits are fixture-backed in Cockpit until the live coverage API is mounted.",
+      "consumers": ["apps/cockpit/src/hooks/queries/use-workforce.ts"]
+    },
+    {
       "id": "humanTasks.list",
       "method": "GET",
       "path": "/v1/workspaces/{workspaceId}/human-tasks",

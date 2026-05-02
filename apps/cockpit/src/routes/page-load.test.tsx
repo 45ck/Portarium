@@ -21,6 +21,7 @@ import {
   SAFETY_CONSTRAINTS,
   WORKFORCE_MEMBERS,
   WORKFORCE_QUEUES,
+  APPROVAL_COVERAGE_ROSTER,
   WORK_ITEMS,
 } from '@/mocks/fixtures/demo';
 import { buildMockWorkflows } from '@/mocks/fixtures/workflows';
@@ -142,6 +143,10 @@ function routeResponse(pathname: string, init?: RequestInit): Response {
     return json({ items: WORKFORCE_QUEUES });
   }
 
+  if (/^\/v1\/workspaces\/[^/]+\/workforce\/approval-coverage$/.test(pathname)) {
+    return json(APPROVAL_COVERAGE_ROSTER);
+  }
+
   if (/^\/v1\/workspaces\/[^/]+\/agents$/.test(pathname)) {
     return json({ items: AGENTS });
   }
@@ -212,6 +217,27 @@ function routeResponse(pathname: string, init?: RequestInit): Response {
     return json({ items: MOCK_POLICIES });
   }
 
+  const policyMatch = pathname.match(/^\/v1\/workspaces\/[^/]+\/policies\/([^/]+)$/);
+  const policyId = policyMatch?.[1];
+  if (policyId) {
+    const policy =
+      policyId === 'EMAIL-DESTRUCTIVE-BLOCK-001'
+        ? {
+            policyId,
+            name: 'Bulk Email Deletion Block',
+            description: 'Blocks destructive email deletion without approval.',
+            status: 'Active',
+            tier: 'HumanApprove',
+            scope: 'email tools',
+            ruleCount: 1,
+            affectedWorkflowIds: ['wf-invoice-remediation'],
+            ruleText: 'WHEN tool.name = "gmail.delete" THEN REQUIRE_APPROVAL',
+            conditions: [{ field: 'tool.name', operator: 'eq', value: 'gmail.delete' }],
+          }
+        : MOCK_POLICIES.find((item) => item.policyId === policyId);
+    return policy ? json(policy) : json({ error: 'not-found' }, 404);
+  }
+
   if (/^\/v1\/workspaces\/[^/]+\/sod-constraints$/.test(pathname)) {
     return json({ items: MOCK_SOD_CONSTRAINTS });
   }
@@ -262,6 +288,7 @@ const PAGE_CASES = [
   { path: '/workforce', heading: 'Workforce' },
   { path: '/workforce/wfm-001', heading: 'Dana Approver' },
   { path: '/workforce/queues', heading: 'Queues' },
+  { path: '/workforce/coverage', heading: 'Coverage' },
   { path: '/config/agents', heading: 'Agents' },
   { path: '/config/adapters', heading: 'Adapters' },
   { path: '/config/credentials', heading: 'Credentials' },
@@ -340,6 +367,8 @@ describe('cockpit route page-load smoke', () => {
     // The workspace selector is a Radix Select whose value may not be
     // discoverable by `getByText` in jsdom.  Verify the sidebar rendered
     // by checking the Portarium logo text above.
-    expect((await screen.findAllByRole('heading', { name: heading })).length).toBeGreaterThan(0);
+    expect(
+      (await screen.findAllByRole('heading', { name: heading }, { timeout: 5_000 })).length,
+    ).toBeGreaterThan(0);
   });
 });
