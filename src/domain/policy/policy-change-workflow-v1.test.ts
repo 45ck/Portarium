@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { ApprovalId, PolicyChangeId, UserId } from '../primitives/index.js';
+import { ApprovalId, EvidenceId, PolicyChangeId, UserId } from '../primitives/index.js';
 import {
+  attachPolicyChangeReplayReportEvidenceV1,
   applyStandardPolicyChangeV1,
   approvePolicyChangeV1,
   isPolicyChangeEffectiveForRunV1,
@@ -113,6 +114,36 @@ describe('PolicyChangeRequestV1', () => {
 
     expect(applyStandardPolicyChangeV1(standard).status).toBe('Applied');
     expect(() => applyStandardPolicyChangeV1(makeChange())).toThrow(/require approval/i);
+  });
+
+  it('can require replay report evidence before activation', () => {
+    const pending = makeChange({
+      activationRequirements: { replayReportRequired: true },
+    });
+
+    expect(() =>
+      approvePolicyChangeV1({
+        change: pending,
+        approvalId: ApprovalId('approval-1'),
+        approvedByUserId: UserId('checker-1'),
+        approvedAtIso: '2026-02-01T10:30:00.000Z',
+      }),
+    ).toThrow(/Replay report evidence is required/i);
+
+    const replayed = attachPolicyChangeReplayReportEvidenceV1({
+      change: pending,
+      replayReportEvidenceId: EvidenceId('evi-replay-1'),
+    });
+
+    const approved = approvePolicyChangeV1({
+      change: replayed,
+      approvalId: ApprovalId('approval-1'),
+      approvedByUserId: UserId('checker-1'),
+      approvedAtIso: '2026-02-01T10:30:00.000Z',
+    });
+
+    expect(approved.status).toBe('Applied');
+    expect(approved.activationRequirements?.replayReportEvidenceId).toBe('evi-replay-1');
   });
 
   it('makes active Run versus future Run semantics explicit', () => {

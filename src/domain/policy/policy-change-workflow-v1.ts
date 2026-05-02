@@ -1,11 +1,13 @@
 import {
   ApprovalId,
+  EvidenceId,
   PolicyChangeId,
   PolicyId,
   TenantId,
   UserId,
   WorkspaceId,
   type ApprovalId as ApprovalIdType,
+  type EvidenceId as EvidenceIdType,
   type PolicyChangeId as PolicyChangeIdType,
   type PolicyId as PolicyIdType,
   type TenantId as TenantIdType,
@@ -63,6 +65,11 @@ export type PolicyChangeApprovalV1 = Readonly<{
   approvedByUserId?: UserIdType;
 }>;
 
+export type PolicyChangeActivationRequirementsV1 = Readonly<{
+  replayReportRequired: boolean;
+  replayReportEvidenceId?: EvidenceIdType;
+}>;
+
 export type PolicyChangeRequestV1 = Readonly<{
   schemaVersion: 1;
   policyChangeId: PolicyChangeIdType;
@@ -82,6 +89,7 @@ export type PolicyChangeRequestV1 = Readonly<{
   effectiveFromIso: string;
   expiresAtIso?: string;
   approval: PolicyChangeApprovalV1;
+  activationRequirements?: PolicyChangeActivationRequirementsV1;
   supersedesPolicyChangeId?: PolicyChangeIdType;
   supersededByPolicyChangeId?: PolicyChangeIdType;
   rollbackOfPolicyChangeId?: PolicyChangeIdType;
@@ -149,6 +157,7 @@ export function approvePolicyChangeV1(params: {
       'Maker-checker violation: proposer cannot approve the same policy change.',
     );
   }
+  assertReplayReportSatisfied(change);
   assertNotBefore(change.proposedAtIso, approvedAtIso, PolicyChangeWorkflowError, {
     anchorLabel: 'proposedAtIso',
     laterLabel: 'approvedAtIso',
@@ -172,7 +181,32 @@ export function applyStandardPolicyChangeV1(change: PolicyChangeRequestV1): Poli
   if (change.status !== 'PendingApproval') {
     throw new PolicyChangeWorkflowError('Only PendingApproval policy changes can be applied.');
   }
+  assertReplayReportSatisfied(change);
   return { ...change, status: 'Applied' };
+}
+
+export function attachPolicyChangeReplayReportEvidenceV1(params: {
+  change: PolicyChangeRequestV1;
+  replayReportEvidenceId: EvidenceIdType;
+}): PolicyChangeRequestV1 {
+  return {
+    ...params.change,
+    activationRequirements: {
+      replayReportRequired: params.change.activationRequirements?.replayReportRequired ?? true,
+      replayReportEvidenceId: params.replayReportEvidenceId,
+    },
+  };
+}
+
+function assertReplayReportSatisfied(change: PolicyChangeRequestV1): void {
+  if (
+    change.activationRequirements?.replayReportRequired === true &&
+    change.activationRequirements.replayReportEvidenceId === undefined
+  ) {
+    throw new PolicyChangeWorkflowError(
+      'Replay report evidence is required before this policy change can be activated.',
+    );
+  }
 }
 
 export function markPolicyChangeRolledBackV1(params: {
@@ -281,6 +315,10 @@ export function parsePolicyChangeRequestV1(value: unknown): PolicyChangeRequestV
     });
   }
   const approval = parsePolicyChangeApprovalV1(record['approval']);
+  const activationRequirements = parseOptionalActivationRequirementsV1(
+    record,
+    'activationRequirements',
+  );
   const supersedesPolicyChangeId = parseOptionalPolicyChangeId(record, 'supersedesPolicyChangeId');
   const supersededByPolicyChangeId = parseOptionalPolicyChangeId(
     record,
@@ -324,6 +362,7 @@ export function parsePolicyChangeRequestV1(value: unknown): PolicyChangeRequestV
     effectiveFromIso,
     ...(expiresAtIso !== undefined ? { expiresAtIso } : {}),
     approval,
+    ...(activationRequirements !== undefined ? { activationRequirements } : {}),
     ...(supersedesPolicyChangeId !== undefined ? { supersedesPolicyChangeId } : {}),
     ...(supersededByPolicyChangeId !== undefined ? { supersededByPolicyChangeId } : {}),
     ...(rollbackOfPolicyChangeId !== undefined ? { rollbackOfPolicyChangeId } : {}),
@@ -376,6 +415,32 @@ function parsePolicyChangeApprovalV1(value: unknown): PolicyChangeApprovalV1 {
     ...(approvalIdRaw !== undefined ? { approvalId: ApprovalId(approvalIdRaw) } : {}),
     ...(approvedAtIso !== undefined ? { approvedAtIso } : {}),
     ...(approvedByUserIdRaw !== undefined ? { approvedByUserId: UserId(approvedByUserIdRaw) } : {}),
+  };
+}
+
+function parseOptionalActivationRequirementsV1(
+  record: Record<string, unknown>,
+  key: string,
+): PolicyChangeActivationRequirementsV1 | undefined {
+  const raw = record[key];
+  if (raw === undefined) return undefined;
+  const value = readRecord(raw, key, PolicyChangeParseError);
+  const replayReportRequired = value['replayReportRequired'];
+  if (typeof replayReportRequired !== 'boolean') {
+    throw new PolicyChangeParseError(
+      'activationRequirements.replayReportRequired must be a boolean.',
+    );
+  }
+  const replayReportEvidenceIdRaw = readOptionalString(
+    value,
+    'replayReportEvidenceId',
+    PolicyChangeParseError,
+  );
+  return {
+    replayReportRequired,
+    ...(replayReportEvidenceIdRaw !== undefined
+      ? { replayReportEvidenceId: EvidenceId(replayReportEvidenceIdRaw) }
+      : {}),
   };
 }
 

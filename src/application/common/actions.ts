@@ -5,6 +5,7 @@ export const APP_ACTIONS = {
   policyChangePropose: 'policy-change:propose',
   policyChangeApprove: 'policy-change:approve',
   policyChangeRollback: 'policy-change:rollback',
+  policyChangeReplay: 'policy-change:replay',
   evidenceRead: 'evidence:read',
   planRead: 'plan:read',
   runRead: 'run:read',

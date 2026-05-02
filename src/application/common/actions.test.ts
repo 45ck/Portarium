@@ -13,6 +13,7 @@ describe('APP_ACTIONS contract', () => {
       'policy-change:propose',
       'policy-change:approve',
       'policy-change:rollback',
+      'policy-change:replay',
       'evidence:read',
       'plan:read',
       'run:read',
