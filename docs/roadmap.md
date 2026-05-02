@@ -73,7 +73,8 @@ These are intentionally not release blockers for the core control plane.
 - approval-fatigue measurement
 - delegated autonomy hierarchy
 - policy-learning telemetry
-- prompt-language governed coding experiments
+- prompt-language governed coding experiments, sequenced by
+  `docs/internal/governance/prompt-language-exploration-sequence.md`
 
 The release-critical subset is tracked in `docs/internal/governance/pilot-readiness-sequence.md`.
 

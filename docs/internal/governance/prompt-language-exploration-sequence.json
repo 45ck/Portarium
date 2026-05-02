@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "id": "prompt-language-exploration-sequence",
+  "ownerBead": "bead-1032",
+  "status": "framing-only",
+  "scope": "future governed coding workflow exploration",
+  "nonGoals": [
+    "prompt-language runtime integration",
+    "Growth Studio experiment coupling",
+    "release-gate promotion"
+  ],
+  "sequence": [
+    {
+      "order": 1,
+      "bead": "bead-1027",
+      "gate": "growth-studio-evidence",
+      "requiredBefore": [
+        "architecture-fit",
+        "policy-audit-model",
+        "thin-poc",
+        "integration-consideration"
+      ],
+      "exitSignal": "Current Growth Studio experiment has evidence that its governed workflow produces useful results."
+    },
+    {
+      "order": 2,
+      "bead": "bead-1028",
+      "gate": "architecture-fit",
+      "requiredAfter": ["growth-studio-evidence"],
+      "requiredBefore": ["policy-audit-model", "thin-poc", "integration-consideration"],
+      "exitSignal": "Architecture decision says whether prompt-language belongs in Portarium at all."
+    },
+    {
+      "order": 3,
+      "bead": "bead-1029",
+      "gate": "policy-audit-model",
+      "requiredAfter": ["growth-studio-evidence", "architecture-fit"],
+      "requiredBefore": ["thin-poc", "integration-consideration"],
+      "exitSignal": "Policy, audit, Evidence Log, approval, and retention model is defined before implementation."
+    },
+    {
+      "order": 4,
+      "bead": "bead-1030",
+      "gate": "thin-poc",
+      "requiredAfter": ["growth-studio-evidence", "architecture-fit", "policy-audit-model"],
+      "requiredBefore": ["integration-consideration"],
+      "exitSignal": "Thin proof of concept is isolated under an experimental path and has no production integration."
+    },
+    {
+      "order": 5,
+      "bead": "bead-1031",
+      "gate": "integration-consideration",
+      "requiredAfter": [
+        "growth-studio-evidence",
+        "architecture-fit",
+        "policy-audit-model",
+        "thin-poc"
+      ],
+      "exitSignal": "Only after prior gates close may a real integration seam be considered."
+    }
+  ],
+  "hardConstraints": [
+    {
+      "id": "no-integration-before-evidence-and-governance",
+      "rule": "Prompt-language integration work must not start until growth-studio-evidence, architecture-fit, and policy-audit-model gates are closed."
+    },
+    {
+      "id": "poc-before-integration",
+      "rule": "Integration consideration must be blocked until the thin proof of concept has completed in an experimental path."
+    }
+  ]
+}
