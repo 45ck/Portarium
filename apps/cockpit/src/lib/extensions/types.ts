@@ -24,13 +24,19 @@ export const COCKPIT_EXTENSION_ICONS = [
 
 export type CockpitExtensionIcon = (typeof COCKPIT_EXTENSION_ICONS)[number];
 
-export type CockpitExtensionActivationState = 'enabled' | 'disabled' | 'invalid' | 'quarantined';
+export type CockpitExtensionActivationState =
+  | 'enabled'
+  | 'disabled'
+  | 'invalid'
+  | 'quarantined'
+  | 'emergency-disabled';
 
 export type CockpitExtensionStatus = CockpitExtensionActivationState;
 
 export type CockpitExtensionDisableReasonCode =
   | 'workspace-pack-inactive'
   | 'manually-disabled'
+  | 'emergency-disabled'
   | 'missing-capability'
   | 'missing-api-scope'
   | 'host-policy'
@@ -73,6 +79,70 @@ export interface CockpitExtensionGuard {
   privacyClasses?: readonly CockpitExtensionPrivacyClass[];
 }
 
+export type CockpitExtensionPermissionKind = 'data-query' | 'command' | 'governed-action';
+
+export type CockpitExtensionPolicySemantics =
+  | 'authorization-required'
+  | 'policy-approval-evidence-required';
+
+export type CockpitExtensionEvidenceSemantics =
+  | 'read-audited-by-control-plane'
+  | 'evidence-required-before-response';
+
+export interface CockpitExtensionPermissionGrant {
+  id: string;
+  kind: CockpitExtensionPermissionKind;
+  title: string;
+  requiredCapabilities: readonly string[];
+  requiredApiScopes: readonly string[];
+  policySemantics: CockpitExtensionPolicySemantics;
+  evidenceSemantics: CockpitExtensionEvidenceSemantics;
+  auditEventTypes: readonly string[];
+}
+
+export interface CockpitExtensionIdentityAttestation {
+  kind: 'source-review' | 'signature' | 'build-provenance';
+  subject: string;
+  digestSha256: string;
+  issuedAtIso?: string;
+}
+
+export interface CockpitExtensionVersionPin {
+  packageName: string;
+  version: string;
+  sourceRef?: string;
+  integritySha256?: string;
+}
+
+export interface CockpitExtensionLifecycleControls {
+  emergencyDisable: {
+    mode: 'activation-source';
+    suppresses: readonly ('routes' | 'navigation' | 'commands' | 'shortcuts' | 'data-loading')[];
+  };
+  rollback: {
+    mode: 'pinned-previous-version' | 'disable-only';
+    targetVersion?: string;
+  };
+  auditEvents: readonly (
+    | 'install'
+    | 'enable'
+    | 'disable'
+    | 'emergency-disable'
+    | 'upgrade'
+    | 'rollback'
+  )[];
+}
+
+export interface CockpitExtensionGovernance {
+  identity: {
+    publisher: string;
+    attestation: CockpitExtensionIdentityAttestation;
+  };
+  versionPin: CockpitExtensionVersionPin;
+  permissions: readonly CockpitExtensionPermissionGrant[];
+  lifecycle: CockpitExtensionLifecycleControls;
+}
+
 export interface CockpitExtensionAccessContext {
   persona?: string;
   availablePersonas?: readonly string[];
@@ -104,6 +174,7 @@ export interface CockpitExtensionRouteRef {
   title: string;
   description?: string;
   guard: CockpitExtensionGuard;
+  permissionGrantIds: readonly string[];
 }
 
 export interface CockpitExtensionNavItem {
@@ -124,6 +195,7 @@ export interface CockpitExtensionCommand {
   title: string;
   routeId?: string;
   guard: CockpitExtensionGuard;
+  permissionGrantIds: readonly string[];
   requiredCapabilities?: readonly string[];
   requiredApiScopes?: readonly string[];
   shortcut?: string;
@@ -143,6 +215,7 @@ export interface CockpitExtensionManifest {
   routes: readonly CockpitExtensionRouteRef[];
   navItems: readonly CockpitExtensionNavItem[];
   commands: readonly CockpitExtensionCommand[];
+  governance: CockpitExtensionGovernance;
 }
 
 export interface CockpitExtensionRouteLoaderContext<
@@ -211,6 +284,12 @@ export interface CockpitExtensionRegistryProblem {
     | 'duplicate-route-module'
     | 'missing-package-ref'
     | 'install-pack-ref-mismatch'
+    | 'governance-package-ref-mismatch'
+    | 'missing-governance-controls'
+    | 'duplicate-permission-grant'
+    | 'undeclared-permission-grant'
+    | 'permission-bypass-risk'
+    | 'invalid-governance-control'
     | 'missing-route-guard'
     | 'missing-command-guard'
     | 'missing-pack-activation';

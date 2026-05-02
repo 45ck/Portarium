@@ -19,6 +19,7 @@ export interface ResolveCockpitExtensionServerAccessInput {
 export interface ResolvedCockpitExtensionServerAccess {
   activePackIds: readonly string[];
   quarantinedExtensionIds: readonly string[];
+  emergencyDisabledExtensionIds: readonly string[];
   accessContext: CockpitExtensionAccessContext;
   usable: boolean;
 }
@@ -26,6 +27,7 @@ export interface ResolvedCockpitExtensionServerAccess {
 const EMPTY_SERVER_ACCESS: ResolvedCockpitExtensionServerAccess = {
   activePackIds: [],
   quarantinedExtensionIds: [],
+  emergencyDisabledExtensionIds: [],
   accessContext: {
     availablePersonas: [],
     availableCapabilities: [],
@@ -73,6 +75,7 @@ export function resolveCockpitExtensionServerAccess({
   return {
     activePackIds: serverContext.activePackIds,
     quarantinedExtensionIds: serverContext.quarantinedExtensionIds,
+    emergencyDisabledExtensionIds: serverContext.emergencyDisabledExtensionIds ?? [],
     accessContext: {
       ...(resolvedPersona ? { persona: resolvedPersona } : {}),
       availablePersonas: serverContext.availablePersonas,
@@ -97,7 +100,9 @@ function isValidServerContext(serverContext: CockpitExtensionContextResponse): b
     isStringArray(serverContext.availableApiScopes) &&
     isStringArray(serverContext.availablePrivacyClasses) &&
     isStringArray(serverContext.activePackIds) &&
-    isStringArray(serverContext.quarantinedExtensionIds)
+    isStringArray(serverContext.quarantinedExtensionIds) &&
+    (serverContext.emergencyDisabledExtensionIds === undefined ||
+      isStringArray(serverContext.emergencyDisabledExtensionIds))
   );
 }
 

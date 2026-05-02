@@ -23,6 +23,7 @@ export type ExternalRouteAuditReason =
   | 'not-found'
   | 'registry-invalid'
   | 'extension-disabled'
+  | 'extension-emergency-disabled'
   | 'extension-quarantined'
   | 'extension-invalid'
   | 'route-forbidden'
@@ -193,6 +194,8 @@ function extensionStatusAuditReason(
   switch (status) {
     case 'quarantined':
       return 'extension-quarantined';
+    case 'emergency-disabled':
+      return 'extension-emergency-disabled';
     case 'invalid':
       return 'extension-invalid';
     case 'disabled':

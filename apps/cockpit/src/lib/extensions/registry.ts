@@ -26,6 +26,7 @@ export interface ResolveCockpitExtensionRegistryInput {
   installedExtensions: readonly CockpitExtensionManifest[];
   activePackIds: readonly string[];
   quarantinedExtensionIds?: readonly string[];
+  emergencyDisabledExtensionIds?: readonly string[];
   availableCapabilities?: readonly string[];
   availableApiScopes?: readonly string[];
   availablePrivacyClasses?: readonly string[];
@@ -36,6 +37,7 @@ export function resolveCockpitExtensionRegistry({
   installedExtensions,
   activePackIds,
   quarantinedExtensionIds = [],
+  emergencyDisabledExtensionIds = [],
   availableCapabilities,
   availableApiScopes,
   availablePrivacyClasses,
@@ -43,6 +45,7 @@ export function resolveCockpitExtensionRegistry({
 }: ResolveCockpitExtensionRegistryInput): ResolvedCockpitExtensionRegistry {
   const activePacks = new Set(activePackIds);
   const quarantinedExtensions = new Set(quarantinedExtensionIds);
+  const emergencyDisabledExtensions = new Set(emergencyDisabledExtensionIds);
   const accessContext = { availableCapabilities, availableApiScopes, availablePrivacyClasses };
   const extensionProblems = new Map<string, CockpitExtensionRegistryProblem[]>();
   const extensionDisableReasons = new Map<string, CockpitExtensionDisableReason[]>();
@@ -96,6 +99,16 @@ export function resolveCockpitExtensionRegistry({
       continue;
     }
 
+    if (emergencyDisabledExtensions.has(extension.id)) {
+      extensionDisableReasons.set(extension.id, [
+        {
+          code: 'emergency-disabled',
+          message: `Extension "${extension.id}" is emergency-disabled by the workspace activation source.`,
+        },
+      ]);
+      continue;
+    }
+
     if (quarantinedExtensions.has(extension.id)) {
       extensionDisableReasons.set(extension.id, [
         {
@@ -122,6 +135,7 @@ export function resolveCockpitExtensionRegistry({
     extensionIds.add(extension.id);
 
     const localRoutes = new Map(extension.routes.map((route) => [route.id, route]));
+    validateGovernanceControls(extension, addProblem);
     validatePersonas(extension.id, extension.id, extension.personas, addProblem);
     validatePackActivation(extension, activePacks, addProblem);
     validateRoutes(extension, routeIds, routePaths, routeLoaders, addProblem);
@@ -133,14 +147,17 @@ export function resolveCockpitExtensionRegistry({
     const problems = extensionProblems.get(manifest.id) ?? [];
     const active = isExtensionActive(manifest, activePacks);
     const disableReasons = extensionDisableReasons.get(manifest.id) ?? [];
+    const emergencyDisabled = active && emergencyDisabledExtensions.has(manifest.id);
     const quarantined = active && quarantinedExtensions.has(manifest.id);
     return {
       manifest,
       status:
         problems.length > 0
           ? 'invalid'
-          : quarantined
-            ? 'quarantined'
+          : emergencyDisabled || quarantined
+            ? emergencyDisabled
+              ? 'emergency-disabled'
+              : 'quarantined'
             : active && disableReasons.length === 0
               ? 'enabled'
               : 'disabled',
@@ -379,6 +396,21 @@ function uniqueStrings(values: readonly string[]): string[] {
   return [...new Set(values)];
 }
 
+function duplicateValues(values: readonly string[]): string[] {
+  const seen = new Set<string>();
+  const duplicates = new Set<string>();
+
+  for (const value of values) {
+    if (seen.has(value)) {
+      duplicates.add(value);
+      continue;
+    }
+    seen.add(value);
+  }
+
+  return [...duplicates];
+}
+
 function combinePersonaRequirements(
   routePersonas: readonly string[] | undefined,
   commandPersonas: readonly string[],
@@ -411,6 +443,7 @@ function validateRoutes(
   routeLoaders: Readonly<Record<string, CockpitExtensionRouteModuleLoader | undefined>>,
   addProblem: (problem: CockpitExtensionRegistryProblem) => void,
 ) {
+  const permissionGrants = getPermissionGrantIds(extension);
   for (const route of extension.routes) {
     addDuplicateProblem(routeIds, route.id, extension.id, 'route id', {
       code: 'duplicate-route-id',
@@ -433,6 +466,15 @@ function validateRoutes(
       });
       continue;
     }
+    validatePermissionGrantReferences(extension, route.id, route.permissionGrantIds, addProblem);
+    validatePermissionGuardCoverage(
+      extension,
+      route.id,
+      route.permissionGrantIds,
+      route.guard,
+      permissionGrants,
+      addProblem,
+    );
     const invalidPathReason = getInvalidExternalPathReason(route.path);
     if (invalidPathReason) {
       addProblem({
@@ -514,6 +556,7 @@ function validateCommands(
   shortcutIds: Map<string, string>,
   addProblem: (problem: CockpitExtensionRegistryProblem) => void,
 ) {
+  const permissionGrants = getPermissionGrantIds(extension);
   for (const command of extension.commands) {
     addDuplicateProblem(commandIds, command.id, extension.id, 'command id', {
       code: 'duplicate-command-id',
@@ -538,6 +581,30 @@ function validateCommands(
       });
     } else {
       validateGuard(extension.id, command.id, command.guard, addProblem);
+      validatePermissionGrantReferences(
+        extension,
+        command.id,
+        command.permissionGrantIds,
+        addProblem,
+      );
+      validatePermissionGuardCoverage(
+        extension,
+        command.id,
+        command.permissionGrantIds,
+        {
+          ...command.guard,
+          requiredCapabilities: uniqueStrings([
+            ...command.guard.requiredCapabilities,
+            ...(command.requiredCapabilities ?? []),
+          ]),
+          requiredApiScopes: uniqueStrings([
+            ...command.guard.requiredApiScopes,
+            ...(command.requiredApiScopes ?? []),
+          ]),
+        },
+        permissionGrants,
+        addProblem,
+      );
     }
     if (command.shortcut) {
       addDuplicateProblem(shortcutIds, command.shortcut, extension.id, 'shortcut', {
@@ -547,6 +614,149 @@ function validateCommands(
         addProblem,
       });
     }
+  }
+}
+
+function validateGovernanceControls(
+  extension: CockpitExtensionManifest,
+  addProblem: (problem: CockpitExtensionRegistryProblem) => void,
+) {
+  const governance = extension.governance;
+  if (!governance) {
+    addProblem({
+      code: 'missing-governance-controls',
+      message: `Extension "${extension.id}" must declare identity, version pinning, permissions, lifecycle controls, and audit events.`,
+      extensionId: extension.id,
+    });
+    return;
+  }
+
+  if (
+    !governance.identity.publisher.trim() ||
+    !governance.identity.attestation.subject.trim() ||
+    !/^[a-f0-9]{64}$/i.test(governance.identity.attestation.digestSha256)
+  ) {
+    addProblem({
+      code: 'invalid-governance-control',
+      message: `Extension "${extension.id}" must declare audit-ready identity attestation metadata.`,
+      extensionId: extension.id,
+    });
+  }
+
+  if (
+    !governance.versionPin.packageName.trim() ||
+    !governance.versionPin.version.trim() ||
+    governance.permissions.length === 0
+  ) {
+    addProblem({
+      code: 'invalid-governance-control',
+      message: `Extension "${extension.id}" must declare a pinned package version and at least one permission grant.`,
+      extensionId: extension.id,
+    });
+  }
+
+  if (
+    governance.lifecycle.emergencyDisable.mode !== 'activation-source' ||
+    !governance.lifecycle.emergencyDisable.suppresses.includes('routes') ||
+    !governance.lifecycle.emergencyDisable.suppresses.includes('navigation') ||
+    !governance.lifecycle.emergencyDisable.suppresses.includes('commands') ||
+    !governance.lifecycle.emergencyDisable.suppresses.includes('data-loading') ||
+    !governance.lifecycle.auditEvents.includes('emergency-disable')
+  ) {
+    addProblem({
+      code: 'invalid-governance-control',
+      message: `Extension "${extension.id}" emergency disable must suppress every executable surface and be auditable.`,
+      extensionId: extension.id,
+    });
+  }
+
+  for (const grantId of duplicateValues(governance.permissions.map((grant) => grant.id))) {
+    addProblem({
+      code: 'duplicate-permission-grant',
+      message: `Extension "${extension.id}" declares duplicate permission grant "${grantId}".`,
+      extensionId: extension.id,
+      itemId: grantId,
+    });
+  }
+}
+
+function getPermissionGrantIds(
+  extension: CockpitExtensionManifest,
+): ReadonlyMap<string, NonNullable<CockpitExtensionManifest['governance']>['permissions'][number]> {
+  return new Map(extension.governance?.permissions.map((grant) => [grant.id, grant]) ?? []);
+}
+
+function validatePermissionGrantReferences(
+  extension: CockpitExtensionManifest,
+  itemId: string,
+  permissionGrantIds: readonly string[] | undefined,
+  addProblem: (problem: CockpitExtensionRegistryProblem) => void,
+) {
+  if (!permissionGrantIds || permissionGrantIds.length === 0) {
+    addProblem({
+      code: 'undeclared-permission-grant',
+      message: `Item "${itemId}" must reference at least one declared permission grant.`,
+      extensionId: extension.id,
+      itemId,
+    });
+    return;
+  }
+
+  const grants = getPermissionGrantIds(extension);
+  for (const grantId of permissionGrantIds) {
+    if (!grants.has(grantId)) {
+      addProblem({
+        code: 'undeclared-permission-grant',
+        message: `Item "${itemId}" references undeclared permission grant "${grantId}".`,
+        extensionId: extension.id,
+        itemId,
+      });
+    }
+  }
+}
+
+function validatePermissionGuardCoverage(
+  extension: CockpitExtensionManifest,
+  itemId: string,
+  permissionGrantIds: readonly string[] | undefined,
+  guard: { requiredCapabilities: readonly string[]; requiredApiScopes: readonly string[] },
+  grants: ReadonlyMap<
+    string,
+    NonNullable<CockpitExtensionManifest['governance']>['permissions'][number]
+  >,
+  addProblem: (problem: CockpitExtensionRegistryProblem) => void,
+) {
+  if (!permissionGrantIds) return;
+  const grantRequirements = permissionGrantIds.flatMap((grantId) => {
+    const grant = grants.get(grantId);
+    return grant
+      ? [
+          ...grant.requiredCapabilities.map((requirement) => ({
+            kind: 'capability' as const,
+            value: requirement,
+          })),
+          ...grant.requiredApiScopes.map((requirement) => ({
+            kind: 'api-scope' as const,
+            value: requirement,
+          })),
+        ]
+      : [];
+  });
+  const guardCapabilities = new Set(guard.requiredCapabilities);
+  const guardApiScopes = new Set(guard.requiredApiScopes);
+  const uncovered = grantRequirements.filter((requirement) =>
+    requirement.kind === 'capability'
+      ? !guardCapabilities.has(requirement.value)
+      : !guardApiScopes.has(requirement.value),
+  );
+
+  if (uncovered.length > 0) {
+    addProblem({
+      code: 'permission-bypass-risk',
+      message: `Item "${itemId}" guard is weaker than its declared permission grants: ${uncovered.map((requirement) => requirement.value).join(', ')}.`,
+      extensionId: extension.id,
+      itemId,
+    });
   }
 }
 

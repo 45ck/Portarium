@@ -221,6 +221,7 @@ describe('createControlPlaneHandler', () => {
       availablePrivacyClasses: string[];
       activePackIds: string[];
       quarantinedExtensionIds: string[];
+      emergencyDisabledExtensionIds: string[];
       hostContract: unknown;
       issuedAtIso: string;
       expiresAtIso: string;
@@ -236,6 +237,7 @@ describe('createControlPlaneHandler', () => {
       availablePrivacyClasses: [],
       activePackIds: [],
       quarantinedExtensionIds: [],
+      emergencyDisabledExtensionIds: [],
       hostContract: {
         schemaVersion: 1,
         browserEgress: 'host-api-origins-only',
@@ -275,6 +277,7 @@ describe('createControlPlaneHandler', () => {
           getActivationState: async () => ({
             activePackIds: ['example.pack'],
             quarantinedExtensionIds: [],
+            emergencyDisabledExtensionIds: [],
             availableCapabilities: [],
             availableApiScopes: [
               'extensions.read',
@@ -346,6 +349,7 @@ describe('createControlPlaneHandler', () => {
           getActivationState: async () => ({
             activePackIds: ['example.pack'],
             quarantinedExtensionIds: [],
+            emergencyDisabledExtensionIds: [],
             availableApiScopes: ['extensions.read', 'agent-actions.propose'],
           }),
         },
@@ -399,6 +403,7 @@ describe('createControlPlaneHandler', () => {
             return {
               activePackIds: ['example.pack', ' example.pack ', 'quarantined.pack'],
               quarantinedExtensionIds: ['quarantined.extension', ''],
+              emergencyDisabledExtensionIds: ['disabled.extension', ' disabled.extension '],
               availableCapabilities: ['extension.route:read', 'objects:read'],
               availableApiScopes: ['extensions.read', 'workspace.read'],
               availablePrivacyClasses: ['internal', 'restricted'],
@@ -423,12 +428,14 @@ describe('createControlPlaneHandler', () => {
     const body = (await res.json()) as {
       activePackIds: string[];
       quarantinedExtensionIds: string[];
+      emergencyDisabledExtensionIds: string[];
       availableCapabilities: string[];
       availableApiScopes: string[];
       availablePrivacyClasses: string[];
     };
     expect(body.activePackIds).toEqual(['example.pack', 'quarantined.pack']);
     expect(body.quarantinedExtensionIds).toEqual(['quarantined.extension']);
+    expect(body.emergencyDisabledExtensionIds).toEqual(['disabled.extension']);
     expect(body.availableCapabilities).toEqual(['objects:read', 'extension.route:read']);
     expect(body.availableApiScopes).toEqual(['extensions.read']);
     expect(body.availablePrivacyClasses).toEqual(['internal', 'restricted']);
@@ -455,6 +462,7 @@ describe('createControlPlaneHandler', () => {
           getActivationState: async () => ({
             activePackIds: ['example.pack'],
             quarantinedExtensionIds: [],
+            emergencyDisabledExtensionIds: [],
             availableCapabilities: [],
             availableApiScopes: ['approvals.read'],
           }),

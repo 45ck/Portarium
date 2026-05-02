@@ -49,6 +49,7 @@ export type CockpitExtensionContextResponse = Readonly<{
   availablePrivacyClasses: readonly string[];
   activePackIds: readonly string[];
   quarantinedExtensionIds: readonly string[];
+  emergencyDisabledExtensionIds: readonly string[];
   hostContract: CockpitExtensionHostContract;
   issuedAtIso: string;
   expiresAtIso: string;
@@ -153,6 +154,9 @@ async function buildCockpitExtensionContext(
     availablePrivacyClasses: effectiveAccess.availablePrivacyClasses,
     activePackIds: normalizeActivationIds(activationState.activePackIds),
     quarantinedExtensionIds: normalizeActivationIds(activationState.quarantinedExtensionIds),
+    emergencyDisabledExtensionIds: normalizeActivationIds(
+      activationState.emergencyDisabledExtensionIds ?? [],
+    ),
     hostContract,
     issuedAtIso: issuedAt.toISOString(),
     expiresAtIso: expiresAt.toISOString(),
@@ -365,6 +369,8 @@ function isValidActivationState(value: unknown): value is CockpitExtensionActiva
   return (
     isStringArray(record['activePackIds']) &&
     isStringArray(record['quarantinedExtensionIds']) &&
+    (record['emergencyDisabledExtensionIds'] === undefined ||
+      isStringArray(record['emergencyDisabledExtensionIds'])) &&
     (record['availableCapabilities'] === undefined ||
       isStringArray(record['availableCapabilities'])) &&
     (record['availableApiScopes'] === undefined || isStringArray(record['availableApiScopes'])) &&

@@ -13,6 +13,7 @@ describe('EnvCockpitExtensionActivationSource', () => {
           scopeIncludes: ['extensions.read'],
           activePackIds: [' demo.pack', 'demo.pack', 'other.pack'],
           quarantinedExtensionIds: ['demo.extension'],
+          emergencyDisabledExtensionIds: ['disabled.extension', ' disabled.extension '],
           availableCapabilities: ['objects:read', 'incidents:read'],
           availableApiScopes: ['extensions.read', 'approvals.read'],
           availablePrivacyClasses: ['internal', 'restricted'],
@@ -39,6 +40,7 @@ describe('EnvCockpitExtensionActivationSource', () => {
     ).resolves.toEqual({
       activePackIds: ['demo.pack', 'other.pack'],
       quarantinedExtensionIds: ['demo.extension'],
+      emergencyDisabledExtensionIds: ['disabled.extension'],
       availableCapabilities: ['objects:read', 'incidents:read'],
       availableApiScopes: ['extensions.read', 'approvals.read'],
       availablePrivacyClasses: ['internal', 'restricted'],
@@ -68,6 +70,7 @@ describe('EnvCockpitExtensionActivationSource', () => {
     ).resolves.toEqual({
       activePackIds: [],
       quarantinedExtensionIds: [],
+      emergencyDisabledExtensionIds: [],
       availableCapabilities: [],
       availableApiScopes: [],
       availablePrivacyClasses: [],
@@ -91,6 +94,7 @@ describe('EnvCockpitExtensionActivationSource', () => {
     ).resolves.toEqual({
       activePackIds: [],
       quarantinedExtensionIds: [],
+      emergencyDisabledExtensionIds: [],
       availableCapabilities: [],
       availableApiScopes: [],
       availablePrivacyClasses: [],
@@ -119,6 +123,7 @@ describe('EnvCockpitExtensionActivationSource', () => {
     ).resolves.toEqual({
       activePackIds: [],
       quarantinedExtensionIds: [],
+      emergencyDisabledExtensionIds: [],
       availableCapabilities: [],
       availableApiScopes: [],
       availablePrivacyClasses: [],

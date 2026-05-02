@@ -187,8 +187,9 @@ describe('external extensions route', () => {
     expect(screen.getByText('/external/example-reference/details/$itemId')).toBeTruthy();
     expect(screen.getByText('Open extension reference')).toBeTruthy();
     expect(screen.getByText('G X')).toBeTruthy();
-    expect(screen.getByText('extension:read')).toBeTruthy();
-    expect(screen.getByText('extension:inspect')).toBeTruthy();
+    expect(screen.getByText('Read reference extension overview data')).toBeTruthy();
+    expect(screen.getByText('Inspect reference extension details')).toBeTruthy();
+    expect(screen.getAllByText(/audit: enable, disable, upgrade/).length).toBeGreaterThan(0);
 
     const primaryNavigation = screen.getByLabelText('Primary navigation');
     expect(
@@ -233,6 +234,36 @@ describe('external extensions route', () => {
     expect(
       within(primaryNavigation).queryByRole('link', { name: 'Reference Overview' }),
     ).toBeNull();
+  });
+
+  it('shows emergency-disabled plugins as disabled and keeps their permissions auditable', async () => {
+    queryClient.setQueryData(['cockpit-extension-context', 'ws-demo', 'user-1'], {
+      schemaVersion: 1,
+      workspaceId: 'ws-demo',
+      principalId: 'user-1',
+      persona: 'Operator',
+      availablePersonas: ['Operator'],
+      availableCapabilities: ['extension:read', 'extension:inspect'],
+      availableApiScopes: ['extensions.read', 'extensions.inspect'],
+      availablePrivacyClasses: ['internal', 'restricted'],
+      activePackIds: ['example.reference'],
+      quarantinedExtensionIds: [],
+      emergencyDisabledExtensionIds: ['example.reference'],
+      issuedAtIso: '2026-04-30T02:00:00.000Z',
+      expiresAtIso: '2999-04-30T02:05:00.000Z',
+    });
+
+    await renderRoute('/explore/extensions');
+
+    expect(await screen.findByRole('heading', { name: 'External Extensions' })).toBeTruthy();
+    expect(within(screen.getByLabelText('Enabled extensions')).getByText('0')).toBeTruthy();
+    expect(
+      within(screen.getByLabelText('Emergency Disabled extensions')).getByText('1'),
+    ).toBeTruthy();
+    expect(screen.getAllByText('emergency-disabled').length).toBeGreaterThan(0);
+    expect(screen.getByText('Read reference extension overview data')).toBeTruthy();
+    expect(screen.queryByText('/external/example-reference/overview')).toBeNull();
+    expect(screen.queryByText('Open extension reference')).toBeNull();
   });
 
   it('distinguishes invalid effective registry state from disabled activation state', async () => {

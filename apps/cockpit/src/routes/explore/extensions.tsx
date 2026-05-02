@@ -29,6 +29,7 @@ function ExtensionsPage() {
   const registry = resolveInstalledCockpitExtensionRegistry({
     activePackIds: serverAccess.activePackIds,
     quarantinedExtensionIds: serverAccess.quarantinedExtensionIds,
+    emergencyDisabledExtensionIds: serverAccess.emergencyDisabledExtensionIds,
     availableCapabilities: serverAccess.accessContext.availableCapabilities,
     availableApiScopes: serverAccess.accessContext.availableApiScopes,
     availablePrivacyClasses: serverAccess.accessContext.availablePrivacyClasses,
@@ -46,6 +47,7 @@ function ExtensionsPage() {
         <StatusSummaryCard label="Installed" value={statusCounts.installed} />
         <StatusSummaryCard label="Enabled" value={statusCounts.enabled} />
         <StatusSummaryCard label="Disabled" value={statusCounts.disabled} />
+        <StatusSummaryCard label="Emergency Disabled" value={statusCounts.emergencyDisabled} />
         <StatusSummaryCard label="Invalid" value={statusCounts.invalid} />
       </div>
 
@@ -139,11 +141,12 @@ function ExtensionCard({ extension }: { extension: ResolvedCockpitExtension }) {
           />
         )}
         <ExtensionSection
-          title="Capabilities"
+          title="Permissions"
           icon={<CheckCircle2 className="h-4 w-4" />}
-          items={manifest.requiredCapabilities.map((capability) => ({
-            key: capability,
-            label: capability,
+          items={manifest.governance.permissions.map((permission) => ({
+            key: permission.id,
+            label: permission.title,
+            meta: `${permission.kind} - scopes: ${permission.requiredApiScopes.join(', ') || 'none'} - audit: ${permission.auditEventTypes.join(', ')}`,
           }))}
         />
         {isEnabled ? (
@@ -221,13 +224,17 @@ function getExtensionStatusCounts(extensions: readonly ResolvedCockpitExtension[
     installed: extensions.length,
     enabled: extensions.filter((extension) => extension.status === 'enabled').length,
     disabled: extensions.filter((extension) => extension.status === 'disabled').length,
+    emergencyDisabled: extensions.filter((extension) => extension.status === 'emergency-disabled')
+      .length,
     invalid: extensions.filter((extension) => extension.status === 'invalid').length,
   };
 }
 
 function getStatusBadgeVariant(status: ResolvedCockpitExtension['status']) {
   if (status === 'enabled') return 'success';
-  if (status === 'invalid' || status === 'quarantined') return 'destructive';
+  if (status === 'invalid' || status === 'quarantined' || status === 'emergency-disabled') {
+    return 'destructive';
+  }
   return 'secondary';
 }
 

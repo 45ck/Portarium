@@ -24,6 +24,7 @@ const TEST_EXTENSION: CockpitExtensionManifest = {
         requiredCapabilities: ['objects:read'],
         requiredApiScopes: ['extensions.read'],
       },
+      permissionGrantIds: ['test.objects.read'],
     },
     {
       id: 'test-detail',
@@ -34,6 +35,7 @@ const TEST_EXTENSION: CockpitExtensionManifest = {
         requiredCapabilities: ['objects:read'],
         requiredApiScopes: ['extensions.read'],
       },
+      permissionGrantIds: ['test.objects.read'],
     },
     {
       id: 'test-restricted',
@@ -45,10 +47,47 @@ const TEST_EXTENSION: CockpitExtensionManifest = {
         requiredApiScopes: ['extensions.read'],
         privacyClasses: ['restricted'],
       },
+      permissionGrantIds: ['test.objects.read'],
     },
   ],
   navItems: [],
   commands: [],
+  governance: {
+    identity: {
+      publisher: 'portarium',
+      attestation: {
+        kind: 'source-review',
+        subject: 'apps/cockpit/src/components/cockpit/extensions/external-route-adapter.test.ts',
+        digestSha256: 'abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789',
+      },
+    },
+    versionPin: {
+      packageName: '@portarium/cockpit-test-extension',
+      version: '0.0.1',
+    },
+    permissions: [
+      {
+        id: 'test.objects.read',
+        kind: 'data-query',
+        title: 'Read test objects',
+        requiredCapabilities: ['objects:read'],
+        requiredApiScopes: ['extensions.read'],
+        policySemantics: 'authorization-required',
+        evidenceSemantics: 'read-audited-by-control-plane',
+        auditEventTypes: ['enable', 'disable', 'emergency-disable'],
+      },
+    ],
+    lifecycle: {
+      emergencyDisable: {
+        mode: 'activation-source',
+        suppresses: ['routes', 'navigation', 'commands', 'shortcuts', 'data-loading'],
+      },
+      rollback: {
+        mode: 'disable-only',
+      },
+      auditEvents: ['install', 'enable', 'disable', 'emergency-disable', 'upgrade', 'rollback'],
+    },
+  },
 };
 
 const TEST_ROUTE_LOADERS = {
@@ -274,6 +313,38 @@ describe('resolveExternalRoute', () => {
         matchedPath: '/external/test/overview',
         extensionStatus: 'disabled',
         disableReasons: [expect.objectContaining({ code: 'workspace-pack-inactive' })],
+      },
+    });
+  });
+
+  it('fails closed before rendering when the matching extension is emergency-disabled', () => {
+    const registry = resolveCockpitExtensionRegistry({
+      installedExtensions: [TEST_EXTENSION],
+      activePackIds: ['test.extension'],
+      emergencyDisabledExtensionIds: ['test.extension'],
+      ...TEST_ACCESS_CONTEXT,
+      routeLoaders: TEST_ROUTE_LOADERS,
+    });
+
+    const resolution = resolveExternalRoute({
+      pathname: '/external/test/overview',
+      persona: 'Operator',
+      registry,
+      components: TEST_COMPONENTS,
+    });
+
+    expect(resolution).toMatchObject({
+      kind: 'not-found',
+      pathname: '/external/test/overview',
+      audit: {
+        decision: 'deny',
+        reason: 'extension-emergency-disabled',
+        surface: 'external-route',
+        extensionId: 'test.extension',
+        routeId: 'test-overview',
+        matchedPath: '/external/test/overview',
+        extensionStatus: 'emergency-disabled',
+        disableReasons: [expect.objectContaining({ code: 'emergency-disabled' })],
       },
     });
   });
