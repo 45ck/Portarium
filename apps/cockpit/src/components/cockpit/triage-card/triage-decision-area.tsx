@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils';
 import { CheckCircle2, XCircle, RotateCcw, SkipForward } from 'lucide-react';
 import { RequestChangesForm } from './request-changes-form';
 import type { TriageAction } from './types';
+import type { ApprovalCardFriction } from './approval-card-contract';
 
 export interface TriageDecisionAreaProps {
   approvalId: string;
@@ -23,6 +24,9 @@ export interface TriageDecisionAreaProps {
   shouldShakeRationale: boolean;
   onRationaleFocus: () => void;
   onRationaleBlur: () => void;
+  reviewFriction: ApprovalCardFriction;
+  approveAttempted: boolean;
+  approveConfirmArmed: boolean;
 }
 
 export function TriageDecisionArea({
@@ -42,6 +46,9 @@ export function TriageDecisionArea({
   shouldShakeRationale,
   onRationaleFocus,
   onRationaleBlur,
+  reviewFriction,
+  approveAttempted,
+  approveConfirmArmed,
 }: TriageDecisionAreaProps) {
   if (requestChangesMode) {
     return (
@@ -65,7 +72,9 @@ export function TriageDecisionArea({
           aria-label={`Decision rationale for approval ${approvalId}`}
           className={cn(
             'text-xs min-h-[80px] resize-none',
-            denyAttempted && !rationale.trim() && 'border-yellow-500 focus-visible:ring-yellow-500',
+            ((denyAttempted && !rationale.trim()) ||
+              (approveAttempted && reviewFriction.requireRationale && !rationale.trim())) &&
+              'border-yellow-500 focus-visible:ring-yellow-500',
           )}
           placeholder="Decision rationale — optional for approve, required for deny…"
           value={rationale}
@@ -74,9 +83,21 @@ export function TriageDecisionArea({
           onBlur={onRationaleBlur}
         />
       </motion.div>
-      {denyAttempted && !rationale.trim() ? (
+      {approveAttempted && reviewFriction.requireRationale && !rationale.trim() ? (
+        <p role="alert" className="text-xs text-yellow-600 font-medium">
+          A rationale is required when approving high-risk Actions.
+        </p>
+      ) : approveAttempted && reviewFriction.requireSecondConfirm && !approveConfirmArmed ? (
+        <p role="alert" className="text-xs text-yellow-600 font-medium">
+          High-risk approval requires a second confirmation.
+        </p>
+      ) : denyAttempted && !rationale.trim() ? (
         <p role="alert" className="text-xs text-yellow-600 font-medium">
           A rationale is required when denying an approval.
+        </p>
+      ) : approveConfirmArmed ? (
+        <p role="alert" className="text-xs text-yellow-600 font-medium">
+          Review complete. Press Confirm to approve this high-risk Action.
         </p>
       ) : rationale.trim() ? (
         <p className="text-xs text-green-600 flex items-center gap-1">
@@ -101,13 +122,19 @@ export function TriageDecisionArea({
           <Button
             size="sm"
             className="h-14 w-full flex-col gap-1 bg-green-600 hover:bg-green-700 text-white border-0"
-            disabled={isBlocked || Boolean(loading)}
+            disabled={isBlocked || reviewFriction.escalationLock || Boolean(loading)}
             onClick={() => onAction('Approved')}
-            title="Approve (A)"
+            title={
+              reviewFriction.escalationLock
+                ? (reviewFriction.lockReason ?? 'Approve is locked')
+                : 'Approve (A)'
+            }
             aria-keyshortcuts="a"
           >
             <CheckCircle2 className="h-5 w-5" />
-            <span className="text-[11px]">Approve</span>
+            <span className="text-[11px]">
+              {reviewFriction.requireSecondConfirm && approveConfirmArmed ? 'Confirm' : 'Approve'}
+            </span>
           </Button>
         </motion.div>
         <Button

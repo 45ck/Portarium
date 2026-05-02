@@ -6,14 +6,17 @@ import type {
 } from '@portarium/cockpit-types';
 import { ProvenanceJourney } from '../provenance-journey';
 import { AgentActionProposalDetail } from './agent-action-proposal-detail';
+import { ApprovalCardContractPanel } from './approval-card-contract-panel';
 import { PolicyRulePanel } from './policy-rule-panel';
 import { TriageEffectRow } from './triage-effect-row';
+import type { ApprovalCardContract } from './approval-card-contract';
 
 export interface TriageDefaultContentProps {
   approval: ApprovalSummary;
   plannedEffects: PlanEffect[];
   run?: RunSummary;
   workflow?: WorkflowSummary;
+  cardContract: ApprovalCardContract;
 }
 
 export function TriageDefaultContent({
@@ -21,10 +24,12 @@ export function TriageDefaultContent({
   plannedEffects,
   run,
   workflow,
+  cardContract,
 }: TriageDefaultContentProps) {
   const policyRule = approval.policyRule;
   return (
     <>
+      <ApprovalCardContractPanel contract={cardContract} />
       <ProvenanceJourney approval={approval} run={run} workflow={workflow} />
       {approval.agentActionProposal && (
         <AgentActionProposalDetail proposal={approval.agentActionProposal} />

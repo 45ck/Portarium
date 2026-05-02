@@ -14,10 +14,19 @@
  *
  * Bead: bead-0818
  */
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
 // Generous timeout: MSW service-worker registration can take a moment on first load.
 test.setTimeout(60_000);
+
+async function submitApproval(page: Page) {
+  await page.getByTitle('Approve (A)').click();
+
+  const confirmButton = page.getByRole('button', { name: 'Confirm' });
+  if (await confirmButton.isVisible().catch(() => false)) {
+    await confirmButton.click();
+  }
+}
 
 test.describe('Approval flow — smoke', () => {
   test.beforeEach(async ({ page }) => {
@@ -57,9 +66,7 @@ test.describe('Approval flow — smoke', () => {
     // Fill in a rationale (good practice even though optional for Approve).
     await rationaleTextarea.fill('Smoke test — automated approval');
 
-    // Click Approve.
-    const approveButton = page.getByTitle('Approve (A)');
-    await approveButton.click();
+    await submitApproval(page);
 
     // After approving, the deck either shows the next pending approval
     // or the "Triage complete" empty state if no more approvals remain.
@@ -73,9 +80,11 @@ test.describe('Approval flow — smoke', () => {
 
   test('approve action submits decision to mock API', async ({ page }) => {
     // Intercept the decide API call to verify it is made with the correct payload.
-    const decisionRequest = page.waitForRequest(
-      (req) => req.url().includes('/decide') && req.method() === 'POST',
-    );
+    const decisionRequest = page
+      .waitForRequest((req) => req.url().includes('/decide') && req.method() === 'POST', {
+        timeout: 10_000,
+      })
+      .catch(() => null);
 
     await page.goto('/approvals');
 
@@ -85,11 +94,11 @@ test.describe('Approval flow — smoke', () => {
     await expect(rationaleTextarea).toBeVisible({ timeout: 15_000 });
     await rationaleTextarea.fill('Approved via smoke test');
 
-    await page.getByTitle('Approve (A)').click();
+    await submitApproval(page);
 
     // The outbox flushes after an undo window; advance timers to trigger flush.
     // In a real environment we wait for the request; use a generous timeout.
-    const req = await decisionRequest.catch(() => null);
+    const req = await decisionRequest;
 
     if (req) {
       const body = (await req.postDataJSON()) as { decision?: string; rationale?: string };
