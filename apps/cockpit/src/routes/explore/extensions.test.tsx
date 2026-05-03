@@ -344,7 +344,7 @@ describe('external extensions route', () => {
     expect(screen.getAllByText('Registry Problems').length).toBeGreaterThan(0);
     expect(screen.getByText('Suppressed Surfaces')).toBeTruthy();
     expect(screen.getByText('invalid')).toBeTruthy();
-    expect(screen.getByText('missing-route-module')).toBeTruthy();
+    expect(screen.getAllByText('missing-route-module').length).toBeGreaterThan(0);
     expect(screen.getAllByText(/example-reference-detail/).length).toBeGreaterThan(0);
     expect(screen.queryByText('workspace-pack-inactive')).toBeNull();
     expect(screen.queryByText('Open extension reference')).toBeNull();

@@ -249,11 +249,7 @@ function ActivationContextCard({
   );
 }
 
-function RegistryProblems({
-  problems,
-}: {
-  problems: readonly CockpitExtensionRegistryProblem[];
-}) {
+function RegistryProblems({ problems }: { problems: readonly CockpitExtensionRegistryProblem[] }) {
   return (
     <Card className="border-destructive/40 shadow-none">
       <CardHeader>
@@ -304,10 +300,7 @@ function ExtensionSection({
   );
 }
 
-function formatRegistryProblemMeta(problem: {
-  itemId?: string;
-  message: string;
-}): string {
+function formatRegistryProblemMeta(problem: { itemId?: string; message: string }): string {
   return problem.itemId ? `${problem.itemId}: ${problem.message}` : problem.message;
 }
 
