@@ -21,6 +21,7 @@ Fields:
 - `createdAtIso`: ISO-8601/RFC3339 UTC timestamp string
 - `createdByUserId`: branded `UserId`
 - `sodConstraints?`: `SodConstraintV1[]` (optional; may be empty)
+- `autonomyBudgets?`: `AutonomyBudgetV1[]` (optional; see `autonomy-budget-policy-v1.md`)
 
 ### SodConstraintV1
 

@@ -76,6 +76,31 @@ describe('parsePolicyV1: happy path', () => {
     expect(policy.rules?.[1]?.effect).toBe('Deny');
   });
 
+  it('parses autonomy budgets when provided', () => {
+    const policy = parsePolicyV1({
+      ...VALID_POLICY,
+      autonomyBudgets: [
+        {
+          budgetId: 'run-tool-calls',
+          scope: 'Run',
+          metric: 'ToolCalls',
+          warningAt: 80,
+          hardStopAt: 100,
+          hardStopMode: 'KillRun',
+          rationale: 'Prevent runaway tool loops.',
+        },
+      ],
+    });
+
+    expect(policy.autonomyBudgets).toHaveLength(1);
+    expect(policy.autonomyBudgets?.[0]).toMatchObject({
+      budgetId: 'run-tool-calls',
+      scope: 'Run',
+      metric: 'ToolCalls',
+      hardStopMode: 'KillRun',
+    });
+  });
+
   it('parses when optional description is omitted', () => {
     const policy = parsePolicyV1({ ...VALID_POLICY, description: undefined });
 
@@ -166,6 +191,32 @@ describe('parsePolicyV1: validation', () => {
         rules: [{ ruleId: 'r-1', condition: 'x', effect: 'Maybe' }],
       }),
     ).toThrow(/effect must be one of: Allow, Deny/i);
+  });
+
+  it('rejects invalid autonomy budgets', () => {
+    expect(() =>
+      parsePolicyV1({
+        ...VALID_POLICY,
+        autonomyBudgets: 'not-an-array',
+      }),
+    ).toThrow(/autonomyBudgets must be an array/i);
+
+    expect(() =>
+      parsePolicyV1({
+        ...VALID_POLICY,
+        autonomyBudgets: [
+          {
+            budgetId: 'bad',
+            scope: 'Run',
+            metric: 'ToolCalls',
+            warningAt: 100,
+            hardStopAt: 100,
+            hardStopMode: 'KillRun',
+            rationale: 'invalid',
+          },
+        ],
+      }),
+    ).toThrow(/warningAt must be less than hardStopAt/i);
   });
 
   it('rejects invalid ISO timestamp for createdAtIso', () => {

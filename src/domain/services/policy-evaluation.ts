@@ -1,4 +1,9 @@
 import type { PolicyV1 } from '../policy/policy-v1.js';
+import {
+  evaluateAutonomyBudgetsV1,
+  type AutonomyBudgetEvaluationContextV1,
+  type AutonomyBudgetEvaluationResultV1,
+} from '../policy/autonomy-budget-policy-v1.js';
 import type {
   PerformedDutyV1,
   RobotSodContextV1,
@@ -22,6 +27,7 @@ export type PolicyEvaluationContextV1 = Readonly<{
   robotContext?: RobotSodContextV1;
   ruleContext?: Readonly<Record<string, unknown>>;
   ruleEvaluationMaxOperations?: number;
+  autonomyBudgetContext?: AutonomyBudgetEvaluationContextV1;
 }> &
   SafetyPolicyContextV1;
 
@@ -34,6 +40,7 @@ export type PolicyEvaluationResultV1 = Readonly<{
   safetyTierRecommendation?: SafetyTierRecommendation;
   hazardClassifications?: readonly HazardClassificationV1[];
   inlineRuleErrors?: readonly string[];
+  autonomyBudget?: AutonomyBudgetEvaluationResultV1;
 }>;
 
 export type PolicyEvaluationEvidenceV1 = Readonly<{
@@ -42,6 +49,7 @@ export type PolicyEvaluationEvidenceV1 = Readonly<{
   violationKinds: readonly SodViolationV1['kind'][];
   safetyTierRecommendation?: SafetyTierRecommendation;
   hazardClassifications?: readonly HazardClassificationV1[];
+  autonomyBudget?: AutonomyBudgetEvaluationResultV1['evidence'];
 }>;
 
 const DECISION_SEVERITY: Record<PolicyDecisionV1, number> = {
@@ -57,6 +65,7 @@ export function evaluatePolicy(params: {
   const { policy, context } = params;
   const safety = evaluateSafetyPolicyContext(context);
   const evaluatedPolicyIds = [policy.policyId] as const;
+  const autonomyBudget = evaluateAutonomyBudgetForPolicies([policy], context);
 
   // --- Inline rule evaluation ---
   const inlineResult = evaluateInlineRules(policy, context);
@@ -67,6 +76,7 @@ export function evaluatePolicy(params: {
       violations: [],
       evaluatedPolicyIds,
       inlineRuleErrors: inlineResult.errors,
+      ...(autonomyBudget ? { autonomyBudget } : {}),
     };
   }
   if (inlineResult.decision !== null) {
@@ -75,6 +85,7 @@ export function evaluatePolicy(params: {
       violations: [],
       evaluatedPolicyIds,
       safety,
+      ...(autonomyBudget ? { autonomyBudget } : {}),
     });
   }
 
@@ -85,6 +96,7 @@ export function evaluatePolicy(params: {
       violations: [],
       evaluatedPolicyIds,
       safety,
+      ...(autonomyBudget ? { autonomyBudget } : {}),
     });
   }
 
@@ -105,6 +117,7 @@ export function evaluatePolicy(params: {
     violations,
     evaluatedPolicyIds,
     safety,
+    ...(autonomyBudget ? { autonomyBudget } : {}),
   });
 }
 
@@ -114,6 +127,7 @@ export function evaluatePolicies(params: {
 }): PolicyEvaluationResultV1 {
   const { policies, context } = params;
   const safety = evaluateSafetyPolicyContext(context);
+  const autonomyBudget = evaluateAutonomyBudgetForPolicies(policies, context);
 
   if (policies.length === 0) {
     return buildPolicyResult({
@@ -121,6 +135,7 @@ export function evaluatePolicies(params: {
       violations: [],
       evaluatedPolicyIds: [],
       safety,
+      ...(autonomyBudget ? { autonomyBudget } : {}),
     });
   }
 
@@ -148,6 +163,7 @@ export function evaluatePolicies(params: {
       violations: allViolations,
       evaluatedPolicyIds: allPolicyIds,
       inlineRuleErrors: allInlineErrors,
+      ...(autonomyBudget ? { autonomyBudget } : {}),
     };
   }
 
@@ -162,6 +178,7 @@ export function evaluatePolicies(params: {
     violations: allViolations,
     evaluatedPolicyIds: allPolicyIds,
     safety,
+    ...(autonomyBudget ? { autonomyBudget } : {}),
   });
 }
 
@@ -178,6 +195,7 @@ export function toPolicyEvaluationEvidenceV1(
     ...(result.hazardClassifications
       ? { hazardClassifications: result.hazardClassifications }
       : {}),
+    ...(result.autonomyBudget ? { autonomyBudget: result.autonomyBudget.evidence } : {}),
   };
 }
 
@@ -302,9 +320,15 @@ function buildPolicyResult(input: {
   violations: readonly SodViolationV1[];
   evaluatedPolicyIds: readonly PolicyIdType[];
   safety: ReturnType<typeof evaluateSafetyPolicyContext>;
+  autonomyBudget?: AutonomyBudgetEvaluationResultV1;
 }): PolicyEvaluationResultV1 {
+  const budgetDecision: PolicyDecisionV1 =
+    input.autonomyBudget?.decision === 'HardStop' ? 'Deny' : 'Allow';
   return {
-    decision: mergeDecision(input.baseDecision, input.safety.decision),
+    decision: mergeDecision(
+      mergeDecision(input.baseDecision, input.safety.decision),
+      budgetDecision,
+    ),
     violations: input.violations,
     evaluatedPolicyIds: input.evaluatedPolicyIds,
     ...(input.safety.recommendation
@@ -313,5 +337,17 @@ function buildPolicyResult(input: {
     ...(input.safety.hazardClassifications.length > 0
       ? { hazardClassifications: input.safety.hazardClassifications }
       : {}),
+    ...(input.autonomyBudget ? { autonomyBudget: input.autonomyBudget } : {}),
   };
+}
+
+function evaluateAutonomyBudgetForPolicies(
+  policies: readonly PolicyV1[],
+  context: PolicyEvaluationContextV1,
+): AutonomyBudgetEvaluationResultV1 | undefined {
+  if (!context.autonomyBudgetContext) return undefined;
+  return evaluateAutonomyBudgetsV1({
+    policies,
+    context: context.autonomyBudgetContext,
+  });
 }

@@ -52,7 +52,11 @@ export type PolicyEvaluationOutcomeV1 = 'Pass' | 'Fail' | 'NeedsHuman';
 // ---------------------------------------------------------------------------
 
 /** The category of evaluation step that produced a trace entry. */
-export type PolicyTraceEntryKindV1 = 'InlineRule' | 'SodConstraint' | 'SafetyHazard';
+export type PolicyTraceEntryKindV1 =
+  | 'InlineRule'
+  | 'SodConstraint'
+  | 'SafetyHazard'
+  | 'AutonomyBudget';
 
 /**
  * A single entry in the evaluation trace.
@@ -249,6 +253,25 @@ function buildTraces(
   if (result.hazardClassifications) {
     for (const hazard of result.hazardClassifications) {
       traces.push(buildHazardTrace(hazard));
+    }
+  }
+
+  if (result.autonomyBudget) {
+    for (const hardStop of result.autonomyBudget.hardStops) {
+      traces.push({
+        kind: 'AutonomyBudget',
+        triggerId: hardStop.budgetId ?? hardStop.kind,
+        explanation: hardStop.operatorVisibleRationale,
+        outcome: 'Fail',
+      });
+    }
+    for (const warning of result.autonomyBudget.warnings) {
+      traces.push({
+        kind: 'AutonomyBudget',
+        triggerId: warning.budgetId ?? warning.kind,
+        explanation: warning.operatorVisibleRationale,
+        outcome: 'NeedsHuman',
+      });
     }
   }
 

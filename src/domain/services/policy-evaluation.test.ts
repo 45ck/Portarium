@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { PolicyId, RobotId, UserId, WorkspaceId } from '../primitives/index.js';
+import { PolicyId, RobotId, RunId, UserId, WorkspaceId } from '../primitives/index.js';
 import type { PolicyV1 } from '../policy/policy-v1.js';
 
 import {
@@ -302,6 +302,69 @@ describe('evaluatePolicy', () => {
         }),
       ]),
     );
+  });
+
+  it('denies and records budget evidence when autonomy hard-stop is reached', () => {
+    const result = evaluatePolicy({
+      policy: makePolicy({
+        autonomyBudgets: [
+          {
+            budgetId: 'run-tool-calls',
+            scope: 'Run',
+            metric: 'ToolCalls',
+            warningAt: 80,
+            hardStopAt: 100,
+            hardStopMode: 'KillRun',
+            rationale: 'Prevent runaway tool loops.',
+          },
+        ],
+      }),
+      context: makeContext({
+        autonomyBudgetContext: {
+          workspaceId: WorkspaceId('ws-1'),
+          runId: RunId('run-1'),
+          evaluatedAtIso: '2026-04-02T20:00:00.000Z',
+          usage: [{ scope: 'Run', metric: 'ToolCalls', used: 99, pending: 1 }],
+        },
+      }),
+    });
+
+    expect(result.decision).toBe('Deny');
+    expect(result.autonomyBudget?.decision).toBe('HardStop');
+    expect(result.autonomyBudget?.evidence.stopClass).toBe('budget');
+
+    const evidence = toPolicyEvaluationEvidenceV1(result);
+    expect(evidence.autonomyBudget?.decision).toBe('HardStop');
+    expect(evidence.autonomyBudget?.triggerKinds).toEqual(['BudgetHardStop']);
+  });
+
+  it('keeps warning budgets as evidence without denying the policy decision', () => {
+    const result = evaluatePolicy({
+      policy: makePolicy({
+        autonomyBudgets: [
+          {
+            budgetId: 'workspace-approval-volume',
+            scope: 'Workspace',
+            metric: 'ApprovalRequests',
+            warningAt: 20,
+            hardStopAt: 25,
+            hardStopMode: 'FreezeWorkspace',
+            rationale: 'Approval volume needs operator review before fatigue.',
+          },
+        ],
+      }),
+      context: makeContext({
+        autonomyBudgetContext: {
+          workspaceId: WorkspaceId('ws-1'),
+          evaluatedAtIso: '2026-04-02T20:00:00.000Z',
+          usage: [{ scope: 'Workspace', metric: 'ApprovalRequests', used: 20 }],
+        },
+      }),
+    });
+
+    expect(result.decision).toBe('Allow');
+    expect(result.autonomyBudget?.decision).toBe('Warn');
+    expect(result.autonomyBudget?.warnings[0]?.kind).toBe('BudgetWarning');
   });
 });
 
