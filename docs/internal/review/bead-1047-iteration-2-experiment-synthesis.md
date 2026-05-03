@@ -93,11 +93,10 @@ useful fail-closed result for preflight behavior, but it means the Iteration 2
 suite did not prove content-machine output generation, demo-machine runnable
 post-validation, or real tool usage evidence for that scenario in this checkout.
 
-The result directory name for `growth-studio-openclaw-live-v2` is
-`deterministic-growth-v2`, while the telemetry artifact payloads identify the
-attempt as `deterministic-live-v2`. The artifacts are internally complete, but
-this naming mismatch weakens traceability and should be fixed before larger
-evidence ingestion or dashboard work.
+Traceability for `growth-studio-openclaw-live-v2` is anchored on the
+`deterministic-growth-v2` attempt directory. The directory, `outcome.json`,
+`queue-metrics.json`, `evidence-summary.json`, and `report.md` now use that same
+attempt id, preserving the synthesis references in the evidence table above.
 
 Iteration 2 remains mostly deterministic replay. That is suitable for CI and
 scientific comparison, but it is weaker than the Iteration 1 live OpenClaw run

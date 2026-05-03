@@ -32,5 +32,8 @@ node experiments/iteration-2/scenarios/growth-studio-openclaw-live-v2/run.mjs
 The default runner is deterministic and does not require live LLM credentials.
 It models the two required variants (`live-wait` and `restart-resume`) and writes
 `outcome.json`, `queue-metrics.json`, `evidence-summary.json`, and `report.md`.
+By default the deterministic attempt is written under
+`experiments/iteration-2/results/growth-studio-openclaw-live-v2/deterministic-growth-v2`,
+and the artifact payloads use the attempt directory name as their `attemptId`.
 Live provider-backed reruns should use the same result contract and append a new
 attempt directory instead of overwriting this deterministic baseline.

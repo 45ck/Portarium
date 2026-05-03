@@ -2,14 +2,22 @@
 
 import { createHash } from 'node:crypto';
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { basename, dirname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
 import { createIteration2Telemetry } from '../../../shared/iteration2-telemetry.js';
 
 const EXPERIMENT_NAME = 'growth-studio-openclaw-live-v2';
-const DEFAULT_RESULTS_DIR = join(dirname(fileURLToPath(import.meta.url)), 'results');
+const DEFAULT_ATTEMPT_ID = 'deterministic-growth-v2';
+const DEFAULT_RESULTS_DIR = join(
+  dirname(fileURLToPath(import.meta.url)),
+  '..',
+  '..',
+  'results',
+  EXPERIMENT_NAME,
+  DEFAULT_ATTEMPT_ID,
+);
 const FIXED_STARTED_AT_ISO = '2026-04-29T22:00:00.000Z';
 
 /**
@@ -51,6 +59,7 @@ const FIXED_STARTED_AT_ISO = '2026-04-29T22:00:00.000Z';
 /**
  * @typedef {{
  *   experiment: string;
+ *   attemptId: string;
  *   timestamp: string;
  *   outcome: 'confirmed' | 'refuted' | 'inconclusive';
  *   duration_ms: number;
@@ -78,6 +87,14 @@ function assert(label, passed, detail) {
 
 function hashRecord(record) {
   return createHash('sha256').update(JSON.stringify(record)).digest('hex');
+}
+
+function attemptIdFromResultsDir(resultsDir) {
+  const attemptId = basename(normalize(resultsDir));
+  if (attemptId.length === 0) {
+    throw new Error(`Cannot derive attempt id from results directory: ${resultsDir}`);
+  }
+  return attemptId;
 }
 
 function makeVariants() {
@@ -372,7 +389,7 @@ export async function runGrowthStudioOpenClawLiveV2(options = {}) {
   const resultsDir = options.resultsDir ?? DEFAULT_RESULTS_DIR;
   const writeResults = options.writeResults ?? true;
   const log = options.log ?? console.log;
-  const attemptId = 'deterministic-live-v2';
+  const attemptId = attemptIdFromResultsDir(resultsDir);
   let trace = {};
   let assertions = [];
   let error;
@@ -448,6 +465,7 @@ export async function runGrowthStudioOpenClawLiveV2(options = {}) {
 
   const result = {
     experiment: EXPERIMENT_NAME,
+    attemptId,
     timestamp: new Date().toISOString(),
     outcome,
     duration_ms,

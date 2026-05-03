@@ -2,9 +2,9 @@
  * Iteration 2: deterministic Growth Studio OpenClaw live-v2 replay.
  */
 
-import { existsSync, mkdtempSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 
 import { afterAll, describe, expect, it } from 'vitest';
 
@@ -80,5 +80,44 @@ describe('growth-studio-openclaw-live-v2 experiment', () => {
     ]) {
       expect(existsSync(join(resultsDir, artifactName))).toBe(true);
     }
+  });
+
+  it('keeps the attempt directory and telemetry payload attempt ids aligned', async () => {
+    const attemptId = 'deterministic-growth-v2';
+    const resultsRoot = mkdtempSync(join(tmpdir(), 'portarium-growth-live-v2-trace-'));
+    const resultsDir = join(resultsRoot, 'growth-studio-openclaw-live-v2', attemptId);
+    tempDirs.push(resultsRoot);
+
+    const runnerPath =
+      '../../experiments/iteration-2/scenarios/growth-studio-openclaw-live-v2/run.mjs';
+    const mod = await import(runnerPath);
+    const outcome = await mod.runGrowthStudioOpenClawLiveV2({
+      resultsDir,
+      log: () => {},
+    });
+
+    const queueMetrics = JSON.parse(
+      readFileSync(join(resultsDir, 'queue-metrics.json'), 'utf8'),
+    ) as { attemptId: string };
+    const evidenceSummary = JSON.parse(
+      readFileSync(join(resultsDir, 'evidence-summary.json'), 'utf8'),
+    ) as { attemptId: string };
+    const savedOutcome = JSON.parse(readFileSync(join(resultsDir, 'outcome.json'), 'utf8')) as {
+      attemptId: string;
+      trace: {
+        queueMetrics: { attemptId: string };
+        evidenceSummary: { attemptId: string };
+      };
+    };
+    const report = readFileSync(join(resultsDir, 'report.md'), 'utf8');
+
+    expect(basename(resultsDir)).toBe(attemptId);
+    expect(outcome.attemptId).toBe(attemptId);
+    expect(savedOutcome.attemptId).toBe(attemptId);
+    expect(savedOutcome.trace.queueMetrics.attemptId).toBe(attemptId);
+    expect(savedOutcome.trace.evidenceSummary.attemptId).toBe(attemptId);
+    expect(queueMetrics.attemptId).toBe(attemptId);
+    expect(evidenceSummary.attemptId).toBe(attemptId);
+    expect(report).toContain(`# growth-studio-openclaw-live-v2 ${attemptId}`);
   });
 });

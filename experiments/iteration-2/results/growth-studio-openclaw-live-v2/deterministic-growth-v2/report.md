@@ -1,4 +1,4 @@
-# growth-studio-openclaw-live-v2 deterministic-live-v2
+# growth-studio-openclaw-live-v2 deterministic-growth-v2
 
 Generated: 2026-04-30T08:00:00.000Z
 
