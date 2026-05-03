@@ -9,10 +9,11 @@
   "divergences": [
     {
       "id": "div-pilot-browser-screenshots",
-      "classification": "test-limitation",
+      "classification": "environment-limitation",
       "severity": "medium",
-      "summary": "Committed deterministic evidence records browser QA commands and required screenshot paths; it does not embed a live headed session capture.",
-      "releaseGateImpact": "requires-live-candidate-browser-run"
+      "summary": "bead-1150 captured a headed Playwright session with Cockpit in Dev live mode and MSW disabled, but the production-like API stack was unavailable locally and local live API fetches were blocked by the current Cockpit CSP before queue/detail/decision/resume/redaction surfaces could be verified.",
+      "releaseGateImpact": "release-claim-constrained-no-production-like-browser-promotion",
+      "evidenceManifest": "experiments/iteration-2/results/production-like-pilot-rehearsal/pilot-rehearsal-v1/release-candidate-live-browser-evidence.json"
     },
     {
       "id": "div-external-sor-effects",

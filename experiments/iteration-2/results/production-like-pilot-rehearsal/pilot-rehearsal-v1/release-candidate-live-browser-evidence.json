@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "beadId": "bead-1150",
+  "scenarioId": "production-like-pilot-rehearsal",
+  "attemptId": "pilot-rehearsal-v1",
+  "releaseCandidateAttemptedAtIso": "2026-05-03T10:29:55.649Z",
+  "requestedBoundary": {
+    "cockpitUrl": "http://localhost:5173/runs",
+    "apiBaseUrl": "http://localhost:8080",
+    "workspaceId": "ws-local-dev",
+    "authMode": "real-api-dev-session",
+    "msw": "disabled via VITE_PORTARIUM_ENABLE_MSW=false",
+    "externalSorEffects": "stubbed-only"
+  },
+  "headedBrowserCapture": {
+    "tool": "Playwright Chromium",
+    "requestedMode": "headed",
+    "headedLaunch": true,
+    "result": "limited-boundary-capture",
+    "verifiedSurfaces": [
+      "Cockpit served in Dev live mode with MSW disabled",
+      "Workspace context rendered as ws-local-dev",
+      "Unauthorized live API session state surfaced",
+      "Runs view remained in Waiting for data state because the live API was unavailable"
+    ],
+    "notVerified": [
+      "Inbox approval queue",
+      "Approval detail",
+      "Approve/request-changes decision controls",
+      "Run resume after decision",
+      "Evidence Log redaction spot check through Cockpit"
+    ]
+  },
+  "artifactPaths": [
+    "qa-artifacts/bead-1150/live-msw-disabled-runs-boundary.png",
+    "qa-artifacts/bead-1150/live-msw-disabled-dev-session-failure.png",
+    "qa-artifacts/bead-1150/live-msw-disabled-boundary-trace.zip",
+    "qa-artifacts/bead-1150/live-msw-disabled-boundary-video.webm",
+    "qa-artifacts/bead-1150/live-browser-capture-result.json",
+    "qa-artifacts/bead-1150/dev-all-preflight.log",
+    "qa-artifacts/bead-1150/docker-compose-tools-preflight.log",
+    "qa-artifacts/bead-1150/live-stack-smoke-required.log",
+    "qa-artifacts/bead-1150/cockpit-vite-live-msw-disabled.log",
+    "qa-artifacts/bead-1150/cockpit-vite-live-msw-disabled.err.log"
+  ],
+  "preflightResults": [
+    {
+      "command": "npm run dev:all",
+      "exitCode": 1,
+      "artifactPath": "qa-artifacts/bead-1150/dev-all-preflight.log",
+      "summary": "Compose project validation failed because the cockpit API service depends on otel-collector while the dev:all script does not enable the tools profile."
+    },
+    {
+      "command": "docker compose --profile baseline --profile runtime --profile auth --profile idp --profile authz --profile erp --profile tools --profile cockpit -f docker-compose.yml -f docker-compose.local.yml up --wait",
+      "exitCode": 1,
+      "artifactPath": "qa-artifacts/bead-1150/docker-compose-tools-preflight.log",
+      "summary": "Docker Desktop Linux engine pipe was unavailable, so the production-like compose stack could not start."
+    },
+    {
+      "command": "npm run ci:cockpit:live-stack-smoke:required",
+      "exitCode": 1,
+      "artifactPath": "qa-artifacts/bead-1150/live-stack-smoke-required.log",
+      "summary": "Required live-stack smoke stopped because http://localhost:8080/healthz was unavailable."
+    }
+  ],
+  "consoleAndNetworkEvidence": {
+    "artifactPath": "qa-artifacts/bead-1150/live-browser-capture-result.json",
+    "summary": "The headed browser capture recorded fetch failures for /auth/session, /auth/dev-session, /v1/workspaces, approvals, runs, and events. Local live API calls were blocked by the current Cockpit CSP before data could load."
+  },
+  "releaseClaim": {
+    "classification": "constrained",
+    "summary": "This is headed live-browser limitation evidence, not successful production-like operator-flow evidence. The deterministic rehearsal remains confirmed, but this release-candidate attempt does not promote the browser evidence gate."
+  }
+}
