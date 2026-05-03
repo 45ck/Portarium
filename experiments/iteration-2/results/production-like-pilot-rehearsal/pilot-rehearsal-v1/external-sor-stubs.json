@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "stubPolicy": "No external CRM or billing mutation is sent during this rehearsal.",
+  "effects": [
+    {
+      "mode": "stubbed-external-sor-effect",
+      "status": "recorded-not-sent",
+      "operation": "update-opportunity-stage",
+      "target": "[REDACTED_PATH]",
+      "idempotencyKey": "crm:opportunity:opp-9001:update-stage"
+    },
+    {
+      "mode": "stubbed-external-sor-effect",
+      "status": "recorded-not-sent",
+      "operation": "send-renewal-notice",
+      "target": "[REDACTED_PATH]",
+      "idempotencyKey": "crm:subscription:sub-4411:renewal-notice"
+    }
+  ]
+}

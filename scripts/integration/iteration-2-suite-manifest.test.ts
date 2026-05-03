@@ -69,7 +69,8 @@ describe('Iteration 2 governed experiment suite manifest', () => {
             scenario.scenarioId !== 'micro-saas-toolchain-redo' &&
             scenario.scenarioId !== 'governed-resume-recovery' &&
             scenario.scenarioId !== 'shift-aware-approval-coverage' &&
-            scenario.scenarioId !== 'execution-reservation-recovery',
+            scenario.scenarioId !== 'execution-reservation-recovery' &&
+            scenario.scenarioId !== 'production-like-pilot-rehearsal',
         )
         .every((scenario) => scenario.status === 'planned'),
     ).toBe(true);
@@ -125,6 +126,7 @@ describe('Iteration 2 governed experiment suite manifest', () => {
       'bead-1059',
       'bead-1069',
       'bead-1142',
+      'bead-1146',
     ]) {
       const scenario = scenarioByBead.get(beadId);
       expect(scenario).toBeDefined();
@@ -281,5 +283,33 @@ describe('Iteration 2 governed experiment suite manifest', () => {
       'report.md',
       'assignment-evidence.json',
     ]);
+  });
+
+  it('marks production-like-pilot-rehearsal as runnable with pilot evidence expectations', () => {
+    const manifest = readManifest();
+    const scenario = manifest.scenarios.find(
+      (candidate) => candidate.scenarioId === 'production-like-pilot-rehearsal',
+    );
+
+    expect(scenario?.status).toBe('runnable-deterministic');
+    expect(scenario?.beadId).toBe('bead-1146');
+    expect(scenario?.blockedBy).toEqual(['bead-1047']);
+    expect(scenario?.runnerPath).toBe(
+      'experiments/iteration-2/scenarios/production-like-pilot-rehearsal/run.mjs',
+    );
+    expect(scenario?.comparesTo).toBe('iteration-2-governed-business-scale');
+    expect(existsSync(join(repoRoot, scenario?.runnerPath ?? 'missing'))).toBe(true);
+    expect(scenario?.artifactExpectations?.requiredArtifacts).toEqual([
+      'outcome.json',
+      'queue-metrics.json',
+      'evidence-summary.json',
+      'report.md',
+      'restart-persistence.json',
+      'browser-qa-evidence.json',
+      'redaction-audit.json',
+      'divergence-classification.json',
+      'external-sor-stubs.json',
+    ]);
+    expect(scenario?.artifactExpectations?.redactedArtifacts).toContain('external-sor-stubs.json');
   });
 });

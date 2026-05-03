@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "restartKinds": [
+    "process-restart",
+    "api-service-restart",
+    "worker-restart"
+  ],
+  "durableStores": {
+    "approvalsBefore": 3,
+    "approvalsAfter": 3,
+    "runsBefore": 2,
+    "runsAfter": 2,
+    "policiesBefore": 1,
+    "policiesAfter": 1,
+    "evidenceEntriesBefore": 3,
+    "evidenceEntriesAfter": 6
+  },
+  "persistenceVerdict": "survived-restart"
+}

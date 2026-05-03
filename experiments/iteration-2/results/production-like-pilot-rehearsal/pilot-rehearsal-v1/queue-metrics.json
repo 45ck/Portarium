@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "scenarioId": "production-like-pilot-rehearsal",
+  "attemptId": "pilot-rehearsal-v1",
+  "generatedAtIso": "2026-05-03T05:05:10.000Z",
+  "metrics": {
+    "approval_count_by_tier": {
+      "Human-approve": 2,
+      "Assisted": 1
+    },
+    "approval_count_by_session": {
+      "pilot-billing-queue": 2,
+      "pilot-renewal-queue": 1
+    },
+    "pending_age_ms_p50": 180000,
+    "pending_age_ms_p95": 250000,
+    "pending_age_ms_max": 250000,
+    "resume_latency_ms": [
+      850,
+      850
+    ],
+    "blocked_duration_ms": [
+      110000,
+      180000,
+      250000
+    ],
+    "queue_depth_over_time": [
+      {
+        "timestampIso": "2026-05-03T05:00:00.000Z",
+        "depth": 0
+      },
+      {
+        "timestampIso": "2026-05-03T05:00:30.000Z",
+        "depth": 2
+      },
+      {
+        "timestampIso": "2026-05-03T05:02:00.000Z",
+        "depth": 2
+      },
+      {
+        "timestampIso": "2026-05-03T05:03:30.000Z",
+        "depth": 1
+      },
+      {
+        "timestampIso": "2026-05-03T05:05:00.000Z",
+        "depth": 0
+      }
+    ],
+    "denial_count": 0,
+    "request_changes_count": 1,
+    "escalation_count": 0,
+    "expiry_count": 0,
+    "duplicate_execution_count": 0,
+    "evidence_completeness_count": 9,
+    "restart_count": 2,
+    "successful_resume_count": 2
+  }
+}

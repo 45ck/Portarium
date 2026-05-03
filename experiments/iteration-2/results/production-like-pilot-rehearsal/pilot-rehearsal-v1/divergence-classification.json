@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "comparesTo": [
+    "approval-backlog-soak",
+    "governed-resume-recovery",
+    "execution-reservation-recovery",
+    "shift-aware-approval-coverage"
+  ],
+  "divergences": [
+    {
+      "id": "div-pilot-browser-screenshots",
+      "classification": "test-limitation",
+      "severity": "medium",
+      "summary": "Committed deterministic evidence records browser QA commands and required screenshot paths; it does not embed a live headed session capture.",
+      "releaseGateImpact": "requires-live-candidate-browser-run"
+    },
+    {
+      "id": "div-external-sor-effects",
+      "classification": "environment-limitation",
+      "severity": "low",
+      "summary": "CRM and billing effects are stubbed and recorded in the SoR stub ledger.",
+      "releaseGateImpact": "acceptable-for-rehearsal"
+    },
+    {
+      "id": "div-queue-slo",
+      "classification": "no-divergence",
+      "severity": "none",
+      "summary": "Pending age p95 observed at 250000ms.",
+      "releaseGateImpact": "none"
+    },
+    {
+      "id": "div-cockpit-operator-flow",
+      "classification": "no-divergence",
+      "severity": "none",
+      "summary": "Cockpit operator-flow verification path covers queue, detail, decision, resume, and evidence views.",
+      "releaseGateImpact": "none"
+    }
+  ]
+}

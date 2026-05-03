@@ -49,14 +49,15 @@ It records:
 
 ## Required Scenario Set
 
-| Scenario                         | Owner Bead  | Purpose                                                       |
-| -------------------------------- | ----------- | ------------------------------------------------------------- |
-| `growth-studio-openclaw-live-v2` | `bead-1042` | delayed approval and exact resume                             |
-| `micro-saas-agent-stack-v2`      | `bead-1043` | team handoff and out-of-order decisions                       |
-| `openclaw-concurrent-sessions`   | `bead-1044` | concurrent governed sessions                                  |
-| `approval-backlog-soak`          | `bead-1045` | backlog pressure, escalation, and expiry                      |
-| `governed-resume-recovery`       | `bead-1059` | pending approval recovery and resume                          |
-| `shift-aware-approval-coverage`  | `bead-1069` | delegation windows, shift handoff, and after-hours escalation |
+| Scenario                          | Owner Bead  | Purpose                                                       |
+| --------------------------------- | ----------- | ------------------------------------------------------------- |
+| `growth-studio-openclaw-live-v2`  | `bead-1042` | delayed approval and exact resume                             |
+| `micro-saas-agent-stack-v2`       | `bead-1043` | team handoff and out-of-order decisions                       |
+| `openclaw-concurrent-sessions`    | `bead-1044` | concurrent governed sessions                                  |
+| `approval-backlog-soak`           | `bead-1045` | backlog pressure, escalation, and expiry                      |
+| `governed-resume-recovery`        | `bead-1059` | pending approval recovery and resume                          |
+| `shift-aware-approval-coverage`   | `bead-1069` | delegation windows, shift handoff, and after-hours escalation |
+| `production-like-pilot-rehearsal` | `bead-1146` | production-like approval queue pilot rehearsal                |
 
 The `governed-resume-recovery` scenario is also a required approval evaluation
 artifact under `approval-evaluation-scenarios-v1`; it anchors the public
@@ -69,6 +70,13 @@ governed work, delegation windows and assignment changes are recorded as
 evidence, eligibility and Separation of Duties remain enforced after handoff,
 and the report compares after-hours behavior against
 `micro-saas-agent-stack-v2`.
+
+The `production-like-pilot-rehearsal` scenario combines the confirmed Iteration 2
+approval, handoff, backlog, shift coverage, resume, and reservation scenarios
+into a controlled-pilot rehearsal. It must capture queue SLOs, restart
+persistence, browser QA evidence boundaries, redaction checks, divergence
+classification, and Cockpit operator-flow verification paths while explicitly
+stubbing external System of Record effects.
 
 ## Required Metric Names
 
