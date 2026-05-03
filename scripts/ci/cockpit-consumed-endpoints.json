@@ -22,6 +22,22 @@
       "consumers": ["apps/cockpit/src/lib/control-plane-client.ts"]
     },
     {
+      "id": "projects.list",
+      "method": "GET",
+      "path": "/v1/workspaces/{workspaceId}/projects",
+      "openapi": "pending",
+      "runtime": "pending",
+      "mock": "required",
+      "clientMethod": "listProjects",
+      "trackingBead": "bead-1100",
+      "reason": "Project portfolio is fixture-backed in Cockpit until the live Project container API is mounted.",
+      "consumers": [
+        "apps/cockpit/src/lib/control-plane-client.ts",
+        "apps/cockpit/src/hooks/queries/use-projects.ts",
+        "apps/cockpit/src/routes/projects/index.tsx"
+      ]
+    },
+    {
       "id": "approvals.list",
       "method": "GET",
       "path": "/v1/workspaces/{workspaceId}/approvals",

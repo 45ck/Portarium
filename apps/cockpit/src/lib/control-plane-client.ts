@@ -15,6 +15,7 @@ import type {
   ListEvidenceRequest,
   ListWorkItemsRequest,
   Plan,
+  ProjectSummary,
   RetrievalSearchRequest,
   RetrievalSearchResponse,
   RunInterventionRequest,
@@ -298,6 +299,10 @@ export class ControlPlaneClient {
         body: JSON.stringify(body),
       },
     );
+  }
+
+  public listProjects(workspaceId: string): Promise<CursorPage<ProjectSummary>> {
+    return this.request(`/v1/workspaces/${pathSegment(workspaceId)}/projects`);
   }
 
   public getPlan(workspaceId: string, planId: string): Promise<Plan> {

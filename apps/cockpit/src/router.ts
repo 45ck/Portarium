@@ -12,6 +12,9 @@ import { Route as inboxRoute } from './routes/inbox';
 // Dashboard
 import { Route as dashboardRoute } from './routes/dashboard';
 
+// Projects
+import { Route as projectsRoute } from './routes/projects/index';
+
 // Work Items
 import { Route as workItemsRoute } from './routes/work-items/index';
 import { Route as workItemDetailRoute } from './routes/work-items/$workItemId';
@@ -92,6 +95,7 @@ export const routeTree = rootRoute.addChildren([
   indexRoute,
   inboxRoute,
   dashboardRoute,
+  projectsRoute,
   workItemsRoute,
   workItemDetailRoute,
   runsRoute,

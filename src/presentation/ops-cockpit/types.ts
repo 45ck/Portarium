@@ -391,6 +391,41 @@ export interface WorkItemSummary {
   links?: WorkItemLinks;
 }
 
+export type ProjectStatus = 'Active' | 'Paused' | 'Completed' | 'Archived';
+export type ProjectGovernancePosture = 'Clear' | 'Attention' | 'Blocked';
+export type ProjectEvidenceDepth = 'minimal' | 'standard' | 'deep' | 'forensic';
+
+export interface ProjectGovernanceProfile {
+  ownerUserIds: string[];
+  policyIds: string[];
+  defaultExecutionTier: RunSummary['executionTier'];
+  evidenceDepth: ProjectEvidenceDepth;
+  allowedActionClasses: string[];
+  blockedActionClasses: string[];
+}
+
+export interface ProjectPortfolioMetrics {
+  workItemCount: number;
+  activeRunCount: number;
+  pendingApprovalCount: number;
+  evidenceCount: number;
+  artifactCount: number;
+  policyViolationCount: number;
+}
+
+export interface ProjectSummary {
+  schemaVersion: 1;
+  projectId: string;
+  workspaceId: string;
+  name: string;
+  status: ProjectStatus;
+  governancePosture: ProjectGovernancePosture;
+  governance: ProjectGovernanceProfile;
+  metrics: ProjectPortfolioMetrics;
+  latestActivityAtIso?: string;
+  summary?: string;
+}
+
 export type EvidenceCategory =
   | 'Plan'
   | 'Action'

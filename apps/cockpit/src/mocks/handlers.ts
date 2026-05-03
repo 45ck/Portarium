@@ -32,6 +32,7 @@ import { MOCK_USERS, type UserSummary } from './fixtures/users';
 import { MOCK_POLICIES, MOCK_SOD_CONSTRAINTS } from './fixtures/policies';
 import { MOCK_GATEWAYS } from './fixtures/gateways';
 import { DEFAULT_PACK_UI_RUNTIME, DEMO_PACK_UI_RUNTIME } from './fixtures/pack-ui-runtime';
+import { buildProjectPortfolio } from './fixtures/projects';
 import { resolveStoredDataset } from '@/lib/cockpit-runtime';
 
 // ---------------------------------------------------------------------------
@@ -243,6 +244,18 @@ export const handlers = [
   http.get('/v1/workspaces/:wsId/work-items', () =>
     HttpResponse.json({ items: workItems.length > 0 ? workItems : (data?.WORK_ITEMS ?? []) }),
   ),
+  http.get('/v1/workspaces/:wsId/projects', ({ params }) => {
+    const workspaceId = String(params['wsId'] ?? runs[0]?.workspaceId ?? 'ws-demo');
+    return HttpResponse.json({
+      items: buildProjectPortfolio({
+        workspaceId,
+        workItems: workItems.length > 0 ? workItems : (data?.WORK_ITEMS ?? []),
+        runs,
+        approvals,
+        evidence,
+      }),
+    });
+  }),
   http.get('/v1/workspaces/:wsId/work-items/:wiId', ({ params }) => {
     const list = workItems.length > 0 ? workItems : (data?.WORK_ITEMS ?? []);
     const item = list.find((w) => w.workItemId === params['wiId']);
