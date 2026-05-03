@@ -121,3 +121,34 @@ Outputs:
 
 - `docs/internal/ui/cockpit/demo-machine/showcase/approvals-v2-approval-gate.gif`
 - `docs/internal/ui/cockpit/demo-machine/showcase/approvals-v2-approval-gate.json`
+
+## Software-First Multi-Project Showcase
+
+Batch 12 adds a recording-ready, manifest-backed software-first autonomy
+showcase under:
+
+`examples/showcase/software-first-autonomy/`
+
+It covers:
+
+- mobile Approval Gate review with an explicit exception;
+- desktop Project switching between a `demo-only` content Project and a
+  `self-use` micro-SaaS Project;
+- Policy, Evidence Log, and human intervention beats.
+
+Run the static showcase locally:
+
+```powershell
+npx --yes http-server examples/showcase/software-first-autonomy -p 4184
+```
+
+Demo-machine specs:
+
+- `examples/showcase/software-first-autonomy/software-first-autonomy.mobile.demo.yaml`
+- `examples/showcase/software-first-autonomy/software-first-autonomy.desktop.demo.yaml`
+
+Focused validation:
+
+```powershell
+node node_modules/vitest/vitest.mjs run src/presentation/ops-cockpit/software-first-autonomy-showcase.test.ts
+```

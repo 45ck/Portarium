@@ -1,0 +1,67 @@
+{
+  "workspace": "Software-first proving workspace",
+  "projects": [
+    {
+      "id": "project-demo-content-artifact-loop",
+      "type": "content-artifact-loop",
+      "name": "Content artifact studio",
+      "claim": "demo-only",
+      "status": "Needs exception review",
+      "policy": "External publish is blocked until redaction evidence and human approval exist.",
+      "allowedActions": ["source.summarize", "content.draft", "redaction.check"],
+      "blockedActions": ["content.publish-external"],
+      "artifacts": ["content brief", "draft thread", "redaction report"],
+      "evidenceCount": 7,
+      "pendingApproval": "Approve draft for internal review",
+      "exception": "Citation confidence below threshold on one market claim."
+    },
+    {
+      "id": "project-self-use-alpha-source-to-micro-saas",
+      "type": "micro-saas-agent-stack",
+      "name": "Micro-SaaS builder alpha",
+      "claim": "self-use",
+      "status": "Product QA gated",
+      "policy": "Release-impacting Actions require approval and deep evidence.",
+      "allowedActions": ["source.ingest", "product.plan", "qa.run", "artifact.acceptance-review"],
+      "blockedActions": ["release.publish-without-rollback"],
+      "artifacts": ["research dossier", "product brief", "acceptance checklist", "QA evidence"],
+      "evidenceCount": 12,
+      "pendingApproval": "Accept QA evidence for micro-SaaS slice",
+      "exception": "Fixture setup failed once; manual fallback captured before retry."
+    }
+  ],
+  "evidence": [
+    {
+      "id": "evd-sfa-001",
+      "projectId": "project-demo-content-artifact-loop",
+      "kind": "source-citation-check",
+      "summary": "Three trusted sources mapped to the content brief.",
+      "hash": "sha256:0d0d1a6f7ac2a2c4"
+    },
+    {
+      "id": "evd-sfa-002",
+      "projectId": "project-demo-content-artifact-loop",
+      "kind": "exception-capture",
+      "summary": "Weak citation claim held for human review; external publish remains blocked.",
+      "hash": "sha256:0c8f13f3a92d006e"
+    },
+    {
+      "id": "evd-sfa-003",
+      "projectId": "project-self-use-alpha-source-to-micro-saas",
+      "kind": "planned-effects-diff",
+      "summary": "Agent proposes backlog and acceptance test updates, no release publish.",
+      "hash": "sha256:6b2b3f778e2a99a1"
+    },
+    {
+      "id": "evd-sfa-004",
+      "projectId": "project-self-use-alpha-source-to-micro-saas",
+      "kind": "human-intervention",
+      "summary": "Operator requests narrower QA evidence before accepting the Artifact.",
+      "hash": "sha256:b68e5be35ca34d20"
+    }
+  ],
+  "intervention": {
+    "decision": "Request changes",
+    "note": "Limit the next Run to QA evidence and rollback notes. Do not publish."
+  }
+}
