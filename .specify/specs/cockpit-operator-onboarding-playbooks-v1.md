@@ -62,6 +62,8 @@ Every non-routine operator path must preserve the authority model from
 - [docs/how-to/operate-cockpit-governed-workflows.md](../../docs/how-to/operate-cockpit-governed-workflows.md)
 - [docs/how-to/run-operator-trust-calibration.md](../../docs/how-to/run-operator-trust-calibration.md)
 - [docs/internal/governance/pilot-readiness-sequence.md](../../docs/internal/governance/pilot-readiness-sequence.md)
+- [docs/internal/governance/operator-readiness-calibration.md](../../docs/internal/governance/operator-readiness-calibration.md)
 - [operator-interaction-model-v1.md](./operator-interaction-model-v1.md)
+- [governed-autonomy-readiness-calibration-v1.md](./governed-autonomy-readiness-calibration-v1.md)
 - [operator-plugin-governance-controls-v1.md](./operator-plugin-governance-controls-v1.md)
 - [policy-change-workflow-v1.md](./policy-change-workflow-v1.md)
