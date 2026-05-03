@@ -3,6 +3,12 @@
 This eval checks whether a mixed approval queue is creating useful trust or
 approval fatigue.
 
+Use it with the readiness model in
+[`docs/internal/governance/operator-readiness-calibration.md`](../internal/governance/operator-readiness-calibration.md).
+The eval measures calibration signals; the readiness model decides whether
+authority, training status, workload, and verification sampling are sufficient
+for the pilot.
+
 It measures:
 
 - time to decision

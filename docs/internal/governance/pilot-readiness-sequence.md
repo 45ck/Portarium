@@ -11,6 +11,8 @@ A controlled operator pilot is ready when Portarium can show:
 - the agent governance loop works under normal and degraded conditions
 - human decisions have enough context to be meaningful
 - operators know which authority they are using
+- readiness, training status, workload, and calibration make that authority
+  meaningful in practice
 - Policy changes are permissioned, versioned, and reversible
 - evidence, telemetry, privacy, and retention rules are explicit
 - onboarding and recovery playbooks exist for the pilot workflow
@@ -43,6 +45,7 @@ The bead-1058 eval is runnable with `node node_modules/vitest/vitest.mjs run scr
 The bead-1075 artifact is the shared packet contract in `.specify/specs/decision-context-packet-v1.md`.
 The bead-1076 artifact is the Run intervention surface in `apps/cockpit/src/components/cockpit/run-intervention-panel.tsx`.
 The bead-1065 artifact is the operator onboarding and recovery guide in `docs/how-to/operate-cockpit-governed-workflows.md`, with traceability in `.specify/specs/cockpit-operator-onboarding-playbooks-v1.md`.
+The bead-1077 artifact is the readiness and calibration model in `.specify/specs/governed-autonomy-readiness-calibration-v1.md`, applied through `docs/internal/governance/operator-readiness-calibration.md`.
 
 ## Not Core For This Sequence
 
