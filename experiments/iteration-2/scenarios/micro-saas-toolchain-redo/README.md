@@ -15,9 +15,22 @@ post-validation demo path.
 External publish and send Actions stay stubbed. The run never calls real
 publisher or email endpoints.
 
+## Supported content-machine invocation
+
+The bead-1149 pilot rerun uses an experiment-local supported invocation because
+the standalone `content-machine` CLI is not installed on `PATH`:
+
+```bash
+node experiments/iteration-2/scenarios/micro-saas-toolchain-redo/tools/content-machine-pilot.mjs --help
+```
+
+This invocation is deterministic, has no external publish/send effects, and is
+recorded in `toolchain-preflight.json` and `tool-usage-evidence.json`.
+
 ## Required Evidence
 
 - required `content-machine` preflight fails early and clearly when unavailable
+- supported pilot `content-machine` invocation is recorded when used
 - tool usage evidence records runnable Machine probes instead of inferring usage
   from generated outputs only
 - `demo-machine` is either runnable or explicitly skipped with a reason

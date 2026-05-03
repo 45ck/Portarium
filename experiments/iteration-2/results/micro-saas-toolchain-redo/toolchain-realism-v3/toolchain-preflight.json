@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-04-29T03:00:01.000Z",
+  "tools": {
+    "contentMachine": {
+      "tool": "content-machine",
+      "status": "runnable",
+      "checkedAt": "2026-05-03T10:41:57.605Z",
+      "command": "node",
+      "args": [
+        "experiments\\iteration-2\\scenarios\\micro-saas-toolchain-redo\\tools\\content-machine-pilot.mjs",
+        "--help"
+      ],
+      "probe": "cli-help",
+      "rationale": "Portarium micro-SaaS experiment content-machine pilot invocation responded to --help.",
+      "required": true
+    },
+    "demoMachine": {
+      "tool": "demo-machine",
+      "status": "intentionally-skipped",
+      "checkedAt": "2026-05-03T10:41:58.542Z",
+      "command": "demo-machine",
+      "args": [
+        "--help"
+      ],
+      "probe": "cli-help",
+      "rationale": "demo-machine CLI is not installed on this workstation; Cockpit demo-machine playback is optional and skipped for this experiment run.",
+      "clipSpecPath": "docs/internal/ui/cockpit/demo-machine/clips/01-approval-gate-unblocks-run.demo.yaml",
+      "required": false
+    }
+  }
+}

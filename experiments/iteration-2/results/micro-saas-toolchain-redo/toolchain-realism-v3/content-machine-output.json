@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "generatedBy": "content-machine",
+  "mode": "supported-pilot-invocation-after-runnable-preflight",
+  "runId": "micro-saas-redo-run-1",
+  "status": "generated",
+  "invocation": {
+    "command": "node",
+    "args": [
+      "experiments\\iteration-2\\scenarios\\micro-saas-toolchain-redo\\tools\\content-machine-pilot.mjs",
+      "--help"
+    ]
+  },
+  "artifacts": [
+    {
+      "artifactId": "cm-landing-copy-1",
+      "type": "landing-page-copy",
+      "title": "LaunchOps for tiny SaaS teams",
+      "body": "A governed launch checklist that drafts copy, pricing notes, and analytics tasks while Portarium holds publish and send Actions for review."
+    },
+    {
+      "artifactId": "cm-email-draft-1",
+      "type": "launch-email-draft",
+      "subject": "Your launch checklist is ready",
+      "body": "Portarium prepared the launch assets and queued the publish and send Actions for operator approval."
+    }
+  ]
+}

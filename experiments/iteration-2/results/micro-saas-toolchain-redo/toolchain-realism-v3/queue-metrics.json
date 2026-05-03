@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "scenarioId": "micro-saas-toolchain-redo",
+  "attemptId": "toolchain-realism-v3",
+  "generatedAtIso": "2026-04-29T03:00:10.000Z",
+  "metrics": {
+    "approval_count_by_tier": {
+      "Assisted": 1
+    },
+    "approval_count_by_session": {
+      "micro-saas-redo-run-1": 1
+    },
+    "pending_age_ms_p50": 5000,
+    "pending_age_ms_p95": 5000,
+    "pending_age_ms_max": 5000,
+    "resume_latency_ms": [
+      800
+    ],
+    "blocked_duration_ms": [
+      5000
+    ],
+    "queue_depth_over_time": [
+      {
+        "timestampIso": "2026-04-29T03:00:02.000Z",
+        "depth": 1
+      },
+      {
+        "timestampIso": "2026-04-29T03:00:08.000Z",
+        "depth": 0
+      }
+    ],
+    "denial_count": 0,
+    "request_changes_count": 0,
+    "escalation_count": 0,
+    "expiry_count": 0,
+    "duplicate_execution_count": 0,
+    "evidence_completeness_count": 8,
+    "restart_count": 0,
+    "successful_resume_count": 1
+  }
+}

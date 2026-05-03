@@ -11,6 +11,14 @@ import { runExperimentToolPreflight } from '../../../shared/toolchain-preflight.
 const EXPERIMENT_NAME = 'micro-saas-toolchain-redo';
 const DEFAULT_RESULTS_DIR = join(dirname(fileURLToPath(import.meta.url)), 'results');
 const FIXED_STARTED_AT_ISO = '2026-04-29T03:00:00.000Z';
+const CONTENT_MACHINE_PILOT_PATH = join(
+  'experiments',
+  'iteration-2',
+  'scenarios',
+  'micro-saas-toolchain-redo',
+  'tools',
+  'content-machine-pilot.mjs',
+);
 
 /**
  * @typedef {{
@@ -92,8 +100,13 @@ function buildContentMachineOutput(contentMachinePreflight) {
   return {
     schemaVersion: 1,
     generatedBy: 'content-machine',
-    mode: 'tracked-fixture-after-runnable-preflight',
+    mode: 'supported-pilot-invocation-after-runnable-preflight',
     runId: 'micro-saas-redo-run-1',
+    status: 'generated',
+    invocation: {
+      command: contentMachinePreflight.command,
+      args: contentMachinePreflight.args ?? ['--help'],
+    },
     artifacts: [
       {
         artifactId: 'cm-landing-copy-1',
@@ -137,7 +150,7 @@ function buildToolUsageEvidence({ contentMachinePreflight, demoMachinePreflight 
       phase: 'preflight-and-content-draft',
       evidenceSource: 'toolchain-preflight.json',
       command: contentMachinePreflight.command,
-      args: ['--help'],
+      args: contentMachinePreflight.args ?? ['--help'],
       rationale: contentMachinePreflight.rationale ?? 'n/a',
       externalEffect: 'none',
     },
@@ -147,7 +160,7 @@ function buildToolUsageEvidence({ contentMachinePreflight, demoMachinePreflight 
       phase: 'post-validation-demo',
       evidenceSource: 'toolchain-preflight.json',
       command: demoMachinePreflight.command,
-      args: ['--help'],
+      args: demoMachinePreflight.args ?? ['--help'],
       rationale: demoMachinePreflight.rationale ?? 'n/a',
       externalEffect: 'none',
     },
@@ -331,6 +344,10 @@ export async function runMicroSaasToolchainRedo(options = {}) {
     const contentMachinePreflight = await toolPreflightImpl({
       tool: 'content-machine',
       required: true,
+      command: 'node',
+      args: [CONTENT_MACHINE_PILOT_PATH, '--help'],
+      runnableRationale:
+        'Portarium micro-SaaS experiment content-machine pilot invocation responded to --help.',
     });
     const demoMachinePreflight = await toolPreflightImpl({
       tool: 'demo-machine',
