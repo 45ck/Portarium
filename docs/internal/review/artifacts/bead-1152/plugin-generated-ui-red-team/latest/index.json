@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "bead": "bead-1152",
+  "artifactKind": "plugin-generated-ui-pilot-red-team-evidence",
+  "recordedAtIso": "2026-05-03T00:00:00.000Z",
+  "mode": "production-like-deterministic-rehearsal",
+  "decision": "no-blocking-finding",
+  "scope": {
+    "cockpitExtension": {
+      "extensionId": "example.reference",
+      "packageName": "@portarium/cockpit-example-reference-extension",
+      "versionPin": "0.1.0",
+      "activePackIds": ["example.reference"],
+      "workspaceId": "ws-pilot-red-team",
+      "principalId": "user-operator",
+      "correlationId": "corr-pilot-red-team"
+    },
+    "generatedOperatorSurface": {
+      "schema": "OperatorSurfaceV1",
+      "surfaceId": "surface-pilot-red-team",
+      "workspaceId": "ws-pilot-red-team",
+      "runId": "run-pilot-red-team",
+      "approvalId": "approval-pilot-red-team",
+      "machineId": "machine-pilot-red-team"
+    }
+  },
+  "controlsTested": [
+    {
+      "control": "version-pinning-and-governance-metadata",
+      "result": "pass",
+      "evidence": "Installed packageRef equals manifest governance.versionPin and workspace pack refs equal manifest packIds."
+    },
+    {
+      "control": "permission-grant-enforcement-and-guard-fail-closed",
+      "result": "pass",
+      "evidence": "Routes and commands are available only with matching persona, capabilities, API scopes, and privacy classes; missing authority context returns explicit denials."
+    },
+    {
+      "control": "emergency-disable-suppression",
+      "result": "pass",
+      "evidence": "Workspace activation emergencyDisabledExtensionIds marks the extension emergency-disabled and exposes zero routes, nav items, or commands."
+    },
+    {
+      "control": "browser-egress-denial-and-audit",
+      "result": "pass",
+      "evidence": "External origin https://provider.example.test is denied before fetch dispatch and audit metadata includes policy version, extension, route, Workspace, principal, correlation ID, origin, redacted path, and allowed Host/API Origins."
+    },
+    {
+      "control": "typed-generated-ui-only",
+      "result": "pass",
+      "evidence": "OperatorSurfaceV1 parser accepts only declared text, form, and action schema data and rejects scriptUrl, browserEgress, commandId, and undeclared form values."
+    },
+    {
+      "control": "evidence-context-linkage",
+      "result": "pass",
+      "evidence": "Generated surface proposed, approved, rendered, and used evidence entries all link to run-pilot-red-team and approval-pilot-red-team."
+    }
+  ],
+  "blockedAttackPaths": [
+    "extension route access without complete authority context",
+    "extension command exposure after emergency disable",
+    "extension browser fetch to an undeclared provider origin",
+    "generated UI scriptUrl executable payload",
+    "generated UI Browser Egress declaration",
+    "generated UI hidden command field",
+    "generated UI interaction with a foreign Workspace",
+    "generated UI interaction with undeclared privileged values"
+  ],
+  "validation": {
+    "focusedCommands": [
+      "node node_modules/vitest/vitest.mjs run scripts/integration/scenario-plugin-generated-ui-red-team.test.ts",
+      "npm run -w apps/cockpit test -- src/lib/extensions/plugin-generated-ui-pilot-red-team.test.ts"
+    ],
+    "fullGateCommand": "npm run ci:pr",
+    "testFiles": [
+      "scripts/integration/scenario-plugin-generated-ui-red-team.test.ts",
+      "apps/cockpit/src/lib/extensions/plugin-generated-ui-pilot-red-team.test.ts"
+    ]
+  },
+  "sourceContracts": [
+    ".specify/specs/operator-plugin-governance-controls-v1.md",
+    ".specify/specs/operator-surface-generated-ui-v1.md",
+    ".specify/specs/presentation-layer-reference-cockpit-v1.md",
+    "docs/internal/governance/pilot-readiness-decision-report.md"
+  ],
+  "blockingFindings": [],
+  "followUpBeadsCreated": [],
+  "residualRisks": [
+    "This is production-like deterministic rehearsal evidence, not headed live-stack browser evidence.",
+    "External System of Record effects remain stubbed under the contained pilot boundary."
+  ]
+}
