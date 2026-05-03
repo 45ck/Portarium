@@ -14,7 +14,7 @@
 
 import { describe, expect, it } from 'vitest';
 
-import { PolicyId, UserId, WorkspaceId } from '../primitives/index.js';
+import { PolicyId, RunId, UserId, WorkspaceId } from '../primitives/index.js';
 import type { PolicyV1 } from '../policy/policy-v1.js';
 import type { PolicyEvaluationContextV1 } from './policy-evaluation.js';
 import { evaluatePolicyPipelineV1 } from './policy-evaluation-pipeline-v1.js';
@@ -339,6 +339,45 @@ describe('evaluatePolicyPipelineV1 — traces', () => {
     expect(safetyTrace?.triggerId).toBe('RobotEstopRequest');
     expect(safetyTrace?.outcome).toBe('NeedsHuman');
     expect(safetyTrace?.explanation).toContain('ISO 13849-1');
+  });
+
+  it('autonomy budget hard-stop produces operator-visible trace evidence', () => {
+    const policy = makePolicy({
+      autonomyBudgets: [
+        {
+          budgetId: 'run-tool-calls',
+          scope: 'Run',
+          metric: 'ToolCalls',
+          warningAt: 80,
+          hardStopAt: 100,
+          hardStopMode: 'KillRun',
+          rationale: 'Prevent runaway tool loops.',
+        },
+      ],
+    });
+    const context: PolicyEvaluationContextV1 = {
+      ...BASE_CONTEXT,
+      autonomyBudgetContext: {
+        workspaceId: WorkspaceId('ws-1'),
+        runId: RunId('run-1'),
+        evaluatedAtIso: CAPTURED_AT,
+        usage: [{ scope: 'Run', metric: 'ToolCalls', used: 100 }],
+      },
+    };
+
+    const snapshot = evaluatePolicyPipelineV1({
+      policies: [policy],
+      context,
+      capturedAtIso: CAPTURED_AT,
+    });
+
+    const budgetTrace = snapshot.policyResults[0]?.traces.find(
+      (trace) => trace.kind === 'AutonomyBudget',
+    );
+    expect(snapshot.aggregateOutcome).toBe('Fail');
+    expect(budgetTrace?.triggerId).toBe('run-tool-calls');
+    expect(budgetTrace?.outcome).toBe('Fail');
+    expect(budgetTrace?.explanation).toContain('Prevent runaway tool loops.');
   });
 });
 

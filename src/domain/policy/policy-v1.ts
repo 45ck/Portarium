@@ -18,6 +18,8 @@ import {
 
 import type { SodConstraintV1 } from './sod-constraints-v1.js';
 import { parseSodConstraintsV1 } from './sod-constraints-v1.js';
+import type { AutonomyBudgetV1 } from './autonomy-budget-policy-v1.js';
+import { parseAutonomyBudgetsV1 } from './autonomy-budget-policy-v1.js';
 
 export type PolicyInlineRuleV1 = Readonly<{
   ruleId: string;
@@ -38,6 +40,7 @@ export type PolicyV1 = Readonly<{
   createdByUserId: UserIdType;
   sodConstraints?: readonly SodConstraintV1[];
   rules?: readonly PolicyInlineRuleV1[];
+  autonomyBudgets?: readonly AutonomyBudgetV1[];
 }>;
 
 export class PolicyParseError extends Error {
@@ -73,6 +76,10 @@ export function parsePolicyV1(value: unknown): PolicyV1 {
   const rulesRaw = record['rules'];
   const rules = rulesRaw === undefined ? undefined : parsePolicyRulesV1(rulesRaw);
 
+  const autonomyBudgetsRaw = record['autonomyBudgets'];
+  const autonomyBudgets =
+    autonomyBudgetsRaw === undefined ? undefined : parseAutonomyBudgetsV1(autonomyBudgetsRaw);
+
   return {
     schemaVersion: 1,
     policyId,
@@ -86,6 +93,7 @@ export function parsePolicyV1(value: unknown): PolicyV1 {
     createdByUserId,
     ...(sodConstraints ? { sodConstraints } : {}),
     ...(rules ? { rules } : {}),
+    ...(autonomyBudgets ? { autonomyBudgets } : {}),
   };
 }
 
