@@ -25,6 +25,7 @@ type Iteration2Manifest = Readonly<{
     writesArtifacts: readonly string[];
   }>;
   requiredMetricNames: readonly string[];
+  usefulnessScorecardMetricNames: readonly string[];
   scenarios: readonly Readonly<{
     scenarioId: string;
     beadId: string;
@@ -109,6 +110,35 @@ describe('Iteration 2 governed experiment suite manifest', () => {
     });
     expect(existsSync(join(repoRoot, manifest.telemetryPack.helperPath))).toBe(true);
     expect(existsSync(join(repoRoot, manifest.telemetryPack.typeDefinitionsPath))).toBe(true);
+  });
+
+  it('pins the governed pilot usefulness scorecard metric names', () => {
+    const manifest = readManifest();
+
+    expect(manifest.usefulnessScorecardMetricNames).toEqual([
+      'operator_minutes_per_run',
+      'approval_latency_ms_p50',
+      'approval_latency_ms_p95',
+      'blocked_duration_ms_p50',
+      'blocked_duration_ms_p95',
+      'throughput_per_operator_per_day',
+      'throughput_per_workspace_per_day',
+      'denial_rate',
+      'rework_rate',
+      'duplicate_execution_rate',
+      'unsafe_action_escape_rate',
+      'policy_violation_escape_rate',
+      'cost_per_useful_outcome',
+      'model_cost_per_useful_outcome',
+      'tool_cost_per_useful_outcome',
+      'operator_cost_per_useful_outcome',
+      'business_kpi_delta_primary',
+      'business_kpi_delta_secondary',
+      'useful_outcome_count',
+      'baseline_comparison_confidence',
+      'baseline_sample_size_runs',
+      'pilot_sample_size_runs',
+    ]);
   });
 
   it('defines every dependent scenario contract', () => {

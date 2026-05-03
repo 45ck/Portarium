@@ -128,3 +128,14 @@ Before a governed autonomy pilot proceeds, record:
 
 If the checklist cannot prove that oversight is prepared in practice, the pilot
 is not ready even when the approval queue is populated.
+
+## Usefulness Baseline
+
+Readiness is not the same as usefulness. Before the pilot starts, pair this
+checklist with
+`.specify/specs/governed-pilot-usefulness-scorecard-v1.md` so the final pilot
+report can compare Portarium-governed work against the current way of working.
+At minimum, record the baseline sample, useful outcome definition, operator
+minutes per Run, approval latency, blocked duration, throughput, denial, rework,
+duplicate execution, safety and Policy escape rates, cost per useful outcome,
+and business KPI deltas.

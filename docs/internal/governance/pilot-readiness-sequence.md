@@ -52,6 +52,8 @@ The bead-1094 artifact is the post-action verification sampling and audit
 queue contract in `.specify/specs/delegated-autonomy-verification-sampling-v1.md`,
 implemented by
 `src/domain/policy/delegated-autonomy-verification-sampling-v1.ts`.
+The bead-1057 artifact is the usefulness scorecard and baseline comparison
+contract in `.specify/specs/governed-pilot-usefulness-scorecard-v1.md`.
 
 ## Not Core For This Sequence
 
