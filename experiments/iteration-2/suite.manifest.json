@@ -136,6 +136,42 @@
       }
     },
     {
+      "scenarioId": "source-to-artifact-citation-loop",
+      "beadId": "bead-1103",
+      "status": "runnable-deterministic",
+      "blockedBy": [],
+      "runnerPath": "experiments/iteration-2/scenarios/source-to-artifact-citation-loop/run.mjs",
+      "contractPath": "experiments/iteration-2/scenarios/source-to-artifact-citation-loop/README.md",
+      "comparesTo": "micro-saas-toolchain-redo",
+      "validates": [
+        "bounded source snapshots",
+        "cited research dossier",
+        "content and micro-SaaS artifacts from one source base",
+        "citation and confidence carry-forward",
+        "operator taste, scope, and evidence-quality interventions",
+        "publication blocked by insufficient evidence"
+      ],
+      "artifactExpectations": {
+        "requiredArtifacts": [
+          "outcome.json",
+          "queue-metrics.json",
+          "evidence-summary.json",
+          "report.md",
+          "source-snapshots.json",
+          "research-dossier.json",
+          "downstream-artifacts.json",
+          "operator-interventions.json",
+          "citation-provenance.json"
+        ],
+        "redactedArtifacts": [],
+        "forbiddenFragments": [
+          "Authorization: Bearer",
+          "customer@example.test",
+          "https://publisher.example.invalid/landing-pages/private"
+        ]
+      }
+    },
+    {
       "scenarioId": "openclaw-concurrent-sessions",
       "beadId": "bead-1044",
       "status": "runnable-deterministic",
