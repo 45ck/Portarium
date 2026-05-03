@@ -26,6 +26,7 @@
   "keyEvidence": [
     "docs/internal/governance/source-to-micro-saas-self-use-alpha.md",
     "docs/internal/governance/source-to-micro-saas-self-use-alpha.json",
+    "docs/internal/governance/contained-pilot-verification-sampling-coverage.json",
     ".specify/specs/governed-pilot-usefulness-scorecard-v1.md",
     "experiments/iteration-2/results/micro-saas-agent-stack-v2/deterministic-handoff-v2/outcome.json",
     "experiments/iteration-2/results/micro-saas-toolchain-redo/toolchain-realism-v2/outcome.json",
@@ -75,6 +76,6 @@
     "Measured operator effort and cost per useful outcome.",
     "Headed browser evidence for the production-like operator flow.",
     "Pilot-path plugin and generated-UI red-team evidence.",
-    "Verification-sampling coverage by Action class with structured finding routes."
+    "Verification-sampling coverage by Action class with structured finding routes and enough real self-use samples to move beyond insufficient-data confidence."
   ]
 }

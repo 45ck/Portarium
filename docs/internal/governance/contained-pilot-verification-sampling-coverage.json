@@ -1,0 +1,514 @@
+{
+  "schemaVersion": 1,
+  "artifactId": "contained-pilot-verification-sampling-coverage-2026-05-03",
+  "beadId": "bead-1151",
+  "generatedAtIso": "2026-05-03T10:15:00.000Z",
+  "coverageBasis": "Contained-pilot deterministic evidence and the source-to-micro-saas self-use alpha controlled Action classes. This is not the missing recurring real self-use ledger.",
+  "pilotScope": {
+    "decision": "continue-contained-pilot",
+    "broaderBusinessUse": "no-go",
+    "workspaceId": "workspace-portarium-internal",
+    "workflowId": "source-to-micro-saas-builder",
+    "projectId": "project-self-use-alpha-source-to-micro-saas",
+    "activePilotTriggers": ["new-capability-rollout"],
+    "sourceArtifacts": [
+      "docs/internal/governance/source-to-micro-saas-self-use-alpha.json",
+      "docs/internal/governance/source-to-micro-saas-self-use-alpha.md",
+      "docs/internal/governance/pilot-readiness-decision-report.json",
+      "docs/internal/governance/pilot-readiness-decision-report.md",
+      ".specify/specs/delegated-autonomy-verification-sampling-v1.md"
+    ]
+  },
+  "samplingRules": [
+    {
+      "schemaVersion": 1,
+      "ruleId": "contained-pilot-source-ingestion-assisted",
+      "actionClassScope": {
+        "kind": "exact",
+        "actionClass": "source-ingestion"
+      },
+      "executionTiers": ["Assisted"],
+      "minBlastRadius": "low",
+      "novelty": ["routine", "changed", "new", "unclassified"],
+      "trackRecord": ["proven", "watch", "degraded", "unknown"],
+      "baselinePercent": 25,
+      "triggerControls": [
+        {
+          "trigger": "drift",
+          "multiplierPercent": 300,
+          "rationale": "Changed source quality or citation behavior increases silent-defect risk."
+        },
+        {
+          "trigger": "incident",
+          "multiplierPercent": 500,
+          "rationale": "Source-driven incident windows sample all affected ingestion work."
+        },
+        {
+          "trigger": "new-capability-rollout",
+          "multiplierPercent": 400,
+          "rationale": "The self-use alpha starts with full source-ingestion verification."
+        },
+        {
+          "trigger": "degraded-provider-posture",
+          "multiplierPercent": 300,
+          "rationale": "Provider or tool degradation increases evidence-source risk."
+        }
+      ],
+      "queueTarget": {
+        "kind": "workforce-queue",
+        "workforceQueueId": "queue-verification-audit"
+      },
+      "evidenceExpectations": [
+        "trusted source class",
+        "Source Snapshot or user-provided reference",
+        "citation boundary",
+        "open question or conflict capture"
+      ],
+      "rationale": "Source ingestion can influence implementation and approval context without a blocking Approval Gate."
+    },
+    {
+      "schemaVersion": 1,
+      "ruleId": "contained-pilot-repository-file-edit-human-approve",
+      "actionClassScope": {
+        "kind": "exact",
+        "actionClass": "repository-file-edit"
+      },
+      "executionTiers": ["HumanApprove"],
+      "minBlastRadius": "medium",
+      "novelty": ["changed", "new", "unclassified"],
+      "trackRecord": ["proven", "watch", "degraded", "unknown"],
+      "baselinePercent": 50,
+      "triggerControls": [
+        {
+          "trigger": "drift",
+          "multiplierPercent": 200,
+          "rationale": "Changed implementation patterns require extra post-action review."
+        },
+        {
+          "trigger": "incident",
+          "multiplierPercent": 500,
+          "rationale": "Incident windows sample every repository mutation."
+        },
+        {
+          "trigger": "new-capability-rollout",
+          "multiplierPercent": 200,
+          "rationale": "The self-use alpha samples every repository edit during rollout."
+        },
+        {
+          "trigger": "degraded-provider-posture",
+          "multiplierPercent": 200,
+          "rationale": "Degraded tooling increases risk of incomplete or misleading repository evidence."
+        }
+      ],
+      "queueTarget": {
+        "kind": "policy-owner-review"
+      },
+      "evidenceExpectations": [
+        "Plan approval",
+        "diff or changed file list",
+        "test or review evidence",
+        "rollback note when applicable"
+      ],
+      "rationale": "Repository mutations are high-accountability Actions even when already gated."
+    },
+    {
+      "schemaVersion": 1,
+      "ruleId": "contained-pilot-test-quality-gate-assisted",
+      "actionClassScope": {
+        "kind": "exact",
+        "actionClass": "test-or-quality-gate-run"
+      },
+      "executionTiers": ["Assisted"],
+      "minBlastRadius": "low",
+      "novelty": ["routine", "changed", "new", "unclassified"],
+      "trackRecord": ["proven", "watch", "degraded", "unknown"],
+      "baselinePercent": 50,
+      "triggerControls": [
+        {
+          "trigger": "drift",
+          "multiplierPercent": 200,
+          "rationale": "Drift in test behavior requires additional verification."
+        },
+        {
+          "trigger": "incident",
+          "multiplierPercent": 300,
+          "rationale": "Incident windows sample every quality gate result."
+        },
+        {
+          "trigger": "new-capability-rollout",
+          "multiplierPercent": 200,
+          "rationale": "The self-use alpha samples every focused validation result during rollout."
+        },
+        {
+          "trigger": "degraded-provider-posture",
+          "multiplierPercent": 200,
+          "rationale": "Degraded local tools increase false-confidence risk."
+        }
+      ],
+      "queueTarget": {
+        "kind": "workforce-queue",
+        "workforceQueueId": "queue-verification-audit"
+      },
+      "evidenceExpectations": [
+        "command",
+        "exit status",
+        "material output summary",
+        "known limitation classification"
+      ],
+      "rationale": "Quality-gate evidence is allowed to run in Assisted mode but can hide missing browser or tool coverage."
+    },
+    {
+      "schemaVersion": 1,
+      "ruleId": "contained-pilot-git-commit-human-approve",
+      "actionClassScope": {
+        "kind": "exact",
+        "actionClass": "git-commit"
+      },
+      "executionTiers": ["HumanApprove"],
+      "minBlastRadius": "medium",
+      "novelty": ["changed", "new", "unclassified"],
+      "trackRecord": ["proven", "watch", "degraded", "unknown"],
+      "baselinePercent": 50,
+      "triggerControls": [
+        {
+          "trigger": "drift",
+          "multiplierPercent": 200,
+          "rationale": "Commit packaging drift requires additional post-action review."
+        },
+        {
+          "trigger": "incident",
+          "multiplierPercent": 500,
+          "rationale": "Incident windows sample every commit."
+        },
+        {
+          "trigger": "new-capability-rollout",
+          "multiplierPercent": 200,
+          "rationale": "The self-use alpha samples every commit during rollout."
+        },
+        {
+          "trigger": "degraded-provider-posture",
+          "multiplierPercent": 200,
+          "rationale": "Degraded git or CI posture increases packaging risk."
+        }
+      ],
+      "queueTarget": {
+        "kind": "policy-owner-review"
+      },
+      "evidenceExpectations": [
+        "commit hash",
+        "changed file list",
+        "quality gate status",
+        "Bead linkage"
+      ],
+      "rationale": "Commit packaging must preserve Bead and evidence traceability."
+    },
+    {
+      "schemaVersion": 1,
+      "ruleId": "contained-pilot-external-publish-manual-only",
+      "actionClassScope": {
+        "kind": "exact",
+        "actionClass": "external-publish-or-distribution"
+      },
+      "executionTiers": ["ManualOnly"],
+      "minBlastRadius": "high",
+      "novelty": ["routine", "changed", "new", "unclassified"],
+      "trackRecord": ["proven", "watch", "degraded", "unknown"],
+      "baselinePercent": 100,
+      "triggerControls": [
+        {
+          "trigger": "drift",
+          "multiplierPercent": 100,
+          "rationale": "Manual-only external effects already require full post-action evidence review."
+        },
+        {
+          "trigger": "incident",
+          "multiplierPercent": 100,
+          "rationale": "Manual-only external effects remain fully sampled during incident windows."
+        },
+        {
+          "trigger": "new-capability-rollout",
+          "multiplierPercent": 100,
+          "rationale": "The contained pilot verifies every stubbed external effect."
+        },
+        {
+          "trigger": "degraded-provider-posture",
+          "multiplierPercent": 100,
+          "rationale": "Manual-only external effects remain fully sampled during provider degradation."
+        }
+      ],
+      "queueTarget": {
+        "kind": "policy-owner-review"
+      },
+      "evidenceExpectations": [
+        "stub receipt or manual completion evidence",
+        "target redaction",
+        "idempotency key",
+        "explicit no-public-send confirmation"
+      ],
+      "rationale": "The contained pilot allows only stubbed or manual external distribution evidence."
+    }
+  ],
+  "coverageObservations": [
+    {
+      "actionClass": "source-ingestion",
+      "executionTier": "Assisted",
+      "completedCount": 1,
+      "sampledCount": 1,
+      "defectFindingCount": 1
+    },
+    {
+      "actionClass": "repository-file-edit",
+      "executionTier": "HumanApprove",
+      "completedCount": 1,
+      "sampledCount": 1,
+      "defectFindingCount": 1
+    },
+    {
+      "actionClass": "test-or-quality-gate-run",
+      "executionTier": "Assisted",
+      "completedCount": 5,
+      "sampledCount": 5,
+      "defectFindingCount": 1
+    },
+    {
+      "actionClass": "git-commit",
+      "executionTier": "HumanApprove",
+      "completedCount": 1,
+      "sampledCount": 1,
+      "defectFindingCount": 0
+    },
+    {
+      "actionClass": "external-publish-or-distribution",
+      "executionTier": "ManualOnly",
+      "completedCount": 4,
+      "sampledCount": 4,
+      "defectFindingCount": 0
+    }
+  ],
+  "coverageByActionClass": [
+    {
+      "schemaVersion": 1,
+      "actionClass": "external-publish-or-distribution",
+      "executionTier": "ManualOnly",
+      "completedCount": 4,
+      "sampledCount": 4,
+      "samplingCoveragePercent": 100,
+      "defectRatePercent": 0,
+      "confidence": "insufficient-data"
+    },
+    {
+      "schemaVersion": 1,
+      "actionClass": "git-commit",
+      "executionTier": "HumanApprove",
+      "completedCount": 1,
+      "sampledCount": 1,
+      "samplingCoveragePercent": 100,
+      "defectRatePercent": 0,
+      "confidence": "insufficient-data"
+    },
+    {
+      "schemaVersion": 1,
+      "actionClass": "repository-file-edit",
+      "executionTier": "HumanApprove",
+      "completedCount": 1,
+      "sampledCount": 1,
+      "samplingCoveragePercent": 100,
+      "defectRatePercent": 100,
+      "confidence": "insufficient-data"
+    },
+    {
+      "schemaVersion": 1,
+      "actionClass": "source-ingestion",
+      "executionTier": "Assisted",
+      "completedCount": 1,
+      "sampledCount": 1,
+      "samplingCoveragePercent": 100,
+      "defectRatePercent": 100,
+      "confidence": "insufficient-data"
+    },
+    {
+      "schemaVersion": 1,
+      "actionClass": "test-or-quality-gate-run",
+      "executionTier": "Assisted",
+      "completedCount": 5,
+      "sampledCount": 5,
+      "samplingCoveragePercent": 100,
+      "defectRatePercent": 20,
+      "confidence": "low"
+    }
+  ],
+  "countEvidence": [
+    {
+      "actionClass": "source-ingestion",
+      "basis": "Toolchain realism sampled the required content-machine source/content generation preflight and found it unavailable.",
+      "evidenceRefs": [
+        "experiments/iteration-2/results/micro-saas-toolchain-redo/toolchain-realism-v2/outcome.json"
+      ]
+    },
+    {
+      "actionClass": "repository-file-edit",
+      "basis": "Pilot readiness sampled the self-use alpha repository-change path and found the recurring run ledger still absent.",
+      "evidenceRefs": [
+        "docs/internal/governance/source-to-micro-saas-self-use-alpha.json",
+        "docs/internal/governance/pilot-readiness-decision-report.json"
+      ]
+    },
+    {
+      "actionClass": "test-or-quality-gate-run",
+      "basis": "Five deterministic contained-pilot validations were sampled: micro-SaaS handoff, toolchain realism, recovery, shift-aware coverage, and production-like rehearsal.",
+      "evidenceRefs": [
+        "experiments/iteration-2/results/micro-saas-agent-stack-v2/deterministic-handoff-v2/outcome.json",
+        "experiments/iteration-2/results/micro-saas-toolchain-redo/toolchain-realism-v2/outcome.json",
+        "experiments/iteration-2/results/governed-resume-recovery/deterministic-recovery/outcome.json",
+        "experiments/iteration-2/results/shift-aware-approval-coverage/deterministic-shift-coverage-v1/outcome.json",
+        "experiments/iteration-2/results/production-like-pilot-rehearsal/pilot-rehearsal-v1/outcome.json"
+      ]
+    },
+    {
+      "actionClass": "git-commit",
+      "basis": "The pilot decision sampled Bead-linked commit packaging expectations for the contained pilot but does not yet have recurring self-use commit evidence.",
+      "evidenceRefs": ["docs/internal/governance/pilot-readiness-decision-report.json"]
+    },
+    {
+      "actionClass": "external-publish-or-distribution",
+      "basis": "Four external publish or send effects were sampled as stubbed or recorded-not-sent effects.",
+      "evidenceRefs": [
+        "experiments/iteration-2/results/micro-saas-toolchain-redo/toolchain-realism-v2/outcome.json",
+        "experiments/iteration-2/results/production-like-pilot-rehearsal/pilot-rehearsal-v1/outcome.json"
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "schemaVersion": 1,
+      "findingId": "vsf-source-ingestion-001",
+      "queueItemId": "verify:workspace-portarium-internal:toolchain-realism-v2:content-machine-preflight",
+      "workspaceId": "workspace-portarium-internal",
+      "reviewedAtIso": "2026-05-03T10:10:00.000Z",
+      "outcome": "evidence-insufficient",
+      "actionClass": "source-ingestion",
+      "executionTier": "Assisted",
+      "evidenceIds": ["evidence-toolchain-content-machine-preflight"],
+      "summary": "The required content-machine path is unavailable, so source-driven Artifact generation cannot prove output quality for the self-use alpha."
+    },
+    {
+      "schemaVersion": 1,
+      "findingId": "vsf-repository-file-edit-001",
+      "queueItemId": "verify:workspace-portarium-internal:self-use-alpha:repository-ledger",
+      "workspaceId": "workspace-portarium-internal",
+      "reviewedAtIso": "2026-05-03T10:10:00.000Z",
+      "outcome": "evidence-insufficient",
+      "actionClass": "repository-file-edit",
+      "executionTier": "HumanApprove",
+      "evidenceIds": ["evidence-self-use-alpha-fixture", "evidence-pilot-readiness-report"],
+      "summary": "The alpha plan defines repository-change evidence, but the three-run recurring self-use ledger and scorecard export are not committed."
+    },
+    {
+      "schemaVersion": 1,
+      "findingId": "vsf-quality-gate-001",
+      "queueItemId": "verify:workspace-portarium-internal:pilot-rehearsal-v1:browser-qa",
+      "workspaceId": "workspace-portarium-internal",
+      "reviewedAtIso": "2026-05-03T10:10:00.000Z",
+      "outcome": "evidence-insufficient",
+      "actionClass": "test-or-quality-gate-run",
+      "executionTier": "Assisted",
+      "evidenceIds": ["evidence-production-like-rehearsal-browser-qa"],
+      "summary": "The production-like rehearsal records the browser QA command path, but live headed screenshots are still a release-candidate evidence gap."
+    },
+    {
+      "schemaVersion": 1,
+      "findingId": "vsf-git-commit-001",
+      "queueItemId": "verify:workspace-portarium-internal:self-use-alpha:git-commit",
+      "workspaceId": "workspace-portarium-internal",
+      "reviewedAtIso": "2026-05-03T10:10:00.000Z",
+      "outcome": "correct",
+      "actionClass": "git-commit",
+      "executionTier": "HumanApprove",
+      "evidenceIds": ["evidence-pilot-readiness-report"],
+      "summary": "Commit packaging remains Bead-linked and gated; no post-action commit defect is visible in the contained-pilot evidence."
+    },
+    {
+      "schemaVersion": 1,
+      "findingId": "vsf-external-publish-001",
+      "queueItemId": "verify:workspace-portarium-internal:external-effects:stub-ledger",
+      "workspaceId": "workspace-portarium-internal",
+      "reviewedAtIso": "2026-05-03T10:10:00.000Z",
+      "outcome": "correct",
+      "actionClass": "external-publish-or-distribution",
+      "executionTier": "ManualOnly",
+      "evidenceIds": ["evidence-toolchain-external-stubs", "evidence-rehearsal-external-stubs"],
+      "summary": "External publish and send effects are recorded as stubbed or recorded-not-sent, matching the contained-pilot safety boundary."
+    }
+  ],
+  "findingRoutes": [
+    {
+      "schemaVersion": 1,
+      "findingId": "vsf-source-ingestion-001",
+      "outcome": "evidence-insufficient",
+      "targets": ["runbook-update", "prompt-strategy", "operator-enablement"],
+      "severity": "medium",
+      "rationale": "Evidence gaps should improve evidence packet assembly and review habits.",
+      "routedBeads": [
+        {
+          "id": "bead-1149",
+          "target": "operator-enablement",
+          "reason": "Resolve the required content-machine pilot preflight failure and rerun toolchain realism."
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "findingId": "vsf-repository-file-edit-001",
+      "outcome": "evidence-insufficient",
+      "targets": ["runbook-update", "prompt-strategy", "operator-enablement"],
+      "severity": "medium",
+      "rationale": "Evidence gaps should improve evidence packet assembly and review habits.",
+      "routedBeads": [
+        {
+          "id": "bead-1148",
+          "target": "runbook-update",
+          "reason": "Complete the real source-to-Micro-SaaS self-use alpha ledger and scorecard export."
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "findingId": "vsf-quality-gate-001",
+      "outcome": "evidence-insufficient",
+      "targets": ["runbook-update", "prompt-strategy", "operator-enablement"],
+      "severity": "medium",
+      "rationale": "Evidence gaps should improve evidence packet assembly and review habits.",
+      "routedBeads": [
+        {
+          "id": "bead-1150",
+          "target": "runbook-update",
+          "reason": "Capture headed live-browser evidence for the production-like pilot rehearsal."
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "findingId": "vsf-git-commit-001",
+      "outcome": "correct",
+      "targets": [],
+      "severity": "none",
+      "rationale": "Correct sampled work records confidence without creating governance churn.",
+      "routedBeads": []
+    },
+    {
+      "schemaVersion": 1,
+      "findingId": "vsf-external-publish-001",
+      "outcome": "correct",
+      "targets": [],
+      "severity": "none",
+      "rationale": "Correct sampled work records confidence without creating governance churn.",
+      "routedBeads": []
+    }
+  ],
+  "governanceDecision": {
+    "hiddenDefectControl": "visible-and-routed-for-contained-pilot",
+    "confidenceForBroaderBusinessUse": "insufficient-data",
+    "broaderClaimAllowed": false,
+    "reason": "All contained-pilot Action classes are sampled, but the real recurring self-use ledger is still absent and three evidence-insufficient findings route to existing follow-up Beads."
+  }
+}
