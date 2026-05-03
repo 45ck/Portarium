@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Portarium Software-First Autonomy Showcase Manifest",
+  "type": "object",
+  "required": ["id", "title", "bead", "lane", "status", "runner", "projects", "demoSpecs"],
+  "properties": {
+    "id": { "type": "string" },
+    "title": { "type": "string" },
+    "bead": { "type": "string" },
+    "lane": { "type": "string" },
+    "status": { "type": "string" },
+    "runner": { "type": "object" },
+    "projects": { "type": "array", "minItems": 2 },
+    "demoSpecs": { "type": "array", "minItems": 2 }
+  }
+}

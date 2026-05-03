@@ -132,6 +132,25 @@ The proving ground is credible when:
 - the backlog clearly separates current software proving work from deferred
   showcase, distribution, prompt-language, and speculative robotics expansion.
 
+## Batch 12 Multi-Project Showcase Contract
+
+The `bead-1104` showcase is a `showcase-demo-only` narrative asset, not proof of
+production readiness. It must remain manifest-backed under
+`examples/showcase/software-first-autonomy/` and must include:
+
+- one `micro-saas-agent-stack` Project with `readinessLabel: self-use` and
+  `productionClaim: self-use`;
+- one `content-artifact-loop` Project with `readinessLabel: demo-only` and
+  `productionClaim: demo-only`;
+- a mobile demo-machine spec covering Approval Gate review, exception capture,
+  and Evidence Log linkage;
+- a desktop demo-machine spec covering Project switching, Policy review,
+  Evidence Log review, and human intervention;
+- narration focus defaults enabled with cursor, zoom, scale `1.25`, duration
+  `1600ms`, and transition `450ms`;
+- focused tests that parse the manifest and both specs before any recording is
+  accepted.
+
 ## Self-Use Alpha Artifact Pack
 
 The first executable alpha pack for `bead-1102` is

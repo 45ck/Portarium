@@ -1,0 +1,91 @@
+{
+  "$schema": "./showcase-manifest.schema.json",
+  "id": "software-first-autonomy-multi-project",
+  "title": "Software-first autonomy multi-Project showcase",
+  "bead": "bead-1104",
+  "lane": "showcase-demo-only",
+  "status": "recording-ready",
+  "owner": "demo-machine",
+  "runner": {
+    "command": "npx --yes http-server examples/showcase/software-first-autonomy -p 4184",
+    "url": "http://localhost:4184",
+    "outputDirectory": "qa-artifacts/software-first-autonomy-showcase"
+  },
+  "projects": [
+    {
+      "projectId": "project-self-use-alpha-source-to-micro-saas",
+      "projectTypeId": "micro-saas-agent-stack",
+      "name": "Micro-SaaS builder alpha",
+      "readinessLabel": "self-use",
+      "productionClaim": "self-use",
+      "primaryArtifacts": [
+        "research-dossier",
+        "product-brief",
+        "acceptance-checklist",
+        "qa-evidence"
+      ],
+      "approvalPolicy": "Human-approve for release-impacting Actions; Assisted for draft and QA Actions.",
+      "evidenceExpectations": [
+        "trusted-source-ingestion",
+        "planned-effects-diff",
+        "approval-decision",
+        "exception-capture",
+        "human-intervention"
+      ]
+    },
+    {
+      "projectId": "project-demo-content-artifact-loop",
+      "projectTypeId": "content-artifact-loop",
+      "name": "Content artifact studio",
+      "readinessLabel": "demo-only",
+      "productionClaim": "demo-only",
+      "primaryArtifacts": ["content-brief", "draft-thread", "redaction-report"],
+      "approvalPolicy": "Human-approve before publish or external send; demo-only fixtures until separate self-use evidence exists.",
+      "evidenceExpectations": [
+        "source-citation-check",
+        "redaction-report",
+        "approval-decision",
+        "publish-blocked"
+      ]
+    }
+  ],
+  "storyline": [
+    "Mobile operator approves a content draft only after recording a redaction exception.",
+    "Desktop Cockpit switches from the demo-only content Project to the self-use micro-SaaS Project.",
+    "Policy review shows why external publish stays blocked while product QA is allowed with evidence.",
+    "Evidence review links Plans, Approval Gates, exceptions, and Artifact hashes.",
+    "Human intervention records a scoped change request instead of letting autonomy continue blindly."
+  ],
+  "demoSpecs": [
+    {
+      "id": "mobile-approval-exception",
+      "path": "examples/showcase/software-first-autonomy/software-first-autonomy.mobile.demo.yaml",
+      "viewport": "390x844x3,mobile,touch",
+      "projectIds": [
+        "project-demo-content-artifact-loop",
+        "project-self-use-alpha-source-to-micro-saas"
+      ],
+      "requiredBeats": ["mobile", "approval", "exception", "evidence"]
+    },
+    {
+      "id": "desktop-project-switch-policy-evidence-intervention",
+      "path": "examples/showcase/software-first-autonomy/software-first-autonomy.desktop.demo.yaml",
+      "viewport": "1440x960x1",
+      "projectIds": [
+        "project-demo-content-artifact-loop",
+        "project-self-use-alpha-source-to-micro-saas"
+      ],
+      "requiredBeats": ["desktop", "project-switching", "policy", "evidence", "intervention"]
+    }
+  ],
+  "assets": [
+    "examples/showcase/software-first-autonomy/index.html",
+    "examples/showcase/software-first-autonomy/styles.css",
+    "examples/showcase/software-first-autonomy/app.js",
+    "examples/showcase/software-first-autonomy/story.json"
+  ],
+  "validation": {
+    "focusedTest": "node node_modules/vitest/vitest.mjs run src/presentation/ops-cockpit/software-first-autonomy-showcase.test.ts",
+    "formatCheck": "node node_modules/prettier/bin/prettier.cjs --check examples/showcase/software-first-autonomy src/presentation/ops-cockpit/software-first-autonomy-showcase.test.ts"
+  }
+}

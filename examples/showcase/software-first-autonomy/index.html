@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Portarium Software-First Autonomy Showcase</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Portarium Cockpit</p>
+        <h1>Software-first autonomy</h1>
+      </div>
+      <div class="status-strip" aria-label="Workspace status">
+        <span class="status-pill status-pill--attention">2 Projects</span>
+        <span class="status-pill status-pill--blocked">1 blocked Action</span>
+        <span class="status-pill status-pill--clear">Evidence live</span>
+      </div>
+    </header>
+
+    <main class="shell" data-testid="showcase-shell">
+      <aside class="project-rail" aria-label="Projects">
+        <button
+          class="project-button project-button--active"
+          type="button"
+          data-testid="project-content"
+          data-project-id="project-demo-content-artifact-loop"
+        >
+          <span>Content artifact studio</span>
+          <strong>demo-only</strong>
+        </button>
+        <button
+          class="project-button"
+          type="button"
+          data-testid="project-micro-saas"
+          data-project-id="project-self-use-alpha-source-to-micro-saas"
+        >
+          <span>Micro-SaaS builder alpha</span>
+          <strong>self-use</strong>
+        </button>
+      </aside>
+
+      <section class="workspace" aria-live="polite">
+        <section class="hero-panel">
+          <div>
+            <p class="eyebrow" data-testid="project-type">content-artifact-loop</p>
+            <h2 data-testid="project-name">Content artifact studio</h2>
+            <p data-testid="project-status">Needs exception review</p>
+          </div>
+          <span class="claim-badge" data-testid="project-claim">demo-only</span>
+        </section>
+
+        <section class="grid">
+          <section class="surface" data-testid="mobile-approval-panel">
+            <div class="surface__header">
+              <h3>Mobile approval</h3>
+              <span>Approval Gate</span>
+            </div>
+            <p class="approval-title" data-testid="approval-title">
+              Approve draft for internal review
+            </p>
+            <p class="exception" data-testid="exception-summary">
+              Citation confidence below threshold on one market claim.
+            </p>
+            <div class="button-row">
+              <button class="button button--secondary" type="button" data-testid="request-changes">
+                Request changes
+              </button>
+              <button class="button" type="button" data-testid="approve-with-exception">
+                Approve with exception
+              </button>
+            </div>
+            <p class="decision-note" data-testid="decision-note">Waiting for reviewer decision.</p>
+          </section>
+
+          <section class="surface" data-testid="policy-panel">
+            <div class="surface__header">
+              <h3>Policy</h3>
+              <span>Execution Tier</span>
+            </div>
+            <p data-testid="policy-summary">
+              External publish is blocked until redaction evidence and human approval exist.
+            </p>
+            <div class="split-list">
+              <div>
+                <h4>Allowed Actions</h4>
+                <ul data-testid="allowed-actions"></ul>
+              </div>
+              <div>
+                <h4>Blocked Actions</h4>
+                <ul data-testid="blocked-actions"></ul>
+              </div>
+            </div>
+          </section>
+
+          <section class="surface surface--wide" data-testid="evidence-panel">
+            <div class="surface__header">
+              <h3>Evidence Log</h3>
+              <span data-testid="evidence-count">7 entries</span>
+            </div>
+            <div class="timeline" data-testid="evidence-list"></div>
+          </section>
+
+          <section class="surface" data-testid="intervention-panel">
+            <div class="surface__header">
+              <h3>Intervention</h3>
+              <span>Human Task</span>
+            </div>
+            <p data-testid="intervention-copy">
+              Limit the next Run to QA evidence and rollback notes. Do not publish.
+            </p>
+            <button
+              class="button button--secondary"
+              type="button"
+              data-testid="record-intervention"
+            >
+              Record intervention
+            </button>
+          </section>
+        </section>
+      </section>
+    </main>
+
+    <script src="./app.js" type="module"></script>
+  </body>
+</html>

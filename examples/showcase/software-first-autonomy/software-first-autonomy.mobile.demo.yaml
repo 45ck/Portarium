@@ -1,0 +1,94 @@
+meta:
+  title: 'Software-First Autonomy: Mobile Approval Exception'
+  tags:
+    - cockpit
+    - demo-machine
+    - software-first
+    - multi-project
+    - mobile
+    - approvals
+    - bead-1104
+
+runner:
+  command: 'npx --yes http-server examples/showcase/software-first-autonomy -p 4184'
+  url: 'http://localhost:4184'
+  timeout: 20000
+
+viewport:
+  width: 390
+  height: 844
+  deviceScaleFactor: 3
+  isMobile: true
+  hasTouch: true
+
+presentation:
+  narrationFocus:
+    enabled: true
+    cursor: true
+    highlight: false
+    zoom: true
+    scale: 1.25
+    durationMs: 1600
+    transitionMs: 450
+
+pacing:
+  postClickDelayMs: 500
+  postNavigateDelayMs: 900
+  settleDelayMs: 250
+
+chapters:
+  - title: 'Precondition Reset'
+    steps:
+      - action: navigate
+        url: 'http://localhost:4184/'
+        narration: 'The mobile reviewer opens the software-first Project queue with fixture-backed demo data.'
+        focus:
+          selector: "[data-testid='showcase-shell']"
+      - action: wait
+        timeout: 900
+
+  - title: 'Mobile Approval Exception'
+    steps:
+      - action: assert
+        selector: "[data-testid='mobile-approval-panel']"
+        narration: 'The content Project is labeled demo-only, so approval is about internal review, not production proof.'
+        focus:
+          selector: "[data-testid='project-claim']"
+      - action: assert
+        selector: "[data-testid='exception-summary']"
+        narration: 'An exception is visible before the reviewer can approve the draft.'
+        focus:
+          selector: "[data-testid='exception-summary']"
+      - action: click
+        selector: "[data-testid='approve-with-exception']"
+        narration: 'The reviewer approves only with the citation exception attached to the Evidence Log.'
+        focus:
+          selector: "[data-testid='approve-with-exception']"
+      - action: assertText
+        selector: "[data-testid='decision-note']"
+        text: 'Approved with exception'
+
+  - title: 'Project Context Switch'
+    steps:
+      - action: click
+        selector: "[data-testid='project-micro-saas']"
+        narration: 'The reviewer switches to the primary micro-SaaS Project, which carries the self-use claim.'
+        focus:
+          selector: "[data-testid='project-micro-saas']"
+      - action: assertText
+        selector: "[data-testid='project-claim']"
+        text: 'self-use'
+      - action: assert
+        selector: "[data-testid='policy-panel']"
+        narration: 'The same mobile surface shows that release-impacting Actions stay gated by policy.'
+        focus:
+          selector: "[data-testid='policy-panel']"
+      - action: screenshot
+        name: 'mobile-approval-exception'
+
+  - title: 'Cleanup Reset'
+    steps:
+      - action: navigate
+        url: 'http://localhost:4184/'
+      - action: wait
+        timeout: 500

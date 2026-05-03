@@ -1,0 +1,101 @@
+meta:
+  title: 'Software-First Autonomy: Desktop Project Switching, Policy, Evidence, Intervention'
+  tags:
+    - cockpit
+    - demo-machine
+    - software-first
+    - multi-project
+    - desktop
+    - policy
+    - evidence
+    - intervention
+    - bead-1104
+
+runner:
+  command: 'npx --yes http-server examples/showcase/software-first-autonomy -p 4184'
+  url: 'http://localhost:4184'
+  timeout: 20000
+
+viewport:
+  width: 1440
+  height: 960
+  deviceScaleFactor: 1
+
+presentation:
+  narrationFocus:
+    enabled: true
+    cursor: true
+    highlight: false
+    zoom: true
+    scale: 1.25
+    durationMs: 1600
+    transitionMs: 450
+
+pacing:
+  postClickDelayMs: 500
+  postNavigateDelayMs: 900
+  settleDelayMs: 250
+
+chapters:
+  - title: 'Precondition Reset'
+    steps:
+      - action: navigate
+        url: 'http://localhost:4184/'
+        narration: 'Cockpit opens on the demo-only content Project so the readiness label is visible from the start.'
+        focus:
+          selector: "[data-testid='project-content']"
+      - action: wait
+        timeout: 900
+
+  - title: 'Content Project Policy'
+    steps:
+      - action: assertText
+        selector: "[data-testid='project-claim']"
+        text: 'demo-only'
+      - action: assert
+        selector: "[data-testid='policy-panel']"
+        narration: 'Policy allows draft and redaction Actions but blocks external publishing.'
+        focus:
+          selector: "[data-testid='policy-panel']"
+      - action: assertText
+        selector: "[data-testid='blocked-actions']"
+        text: 'content.publish-external'
+
+  - title: 'Switch To Product Project'
+    steps:
+      - action: click
+        selector: "[data-testid='project-micro-saas']"
+        narration: 'The operator switches to the micro-SaaS builder alpha, the primary self-use proving Project.'
+        focus:
+          selector: "[data-testid='project-micro-saas']"
+      - action: assertText
+        selector: "[data-testid='project-name']"
+        text: 'Micro-SaaS builder alpha'
+      - action: assertText
+        selector: "[data-testid='project-claim']"
+        text: 'self-use'
+
+  - title: 'Evidence And Intervention'
+    steps:
+      - action: assert
+        selector: "[data-testid='evidence-panel']"
+        narration: 'Evidence links the Plan, QA Artifact, exception, and human intervention instead of hiding the failure.'
+        focus:
+          selector: "[data-testid='evidence-panel']"
+      - action: click
+        selector: "[data-testid='record-intervention']"
+        narration: 'The operator records a scoped intervention so autonomy continues only on QA evidence and rollback notes.'
+        focus:
+          selector: "[data-testid='record-intervention']"
+      - action: assertText
+        selector: "[data-testid='decision-note']"
+        text: 'Intervention recorded'
+      - action: screenshot
+        name: 'desktop-project-switch-policy-evidence-intervention'
+
+  - title: 'Cleanup Reset'
+    steps:
+      - action: navigate
+        url: 'http://localhost:4184/'
+      - action: wait
+        timeout: 500
