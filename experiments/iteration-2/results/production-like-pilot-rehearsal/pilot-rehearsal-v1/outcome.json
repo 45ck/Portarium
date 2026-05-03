@@ -1,0 +1,324 @@
+{
+  "experiment": "production-like-pilot-rehearsal",
+  "timestamp": "2026-05-03T04:42:53.987Z",
+  "outcome": "confirmed",
+  "duration_ms": 31,
+  "assertions": [
+    {
+      "label": "queue SLOs are within pilot thresholds",
+      "passed": true,
+      "detail": "p95=250000, resume=850,850, duplicates=0"
+    },
+    {
+      "label": "approval, run, policy, and evidence state survives restart",
+      "passed": true,
+      "detail": "{\"approvalsBefore\":3,\"approvalsAfter\":3,\"runsBefore\":2,\"runsAfter\":2,\"policiesBefore\":1,\"policiesAfter\":1,\"evidenceEntriesBefore\":3,\"evidenceEntriesAfter\":6}"
+    },
+    {
+      "label": "browser QA evidence defines Cockpit operator-flow verification path",
+      "passed": true,
+      "detail": "[\"Inbox approval queue\",\"Approval detail with Plan and Evidence Artifacts\",\"Approve and request-changes decision controls\",\"Run resume status\",\"Evidence Log redaction spot check\"]"
+    },
+    {
+      "label": "redaction checks pass for committed rehearsal artifacts",
+      "passed": true,
+      "detail": "{\"schemaVersion\":1,\"checkedAtIso\":\"2026-05-03T05:05:10.000Z\",\"forbiddenFragments\":[\"[REDACTED]\",\"[REDACTED]\",\"[REDACTED]\",\"[REDACTED]\",\"[REDACTED]\",\"[REDACTED]\"],\"forbiddenFragmentsFound\":[],\"redacted\":true}"
+    },
+    {
+      "label": "divergence classification has no product defect",
+      "passed": true,
+      "detail": "[]"
+    },
+    {
+      "label": "external SoR effects are explicitly stubbed",
+      "passed": true,
+      "detail": "[{\"mode\":\"stubbed-external-sor-effect\",\"status\":\"recorded-not-sent\",\"operation\":\"update-opportunity-stage\",\"target\":\"[REDACTED_PATH]\",\"idempotencyKey\":\"crm:opportunity:opp-9001:update-stage\"},{\"mode\":\"stubbed-external-sor-effect\",\"status\":\"recorded-not-sent\",\"operation\":\"send-renewal-notice\",\"target\":\"[REDACTED_PATH]\",\"idempotencyKey\":\"crm:subscription:sub-4411:renewal-notice\"}]"
+    },
+    {
+      "label": "telemetry artifacts are complete",
+      "passed": true,
+      "detail": "present=9, missing="
+    },
+    {
+      "label": "threshold assertions pass",
+      "passed": true,
+      "detail": "[{\"label\":\"duplicate execution count within threshold\",\"passed\":true,\"detail\":\"0 <= 0\"},{\"label\":\"pending age p95 within threshold\",\"passed\":true,\"detail\":\"250000 <= 300000\"},{\"label\":\"resume latency within threshold\",\"passed\":true,\"detail\":\"850 <= 1000\"},{\"label\":\"evidence completeness count meets threshold\",\"passed\":true,\"detail\":\"9 >= 9\"},{\"label\":\"successful resume count meets threshold\",\"passed\":true,\"detail\":\"2 >= 2\"}]"
+    }
+  ],
+  "trace": {
+    "beadId": "bead-1146",
+    "mode": "production-like-deterministic-rehearsal",
+    "approvals": [
+      {
+        "approvalId": "apr-pilot-001",
+        "runId": "run-pilot-billing-001",
+        "sessionId": "pilot-billing-queue",
+        "decision": "approved",
+        "requestedAtIso": "2026-05-03T05:00:05.000Z",
+        "decidedAtIso": "2026-05-03T05:01:55.000Z"
+      },
+      {
+        "approvalId": "apr-pilot-002",
+        "runId": "run-pilot-billing-001",
+        "sessionId": "pilot-billing-queue",
+        "decision": "request_changes",
+        "requestedAtIso": "2026-05-03T05:00:25.000Z",
+        "decidedAtIso": "2026-05-03T05:03:25.000Z"
+      },
+      {
+        "approvalId": "apr-pilot-003",
+        "runId": "run-pilot-renewal-001",
+        "sessionId": "pilot-renewal-queue",
+        "decision": "approved",
+        "requestedAtIso": "2026-05-03T05:00:40.000Z",
+        "decidedAtIso": "2026-05-03T05:04:50.000Z"
+      }
+    ],
+    "queueMetrics": {
+      "schemaVersion": 1,
+      "scenarioId": "production-like-pilot-rehearsal",
+      "attemptId": "pilot-rehearsal-v1",
+      "generatedAtIso": "2026-05-03T05:05:10.000Z",
+      "metrics": {
+        "approval_count_by_tier": {
+          "Human-approve": 2,
+          "Assisted": 1
+        },
+        "approval_count_by_session": {
+          "pilot-billing-queue": 2,
+          "pilot-renewal-queue": 1
+        },
+        "pending_age_ms_p50": 180000,
+        "pending_age_ms_p95": 250000,
+        "pending_age_ms_max": 250000,
+        "resume_latency_ms": [
+          850,
+          850
+        ],
+        "blocked_duration_ms": [
+          110000,
+          180000,
+          250000
+        ],
+        "queue_depth_over_time": [
+          {
+            "timestampIso": "2026-05-03T05:00:00.000Z",
+            "depth": 0
+          },
+          {
+            "timestampIso": "2026-05-03T05:00:30.000Z",
+            "depth": 2
+          },
+          {
+            "timestampIso": "2026-05-03T05:02:00.000Z",
+            "depth": 2
+          },
+          {
+            "timestampIso": "2026-05-03T05:03:30.000Z",
+            "depth": 1
+          },
+          {
+            "timestampIso": "2026-05-03T05:05:00.000Z",
+            "depth": 0
+          }
+        ],
+        "denial_count": 0,
+        "request_changes_count": 1,
+        "escalation_count": 0,
+        "expiry_count": 0,
+        "duplicate_execution_count": 0,
+        "evidence_completeness_count": 9,
+        "restart_count": 2,
+        "successful_resume_count": 2
+      }
+    },
+    "evidenceSummary": {
+      "schemaVersion": 1,
+      "scenarioId": "production-like-pilot-rehearsal",
+      "attemptId": "pilot-rehearsal-v1",
+      "generatedAtIso": "2026-05-03T05:05:10.000Z",
+      "requiredArtifacts": [
+        "outcome.json",
+        "queue-metrics.json",
+        "evidence-summary.json",
+        "report.md",
+        "restart-persistence.json",
+        "browser-qa-evidence.json",
+        "redaction-audit.json",
+        "divergence-classification.json",
+        "external-sor-stubs.json"
+      ],
+      "presentArtifacts": [
+        "outcome.json",
+        "queue-metrics.json",
+        "evidence-summary.json",
+        "report.md",
+        "restart-persistence.json",
+        "browser-qa-evidence.json",
+        "redaction-audit.json",
+        "divergence-classification.json",
+        "external-sor-stubs.json"
+      ],
+      "missingArtifacts": [],
+      "evidenceCompletenessCount": 9,
+      "complete": true
+    },
+    "restartPersistence": {
+      "schemaVersion": 1,
+      "restartKinds": [
+        "process-restart",
+        "api-service-restart",
+        "worker-restart"
+      ],
+      "durableStores": {
+        "approvalsBefore": 3,
+        "approvalsAfter": 3,
+        "runsBefore": 2,
+        "runsAfter": 2,
+        "policiesBefore": 1,
+        "policiesAfter": 1,
+        "evidenceEntriesBefore": 3,
+        "evidenceEntriesAfter": 6
+      },
+      "persistenceVerdict": "survived-restart"
+    },
+    "browserQaEvidence": {
+      "schemaVersion": 1,
+      "boundary": "Cockpit operator-flow verification via agent-browser or Playwright",
+      "liveStackUrl": "http://cockpit.localhost:1355",
+      "authBoundary": {
+        "mode": "real-auth-required",
+        "principal": "user-approver-finance",
+        "workspaceId": "ws-pilot-rehearsal",
+        "forbidden": "mock-service-worker-only decision submit"
+      },
+      "commands": [
+        "npm run cockpit:dev",
+        "npm run ab -- open http://cockpit.localhost:1355 --headed",
+        "npm run ab -- snapshot -i",
+        "npm run ab -- click @inbox-approvals",
+        "npm run ab -- click @approval-apr-pilot-001",
+        "npm run ab -- click @approve",
+        "npm run ab -- screenshot ./qa-artifacts/bead-1146/pilot-approval-approved.png"
+      ],
+      "verifiedOperatorSurfaces": [
+        "Inbox approval queue",
+        "Approval detail with Plan and Evidence Artifacts",
+        "Approve and request-changes decision controls",
+        "Run resume status",
+        "Evidence Log redaction spot check"
+      ],
+      "artifactPaths": [
+        "experiments/iteration-2/results/production-like-pilot-rehearsal/pilot-rehearsal-v1/browser-qa-evidence.json",
+        "qa-artifacts/bead-1146/pilot-approval-approved.png",
+        "qa-artifacts/bead-1146/pilot-evidence-redaction.png"
+      ],
+      "currentRunEvidence": "Deterministic boundary captured; live browser screenshots are required for release-candidate execution."
+    },
+    "redactionAudit": {
+      "schemaVersion": 1,
+      "checkedAtIso": "2026-05-03T05:05:10.000Z",
+      "forbiddenFragments": [
+        "[REDACTED]",
+        "[REDACTED]",
+        "[REDACTED]",
+        "[REDACTED]",
+        "[REDACTED]",
+        "[REDACTED]"
+      ],
+      "forbiddenFragmentsFound": [],
+      "redacted": true
+    },
+    "divergenceClassification": {
+      "schemaVersion": 1,
+      "comparesTo": [
+        "approval-backlog-soak",
+        "governed-resume-recovery",
+        "execution-reservation-recovery",
+        "shift-aware-approval-coverage"
+      ],
+      "divergences": [
+        {
+          "id": "div-pilot-browser-screenshots",
+          "classification": "test-limitation",
+          "severity": "medium",
+          "summary": "Committed deterministic evidence records browser QA commands and required screenshot paths; it does not embed a live headed session capture.",
+          "releaseGateImpact": "requires-live-candidate-browser-run"
+        },
+        {
+          "id": "div-external-sor-effects",
+          "classification": "environment-limitation",
+          "severity": "low",
+          "summary": "CRM and billing effects are stubbed and recorded in the SoR stub ledger.",
+          "releaseGateImpact": "acceptable-for-rehearsal"
+        },
+        {
+          "id": "div-queue-slo",
+          "classification": "no-divergence",
+          "severity": "none",
+          "summary": "Pending age p95 observed at 250000ms.",
+          "releaseGateImpact": "none"
+        },
+        {
+          "id": "div-cockpit-operator-flow",
+          "classification": "no-divergence",
+          "severity": "none",
+          "summary": "Cockpit operator-flow verification path covers queue, detail, decision, resume, and evidence views.",
+          "releaseGateImpact": "none"
+        }
+      ]
+    },
+    "externalSorStubs": {
+      "schemaVersion": 1,
+      "stubPolicy": "No external CRM or billing mutation is sent during this rehearsal.",
+      "effects": [
+        {
+          "mode": "stubbed-external-sor-effect",
+          "status": "recorded-not-sent",
+          "operation": "update-opportunity-stage",
+          "target": "[REDACTED_PATH]",
+          "idempotencyKey": "crm:opportunity:opp-9001:update-stage"
+        },
+        {
+          "mode": "stubbed-external-sor-effect",
+          "status": "recorded-not-sent",
+          "operation": "send-renewal-notice",
+          "target": "[REDACTED_PATH]",
+          "idempotencyKey": "crm:subscription:sub-4411:renewal-notice"
+        }
+      ]
+    },
+    "thresholdAssertions": [
+      {
+        "label": "duplicate execution count within threshold",
+        "passed": true,
+        "detail": "0 <= 0"
+      },
+      {
+        "label": "pending age p95 within threshold",
+        "passed": true,
+        "detail": "250000 <= 300000"
+      },
+      {
+        "label": "resume latency within threshold",
+        "passed": true,
+        "detail": "850 <= 1000"
+      },
+      {
+        "label": "evidence completeness count meets threshold",
+        "passed": true,
+        "detail": "9 >= 9"
+      },
+      {
+        "label": "successful resume count meets threshold",
+        "passed": true,
+        "detail": "2 >= 2"
+      }
+    ],
+    "artifactPaths": {
+      "queueMetricsPath": "experiments\\iteration-2\\results\\production-like-pilot-rehearsal\\pilot-rehearsal-v1\\queue-metrics.json",
+      "evidenceSummaryPath": "experiments\\iteration-2\\results\\production-like-pilot-rehearsal\\pilot-rehearsal-v1\\evidence-summary.json",
+      "reportPath": "experiments\\iteration-2\\results\\production-like-pilot-rehearsal\\pilot-rehearsal-v1\\report.md"
+    }
+  }
+}

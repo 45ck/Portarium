@@ -228,6 +228,58 @@
           "https://api.vendor.example/customers/private-123"
         ]
       }
+    },
+    {
+      "scenarioId": "production-like-pilot-rehearsal",
+      "beadId": "bead-1146",
+      "status": "runnable-deterministic",
+      "blockedBy": ["bead-1047"],
+      "runnerPath": "experiments/iteration-2/scenarios/production-like-pilot-rehearsal/run.mjs",
+      "contractPath": "experiments/iteration-2/scenarios/production-like-pilot-rehearsal/README.md",
+      "comparesTo": "iteration-2-governed-business-scale",
+      "validates": [
+        "queue SLOs under production-like approval load",
+        "restart persistence for approvals, runs, policies, and Evidence Log",
+        "Cockpit browser operator-flow evidence boundary",
+        "redaction checks for committed evidence",
+        "deterministic divergence classification",
+        "explicitly stubbed external SoR effects"
+      ],
+      "metricExpectations": {
+        "maxDuplicateExecutionCount": 0,
+        "maxPendingAgeMsP95": 300000,
+        "maxResumeLatencyMs": 1000,
+        "minEvidenceCompletenessCount": 9,
+        "minSuccessfulResumeCount": 2
+      },
+      "artifactExpectations": {
+        "requiredArtifacts": [
+          "outcome.json",
+          "queue-metrics.json",
+          "evidence-summary.json",
+          "report.md",
+          "restart-persistence.json",
+          "browser-qa-evidence.json",
+          "redaction-audit.json",
+          "divergence-classification.json",
+          "external-sor-stubs.json"
+        ],
+        "redactedArtifacts": [
+          "redaction-audit.json",
+          "external-sor-stubs.json",
+          "restart-persistence.json",
+          "browser-qa-evidence.json",
+          "divergence-classification.json"
+        ],
+        "forbiddenFragments": [
+          "Bearer pilot-secret-token",
+          "source-oauth-token",
+          "approver@example.test",
+          "customer@example.test",
+          "https://crm.example.invalid/private/opportunities/opp-9001",
+          "https://billing.example.invalid/private/invoices/inv-7788"
+        ]
+      }
     }
   ]
 }

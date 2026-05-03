@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "boundary": "Cockpit operator-flow verification via agent-browser or Playwright",
+  "liveStackUrl": "http://cockpit.localhost:1355",
+  "authBoundary": {
+    "mode": "real-auth-required",
+    "principal": "user-approver-finance",
+    "workspaceId": "ws-pilot-rehearsal",
+    "forbidden": "mock-service-worker-only decision submit"
+  },
+  "commands": [
+    "npm run cockpit:dev",
+    "npm run ab -- open http://cockpit.localhost:1355 --headed",
+    "npm run ab -- snapshot -i",
+    "npm run ab -- click @inbox-approvals",
+    "npm run ab -- click @approval-apr-pilot-001",
+    "npm run ab -- click @approve",
+    "npm run ab -- screenshot ./qa-artifacts/bead-1146/pilot-approval-approved.png"
+  ],
+  "verifiedOperatorSurfaces": [
+    "Inbox approval queue",
+    "Approval detail with Plan and Evidence Artifacts",
+    "Approve and request-changes decision controls",
+    "Run resume status",
+    "Evidence Log redaction spot check"
+  ],
+  "artifactPaths": [
+    "experiments/iteration-2/results/production-like-pilot-rehearsal/pilot-rehearsal-v1/browser-qa-evidence.json",
+    "qa-artifacts/bead-1146/pilot-approval-approved.png",
+    "qa-artifacts/bead-1146/pilot-evidence-redaction.png"
+  ],
+  "currentRunEvidence": "Deterministic boundary captured; live browser screenshots are required for release-candidate execution."
+}

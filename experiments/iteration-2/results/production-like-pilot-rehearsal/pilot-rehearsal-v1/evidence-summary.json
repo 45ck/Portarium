@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "scenarioId": "production-like-pilot-rehearsal",
+  "attemptId": "pilot-rehearsal-v1",
+  "generatedAtIso": "2026-05-03T05:05:10.000Z",
+  "requiredArtifacts": [
+    "outcome.json",
+    "queue-metrics.json",
+    "evidence-summary.json",
+    "report.md",
+    "restart-persistence.json",
+    "browser-qa-evidence.json",
+    "redaction-audit.json",
+    "divergence-classification.json",
+    "external-sor-stubs.json"
+  ],
+  "presentArtifacts": [
+    "outcome.json",
+    "queue-metrics.json",
+    "evidence-summary.json",
+    "report.md",
+    "restart-persistence.json",
+    "browser-qa-evidence.json",
+    "redaction-audit.json",
+    "divergence-classification.json",
+    "external-sor-stubs.json"
+  ],
+  "missingArtifacts": [],
+  "evidenceCompletenessCount": 9,
+  "complete": true
+}
