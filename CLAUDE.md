@@ -32,8 +32,8 @@ Spec → Tasks (bd) → Implement → Tests → Quality gates → Review → QA 
   - If `bd` isn't installed globally, use `npm run bd -- ...` (e.g. `npm run bd -- issue list --json`).
 - Upstream `bd` binary (global) for sync, daemon, hooks, dep tracking:
   - `bd ready` — show unblocked beads ready to work on
-  - `bd sync` — push issue state to `beads-metadata` branch on GitHub (run after start/finish)
-    - `npm run bd:sync` wraps this and falls back to modern `bd import` when installed `bd` no longer exposes `sync`.
+  - `bd sync` — push issue state to `beads-metadata` branch on GitHub when supported by the installed upstream `bd` (run after start/finish)
+    - `npm run bd:sync` wraps this and falls back to modern local `bd import` when installed `bd` no longer exposes `sync`; that fallback does not push `beads-metadata`.
   - `bd doctor` — verify database health
   - `bd dep <id> <dep-id>` — record dependency between beads
   - `bd prime` — inject workflow context into Claude session
