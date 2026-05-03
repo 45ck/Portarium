@@ -278,6 +278,25 @@ The final pilot report must include:
 - final Success, Concern, or Failure rating
 - follow-up Beads for any remediation required before broader rollout
 
+## Implementation Binding
+
+The domain implementation is
+[`src/domain/policy/governed-pilot-usefulness-scorecard-v1.ts`](../../src/domain/policy/governed-pilot-usefulness-scorecard-v1.ts).
+It accepts baseline observations and governed pilot observations for one
+Workspace/workflow and emits:
+
+- the stable metric-name set defined in this specification
+- metric rows with baseline value, pilot value, delta, rating, posture, and
+  data source
+- a final Success, Concern, or Failure rating
+- a Cockpit-ready JSON export with content type
+  `application/vnd.portarium.governed-pilot-usefulness-scorecard+json`
+
+The implementation treats duplicate externally-effectful Actions,
+unsafe-action escapes, and policy-violation escapes as veto guardrails. Any
+non-zero rate for those metrics forces the final rating to Failure, even when
+efficiency, latency, cost, or business-KPI averages improve.
+
 ## Acceptance
 
 - A pre-pilot baseline capture plan exists for the chosen business workflow.
