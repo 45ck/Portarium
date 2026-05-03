@@ -1,5 +1,12 @@
 import { createRoute } from '@tanstack/react-router';
-import { Boxes, CheckCircle2, ExternalLink, LockKeyhole, Route as RouteIcon } from 'lucide-react';
+import {
+  AlertTriangle,
+  Boxes,
+  CheckCircle2,
+  ExternalLink,
+  LockKeyhole,
+  Route as RouteIcon,
+} from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Route as rootRoute } from '../__root';
 import { PageHeader } from '@/components/cockpit/page-header';
@@ -8,9 +15,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useCockpitExtensionContext } from '@/hooks/queries/use-cockpit-extension-context';
 import { resolveCockpitExtensionServerAccess } from '@/lib/extensions/access-context';
 import { resolveInstalledCockpitExtensionRegistry } from '@/lib/extensions/installed';
-import type { ResolvedCockpitExtension } from '@/lib/extensions/types';
+import type {
+  CockpitExtensionRegistryProblem,
+  ResolvedCockpitExtension,
+} from '@/lib/extensions/types';
 import { useAuthStore } from '@/stores/auth-store';
 import { useUIStore } from '@/stores/ui-store';
+
+type ExtensionContextStatus = 'ready' | 'loading' | 'unavailable' | 'error';
 
 function ExtensionsPage() {
   const activeWorkspaceId = useUIStore((state) => state.activeWorkspaceId);
@@ -35,6 +47,13 @@ function ExtensionsPage() {
     availablePrivacyClasses: serverAccess.accessContext.availablePrivacyClasses,
   });
   const statusCounts = getExtensionStatusCounts(registry.extensions);
+  const contextStatus: ExtensionContextStatus = extensionContextQuery.isFetching
+    ? 'loading'
+    : extensionContextQuery.isError
+      ? 'error'
+      : serverAccess.usable
+        ? 'ready'
+        : 'unavailable';
 
   return (
     <div className="space-y-6 p-6">
@@ -48,8 +67,15 @@ function ExtensionsPage() {
         <StatusSummaryCard label="Enabled" value={statusCounts.enabled} />
         <StatusSummaryCard label="Disabled" value={statusCounts.disabled} />
         <StatusSummaryCard label="Emergency Disabled" value={statusCounts.emergencyDisabled} />
+        <StatusSummaryCard label="Quarantined" value={statusCounts.quarantined} />
         <StatusSummaryCard label="Invalid" value={statusCounts.invalid} />
+        <ActivationContextCard
+          status={contextStatus}
+          registryProblemCount={registry.problems.length}
+        />
       </div>
+
+      {registry.problems.length > 0 ? <RegistryProblems problems={registry.problems} /> : null}
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-4">
@@ -69,8 +95,8 @@ function ExtensionsPage() {
             <p>Cockpit extensions are installed packages, not remote JavaScript bundles.</p>
             <p>Routes, commands, and navigation declare capabilities before they are surfaced.</p>
             <p>
-              Extension UI calls Portarium APIs or declared external APIs; it does not call systems
-              of record directly.
+              Extension UI calls host-mediated Portarium APIs; it does not call systems of record
+              directly.
             </p>
             <p>Source snapshots and credentials stay outside Cockpit extension code.</p>
           </CardContent>
@@ -92,7 +118,7 @@ function ExtensionCard({ extension }: { extension: ResolvedCockpitExtension }) {
     ...extension.problems.map((problem) => ({
       key: `${problem.code}-${problem.itemId ?? manifest.id}`,
       label: problem.code,
-      meta: problem.message,
+      meta: formatRegistryProblemMeta(problem),
     })),
   ];
 
@@ -118,7 +144,7 @@ function ExtensionCard({ extension }: { extension: ResolvedCockpitExtension }) {
           <Badge variant="outline">{manifest.owner}</Badge>
         </div>
       </CardHeader>
-      <CardContent className="grid gap-4 lg:grid-cols-3">
+      <CardContent className="grid gap-4 lg:grid-cols-4">
         {isEnabled ? (
           <ExtensionSection
             title="Routes"
@@ -137,6 +163,26 @@ function ExtensionCard({ extension }: { extension: ResolvedCockpitExtension }) {
               key: packId,
               label: packId,
               meta: 'Required workspace pack activation key',
+            }))}
+          />
+        )}
+        {isEnabled ? (
+          <ExtensionSection
+            title="Navigation"
+            icon={<ExternalLink className="h-4 w-4" />}
+            items={manifest.navItems.map((item) => ({
+              key: item.id,
+              label: item.title,
+              meta: `${item.to} (${item.surfaces.join(', ')})`,
+            }))}
+          />
+        ) : (
+          <ExtensionSection
+            title="API Scopes"
+            icon={<CheckCircle2 className="h-4 w-4" />}
+            items={manifest.requiredApiScopes.map((scope) => ({
+              key: scope,
+              label: scope,
             }))}
           />
         )}
@@ -181,6 +227,56 @@ function ExtensionCard({ extension }: { extension: ResolvedCockpitExtension }) {
   );
 }
 
+function ActivationContextCard({
+  status,
+  registryProblemCount,
+}: {
+  status: ExtensionContextStatus;
+  registryProblemCount: number;
+}) {
+  return (
+    <Card aria-label="Activation context" className="shadow-none">
+      <CardContent className="p-4">
+        <p className="text-xs font-semibold uppercase text-muted-foreground">Activation Context</p>
+        <div className="mt-2 flex flex-wrap gap-2">
+          <Badge variant={status === 'ready' ? 'success' : 'warning'}>activation {status}</Badge>
+          <Badge variant={registryProblemCount > 0 ? 'destructive' : 'secondary'}>
+            {registryProblemCount} registry problems
+          </Badge>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function RegistryProblems({
+  problems,
+}: {
+  problems: readonly CockpitExtensionRegistryProblem[];
+}) {
+  return (
+    <Card className="border-destructive/40 shadow-none">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-sm">
+          <AlertTriangle className="h-4 w-4" />
+          Registry Problems
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ExtensionSection
+          title="Suppressed Surfaces"
+          icon={<LockKeyhole className="h-4 w-4" />}
+          items={problems.map((problem, index) => ({
+            key: `${problem.code}-${problem.extensionId ?? 'registry'}-${problem.itemId ?? index}`,
+            label: problem.code,
+            meta: formatRegistryProblemMeta(problem),
+          }))}
+        />
+      </CardContent>
+    </Card>
+  );
+}
+
 function ExtensionSection({
   title,
   icon,
@@ -208,6 +304,13 @@ function ExtensionSection({
   );
 }
 
+function formatRegistryProblemMeta(problem: {
+  itemId?: string;
+  message: string;
+}): string {
+  return problem.itemId ? `${problem.itemId}: ${problem.message}` : problem.message;
+}
+
 function StatusSummaryCard({ label, value }: { label: string; value: number }) {
   return (
     <Card aria-label={`${label} extensions`} className="shadow-none">
@@ -226,6 +329,7 @@ function getExtensionStatusCounts(extensions: readonly ResolvedCockpitExtension[
     disabled: extensions.filter((extension) => extension.status === 'disabled').length,
     emergencyDisabled: extensions.filter((extension) => extension.status === 'emergency-disabled')
       .length,
+    quarantined: extensions.filter((extension) => extension.status === 'quarantined').length,
     invalid: extensions.filter((extension) => extension.status === 'invalid').length,
   };
 }

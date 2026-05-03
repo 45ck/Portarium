@@ -54,8 +54,8 @@ that those decisions fit inside.
 
 Hardcoding every operator surface in Cockpit core is simple for the first
 workflow, but it makes Portarium tenant- and domain-specific. It also makes
-Macquarie-style, education-style, growth-studio-style, and future vertical
-surfaces indistinguishable from generic product code.
+customer, education, growth-studio, and future vertical surfaces
+indistinguishable from generic product code.
 
 Rejected because it does not scale and weakens the generic platform boundary.
 

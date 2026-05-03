@@ -176,14 +176,21 @@ describe('external extensions route', () => {
     expect(await screen.findByRole('heading', { name: 'External Extensions' })).toBeTruthy();
     expect(screen.getByText('Reference Extension')).toBeTruthy();
     expect(screen.getByText('Host Rules')).toBeTruthy();
+    expect(screen.getByText('Activation Context')).toBeTruthy();
+    expect(screen.getByText('activation ready')).toBeTruthy();
     expect(screen.getAllByText('example.reference').length).toBeGreaterThan(0);
     expect(within(screen.getByLabelText('Installed extensions')).getByText('1')).toBeTruthy();
     expect(within(screen.getByLabelText('Enabled extensions')).getByText('1')).toBeTruthy();
     expect(within(screen.getByLabelText('Disabled extensions')).getByText('0')).toBeTruthy();
+    expect(within(screen.getByLabelText('Quarantined extensions')).getByText('0')).toBeTruthy();
     expect(within(screen.getByLabelText('Invalid extensions')).getByText('0')).toBeTruthy();
     expect(screen.getByText('installed')).toBeTruthy();
     expect(screen.getByText('enabled')).toBeTruthy();
+    expect(screen.getByText('Navigation')).toBeTruthy();
     expect(screen.getByText('/external/example-reference/overview')).toBeTruthy();
+    expect(
+      screen.getByText('/external/example-reference/overview (sidebar, mobile-more, command)'),
+    ).toBeTruthy();
     expect(screen.getByText('/external/example-reference/details/$itemId')).toBeTruthy();
     expect(screen.getByText('Open extension reference')).toBeTruthy();
     expect(screen.getByText('G X')).toBeTruthy();
@@ -220,8 +227,10 @@ describe('external extensions route', () => {
     expect(within(screen.getByLabelText('Installed extensions')).getByText('1')).toBeTruthy();
     expect(within(screen.getByLabelText('Enabled extensions')).getByText('0')).toBeTruthy();
     expect(within(screen.getByLabelText('Disabled extensions')).getByText('1')).toBeTruthy();
+    expect(within(screen.getByLabelText('Quarantined extensions')).getByText('0')).toBeTruthy();
     expect(within(screen.getByLabelText('Invalid extensions')).getByText('0')).toBeTruthy();
     expect(screen.getByText('disabled')).toBeTruthy();
+    expect(screen.getByText('API Scopes')).toBeTruthy();
     expect(screen.getByText('workspace-pack-inactive')).toBeTruthy();
     expect(screen.getAllByText('example.reference').length).toBeGreaterThan(0);
     expect(screen.queryByText('Reference Overview')).toBeNull();
@@ -266,6 +275,35 @@ describe('external extensions route', () => {
     expect(screen.queryByText('Open extension reference')).toBeNull();
   });
 
+  it('distinguishes quarantined extensions from disabled activation state', async () => {
+    queryClient.setQueryData(['cockpit-extension-context', 'ws-demo', 'user-1'], {
+      schemaVersion: 1,
+      workspaceId: 'ws-demo',
+      principalId: 'user-1',
+      persona: 'Operator',
+      availablePersonas: ['Operator'],
+      availableCapabilities: ['extension:read', 'extension:inspect'],
+      availableApiScopes: ['extensions.read', 'extensions.inspect'],
+      availablePrivacyClasses: ['internal', 'restricted'],
+      activePackIds: ['example.reference'],
+      quarantinedExtensionIds: ['example.reference'],
+      emergencyDisabledExtensionIds: [],
+      issuedAtIso: '2026-04-30T02:00:00.000Z',
+      expiresAtIso: '2999-04-30T02:05:00.000Z',
+    });
+
+    await renderRoute('/explore/extensions');
+
+    expect(await screen.findByRole('heading', { name: 'External Extensions' })).toBeTruthy();
+    expect(within(screen.getByLabelText('Enabled extensions')).getByText('0')).toBeTruthy();
+    expect(within(screen.getByLabelText('Disabled extensions')).getByText('0')).toBeTruthy();
+    expect(within(screen.getByLabelText('Quarantined extensions')).getByText('1')).toBeTruthy();
+    expect(screen.getAllByText('quarantined').length).toBeGreaterThan(0);
+    expect(screen.getByText('security-quarantine')).toBeTruthy();
+    expect(screen.queryByText('workspace-pack-inactive')).toBeNull();
+    expect(screen.queryByText('/external/example-reference/overview')).toBeNull();
+  });
+
   it('distinguishes invalid effective registry state from disabled activation state', async () => {
     installedRegistryTestState.resolveRegistry = () => ({
       extensions: [
@@ -303,8 +341,11 @@ describe('external extensions route', () => {
     expect(within(screen.getByLabelText('Enabled extensions')).getByText('0')).toBeTruthy();
     expect(within(screen.getByLabelText('Disabled extensions')).getByText('0')).toBeTruthy();
     expect(within(screen.getByLabelText('Invalid extensions')).getByText('1')).toBeTruthy();
+    expect(screen.getAllByText('Registry Problems').length).toBeGreaterThan(0);
+    expect(screen.getByText('Suppressed Surfaces')).toBeTruthy();
     expect(screen.getByText('invalid')).toBeTruthy();
     expect(screen.getByText('missing-route-module')).toBeTruthy();
+    expect(screen.getAllByText(/example-reference-detail/).length).toBeGreaterThan(0);
     expect(screen.queryByText('workspace-pack-inactive')).toBeNull();
     expect(screen.queryByText('Open extension reference')).toBeNull();
   });
