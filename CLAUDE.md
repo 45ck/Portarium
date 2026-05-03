@@ -33,6 +33,7 @@ Spec → Tasks (bd) → Implement → Tests → Quality gates → Review → QA 
 - Upstream `bd` binary (global) for sync, daemon, hooks, dep tracking:
   - `bd ready` — show unblocked beads ready to work on
   - `bd sync` — push issue state to `beads-metadata` branch on GitHub (run after start/finish)
+    - `npm run bd:sync` wraps this and falls back to modern `bd import` when installed `bd` no longer exposes `sync`.
   - `bd doctor` — verify database health
   - `bd dep <id> <dep-id>` — record dependency between beads
   - `bd prime` — inject workflow context into Claude session

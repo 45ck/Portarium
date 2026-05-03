@@ -57,6 +57,7 @@ Key rules:
 ```
 npm run bd -- issue start/finish/list  →  scripts/beads/bd.mjs  (VAOP worktree integration)
 bd ready / bd sync / bd dep / bd prime →  upstream bd binary    (sync, daemon, dep tracking)
+npm run bd:sync                       →  compatibility wrapper: tries `bd sync`, then modern `bd import` fallback
 .beads/issues.jsonl                    →  shared source of truth (committed to git)
 ```
 
