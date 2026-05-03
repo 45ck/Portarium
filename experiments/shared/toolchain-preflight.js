@@ -32,6 +32,7 @@ export async function runExperimentToolPreflight(options = {}) {
       status: 'failed',
       checkedAt,
       command: tool,
+      args: ['--help'],
       probe: 'cli-help',
       rationale: `Unsupported experiment tool "${tool}".`,
       required,
@@ -39,7 +40,8 @@ export async function runExperimentToolPreflight(options = {}) {
   }
 
   const env = options.env ?? process.env;
-  const command = tool;
+  const command = options.command ?? tool;
+  const args = options.args ?? ['--help'];
   const clipSpecPath = options.clipSpecPath ?? DEFAULT_DEMO_MACHINE_CLIP;
   const explicitSkipReason = readFirstEnv(
     env,
@@ -52,6 +54,7 @@ export async function runExperimentToolPreflight(options = {}) {
       status: 'intentionally-skipped',
       checkedAt,
       command,
+      args,
       probe: 'cli-help',
       rationale: explicitSkipReason,
       ...(tool === 'demo-machine' ? { clipSpecPath } : {}),
@@ -65,6 +68,7 @@ export async function runExperimentToolPreflight(options = {}) {
       status: 'failed',
       checkedAt,
       command,
+      args,
       probe: 'cli-help',
       rationale: `${tool} is required for this experiment and cannot be skipped: ${explicitSkipReason}`,
       ...(tool === 'demo-machine' ? { clipSpecPath } : {}),
@@ -78,6 +82,7 @@ export async function runExperimentToolPreflight(options = {}) {
       status: 'failed',
       checkedAt,
       command,
+      args,
       probe: 'cli-help',
       rationale: `Demo-machine clip spec not found: ${clipSpecPath}`,
       clipSpecPath,
@@ -89,7 +94,7 @@ export async function runExperimentToolPreflight(options = {}) {
   const timeoutMs = options.timeoutMs ?? 5_000;
 
   try {
-    const probe = await probeImpl(command, ['--help'], timeoutMs);
+    const probe = await probeImpl(command, args, timeoutMs);
     const output = `${probe.stdout}\n${probe.stderr}`.toLowerCase();
 
     if (probe.exitCode === 0) {
@@ -98,11 +103,13 @@ export async function runExperimentToolPreflight(options = {}) {
         status: 'runnable',
         checkedAt,
         command,
+        args,
         probe: 'cli-help',
         rationale:
-          tool === 'demo-machine'
+          options.runnableRationale ??
+          (tool === 'demo-machine'
             ? 'demo-machine CLI responded to --help and clip spec is present.'
-            : 'content-machine CLI responded to --help.',
+            : 'content-machine CLI responded to --help.'),
         ...(tool === 'demo-machine' ? { clipSpecPath } : {}),
         required,
       };
@@ -114,6 +121,7 @@ export async function runExperimentToolPreflight(options = {}) {
         status: required ? 'failed' : 'intentionally-skipped',
         checkedAt,
         command,
+        args,
         probe: 'cli-help',
         rationale: missingToolRationale(tool, required),
         ...(tool === 'demo-machine' ? { clipSpecPath } : {}),
@@ -126,6 +134,7 @@ export async function runExperimentToolPreflight(options = {}) {
       status: 'failed',
       checkedAt,
       command,
+      args,
       probe: 'cli-help',
       rationale: truncateDetail(output.trim() || `${tool} exited with ${String(probe.exitCode)}`),
       ...(tool === 'demo-machine' ? { clipSpecPath } : {}),
@@ -139,6 +148,7 @@ export async function runExperimentToolPreflight(options = {}) {
       status: commandMissing && !required ? 'intentionally-skipped' : 'failed',
       checkedAt,
       command,
+      args,
       probe: 'cli-help',
       rationale: commandMissing ? missingToolRationale(tool, required) : truncateDetail(detail),
       ...(tool === 'demo-machine' ? { clipSpecPath } : {}),

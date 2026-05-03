@@ -26,6 +26,38 @@ describe('experiment toolchain preflight', () => {
     });
   });
 
+  it('records a supported required content-machine invocation override', async () => {
+    const result = await runExperimentToolPreflight({
+      tool: 'content-machine',
+      required: true,
+      command: 'node',
+      args: [
+        'experiments/iteration-2/scenarios/micro-saas-toolchain-redo/tools/content-machine-pilot.mjs',
+        '--help',
+      ],
+      runnableRationale:
+        'Portarium micro-SaaS experiment content-machine pilot invocation responded to --help.',
+      probeImpl: async (command, args) => ({
+        exitCode: 0,
+        stdout: `${command} ${args.join(' ')} usage`,
+        stderr: '',
+      }),
+    });
+
+    expect(result).toMatchObject({
+      tool: 'content-machine',
+      status: 'runnable',
+      command: 'node',
+      args: [
+        'experiments/iteration-2/scenarios/micro-saas-toolchain-redo/tools/content-machine-pilot.mjs',
+        '--help',
+      ],
+      required: true,
+      rationale:
+        'Portarium micro-SaaS experiment content-machine pilot invocation responded to --help.',
+    });
+  });
+
   it('fails early when required content-machine is unavailable', async () => {
     const result = await runExperimentToolPreflight({
       tool: 'content-machine',

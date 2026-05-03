@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "scenarioId": "micro-saas-toolchain-redo",
+  "attemptId": "toolchain-realism-v3",
+  "generatedAtIso": "2026-04-29T03:00:10.000Z",
+  "requiredArtifacts": [
+    "outcome.json",
+    "queue-metrics.json",
+    "evidence-summary.json",
+    "report.md",
+    "toolchain-preflight.json",
+    "tool-usage-evidence.json",
+    "content-machine-output.json",
+    "external-effect-stubs.json"
+  ],
+  "presentArtifacts": [
+    "outcome.json",
+    "queue-metrics.json",
+    "evidence-summary.json",
+    "report.md",
+    "toolchain-preflight.json",
+    "tool-usage-evidence.json",
+    "content-machine-output.json",
+    "external-effect-stubs.json"
+  ],
+  "missingArtifacts": [],
+  "evidenceCompletenessCount": 8,
+  "complete": true
+}

@@ -1,0 +1,234 @@
+{
+  "experiment": "micro-saas-toolchain-redo",
+  "timestamp": "2026-05-03T10:41:58.562Z",
+  "outcome": "confirmed",
+  "duration_ms": 959,
+  "assertions": [
+    {
+      "label": "required content-machine preflight is runnable",
+      "passed": true,
+      "detail": "Portarium micro-SaaS experiment content-machine pilot invocation responded to --help."
+    },
+    {
+      "label": "demo-machine is runnable or explicitly recorded as skipped",
+      "passed": true,
+      "detail": "demo-machine CLI is not installed on this workstation; Cockpit demo-machine playback is optional and skipped for this experiment run."
+    },
+    {
+      "label": "tool usage evidence records Machine disposition and stubbed states",
+      "passed": true,
+      "detail": "[\"content-machine:runnable\",\"demo-machine:intentionally-skipped\",\"publish-gateway:stubbed\",\"email-gateway:stubbed\"]"
+    },
+    {
+      "label": "external publish and send effects remain stubbed",
+      "passed": true,
+      "detail": "[{\"action\":\"publish:landing-page\",\"status\":\"stubbed\",\"endpoint\":\"https://publisher.example.invalid/landing-pages\",\"rationale\":\"External publish effects are disabled for experiment safety.\"},{\"action\":\"send:launch-email\",\"status\":\"stubbed\",\"endpoint\":\"https://email.example.invalid/messages\",\"rationale\":\"External send effects are disabled for experiment safety.\"}]"
+    },
+    {
+      "label": "post-validation demo path state is explicit",
+      "passed": true,
+      "detail": "unproven"
+    },
+    {
+      "label": "evidence artifacts are complete",
+      "passed": true,
+      "detail": "present=8, missing="
+    }
+  ],
+  "trace": {
+    "comparesTo": "micro-saas-agent-stack-v2",
+    "toolchainPreflight": {
+      "schemaVersion": 1,
+      "checkedAt": "2026-04-29T03:00:01.000Z",
+      "tools": {
+        "contentMachine": {
+          "tool": "content-machine",
+          "status": "runnable",
+          "checkedAt": "2026-05-03T10:41:57.605Z",
+          "command": "node",
+          "args": [
+            "experiments\\iteration-2\\scenarios\\micro-saas-toolchain-redo\\tools\\content-machine-pilot.mjs",
+            "--help"
+          ],
+          "probe": "cli-help",
+          "rationale": "Portarium micro-SaaS experiment content-machine pilot invocation responded to --help.",
+          "required": true
+        },
+        "demoMachine": {
+          "tool": "demo-machine",
+          "status": "intentionally-skipped",
+          "checkedAt": "2026-05-03T10:41:58.542Z",
+          "command": "demo-machine",
+          "args": [
+            "--help"
+          ],
+          "probe": "cli-help",
+          "rationale": "demo-machine CLI is not installed on this workstation; Cockpit demo-machine playback is optional and skipped for this experiment run.",
+          "clipSpecPath": "docs/internal/ui/cockpit/demo-machine/clips/01-approval-gate-unblocks-run.demo.yaml",
+          "required": false
+        }
+      }
+    },
+    "toolUsageEvidence": [
+      {
+        "tool": "content-machine",
+        "status": "runnable",
+        "phase": "preflight-and-content-draft",
+        "evidenceSource": "toolchain-preflight.json",
+        "command": "node",
+        "args": [
+          "experiments\\iteration-2\\scenarios\\micro-saas-toolchain-redo\\tools\\content-machine-pilot.mjs",
+          "--help"
+        ],
+        "rationale": "Portarium micro-SaaS experiment content-machine pilot invocation responded to --help.",
+        "externalEffect": "none"
+      },
+      {
+        "tool": "demo-machine",
+        "status": "intentionally-skipped",
+        "phase": "post-validation-demo",
+        "evidenceSource": "toolchain-preflight.json",
+        "command": "demo-machine",
+        "args": [
+          "--help"
+        ],
+        "rationale": "demo-machine CLI is not installed on this workstation; Cockpit demo-machine playback is optional and skipped for this experiment run.",
+        "externalEffect": "none"
+      },
+      {
+        "tool": "publish-gateway",
+        "status": "stubbed",
+        "phase": "external-publish",
+        "evidenceSource": "external-effect-stubs.json",
+        "rationale": "Publish Action is represented by a stubbed gateway receipt only.",
+        "externalEffect": "stubbed"
+      },
+      {
+        "tool": "email-gateway",
+        "status": "stubbed",
+        "phase": "external-send",
+        "evidenceSource": "external-effect-stubs.json",
+        "rationale": "Send Action is represented by a stubbed gateway receipt only.",
+        "externalEffect": "stubbed"
+      }
+    ],
+    "contentMachineOutput": {
+      "schemaVersion": 1,
+      "generatedBy": "content-machine",
+      "mode": "supported-pilot-invocation-after-runnable-preflight",
+      "runId": "micro-saas-redo-run-1",
+      "status": "generated",
+      "invocation": {
+        "command": "node",
+        "args": [
+          "experiments\\iteration-2\\scenarios\\micro-saas-toolchain-redo\\tools\\content-machine-pilot.mjs",
+          "--help"
+        ]
+      },
+      "artifacts": [
+        {
+          "artifactId": "cm-landing-copy-1",
+          "type": "landing-page-copy",
+          "title": "LaunchOps for tiny SaaS teams",
+          "body": "A governed launch checklist that drafts copy, pricing notes, and analytics tasks while Portarium holds publish and send Actions for review."
+        },
+        {
+          "artifactId": "cm-email-draft-1",
+          "type": "launch-email-draft",
+          "subject": "Your launch checklist is ready",
+          "body": "Portarium prepared the launch assets and queued the publish and send Actions for operator approval."
+        }
+      ]
+    },
+    "externalEffectStubs": [
+      {
+        "action": "publish:landing-page",
+        "status": "stubbed",
+        "endpoint": "https://publisher.example.invalid/landing-pages",
+        "rationale": "External publish effects are disabled for experiment safety."
+      },
+      {
+        "action": "send:launch-email",
+        "status": "stubbed",
+        "endpoint": "https://email.example.invalid/messages",
+        "rationale": "External send effects are disabled for experiment safety."
+      }
+    ],
+    "demoPathState": "unproven",
+    "queueMetrics": {
+      "schemaVersion": 1,
+      "scenarioId": "micro-saas-toolchain-redo",
+      "attemptId": "toolchain-realism-v3",
+      "generatedAtIso": "2026-04-29T03:00:10.000Z",
+      "metrics": {
+        "approval_count_by_tier": {
+          "Assisted": 1
+        },
+        "approval_count_by_session": {
+          "micro-saas-redo-run-1": 1
+        },
+        "pending_age_ms_p50": 5000,
+        "pending_age_ms_p95": 5000,
+        "pending_age_ms_max": 5000,
+        "resume_latency_ms": [
+          800
+        ],
+        "blocked_duration_ms": [
+          5000
+        ],
+        "queue_depth_over_time": [
+          {
+            "timestampIso": "2026-04-29T03:00:02.000Z",
+            "depth": 1
+          },
+          {
+            "timestampIso": "2026-04-29T03:00:08.000Z",
+            "depth": 0
+          }
+        ],
+        "denial_count": 0,
+        "request_changes_count": 0,
+        "escalation_count": 0,
+        "expiry_count": 0,
+        "duplicate_execution_count": 0,
+        "evidence_completeness_count": 8,
+        "restart_count": 0,
+        "successful_resume_count": 1
+      }
+    },
+    "evidenceSummary": {
+      "schemaVersion": 1,
+      "scenarioId": "micro-saas-toolchain-redo",
+      "attemptId": "toolchain-realism-v3",
+      "generatedAtIso": "2026-04-29T03:00:10.000Z",
+      "requiredArtifacts": [
+        "outcome.json",
+        "queue-metrics.json",
+        "evidence-summary.json",
+        "report.md",
+        "toolchain-preflight.json",
+        "tool-usage-evidence.json",
+        "content-machine-output.json",
+        "external-effect-stubs.json"
+      ],
+      "presentArtifacts": [
+        "outcome.json",
+        "queue-metrics.json",
+        "evidence-summary.json",
+        "report.md",
+        "toolchain-preflight.json",
+        "tool-usage-evidence.json",
+        "content-machine-output.json",
+        "external-effect-stubs.json"
+      ],
+      "missingArtifacts": [],
+      "evidenceCompletenessCount": 8,
+      "complete": true
+    },
+    "artifactPaths": {
+      "queueMetricsPath": "experiments\\iteration-2\\results\\micro-saas-toolchain-redo\\toolchain-realism-v3\\queue-metrics.json",
+      "evidenceSummaryPath": "experiments\\iteration-2\\results\\micro-saas-toolchain-redo\\toolchain-realism-v3\\evidence-summary.json",
+      "reportPath": "experiments\\iteration-2\\results\\micro-saas-toolchain-redo\\toolchain-realism-v3\\report.md"
+    }
+  }
+}

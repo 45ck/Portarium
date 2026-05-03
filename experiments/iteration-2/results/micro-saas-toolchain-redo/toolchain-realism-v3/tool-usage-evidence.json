@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "scenarioId": "micro-saas-toolchain-redo",
+  "attemptId": "toolchain-realism-v3",
+  "evidence": [
+    {
+      "tool": "content-machine",
+      "status": "runnable",
+      "phase": "preflight-and-content-draft",
+      "evidenceSource": "toolchain-preflight.json",
+      "command": "node",
+      "args": [
+        "experiments\\iteration-2\\scenarios\\micro-saas-toolchain-redo\\tools\\content-machine-pilot.mjs",
+        "--help"
+      ],
+      "rationale": "Portarium micro-SaaS experiment content-machine pilot invocation responded to --help.",
+      "externalEffect": "none"
+    },
+    {
+      "tool": "demo-machine",
+      "status": "intentionally-skipped",
+      "phase": "post-validation-demo",
+      "evidenceSource": "toolchain-preflight.json",
+      "command": "demo-machine",
+      "args": [
+        "--help"
+      ],
+      "rationale": "demo-machine CLI is not installed on this workstation; Cockpit demo-machine playback is optional and skipped for this experiment run.",
+      "externalEffect": "none"
+    },
+    {
+      "tool": "publish-gateway",
+      "status": "stubbed",
+      "phase": "external-publish",
+      "evidenceSource": "external-effect-stubs.json",
+      "rationale": "Publish Action is represented by a stubbed gateway receipt only.",
+      "externalEffect": "stubbed"
+    },
+    {
+      "tool": "email-gateway",
+      "status": "stubbed",
+      "phase": "external-send",
+      "evidenceSource": "external-effect-stubs.json",
+      "rationale": "Send Action is represented by a stubbed gateway receipt only.",
+      "externalEffect": "stubbed"
+    }
+  ]
+}
