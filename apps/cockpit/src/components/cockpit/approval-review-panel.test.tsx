@@ -132,6 +132,50 @@ describe('ApprovalReviewPanel — rendering', () => {
     expect(screen.getByText('write:file')).toBeTruthy();
     expect(screen.getByText('machine-1')).toBeTruthy();
   });
+
+  it('renders artifact-first approval packet context', () => {
+    const onDecide = vi.fn();
+    render(
+      <ApprovalReviewPanel
+        approval={makeApproval({
+          approvalPacket: {
+            schemaVersion: 1,
+            packetId: 'packet-1',
+            artifacts: [
+              {
+                artifactId: 'artifact-1',
+                title: 'Generated launch brief',
+                mimeType: 'text/markdown',
+                role: 'primary',
+                sha256: 'sha256-abc',
+              },
+            ],
+            reviewDocs: [{ title: 'Review brief', markdown: '# Review\nCheck the artifact.' }],
+            requestedCapabilities: [
+              {
+                capabilityId: 'marketing.campaign.write',
+                reason: 'Publish approved campaign assets.',
+                required: true,
+              },
+            ],
+            planScope: {
+              planId: 'plan-1',
+              summary: 'Publish the generated artifact and update campaign metadata.',
+              actionIds: ['action-render', 'action-publish'],
+              plannedEffectIds: ['effect-1', 'effect-2'],
+            },
+          },
+        })}
+        onDecide={onDecide}
+      />,
+    );
+
+    expect(screen.getByText('Generated launch brief')).toBeTruthy();
+    expect(screen.getByText('Review brief')).toBeTruthy();
+    expect(screen.getByText('marketing.campaign.write')).toBeTruthy();
+    expect(screen.getByText('action-publish')).toBeTruthy();
+    expect(screen.getByText('effect-2')).toBeTruthy();
+  });
 });
 
 // ---------------------------------------------------------------------------

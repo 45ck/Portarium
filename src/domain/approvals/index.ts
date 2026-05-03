@@ -6,6 +6,7 @@ export * from './content-sanitization-v1.js';
 export * from './approval-snapshot-binding-v1.js';
 export * from './approval-decision-record-v1.js';
 export * from './approval-feedback-v1.js';
+export * from './approval-packet-v1.js';
 export * from './approval-delegation-v1.js';
 export * from './approval-context-assembler-v1.js';
 export * from './approval-escalation-events-v1.js';

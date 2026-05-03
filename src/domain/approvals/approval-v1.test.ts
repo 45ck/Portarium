@@ -241,6 +241,51 @@ describe('parseApprovalV1: validation', () => {
     expect(approval.escalationChain).toHaveLength(1);
   });
 
+  it('parses an approval with an approval packet', () => {
+    const approval = parseApprovalV1({
+      schemaVersion: 1,
+      approvalId: 'approval-packet-1',
+      workspaceId: 'ws-1',
+      runId: 'run-1',
+      planId: 'plan-1',
+      prompt: 'Approve artifact publication',
+      requestedAtIso: '2026-02-17T00:00:00.000Z',
+      requestedByUserId: 'user-1',
+      status: 'Pending',
+      approvalPacket: {
+        schemaVersion: 1,
+        packetId: 'packet-1',
+        artifacts: [
+          {
+            artifactId: 'artifact-1',
+            title: 'Generated launch brief',
+            mimeType: 'text/markdown',
+            role: 'primary',
+          },
+        ],
+        reviewDocs: [{ title: 'Review brief', markdown: '# Review' }],
+        requestedCapabilities: [
+          {
+            capabilityId: 'marketing.campaign.write',
+            reason: 'Publish approved campaign assets.',
+            required: true,
+          },
+        ],
+        planScope: {
+          planId: 'plan-1',
+          summary: 'Publish the generated artifact and update campaign metadata.',
+          actionIds: ['action-render', 'action-publish'],
+          plannedEffectIds: ['effect-1', 'effect-2'],
+        },
+      },
+    });
+
+    expect(approval.approvalPacket?.planScope.actionIds).toEqual([
+      'action-render',
+      'action-publish',
+    ]);
+  });
+
   it('rejects invalid escalation chain entries', () => {
     expect(() =>
       parseApprovalV1({

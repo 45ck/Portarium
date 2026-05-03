@@ -10,7 +10,11 @@ import {
   type ApprovalId as ApprovalIdType,
   type WorkspaceId as WorkspaceIdType,
 } from '../../domain/primitives/index.js';
-import type { ApprovalPendingV1, EscalationStepV1 } from '../../domain/approvals/index.js';
+import {
+  parseApprovalPacketV1,
+  type ApprovalPendingV1,
+  type EscalationStepV1,
+} from '../../domain/approvals/index.js';
 import {
   type AppContext,
   type DependencyFailure,
@@ -52,6 +56,7 @@ export type CreateApprovalInput = Readonly<{
   assigneeUserId?: string;
   dueAtIso?: string;
   escalationChain?: readonly CreateApprovalEscalationStepInput[];
+  approvalPacket?: unknown;
 }>;
 
 export type CreateApprovalOutput = Readonly<{
@@ -136,6 +141,16 @@ function validateInput(input: CreateApprovalInput): Err<CreateApprovalError> | n
       }
     }
   }
+  if (input.approvalPacket !== undefined) {
+    try {
+      parseApprovalPacketV1(input.approvalPacket);
+    } catch (error) {
+      return err({
+        kind: 'ValidationFailed',
+        message: error instanceof Error ? error.message : 'approvalPacket must be a valid packet.',
+      });
+    }
+  }
   return null;
 }
 
@@ -189,6 +204,9 @@ function buildPendingApproval(
     ...(input.assigneeUserId ? { assigneeUserId: UserId(input.assigneeUserId) } : {}),
     ...(input.dueAtIso ? { dueAtIso: input.dueAtIso } : {}),
     ...(escalationChain ? { escalationChain } : {}),
+    ...(input.approvalPacket
+      ? { approvalPacket: parseApprovalPacketV1(input.approvalPacket) }
+      : {}),
     status: 'Pending',
   };
 }

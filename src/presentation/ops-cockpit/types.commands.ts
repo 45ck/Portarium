@@ -1,4 +1,4 @@
-import type { ExternalObjectRef, WorkItemSla, WorkItemSummary } from './types.js';
+import type { ApprovalPacket, ExternalObjectRef, WorkItemSla, WorkItemSummary } from './types.js';
 
 export interface AssignHumanTaskRequest {
   workforceMemberId?: string;
@@ -54,6 +54,7 @@ export interface CreateApprovalRequest {
   prompt: string;
   assigneeUserId?: string;
   dueAtIso?: string;
+  approvalPacket?: ApprovalPacket;
 }
 
 export interface StartRunCommand {
