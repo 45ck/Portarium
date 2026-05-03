@@ -56,6 +56,19 @@ covers OpenAI-compatible providers, Claude providers, and Gemini providers.
     credential env var names, expected credential source lists, base URLs, CLI
     auth details, secret-bearing prompts, customer data, or proprietary source
     text.
+18. Iteration 2 OpenClaw live reruns for
+    `growth-studio-openclaw-live-v2` and `openclaw-concurrent-sessions` are
+    disabled unless `PORTARIUM_LIVE_OPENCLAW_RERUNS=true` is present in
+    addition to the live model opt-in from requirement 2.
+19. Iteration 2 OpenClaw live reruns must require an explicit
+    `PORTARIUM_LIVE_MODEL_PROVIDER`; credentials alone must not start a live
+    rerun.
+20. Iteration 2 OpenClaw live rerun bundles must record redacted
+    provider/model/probe metadata, Approval IDs, queue metrics, Evidence
+    Artifacts, exact-once resume results, and a comparison against the
+    deterministic bundle attempt.
+21. Model/provider variability for Iteration 2 OpenClaw live reruns must be
+    classified separately from Portarium product defects.
 
 ## Result Bundle Shape
 

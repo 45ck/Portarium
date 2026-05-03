@@ -6,6 +6,11 @@ import { basename, dirname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
+import {
+  buildLiveRerunTrace,
+  resolveIteration2LiveOpenClawRerun,
+  writeLiveRerunMetadataArtifact,
+} from '../../../shared/iteration2-live-openclaw-rerun.js';
 import { createIteration2Telemetry } from '../../../shared/iteration2-telemetry.js';
 
 const EXPERIMENT_NAME = 'growth-studio-openclaw-live-v2';
@@ -19,6 +24,8 @@ const DEFAULT_RESULTS_DIR = join(
   DEFAULT_ATTEMPT_ID,
 );
 const FIXED_STARTED_AT_ISO = '2026-04-29T22:00:00.000Z';
+const DETERMINISTIC_ATTEMPT_ID = DEFAULT_ATTEMPT_ID;
+const LIVE_ATTEMPT_ID = 'live-openclaw-rerun-v1';
 
 /**
  * @typedef {{
@@ -61,7 +68,7 @@ const FIXED_STARTED_AT_ISO = '2026-04-29T22:00:00.000Z';
  *   experiment: string;
  *   attemptId: string;
  *   timestamp: string;
- *   outcome: 'confirmed' | 'refuted' | 'inconclusive';
+ *   outcome: 'confirmed' | 'refuted' | 'inconclusive' | 'skipped';
  *   duration_ms: number;
  *   assertions: Assertion[];
  *   trace: Record<string, unknown>;
@@ -74,6 +81,9 @@ const FIXED_STARTED_AT_ISO = '2026-04-29T22:00:00.000Z';
  *   resultsDir?: string;
  *   writeResults?: boolean;
  *   log?: (line: string) => void;
+ *   env?: NodeJS.ProcessEnv | Record<string, string | undefined>;
+ *   fetchImpl?: typeof fetch;
+ *   codexExecImpl?: import('../../../shared/live-model-preflight.js').CodexExecProbe;
  * }} RunGrowthStudioLiveV2Options
  */
 
@@ -386,82 +396,163 @@ function writeOutcome(resultsDir, outcome) {
  */
 export async function runGrowthStudioOpenClawLiveV2(options = {}) {
   const startedAt = Date.now();
-  const resultsDir = options.resultsDir ?? DEFAULT_RESULTS_DIR;
   const writeResults = options.writeResults ?? true;
   const log = options.log ?? console.log;
+  const liveRerun = await resolveIteration2LiveOpenClawRerun({
+    scenarioId: EXPERIMENT_NAME,
+    env: options.env,
+    fetchImpl: options.fetchImpl,
+    codexExecImpl: options.codexExecImpl,
+  });
+  const resultsDir =
+    options.resultsDir ??
+    (liveRerun.status === 'ready'
+      ? join(
+          dirname(fileURLToPath(import.meta.url)),
+          '..',
+          '..',
+          'results',
+          EXPERIMENT_NAME,
+          LIVE_ATTEMPT_ID,
+        )
+      : DEFAULT_RESULTS_DIR);
   const attemptId = attemptIdFromResultsDir(resultsDir);
   let trace = {};
   let assertions = [];
   let error;
+  let skipReason;
 
   try {
-    log('[growth-studio-openclaw-live-v2] replaying delayed approval variants');
-    const telemetry = createIteration2Telemetry({
-      scenarioId: EXPERIMENT_NAME,
-      attemptId,
-      resultsDir,
-      requiredEvidenceArtifacts: [
-        'outcome.json',
-        'queue-metrics.json',
-        'evidence-summary.json',
-        'report.md',
-      ],
-    });
+    if (liveRerun.status === 'skipped' || liveRerun.status === 'inconclusive') {
+      skipReason = liveRerun.status === 'skipped' ? liveRerun.reason : undefined;
+      if (liveRerun.status === 'inconclusive') error = liveRerun.reason;
+      trace = {
+        mode: 'live-llm-openclaw-rerun',
+        liveModelPreflight: liveRerun.liveModelPreflight,
+        classification: liveRerun.classification,
+      };
+    } else {
+      log('[growth-studio-openclaw-live-v2] replaying delayed approval variants');
+      const telemetry = createIteration2Telemetry({
+        scenarioId: EXPERIMENT_NAME,
+        attemptId,
+        resultsDir,
+        requiredEvidenceArtifacts: [
+          'outcome.json',
+          'queue-metrics.json',
+          'evidence-summary.json',
+          'report.md',
+          ...(liveRerun.status === 'ready' ? ['live-rerun-metadata.json'] : []),
+        ],
+      });
 
-    const variants = makeVariants();
-    const allApprovals = variants.flatMap((variant) => variant.approvals);
-    const variantTraces = variants.map((variant) => applyVariant(variant, telemetry));
-    recordQueueSamples(telemetry, allApprovals);
+      const variants = makeVariants();
+      const allApprovals = variants.flatMap((variant) => variant.approvals);
+      const variantTraces = variants.map((variant) => applyVariant(variant, telemetry));
+      recordQueueSamples(telemetry, allApprovals);
 
-    telemetry.recordEvidenceArtifact({ artifactName: 'outcome.json', present: true });
-    telemetry.recordEvidenceArtifact({ artifactName: 'queue-metrics.json', present: true });
-    telemetry.recordEvidenceArtifact({ artifactName: 'evidence-summary.json', present: true });
-    telemetry.recordEvidenceArtifact({ artifactName: 'report.md', present: true });
+      telemetry.recordEvidenceArtifact({ artifactName: 'outcome.json', present: true });
+      telemetry.recordEvidenceArtifact({ artifactName: 'queue-metrics.json', present: true });
+      telemetry.recordEvidenceArtifact({ artifactName: 'evidence-summary.json', present: true });
+      telemetry.recordEvidenceArtifact({ artifactName: 'report.md', present: true });
+      if (liveRerun.status === 'ready') {
+        telemetry.recordEvidenceArtifact({
+          artifactName: 'live-rerun-metadata.json',
+          present: true,
+        });
+      }
 
-    const observedAtIso = addMs(FIXED_STARTED_AT_ISO, 10 * 60 * 60_000);
-    const thresholdAssertions = telemetry.evaluateThresholds(
-      {
-        maxDuplicateExecutionCount: 0,
-        maxPendingAgeMsP95: 10 * 60 * 60_000,
-        maxResumeLatencyMs: 2_000,
-        minEvidenceCompletenessCount: 4,
-        minSuccessfulResumeCount: 4,
-      },
-      observedAtIso,
-    );
-    const artifactPaths = writeResults ? telemetry.writeArtifacts(observedAtIso) : {};
-    const queueMetrics = telemetry.buildQueueMetrics(observedAtIso);
-    const evidenceSummary = telemetry.buildEvidenceSummary(observedAtIso);
+      const observedAtIso = addMs(FIXED_STARTED_AT_ISO, 10 * 60 * 60_000);
+      const thresholdAssertions = telemetry.evaluateThresholds(
+        {
+          maxDuplicateExecutionCount: 0,
+          maxPendingAgeMsP95: 10 * 60 * 60_000,
+          maxResumeLatencyMs: 2_000,
+          minEvidenceCompletenessCount: 4,
+          minSuccessfulResumeCount: 4,
+        },
+        observedAtIso,
+      );
+      const artifactPaths = writeResults ? telemetry.writeArtifacts(observedAtIso) : {};
+      const queueMetrics = telemetry.buildQueueMetrics(observedAtIso);
+      const evidenceSummary = telemetry.buildEvidenceSummary(observedAtIso);
 
-    trace = {
-      comparesTo: 'growth-studio-openclaw-live',
-      mode: 'deterministic-replay',
-      liveLlmInference: 'not-required-for-ci',
-      variants: variantTraces,
-      queueMetrics,
-      evidenceSummary,
-      artifactPaths,
-      thresholdAssertions,
-      operatorDelayWindows: variantTraces.flatMap((variant) =>
-        variant.approvals.map((approval) => ({
-          approvalId: approval.approvalId,
-          variantId: variant.variantId,
-          delayWindowMs: approval.delayWindowMs,
-        })),
-      ),
-    };
-    assertions = buildAssertions({ variantTraces, queueMetrics, evidenceSummary, trace });
+      const baseTrace = {
+        comparesTo: 'growth-studio-openclaw-live',
+        mode: liveRerun.status === 'ready' ? 'live-llm-openclaw-rerun' : 'deterministic-replay',
+        liveLlmInference:
+          liveRerun.status === 'ready' ? 'opt-in-preflight-ready' : 'not-required-for-ci',
+        variants: variantTraces,
+        queueMetrics,
+        evidenceSummary,
+        artifactPaths,
+        thresholdAssertions,
+        operatorDelayWindows: variantTraces.flatMap((variant) =>
+          variant.approvals.map((approval) => ({
+            approvalId: approval.approvalId,
+            variantId: variant.variantId,
+            delayWindowMs: approval.delayWindowMs,
+          })),
+        ),
+      };
+      const exactOnceResume = {
+        duplicateExecutionCount: queueMetrics.metrics.duplicate_execution_count,
+        successfulResumeCount: queueMetrics.metrics.successful_resume_count,
+        priorWritesReplayed: variantTraces.some((variant) =>
+          variant.executionLedger.some((entry) => entry.replayedAfterResume === true),
+        ),
+        result:
+          Number(queueMetrics.metrics.duplicate_execution_count) === 0 &&
+          Number(queueMetrics.metrics.successful_resume_count) === 4
+            ? 'exact-once'
+            : 'not-exact-once',
+      };
+      const liveTrace =
+        liveRerun.status === 'ready'
+          ? buildLiveRerunTrace({
+              scenarioId: EXPERIMENT_NAME,
+              deterministicAttemptId: DETERMINISTIC_ATTEMPT_ID,
+              deterministicOutcome: 'confirmed',
+              liveAttemptId: LIVE_ATTEMPT_ID,
+              liveModelPreflight: liveRerun.liveModelPreflight,
+              classification: liveRerun.classification,
+              approvalIds: variantTraces.flatMap((variant) =>
+                variant.approvals.map((approval) => approval.approvalId),
+              ),
+              queueMetrics,
+              evidenceSummary,
+              exactOnceResume,
+            })
+          : undefined;
+      trace = liveTrace ? { ...baseTrace, liveOpenClawRerun: liveTrace } : baseTrace;
+      if (writeResults && liveTrace) {
+        artifactPaths.liveRerunMetadataPath = writeLiveRerunMetadataArtifact(resultsDir, liveTrace);
+      }
+      assertions = buildAssertions({ variantTraces, queueMetrics, evidenceSummary, trace });
+      if (liveTrace) {
+        assertions.push(
+          assert(
+            'live rerun records redacted provider metadata and separates variability',
+            liveTrace.liveModelPreflight.status === 'ready' &&
+              liveTrace.classification.productDefects.length === 0,
+            `provider=${liveTrace.liveModelPreflight.provider ?? 'none'}, defects=${liveTrace.classification.productDefects.length}`,
+          ),
+        );
+      }
+    }
   } catch (err) {
     error = err instanceof Error ? err.message : String(err);
   }
 
   const duration_ms = Date.now() - startedAt;
   const outcome =
-    error != null
-      ? 'inconclusive'
-      : assertions.length > 0 && assertions.every((item) => item.passed)
-        ? 'confirmed'
-        : 'refuted';
+    skipReason != null
+      ? 'skipped'
+      : error != null
+        ? 'inconclusive'
+        : assertions.length > 0 && assertions.every((item) => item.passed)
+          ? 'confirmed'
+          : 'refuted';
 
   const result = {
     experiment: EXPERIMENT_NAME,
@@ -471,6 +562,7 @@ export async function runGrowthStudioOpenClawLiveV2(options = {}) {
     duration_ms,
     assertions,
     trace,
+    ...(skipReason ? { skipReason } : {}),
     ...(error ? { error } : {}),
   };
 

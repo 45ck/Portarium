@@ -102,3 +102,31 @@ Each completed attempt should include `outcome.json`, `evidence-summary.json`,
 `queue-metrics.json`, and `report.md`. Live LLM-backed scenarios still use the
 same preflight gate above; missing credentials should skip the attempt rather
 than producing partial evidence.
+
+### Iteration 2 OpenClaw Live Reruns
+
+The delayed-resume and concurrency scenarios have an additional explicit live
+OpenClaw rerun gate. This prevents credentials alone from starting provider
+calls and keeps CI deterministic.
+
+```bash
+PORTARIUM_LIVE_OPENCLAW_RERUNS=true \
+PORTARIUM_EXPERIMENT_LIVE_LLM=true \
+PORTARIUM_LIVE_MODEL_PROVIDER=openai \
+OPENAI_API_KEY=... \
+node experiments/iteration-2/scenarios/openclaw-concurrent-sessions/run.mjs \
+  --results-dir experiments/iteration-2/results/openclaw-concurrent-sessions/live-openclaw-rerun-v1
+```
+
+Optionally restrict the live rerun to selected scenarios:
+
+```bash
+PORTARIUM_LIVE_OPENCLAW_SCENARIOS=growth-studio-openclaw-live-v2,openclaw-concurrent-sessions
+```
+
+Live OpenClaw rerun bundles add `live-rerun-metadata.json` and record redacted
+provider/model/probe metadata, Approval IDs, queue metrics, Evidence Artifacts,
+exact-once resume results, and the comparison with the deterministic bundle.
+Provider failures, quota/rate limits, unavailable models, and unexpected model
+responses are classified as provider variability or environment limitations,
+not Portarium product defects.
