@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "scenarioId": "growth-studio-openclaw-live-v2",
+  "attemptId": "deterministic-live-v2",
+  "generatedAtIso": "2026-04-30T08:00:00.000Z",
+  "requiredArtifacts": [
+    "outcome.json",
+    "queue-metrics.json",
+    "evidence-summary.json",
+    "report.md"
+  ],
+  "presentArtifacts": [
+    "outcome.json",
+    "queue-metrics.json",
+    "evidence-summary.json",
+    "report.md"
+  ],
+  "missingArtifacts": [],
+  "evidenceCompletenessCount": 4,
+  "complete": true
+}

@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "scenarioId": "shift-aware-approval-coverage",
+  "attemptId": "deterministic-shift-coverage-v1",
+  "generatedAtIso": "2026-04-30T23:50:10.000Z",
+  "metrics": {
+    "approval_count_by_tier": {
+      "Human-approve": 3,
+      "Assisted": 1
+    },
+    "approval_count_by_session": {
+      "shift-run-payments": 1,
+      "shift-run-billing": 1,
+      "shift-run-renewal": 1,
+      "shift-run-exception": 1
+    },
+    "pending_age_ms_p50": 1800000,
+    "pending_age_ms_p95": 3600000,
+    "pending_age_ms_max": 3600000,
+    "resume_latency_ms": [
+      1100,
+      1100,
+      1100,
+      1100
+    ],
+    "blocked_duration_ms": [
+      1500000,
+      1800000,
+      1800000,
+      3600000
+    ],
+    "queue_depth_over_time": [
+      {
+        "timestampIso": "2026-04-30T16:56:00.000Z",
+        "depth": 1
+      },
+      {
+        "timestampIso": "2026-04-30T18:55:00.000Z",
+        "depth": 1
+      },
+      {
+        "timestampIso": "2026-04-30T23:50:00.000Z",
+        "depth": 0
+      }
+    ],
+    "denial_count": 0,
+    "request_changes_count": 0,
+    "escalation_count": 1,
+    "expiry_count": 0,
+    "duplicate_execution_count": 0,
+    "evidence_completeness_count": 5,
+    "restart_count": 0,
+    "successful_resume_count": 4
+  }
+}

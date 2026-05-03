@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "scenarioId": "approval-backlog-soak",
+  "attemptId": "deterministic-soak-v1",
+  "generatedAtIso": "2026-04-29T00:01:30.000Z",
+  "metrics": {
+    "approval_count_by_tier": {
+      "Human-approve": 8,
+      "Assisted": 16
+    },
+    "approval_count_by_session": {
+      "session-a": 6,
+      "session-b": 6,
+      "session-c": 6,
+      "session-d": 6
+    },
+    "pending_age_ms_p50": 12000,
+    "pending_age_ms_p95": 52000,
+    "pending_age_ms_max": 52000,
+    "resume_latency_ms": [
+      1250,
+      1250,
+      1250,
+      1250,
+      1250,
+      1250,
+      1250,
+      1250,
+      1250,
+      1250,
+      1250,
+      1250,
+      1250,
+      1250
+    ],
+    "blocked_duration_ms": [
+      52000,
+      12000,
+      12000,
+      12000,
+      12000,
+      30000,
+      12000,
+      18000,
+      12000,
+      12000,
+      30000,
+      52000,
+      12000,
+      12000,
+      18000,
+      30000,
+      12000,
+      12000,
+      12000,
+      12000,
+      30000,
+      18000,
+      52000,
+      12000
+    ],
+    "queue_depth_over_time": [
+      {
+        "timestampIso": "2026-04-29T00:00:00.000Z",
+        "depth": 1
+      },
+      {
+        "timestampIso": "2026-04-29T00:00:07.500Z",
+        "depth": 8
+      },
+      {
+        "timestampIso": "2026-04-29T00:00:15.000Z",
+        "depth": 16
+      },
+      {
+        "timestampIso": "2026-04-29T00:00:22.500Z",
+        "depth": 23
+      },
+      {
+        "timestampIso": "2026-04-29T00:00:30.000Z",
+        "depth": 24
+      },
+      {
+        "timestampIso": "2026-04-29T00:00:37.500Z",
+        "depth": 24
+      },
+      {
+        "timestampIso": "2026-04-29T00:00:45.000Z",
+        "depth": 24
+      },
+      {
+        "timestampIso": "2026-04-29T00:00:52.500Z",
+        "depth": 24
+      },
+      {
+        "timestampIso": "2026-04-29T00:01:00.000Z",
+        "depth": 24
+      }
+    ],
+    "denial_count": 0,
+    "request_changes_count": 3,
+    "escalation_count": 4,
+    "expiry_count": 3,
+    "duplicate_execution_count": 0,
+    "evidence_completeness_count": 4,
+    "restart_count": 0,
+    "successful_resume_count": 14
+  }
+}

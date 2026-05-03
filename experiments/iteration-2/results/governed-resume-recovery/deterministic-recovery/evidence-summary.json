@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "scenarioId": "governed-resume-recovery",
+  "attemptId": "deterministic-recovery",
+  "generatedAtIso": "2026-04-30T01:15:00.000Z",
+  "requiredArtifacts": [
+    "outcome.json",
+    "queue-metrics.json",
+    "evidence-summary.json",
+    "report.md",
+    "plan-before-interruption.json",
+    "approval-before-interruption.json",
+    "evidence-chain-after-recovery.json",
+    "cockpit-waiting-state.json"
+  ],
+  "presentArtifacts": [
+    "outcome.json",
+    "queue-metrics.json",
+    "evidence-summary.json",
+    "report.md",
+    "plan-before-interruption.json",
+    "approval-before-interruption.json",
+    "evidence-chain-after-recovery.json",
+    "cockpit-waiting-state.json"
+  ],
+  "missingArtifacts": [],
+  "evidenceCompletenessCount": 8,
+  "complete": true
+}

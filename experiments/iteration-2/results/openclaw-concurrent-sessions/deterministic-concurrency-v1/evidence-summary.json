@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "scenarioId": "openclaw-concurrent-sessions",
+  "attemptId": "deterministic-concurrency-v1",
+  "generatedAtIso": "2026-04-30T00:00:25.000Z",
+  "requiredArtifacts": [
+    "outcome.json",
+    "queue-metrics.json",
+    "evidence-summary.json",
+    "report.md"
+  ],
+  "presentArtifacts": [
+    "outcome.json",
+    "queue-metrics.json",
+    "evidence-summary.json",
+    "report.md"
+  ],
+  "missingArtifacts": [],
+  "evidenceCompletenessCount": 4,
+  "complete": true
+}

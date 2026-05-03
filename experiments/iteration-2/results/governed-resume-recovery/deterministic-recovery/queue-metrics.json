@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "scenarioId": "governed-resume-recovery",
+  "attemptId": "deterministic-recovery",
+  "generatedAtIso": "2026-04-30T01:15:00.000Z",
+  "metrics": {
+    "approval_count_by_tier": {
+      "HumanApprove": 4
+    },
+    "approval_count_by_session": {
+      "session-recovery-crash": 1,
+      "session-recovery-service": 1,
+      "session-recovery-deploy": 1,
+      "session-recovery-provider": 1
+    },
+    "pending_age_ms_p50": 3060000,
+    "pending_age_ms_p95": 4200000,
+    "pending_age_ms_max": 4200000,
+    "resume_latency_ms": [
+      1250,
+      1000,
+      1500
+    ],
+    "blocked_duration_ms": [
+      3780000,
+      2820000,
+      3060000,
+      1500000
+    ],
+    "queue_depth_over_time": [
+      {
+        "timestampIso": "2026-04-30T00:02:00.000Z",
+        "depth": 1
+      },
+      {
+        "timestampIso": "2026-04-30T00:03:00.000Z",
+        "depth": 1
+      },
+      {
+        "timestampIso": "2026-04-30T00:04:00.000Z",
+        "depth": 1
+      },
+      {
+        "timestampIso": "2026-04-30T00:05:00.000Z",
+        "depth": 1
+      }
+    ],
+    "denial_count": 0,
+    "request_changes_count": 0,
+    "escalation_count": 0,
+    "expiry_count": 0,
+    "duplicate_execution_count": 0,
+    "evidence_completeness_count": 8,
+    "restart_count": 4,
+    "successful_resume_count": 3
+  }
+}

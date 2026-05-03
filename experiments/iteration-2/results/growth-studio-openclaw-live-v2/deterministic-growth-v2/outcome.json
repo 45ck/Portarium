@@ -1,0 +1,377 @@
+{
+  "experiment": "growth-studio-openclaw-live-v2",
+  "timestamp": "2026-05-03T03:22:43.118Z",
+  "outcome": "confirmed",
+  "duration_ms": 8,
+  "assertions": [
+    {
+      "label": "both required variants complete",
+      "passed": true,
+      "detail": "variants=live-wait,restart-resume"
+    },
+    {
+      "label": "pending approvals survive business-length wait windows",
+      "passed": true,
+      "detail": "longPending=2"
+    },
+    {
+      "label": "restart-resume records recovery before approval",
+      "passed": true,
+      "detail": "restartCount=1"
+    },
+    {
+      "label": "resume executes exactly once without replaying prior writes",
+      "passed": true,
+      "detail": "duplicates=0, replayed=0"
+    },
+    {
+      "label": "queue metrics capture delayed resume timing",
+      "passed": true,
+      "detail": "resumeSamples=4"
+    },
+    {
+      "label": "evidence chain is continuous before wait, during wait, and after resume",
+      "passed": true,
+      "detail": "chains=2"
+    },
+    {
+      "label": "telemetry artifacts are complete",
+      "passed": true,
+      "detail": "present=4, missing="
+    },
+    {
+      "label": "threshold assertions pass",
+      "passed": true,
+      "detail": "[{\"label\":\"duplicate execution count within threshold\",\"passed\":true,\"detail\":\"0 <= 0\"},{\"label\":\"pending age p95 within threshold\",\"passed\":true,\"detail\":\"32400000 <= 36000000\"},{\"label\":\"resume latency within threshold\",\"passed\":true,\"detail\":\"1500 <= 2000\"},{\"label\":\"evidence completeness count meets threshold\",\"passed\":true,\"detail\":\"4 >= 4\"},{\"label\":\"successful resume count meets threshold\",\"passed\":true,\"detail\":\"4 >= 4\"}]"
+    }
+  ],
+  "trace": {
+    "comparesTo": "growth-studio-openclaw-live",
+    "mode": "deterministic-replay",
+    "liveLlmInference": "not-required-for-ci",
+    "variants": [
+      {
+        "variantId": "live-wait",
+        "sessionId": "growth-live-wait-session",
+        "runId": "growth-live-wait-run",
+        "agentId": "openclaw-growth-agent",
+        "processMode": "alive",
+        "preWaitWrites": [
+          "prospect-dossier.md"
+        ],
+        "outputBundlePath": "outputs/growth-live-wait-session/outreach-approved.json",
+        "approvals": [
+          {
+            "approvalId": "appr-growth-live-copy",
+            "sessionId": "growth-live-wait-session",
+            "action": "draft:outreach-copy",
+            "tier": "Assisted",
+            "requestedAtIso": "2026-04-29T22:01:00.000Z",
+            "status": "approved",
+            "delayWindowMs": 720000,
+            "executionKey": "growth-live-wait-session:draft:outreach-copy",
+            "decidedAtIso": "2026-04-29T22:13:00.000Z",
+            "resumedAtIso": "2026-04-29T22:13:01.500Z"
+          },
+          {
+            "approvalId": "appr-growth-live-send",
+            "sessionId": "growth-live-wait-session",
+            "action": "send:approved-outreach",
+            "tier": "Human-approve",
+            "requestedAtIso": "2026-04-29T22:05:00.000Z",
+            "status": "approved",
+            "delayWindowMs": 28800000,
+            "executionKey": "growth-live-wait-session:send:approved-outreach",
+            "decidedAtIso": "2026-04-30T06:05:00.000Z",
+            "resumedAtIso": "2026-04-30T06:05:01.500Z"
+          }
+        ],
+        "executionLedger": [
+          {
+            "phase": "pre-wait",
+            "key": "growth-live-wait-session:prospect-dossier.md",
+            "atIso": "2026-04-29T22:00:30.000Z",
+            "replayedAfterResume": false
+          },
+          {
+            "phase": "post-approval",
+            "key": "growth-live-wait-session:draft:outreach-copy",
+            "approvalId": "appr-growth-live-copy",
+            "atIso": "2026-04-29T22:13:01.500Z",
+            "outputBundlePath": "outputs/growth-live-wait-session/outreach-approved.json"
+          },
+          {
+            "phase": "post-approval",
+            "key": "growth-live-wait-session:send:approved-outreach",
+            "approvalId": "appr-growth-live-send",
+            "atIso": "2026-04-30T06:05:01.500Z",
+            "outputBundlePath": "outputs/growth-live-wait-session/outreach-approved.json"
+          }
+        ],
+        "evidenceChain": [
+          {
+            "evidenceId": "live-wait-ev-01",
+            "phase": "before-wait",
+            "atIso": "2026-04-29T22:00:00.000Z",
+            "summary": "OpenClaw proposed governed Actions for growth-live-wait-session",
+            "previousHash": "genesis",
+            "hash": "deb14e1d3e5e9547e7e9285f89ecafd0c3d7d0022694f27041d10553b4372a8c"
+          },
+          {
+            "evidenceId": "live-wait-ev-02",
+            "phase": "during-wait",
+            "atIso": "2026-04-30T02:00:00.000Z",
+            "summary": "Approval Gate remained pending during business-length wait",
+            "previousHash": "deb14e1d3e5e9547e7e9285f89ecafd0c3d7d0022694f27041d10553b4372a8c",
+            "hash": "bca180ed3f93c7d55b0b5d3f5bc6c5def849362ac0679c006b03186048b6efae"
+          },
+          {
+            "evidenceId": "live-wait-ev-03",
+            "phase": "approval-decision",
+            "atIso": "2026-04-30T06:05:00.000Z",
+            "summary": "Operator approved the blocked Action",
+            "previousHash": "bca180ed3f93c7d55b0b5d3f5bc6c5def849362ac0679c006b03186048b6efae",
+            "hash": "b5a7f12d2793a5499bee5bb33c775852fbc723aa46a3550df37871bb816c1436"
+          },
+          {
+            "evidenceId": "live-wait-ev-04",
+            "phase": "after-resume",
+            "atIso": "2026-04-30T06:05:01.500Z",
+            "summary": "Agent resumed and wrote the approved output bundle",
+            "previousHash": "b5a7f12d2793a5499bee5bb33c775852fbc723aa46a3550df37871bb816c1436",
+            "hash": "bfcf93db6793c25a88d87a38449b20b16d3ea2f7f1549d66a973454705e2a62a"
+          }
+        ]
+      },
+      {
+        "variantId": "restart-resume",
+        "sessionId": "growth-restart-resume-session",
+        "runId": "growth-restart-resume-run",
+        "agentId": "openclaw-growth-agent",
+        "processMode": "restarted",
+        "preWaitWrites": [
+          "campaign-plan.md"
+        ],
+        "outputBundlePath": "outputs/growth-restart-resume-session/campaign-approved.json",
+        "approvals": [
+          {
+            "approvalId": "appr-growth-restart-content",
+            "sessionId": "growth-restart-resume-session",
+            "action": "draft:launch-post",
+            "tier": "Assisted",
+            "requestedAtIso": "2026-04-29T22:01:30.000Z",
+            "status": "approved",
+            "delayWindowMs": 900000,
+            "executionKey": "growth-restart-resume-session:draft:launch-post",
+            "decidedAtIso": "2026-04-29T22:16:30.000Z",
+            "resumedAtIso": "2026-04-29T22:16:31.500Z"
+          },
+          {
+            "approvalId": "appr-growth-restart-publish",
+            "sessionId": "growth-restart-resume-session",
+            "action": "publish:launch-post",
+            "tier": "Human-approve",
+            "requestedAtIso": "2026-04-29T22:07:00.000Z",
+            "status": "approved",
+            "delayWindowMs": 32400000,
+            "executionKey": "growth-restart-resume-session:publish:launch-post",
+            "decidedAtIso": "2026-04-30T07:07:00.000Z",
+            "resumedAtIso": "2026-04-30T07:07:01.500Z"
+          }
+        ],
+        "executionLedger": [
+          {
+            "phase": "pre-wait",
+            "key": "growth-restart-resume-session:campaign-plan.md",
+            "atIso": "2026-04-29T22:00:30.000Z",
+            "replayedAfterResume": false
+          },
+          {
+            "phase": "post-approval",
+            "key": "growth-restart-resume-session:draft:launch-post",
+            "approvalId": "appr-growth-restart-content",
+            "atIso": "2026-04-29T22:16:31.500Z",
+            "outputBundlePath": "outputs/growth-restart-resume-session/campaign-approved.json"
+          },
+          {
+            "phase": "post-approval",
+            "key": "growth-restart-resume-session:publish:launch-post",
+            "approvalId": "appr-growth-restart-publish",
+            "atIso": "2026-04-30T07:07:01.500Z",
+            "outputBundlePath": "outputs/growth-restart-resume-session/campaign-approved.json"
+          }
+        ],
+        "evidenceChain": [
+          {
+            "evidenceId": "restart-resume-ev-01",
+            "phase": "before-wait",
+            "atIso": "2026-04-29T22:00:00.000Z",
+            "summary": "OpenClaw proposed governed Actions for growth-restart-resume-session",
+            "previousHash": "genesis",
+            "hash": "5c912c1d3aa691ec32a13c2630cccec7468e26f4dc7da153337e9ebe249e3baa"
+          },
+          {
+            "evidenceId": "restart-resume-ev-02",
+            "phase": "during-wait",
+            "atIso": "2026-04-30T02:00:00.000Z",
+            "summary": "Approval Gate remained pending during business-length wait",
+            "previousHash": "5c912c1d3aa691ec32a13c2630cccec7468e26f4dc7da153337e9ebe249e3baa",
+            "hash": "45834f4b75dba2ef15c238f13143dd15291103aca14d84fd6a6b24272d4bb4ab"
+          },
+          {
+            "evidenceId": "restart-resume-ev-03",
+            "phase": "approval-decision",
+            "atIso": "2026-04-30T07:07:00.000Z",
+            "summary": "Operator approved the blocked Action",
+            "previousHash": "45834f4b75dba2ef15c238f13143dd15291103aca14d84fd6a6b24272d4bb4ab",
+            "hash": "bc258dd7cdc2a29a6308a14a22262c2e8a197b7401dfd0f1df602737abbddb23"
+          },
+          {
+            "evidenceId": "restart-resume-ev-04",
+            "phase": "after-resume",
+            "atIso": "2026-04-30T07:07:01.500Z",
+            "summary": "Agent resumed and wrote the approved output bundle",
+            "previousHash": "bc258dd7cdc2a29a6308a14a22262c2e8a197b7401dfd0f1df602737abbddb23",
+            "hash": "064d383e5d796a3c6240884896090e43481b6b1a2430ed23abaf600218608b65"
+          }
+        ]
+      }
+    ],
+    "queueMetrics": {
+      "schemaVersion": 1,
+      "scenarioId": "growth-studio-openclaw-live-v2",
+      "attemptId": "deterministic-live-v2",
+      "generatedAtIso": "2026-04-30T08:00:00.000Z",
+      "metrics": {
+        "approval_count_by_tier": {
+          "Assisted": 2,
+          "Human-approve": 2
+        },
+        "approval_count_by_session": {
+          "growth-live-wait-session": 2,
+          "growth-restart-resume-session": 2
+        },
+        "pending_age_ms_p50": 900000,
+        "pending_age_ms_p95": 32400000,
+        "pending_age_ms_max": 32400000,
+        "resume_latency_ms": [
+          1500,
+          1500,
+          1500,
+          1500
+        ],
+        "blocked_duration_ms": [
+          720000,
+          28800000,
+          900000,
+          32400000
+        ],
+        "queue_depth_over_time": [
+          {
+            "timestampIso": "2026-04-29T22:00:00.000Z",
+            "depth": 0
+          },
+          {
+            "timestampIso": "2026-04-29T22:10:00.000Z",
+            "depth": 4
+          },
+          {
+            "timestampIso": "2026-04-30T02:00:00.000Z",
+            "depth": 2
+          },
+          {
+            "timestampIso": "2026-04-30T06:05:00.000Z",
+            "depth": 1
+          },
+          {
+            "timestampIso": "2026-04-30T07:10:00.000Z",
+            "depth": 0
+          }
+        ],
+        "denial_count": 0,
+        "request_changes_count": 0,
+        "escalation_count": 0,
+        "expiry_count": 0,
+        "duplicate_execution_count": 0,
+        "evidence_completeness_count": 4,
+        "restart_count": 1,
+        "successful_resume_count": 4
+      }
+    },
+    "evidenceSummary": {
+      "schemaVersion": 1,
+      "scenarioId": "growth-studio-openclaw-live-v2",
+      "attemptId": "deterministic-live-v2",
+      "generatedAtIso": "2026-04-30T08:00:00.000Z",
+      "requiredArtifacts": [
+        "outcome.json",
+        "queue-metrics.json",
+        "evidence-summary.json",
+        "report.md"
+      ],
+      "presentArtifacts": [
+        "outcome.json",
+        "queue-metrics.json",
+        "evidence-summary.json",
+        "report.md"
+      ],
+      "missingArtifacts": [],
+      "evidenceCompletenessCount": 4,
+      "complete": true
+    },
+    "artifactPaths": {
+      "queueMetricsPath": "experiments\\iteration-2\\results\\growth-studio-openclaw-live-v2\\deterministic-growth-v2\\queue-metrics.json",
+      "evidenceSummaryPath": "experiments\\iteration-2\\results\\growth-studio-openclaw-live-v2\\deterministic-growth-v2\\evidence-summary.json",
+      "reportPath": "experiments\\iteration-2\\results\\growth-studio-openclaw-live-v2\\deterministic-growth-v2\\report.md"
+    },
+    "thresholdAssertions": [
+      {
+        "label": "duplicate execution count within threshold",
+        "passed": true,
+        "detail": "0 <= 0"
+      },
+      {
+        "label": "pending age p95 within threshold",
+        "passed": true,
+        "detail": "32400000 <= 36000000"
+      },
+      {
+        "label": "resume latency within threshold",
+        "passed": true,
+        "detail": "1500 <= 2000"
+      },
+      {
+        "label": "evidence completeness count meets threshold",
+        "passed": true,
+        "detail": "4 >= 4"
+      },
+      {
+        "label": "successful resume count meets threshold",
+        "passed": true,
+        "detail": "4 >= 4"
+      }
+    ],
+    "operatorDelayWindows": [
+      {
+        "approvalId": "appr-growth-live-copy",
+        "variantId": "live-wait",
+        "delayWindowMs": 720000
+      },
+      {
+        "approvalId": "appr-growth-live-send",
+        "variantId": "live-wait",
+        "delayWindowMs": 28800000
+      },
+      {
+        "approvalId": "appr-growth-restart-content",
+        "variantId": "restart-resume",
+        "delayWindowMs": 900000
+      },
+      {
+        "approvalId": "appr-growth-restart-publish",
+        "variantId": "restart-resume",
+        "delayWindowMs": 32400000
+      }
+    ]
+  }
+}

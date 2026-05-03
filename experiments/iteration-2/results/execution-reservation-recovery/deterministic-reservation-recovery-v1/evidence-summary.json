@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "scenarioId": "execution-reservation-recovery",
+  "attemptId": "deterministic-reservation-recovery-v1",
+  "generatedAtIso": "2026-04-30T03:01:35.000Z",
+  "requiredArtifacts": [
+    "outcome.json",
+    "queue-metrics.json",
+    "evidence-summary.json",
+    "report.md",
+    "reservation-ledger-redacted.json",
+    "dispatch-attempts-redacted.json",
+    "recovery-decisions-redacted.json"
+  ],
+  "presentArtifacts": [
+    "outcome.json",
+    "queue-metrics.json",
+    "evidence-summary.json",
+    "report.md",
+    "reservation-ledger-redacted.json",
+    "dispatch-attempts-redacted.json",
+    "recovery-decisions-redacted.json"
+  ],
+  "missingArtifacts": [],
+  "evidenceCompletenessCount": 7,
+  "complete": true
+}

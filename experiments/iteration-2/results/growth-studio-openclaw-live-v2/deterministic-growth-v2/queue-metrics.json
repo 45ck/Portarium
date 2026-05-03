@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "scenarioId": "growth-studio-openclaw-live-v2",
+  "attemptId": "deterministic-live-v2",
+  "generatedAtIso": "2026-04-30T08:00:00.000Z",
+  "metrics": {
+    "approval_count_by_tier": {
+      "Assisted": 2,
+      "Human-approve": 2
+    },
+    "approval_count_by_session": {
+      "growth-live-wait-session": 2,
+      "growth-restart-resume-session": 2
+    },
+    "pending_age_ms_p50": 900000,
+    "pending_age_ms_p95": 32400000,
+    "pending_age_ms_max": 32400000,
+    "resume_latency_ms": [
+      1500,
+      1500,
+      1500,
+      1500
+    ],
+    "blocked_duration_ms": [
+      720000,
+      28800000,
+      900000,
+      32400000
+    ],
+    "queue_depth_over_time": [
+      {
+        "timestampIso": "2026-04-29T22:00:00.000Z",
+        "depth": 0
+      },
+      {
+        "timestampIso": "2026-04-29T22:10:00.000Z",
+        "depth": 4
+      },
+      {
+        "timestampIso": "2026-04-30T02:00:00.000Z",
+        "depth": 2
+      },
+      {
+        "timestampIso": "2026-04-30T06:05:00.000Z",
+        "depth": 1
+      },
+      {
+        "timestampIso": "2026-04-30T07:10:00.000Z",
+        "depth": 0
+      }
+    ],
+    "denial_count": 0,
+    "request_changes_count": 0,
+    "escalation_count": 0,
+    "expiry_count": 0,
+    "duplicate_execution_count": 0,
+    "evidence_completeness_count": 4,
+    "restart_count": 1,
+    "successful_resume_count": 4
+  }
+}

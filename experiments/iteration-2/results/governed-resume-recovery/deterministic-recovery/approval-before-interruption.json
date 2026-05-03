@@ -1,0 +1,22 @@
+[
+  {
+    "approvalId": "appr-recovery-crash",
+    "statusBeforeRecovery": "Pending",
+    "statusAfterDecision": "Approved"
+  },
+  {
+    "approvalId": "appr-recovery-service",
+    "statusBeforeRecovery": "Pending",
+    "statusAfterDecision": "Approved"
+  },
+  {
+    "approvalId": "appr-recovery-deploy",
+    "statusBeforeRecovery": "Pending",
+    "statusAfterDecision": "Approved"
+  },
+  {
+    "approvalId": "appr-recovery-provider",
+    "statusBeforeRecovery": "Pending",
+    "statusAfterDecision": "Pending"
+  }
+]

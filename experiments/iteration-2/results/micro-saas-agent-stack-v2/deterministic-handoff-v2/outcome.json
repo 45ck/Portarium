@@ -1,0 +1,333 @@
+{
+  "experiment": "micro-saas-agent-stack-v2",
+  "timestamp": "2026-05-03T03:22:43.234Z",
+  "outcome": "confirmed",
+  "duration_ms": 13,
+  "assertions": [
+    {
+      "label": "Separation of Duties is preserved",
+      "passed": true,
+      "detail": "sodViolations=0, wrongOperator=0"
+    },
+    {
+      "label": "request-changes and denied work do not stop unrelated approvals",
+      "passed": true,
+      "detail": "approved=3, requestChanges=1, denied=1"
+    },
+    {
+      "label": "queue snapshots capture before and after operator actions",
+      "passed": true,
+      "detail": "snapshots=3"
+    },
+    {
+      "label": "queue metrics include handoff timing",
+      "passed": true,
+      "detail": "queueSamples=3"
+    },
+    {
+      "label": "telemetry artifacts are complete",
+      "passed": true,
+      "detail": "present=5, missing="
+    },
+    {
+      "label": "threshold assertions pass",
+      "passed": true,
+      "detail": "[{\"label\":\"duplicate execution count within threshold\",\"passed\":true,\"detail\":\"0 <= 0\"},{\"label\":\"pending age p95 within threshold\",\"passed\":true,\"detail\":\"26000 <= 32000\"},{\"label\":\"resume latency within threshold\",\"passed\":true,\"detail\":\"900 <= 2000\"},{\"label\":\"evidence completeness count meets threshold\",\"passed\":true,\"detail\":\"5 >= 4\"},{\"label\":\"successful resume count meets threshold\",\"passed\":true,\"detail\":\"3 >= 3\"}]"
+    }
+  ],
+  "trace": {
+    "comparesTo": "micro-saas-agent-stack",
+    "toolchainPreflight": {
+      "demoMachine": {
+        "tool": "demo-machine",
+        "status": "intentionally-skipped",
+        "checkedAt": "2026-05-03T03:22:43.222Z",
+        "command": "demo-machine",
+        "probe": "cli-help",
+        "rationale": "demo-machine CLI is not installed on this workstation; Cockpit demo-machine playback is optional and skipped for this experiment run.",
+        "clipSpecPath": "docs/internal/ui/cockpit/demo-machine/clips/01-approval-gate-unblocks-run.demo.yaml",
+        "required": false
+      }
+    },
+    "approvals": [
+      {
+        "approvalId": "appr-ms-01",
+        "sessionId": "micro-saas-run-1",
+        "action": "draft:landing-page-copy",
+        "tier": "Assisted",
+        "requestedBy": "agent-product-builder",
+        "requiredOperator": "operator-a",
+        "requestedAtIso": "2026-04-29T02:00:00.000Z",
+        "status": "approved",
+        "decidedBy": "operator-a",
+        "decidedAtIso": "2026-04-29T02:00:12.000Z"
+      },
+      {
+        "approvalId": "appr-ms-02",
+        "sessionId": "micro-saas-run-1",
+        "action": "draft:pricing-page",
+        "tier": "Assisted",
+        "requestedBy": "agent-product-builder",
+        "requiredOperator": "operator-a",
+        "requestedAtIso": "2026-04-29T02:00:02.000Z",
+        "status": "request_changes",
+        "decidedBy": "operator-a",
+        "decidedAtIso": "2026-04-29T02:00:16.000Z"
+      },
+      {
+        "approvalId": "appr-ms-03",
+        "sessionId": "micro-saas-run-1",
+        "action": "publish:landing-page",
+        "tier": "Human-approve",
+        "requestedBy": "agent-product-builder",
+        "requiredOperator": "operator-b",
+        "requestedAtIso": "2026-04-29T02:00:04.000Z",
+        "status": "approved",
+        "decidedBy": "operator-b",
+        "decidedAtIso": "2026-04-29T02:00:24.000Z"
+      },
+      {
+        "approvalId": "appr-ms-04",
+        "sessionId": "micro-saas-run-1",
+        "action": "send:launch-email",
+        "tier": "Human-approve",
+        "requestedBy": "agent-product-builder",
+        "requiredOperator": "operator-b",
+        "requestedAtIso": "2026-04-29T02:00:06.000Z",
+        "status": "denied",
+        "decidedBy": "operator-b",
+        "decidedAtIso": "2026-04-29T02:00:30.000Z"
+      },
+      {
+        "approvalId": "appr-ms-05",
+        "sessionId": "micro-saas-run-1",
+        "action": "create:analytics-dashboard",
+        "tier": "Assisted",
+        "requestedBy": "agent-product-builder",
+        "requiredOperator": "operator-a",
+        "requestedAtIso": "2026-04-29T02:00:08.000Z",
+        "status": "approved",
+        "decidedBy": "operator-a",
+        "decidedAtIso": "2026-04-29T02:00:34.000Z"
+      }
+    ],
+    "queueSnapshots": [
+      {
+        "label": "before-operator-actions",
+        "atIso": "2026-04-29T02:00:09.000Z",
+        "pending": [
+          {
+            "approvalId": "appr-ms-01",
+            "action": "draft:landing-page-copy",
+            "requiredOperator": "operator-a",
+            "tier": "Assisted"
+          },
+          {
+            "approvalId": "appr-ms-02",
+            "action": "draft:pricing-page",
+            "requiredOperator": "operator-a",
+            "tier": "Assisted"
+          },
+          {
+            "approvalId": "appr-ms-03",
+            "action": "publish:landing-page",
+            "requiredOperator": "operator-b",
+            "tier": "Human-approve"
+          },
+          {
+            "approvalId": "appr-ms-04",
+            "action": "send:launch-email",
+            "requiredOperator": "operator-b",
+            "tier": "Human-approve"
+          },
+          {
+            "approvalId": "appr-ms-05",
+            "action": "create:analytics-dashboard",
+            "requiredOperator": "operator-a",
+            "tier": "Assisted"
+          }
+        ],
+        "decided": []
+      },
+      {
+        "label": "after-operator-a",
+        "atIso": "2026-04-29T02:00:17.000Z",
+        "pending": [
+          {
+            "approvalId": "appr-ms-03",
+            "action": "publish:landing-page",
+            "requiredOperator": "operator-b",
+            "tier": "Human-approve"
+          },
+          {
+            "approvalId": "appr-ms-04",
+            "action": "send:launch-email",
+            "requiredOperator": "operator-b",
+            "tier": "Human-approve"
+          },
+          {
+            "approvalId": "appr-ms-05",
+            "action": "create:analytics-dashboard",
+            "requiredOperator": "operator-a",
+            "tier": "Assisted"
+          }
+        ],
+        "decided": [
+          {
+            "approvalId": "appr-ms-01",
+            "status": "approved",
+            "decidedBy": "operator-a"
+          },
+          {
+            "approvalId": "appr-ms-02",
+            "status": "request_changes",
+            "decidedBy": "operator-a"
+          }
+        ]
+      },
+      {
+        "label": "after-team-handoff",
+        "atIso": "2026-04-29T02:00:35.000Z",
+        "pending": [],
+        "decided": [
+          {
+            "approvalId": "appr-ms-01",
+            "status": "approved",
+            "decidedBy": "operator-a"
+          },
+          {
+            "approvalId": "appr-ms-02",
+            "status": "request_changes",
+            "decidedBy": "operator-a"
+          },
+          {
+            "approvalId": "appr-ms-03",
+            "status": "approved",
+            "decidedBy": "operator-b"
+          },
+          {
+            "approvalId": "appr-ms-04",
+            "status": "denied",
+            "decidedBy": "operator-b"
+          },
+          {
+            "approvalId": "appr-ms-05",
+            "status": "approved",
+            "decidedBy": "operator-a"
+          }
+        ]
+      }
+    ],
+    "queueMetrics": {
+      "schemaVersion": 1,
+      "scenarioId": "micro-saas-agent-stack-v2",
+      "attemptId": "deterministic-handoff-v1",
+      "generatedAtIso": "2026-04-29T02:00:40.000Z",
+      "metrics": {
+        "approval_count_by_tier": {
+          "Assisted": 3,
+          "Human-approve": 2
+        },
+        "approval_count_by_session": {
+          "micro-saas-run-1": 5
+        },
+        "pending_age_ms_p50": 20000,
+        "pending_age_ms_p95": 26000,
+        "pending_age_ms_max": 26000,
+        "resume_latency_ms": [
+          900,
+          900,
+          900
+        ],
+        "blocked_duration_ms": [
+          12000,
+          14000,
+          20000,
+          24000,
+          26000
+        ],
+        "queue_depth_over_time": [
+          {
+            "timestampIso": "2026-04-29T02:00:09.000Z",
+            "depth": 5
+          },
+          {
+            "timestampIso": "2026-04-29T02:00:17.000Z",
+            "depth": 3
+          },
+          {
+            "timestampIso": "2026-04-29T02:00:35.000Z",
+            "depth": 0
+          }
+        ],
+        "denial_count": 1,
+        "request_changes_count": 1,
+        "escalation_count": 0,
+        "expiry_count": 0,
+        "duplicate_execution_count": 0,
+        "evidence_completeness_count": 5,
+        "restart_count": 0,
+        "successful_resume_count": 3
+      }
+    },
+    "evidenceSummary": {
+      "schemaVersion": 1,
+      "scenarioId": "micro-saas-agent-stack-v2",
+      "attemptId": "deterministic-handoff-v1",
+      "generatedAtIso": "2026-04-29T02:00:40.000Z",
+      "requiredArtifacts": [
+        "outcome.json",
+        "queue-metrics.json",
+        "evidence-summary.json",
+        "report.md",
+        "demo-machine-preflight.json"
+      ],
+      "presentArtifacts": [
+        "outcome.json",
+        "queue-metrics.json",
+        "evidence-summary.json",
+        "report.md",
+        "demo-machine-preflight.json"
+      ],
+      "missingArtifacts": [],
+      "evidenceCompletenessCount": 5,
+      "complete": true
+    },
+    "artifactPaths": {
+      "queueMetricsPath": "experiments\\iteration-2\\results\\micro-saas-agent-stack-v2\\deterministic-handoff-v2\\queue-metrics.json",
+      "evidenceSummaryPath": "experiments\\iteration-2\\results\\micro-saas-agent-stack-v2\\deterministic-handoff-v2\\evidence-summary.json",
+      "reportPath": "experiments\\iteration-2\\results\\micro-saas-agent-stack-v2\\deterministic-handoff-v2\\report.md"
+    },
+    "thresholdAssertions": [
+      {
+        "label": "duplicate execution count within threshold",
+        "passed": true,
+        "detail": "0 <= 0"
+      },
+      {
+        "label": "pending age p95 within threshold",
+        "passed": true,
+        "detail": "26000 <= 32000"
+      },
+      {
+        "label": "resume latency within threshold",
+        "passed": true,
+        "detail": "900 <= 2000"
+      },
+      {
+        "label": "evidence completeness count meets threshold",
+        "passed": true,
+        "detail": "5 >= 4"
+      },
+      {
+        "label": "successful resume count meets threshold",
+        "passed": true,
+        "detail": "3 >= 3"
+      }
+    ],
+    "handoff": {
+      "operatorA": 3,
+      "operatorB": 2
+    }
+  }
+}

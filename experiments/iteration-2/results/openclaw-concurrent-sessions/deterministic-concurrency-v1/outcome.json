@@ -1,0 +1,562 @@
+{
+  "experiment": "openclaw-concurrent-sessions",
+  "timestamp": "2026-05-03T03:22:43.374Z",
+  "outcome": "confirmed",
+  "duration_ms": 14,
+  "assertions": [
+    {
+      "label": "all sessions complete at the declared concurrency level",
+      "passed": true,
+      "detail": "sessions=4, outputs=4"
+    },
+    {
+      "label": "approval IDs and output bundles stay session-scoped",
+      "passed": true,
+      "detail": "leaks=[]"
+    },
+    {
+      "label": "mixed-order decision for one session does not unblock another",
+      "passed": true,
+      "detail": "session02Decided=2026-04-30T00:00:18.000Z"
+    },
+    {
+      "label": "near-simultaneous approvals execute exactly once",
+      "passed": true,
+      "detail": "duplicates=0"
+    },
+    {
+      "label": "throughput, latency, and queue depth are recorded",
+      "passed": true,
+      "detail": "resumeSamples=4"
+    },
+    {
+      "label": "evidence chains are continuous and session-local",
+      "passed": true,
+      "detail": "chains=4"
+    },
+    {
+      "label": "telemetry artifacts are complete",
+      "passed": true,
+      "detail": "present=4, missing="
+    },
+    {
+      "label": "threshold assertions pass",
+      "passed": true,
+      "detail": "[{\"label\":\"duplicate execution count within threshold\",\"passed\":true,\"detail\":\"0 <= 0\"},{\"label\":\"pending age p95 within threshold\",\"passed\":true,\"detail\":\"17000 <= 20000\"},{\"label\":\"resume latency within threshold\",\"passed\":true,\"detail\":\"800 <= 1000\"},{\"label\":\"evidence completeness count meets threshold\",\"passed\":true,\"detail\":\"4 >= 4\"},{\"label\":\"successful resume count meets threshold\",\"passed\":true,\"detail\":\"4 >= 4\"}]"
+    }
+  ],
+  "trace": {
+    "comparesTo": "exp-A-transparency",
+    "mode": "deterministic-concurrency",
+    "concurrencyLevel": 4,
+    "nearSimultaneousDecisionWindowMs": 400,
+    "maxConcurrentBlockedSessions": 4,
+    "sessions": [
+      {
+        "sessionId": "openclaw-session-01",
+        "tenantId": "tenant-a",
+        "workspaceId": "workspace-a",
+        "runId": "run-openclaw-01",
+        "correlationId": "corr-openclaw-01",
+        "agentId": "agent-openclaw-01",
+        "outputBundlePath": "outputs/openclaw-session-01/artifact.json",
+        "approval": {
+          "approvalId": "appr-openclaw-session-01",
+          "sessionId": "openclaw-session-01",
+          "action": "write:session-01-bundle",
+          "tier": "Human-approve",
+          "requestedAtIso": "2026-04-30T00:00:00.000Z",
+          "status": "approved",
+          "executionKey": "openclaw-session-01:write-bundle",
+          "decidedAtIso": "2026-04-30T00:00:10.200Z",
+          "resumedAtIso": "2026-04-30T00:00:11.000Z"
+        },
+        "output": {
+          "sessionId": "openclaw-session-01",
+          "runId": "run-openclaw-01",
+          "agentId": "agent-openclaw-01",
+          "correlationId": "corr-openclaw-01",
+          "approvalId": "appr-openclaw-session-01",
+          "writtenAtIso": "2026-04-30T00:00:11.000Z",
+          "path": "outputs/openclaw-session-01/artifact.json",
+          "content": {
+            "sessionId": "openclaw-session-01",
+            "runId": "run-openclaw-01",
+            "action": "write:session-01-bundle",
+            "approvalId": "appr-openclaw-session-01"
+          }
+        },
+        "evidenceChain": [
+          {
+            "evidenceId": "openclaw-session-01-ev-01",
+            "sessionId": "openclaw-session-01",
+            "phase": "proposal",
+            "atIso": "2026-04-30T00:00:00.000Z",
+            "summary": "OpenClaw session proposed governed Action",
+            "previousHash": "genesis",
+            "hash": "d1364b871d120fb1915552919ce2f4825b508f49f115bf9edafbe8ee4c09bfcc"
+          },
+          {
+            "evidenceId": "openclaw-session-01-ev-02",
+            "sessionId": "openclaw-session-01",
+            "phase": "blocked",
+            "atIso": "2026-04-30T00:00:02.000Z",
+            "summary": "Session waited on its own Approval Gate",
+            "previousHash": "d1364b871d120fb1915552919ce2f4825b508f49f115bf9edafbe8ee4c09bfcc",
+            "hash": "3b2681812ba0a78a7722f73c6b1c4cdecdb074834cca2ab3cc768a79fa078fde"
+          },
+          {
+            "evidenceId": "openclaw-session-01-ev-03",
+            "sessionId": "openclaw-session-01",
+            "phase": "decision",
+            "atIso": "2026-04-30T00:00:10.200Z",
+            "summary": "Operator decision resolved this session only",
+            "previousHash": "3b2681812ba0a78a7722f73c6b1c4cdecdb074834cca2ab3cc768a79fa078fde",
+            "hash": "4e256b3d445f81020ee708f7e72369547338fa1f9ef36d2d6c785df0135eb87d"
+          },
+          {
+            "evidenceId": "openclaw-session-01-ev-04",
+            "sessionId": "openclaw-session-01",
+            "phase": "output-written",
+            "atIso": "2026-04-30T00:00:11.000Z",
+            "summary": "Session resumed and wrote its output bundle",
+            "previousHash": "4e256b3d445f81020ee708f7e72369547338fa1f9ef36d2d6c785df0135eb87d",
+            "hash": "02260ad0f85598a22a4ec2c613f041997a8874e78943754d25ba64cfb6cb5717"
+          }
+        ]
+      },
+      {
+        "sessionId": "openclaw-session-02",
+        "tenantId": "tenant-b",
+        "workspaceId": "workspace-b",
+        "runId": "run-openclaw-02",
+        "correlationId": "corr-openclaw-02",
+        "agentId": "agent-openclaw-02",
+        "outputBundlePath": "outputs/openclaw-session-02/artifact.json",
+        "approval": {
+          "approvalId": "appr-openclaw-session-02",
+          "sessionId": "openclaw-session-02",
+          "action": "write:session-02-bundle",
+          "tier": "Assisted",
+          "requestedAtIso": "2026-04-30T00:00:01.000Z",
+          "status": "approved",
+          "executionKey": "openclaw-session-02:write-bundle",
+          "decidedAtIso": "2026-04-30T00:00:18.000Z",
+          "resumedAtIso": "2026-04-30T00:00:18.800Z"
+        },
+        "output": {
+          "sessionId": "openclaw-session-02",
+          "runId": "run-openclaw-02",
+          "agentId": "agent-openclaw-02",
+          "correlationId": "corr-openclaw-02",
+          "approvalId": "appr-openclaw-session-02",
+          "writtenAtIso": "2026-04-30T00:00:18.800Z",
+          "path": "outputs/openclaw-session-02/artifact.json",
+          "content": {
+            "sessionId": "openclaw-session-02",
+            "runId": "run-openclaw-02",
+            "action": "write:session-02-bundle",
+            "approvalId": "appr-openclaw-session-02"
+          }
+        },
+        "evidenceChain": [
+          {
+            "evidenceId": "openclaw-session-02-ev-01",
+            "sessionId": "openclaw-session-02",
+            "phase": "proposal",
+            "atIso": "2026-04-30T00:00:01.000Z",
+            "summary": "OpenClaw session proposed governed Action",
+            "previousHash": "genesis",
+            "hash": "fb101e390777357bb90fa7eb22bc02398220749ccda4c481058ec37599dc8257"
+          },
+          {
+            "evidenceId": "openclaw-session-02-ev-02",
+            "sessionId": "openclaw-session-02",
+            "phase": "blocked",
+            "atIso": "2026-04-30T00:00:03.000Z",
+            "summary": "Session waited on its own Approval Gate",
+            "previousHash": "fb101e390777357bb90fa7eb22bc02398220749ccda4c481058ec37599dc8257",
+            "hash": "3b4fa65c784cef15ca0ff1bc098b97f36487e94355df6e629cc4a8c26a5b2208"
+          },
+          {
+            "evidenceId": "openclaw-session-02-ev-03",
+            "sessionId": "openclaw-session-02",
+            "phase": "decision",
+            "atIso": "2026-04-30T00:00:18.000Z",
+            "summary": "Operator decision resolved this session only",
+            "previousHash": "3b4fa65c784cef15ca0ff1bc098b97f36487e94355df6e629cc4a8c26a5b2208",
+            "hash": "9812478434f7bff24133d9b62149cff2165adfdcdc7fa387fe17393793b06bc2"
+          },
+          {
+            "evidenceId": "openclaw-session-02-ev-04",
+            "sessionId": "openclaw-session-02",
+            "phase": "output-written",
+            "atIso": "2026-04-30T00:00:18.800Z",
+            "summary": "Session resumed and wrote its output bundle",
+            "previousHash": "9812478434f7bff24133d9b62149cff2165adfdcdc7fa387fe17393793b06bc2",
+            "hash": "c196cf7a59d9396233fb9341de76f4f77a6244866f6e45a16bf3b368c994b99f"
+          }
+        ]
+      },
+      {
+        "sessionId": "openclaw-session-03",
+        "tenantId": "tenant-a",
+        "workspaceId": "workspace-a",
+        "runId": "run-openclaw-03",
+        "correlationId": "corr-openclaw-03",
+        "agentId": "agent-openclaw-03",
+        "outputBundlePath": "outputs/openclaw-session-03/artifact.json",
+        "approval": {
+          "approvalId": "appr-openclaw-session-03",
+          "sessionId": "openclaw-session-03",
+          "action": "write:session-03-bundle",
+          "tier": "Assisted",
+          "requestedAtIso": "2026-04-30T00:00:02.000Z",
+          "status": "approved",
+          "executionKey": "openclaw-session-03:write-bundle",
+          "decidedAtIso": "2026-04-30T00:00:10.000Z",
+          "resumedAtIso": "2026-04-30T00:00:10.800Z"
+        },
+        "output": {
+          "sessionId": "openclaw-session-03",
+          "runId": "run-openclaw-03",
+          "agentId": "agent-openclaw-03",
+          "correlationId": "corr-openclaw-03",
+          "approvalId": "appr-openclaw-session-03",
+          "writtenAtIso": "2026-04-30T00:00:10.800Z",
+          "path": "outputs/openclaw-session-03/artifact.json",
+          "content": {
+            "sessionId": "openclaw-session-03",
+            "runId": "run-openclaw-03",
+            "action": "write:session-03-bundle",
+            "approvalId": "appr-openclaw-session-03"
+          }
+        },
+        "evidenceChain": [
+          {
+            "evidenceId": "openclaw-session-03-ev-01",
+            "sessionId": "openclaw-session-03",
+            "phase": "proposal",
+            "atIso": "2026-04-30T00:00:02.000Z",
+            "summary": "OpenClaw session proposed governed Action",
+            "previousHash": "genesis",
+            "hash": "4241402c3ad9c783fcd28210838d4c5246e6aadb5b156009da3a0a58e63aabbc"
+          },
+          {
+            "evidenceId": "openclaw-session-03-ev-02",
+            "sessionId": "openclaw-session-03",
+            "phase": "blocked",
+            "atIso": "2026-04-30T00:00:04.000Z",
+            "summary": "Session waited on its own Approval Gate",
+            "previousHash": "4241402c3ad9c783fcd28210838d4c5246e6aadb5b156009da3a0a58e63aabbc",
+            "hash": "e8c0506031944b48f1b422bab5ec381ad1fc60c91de5401583e174ba7aea5e10"
+          },
+          {
+            "evidenceId": "openclaw-session-03-ev-03",
+            "sessionId": "openclaw-session-03",
+            "phase": "decision",
+            "atIso": "2026-04-30T00:00:10.000Z",
+            "summary": "Operator decision resolved this session only",
+            "previousHash": "e8c0506031944b48f1b422bab5ec381ad1fc60c91de5401583e174ba7aea5e10",
+            "hash": "8a368db7324c707dd140706507cc008c6898d51990b95ec6d2d82998d803d36c"
+          },
+          {
+            "evidenceId": "openclaw-session-03-ev-04",
+            "sessionId": "openclaw-session-03",
+            "phase": "output-written",
+            "atIso": "2026-04-30T00:00:10.800Z",
+            "summary": "Session resumed and wrote its output bundle",
+            "previousHash": "8a368db7324c707dd140706507cc008c6898d51990b95ec6d2d82998d803d36c",
+            "hash": "b3a4468b52bf8c85bc89f858bf5699b2b55aae2f75a635c0602e11e9c1c59cdf"
+          }
+        ]
+      },
+      {
+        "sessionId": "openclaw-session-04",
+        "tenantId": "tenant-b",
+        "workspaceId": "workspace-b",
+        "runId": "run-openclaw-04",
+        "correlationId": "corr-openclaw-04",
+        "agentId": "agent-openclaw-04",
+        "outputBundlePath": "outputs/openclaw-session-04/artifact.json",
+        "approval": {
+          "approvalId": "appr-openclaw-session-04",
+          "sessionId": "openclaw-session-04",
+          "action": "write:session-04-bundle",
+          "tier": "Assisted",
+          "requestedAtIso": "2026-04-30T00:00:03.000Z",
+          "status": "approved",
+          "executionKey": "openclaw-session-04:write-bundle",
+          "decidedAtIso": "2026-04-30T00:00:10.400Z",
+          "resumedAtIso": "2026-04-30T00:00:11.200Z"
+        },
+        "output": {
+          "sessionId": "openclaw-session-04",
+          "runId": "run-openclaw-04",
+          "agentId": "agent-openclaw-04",
+          "correlationId": "corr-openclaw-04",
+          "approvalId": "appr-openclaw-session-04",
+          "writtenAtIso": "2026-04-30T00:00:11.200Z",
+          "path": "outputs/openclaw-session-04/artifact.json",
+          "content": {
+            "sessionId": "openclaw-session-04",
+            "runId": "run-openclaw-04",
+            "action": "write:session-04-bundle",
+            "approvalId": "appr-openclaw-session-04"
+          }
+        },
+        "evidenceChain": [
+          {
+            "evidenceId": "openclaw-session-04-ev-01",
+            "sessionId": "openclaw-session-04",
+            "phase": "proposal",
+            "atIso": "2026-04-30T00:00:03.000Z",
+            "summary": "OpenClaw session proposed governed Action",
+            "previousHash": "genesis",
+            "hash": "6153d0c31eafb5b6a9ca75568e0b078cff9ef7194918f0427c9795190380e3d9"
+          },
+          {
+            "evidenceId": "openclaw-session-04-ev-02",
+            "sessionId": "openclaw-session-04",
+            "phase": "blocked",
+            "atIso": "2026-04-30T00:00:05.000Z",
+            "summary": "Session waited on its own Approval Gate",
+            "previousHash": "6153d0c31eafb5b6a9ca75568e0b078cff9ef7194918f0427c9795190380e3d9",
+            "hash": "673c9eea082669f6f8a47c03eec3a58e4741525b68217289603b1d41edb28d98"
+          },
+          {
+            "evidenceId": "openclaw-session-04-ev-03",
+            "sessionId": "openclaw-session-04",
+            "phase": "decision",
+            "atIso": "2026-04-30T00:00:10.400Z",
+            "summary": "Operator decision resolved this session only",
+            "previousHash": "673c9eea082669f6f8a47c03eec3a58e4741525b68217289603b1d41edb28d98",
+            "hash": "8f3d35e86e86b98df6af8a132882aa3e3a799e9ea6e582bba1808ad9fe9b64f3"
+          },
+          {
+            "evidenceId": "openclaw-session-04-ev-04",
+            "sessionId": "openclaw-session-04",
+            "phase": "output-written",
+            "atIso": "2026-04-30T00:00:11.200Z",
+            "summary": "Session resumed and wrote its output bundle",
+            "previousHash": "8f3d35e86e86b98df6af8a132882aa3e3a799e9ea6e582bba1808ad9fe9b64f3",
+            "hash": "d0d365a760022772a6bcd547d80285f1fba2649f6565d92a3833718d06611e94"
+          }
+        ]
+      }
+    ],
+    "decisionOrder": [
+      {
+        "sessionId": "openclaw-session-03",
+        "approvalId": "appr-openclaw-session-03",
+        "decidedAtIso": "2026-04-30T00:00:10.000Z"
+      },
+      {
+        "sessionId": "openclaw-session-01",
+        "approvalId": "appr-openclaw-session-01",
+        "decidedAtIso": "2026-04-30T00:00:10.200Z"
+      },
+      {
+        "sessionId": "openclaw-session-04",
+        "approvalId": "appr-openclaw-session-04",
+        "decidedAtIso": "2026-04-30T00:00:10.400Z"
+      },
+      {
+        "sessionId": "openclaw-session-02",
+        "approvalId": "appr-openclaw-session-02",
+        "decidedAtIso": "2026-04-30T00:00:18.000Z"
+      }
+    ],
+    "outputBundles": [
+      {
+        "sessionId": "openclaw-session-03",
+        "runId": "run-openclaw-03",
+        "agentId": "agent-openclaw-03",
+        "correlationId": "corr-openclaw-03",
+        "approvalId": "appr-openclaw-session-03",
+        "writtenAtIso": "2026-04-30T00:00:10.800Z",
+        "path": "outputs/openclaw-session-03/artifact.json",
+        "content": {
+          "sessionId": "openclaw-session-03",
+          "runId": "run-openclaw-03",
+          "action": "write:session-03-bundle",
+          "approvalId": "appr-openclaw-session-03"
+        }
+      },
+      {
+        "sessionId": "openclaw-session-01",
+        "runId": "run-openclaw-01",
+        "agentId": "agent-openclaw-01",
+        "correlationId": "corr-openclaw-01",
+        "approvalId": "appr-openclaw-session-01",
+        "writtenAtIso": "2026-04-30T00:00:11.000Z",
+        "path": "outputs/openclaw-session-01/artifact.json",
+        "content": {
+          "sessionId": "openclaw-session-01",
+          "runId": "run-openclaw-01",
+          "action": "write:session-01-bundle",
+          "approvalId": "appr-openclaw-session-01"
+        }
+      },
+      {
+        "sessionId": "openclaw-session-04",
+        "runId": "run-openclaw-04",
+        "agentId": "agent-openclaw-04",
+        "correlationId": "corr-openclaw-04",
+        "approvalId": "appr-openclaw-session-04",
+        "writtenAtIso": "2026-04-30T00:00:11.200Z",
+        "path": "outputs/openclaw-session-04/artifact.json",
+        "content": {
+          "sessionId": "openclaw-session-04",
+          "runId": "run-openclaw-04",
+          "action": "write:session-04-bundle",
+          "approvalId": "appr-openclaw-session-04"
+        }
+      },
+      {
+        "sessionId": "openclaw-session-02",
+        "runId": "run-openclaw-02",
+        "agentId": "agent-openclaw-02",
+        "correlationId": "corr-openclaw-02",
+        "approvalId": "appr-openclaw-session-02",
+        "writtenAtIso": "2026-04-30T00:00:18.800Z",
+        "path": "outputs/openclaw-session-02/artifact.json",
+        "content": {
+          "sessionId": "openclaw-session-02",
+          "runId": "run-openclaw-02",
+          "action": "write:session-02-bundle",
+          "approvalId": "appr-openclaw-session-02"
+        }
+      }
+    ],
+    "crossSessionLeaks": [],
+    "throughput": {
+      "simulatedDurationSeconds": 18.8,
+      "completedSessions": 4,
+      "completedActions": 4,
+      "sessionThroughputPerSecond": 0.2127659574468085,
+      "actionThroughputPerSecond": 0.2127659574468085
+    },
+    "observedBottlenecks": [],
+    "queueMetrics": {
+      "schemaVersion": 1,
+      "scenarioId": "openclaw-concurrent-sessions",
+      "attemptId": "deterministic-concurrency-v1",
+      "generatedAtIso": "2026-04-30T00:00:25.000Z",
+      "metrics": {
+        "approval_count_by_tier": {
+          "Human-approve": 1,
+          "Assisted": 3
+        },
+        "approval_count_by_session": {
+          "openclaw-session-01": 1,
+          "openclaw-session-02": 1,
+          "openclaw-session-03": 1,
+          "openclaw-session-04": 1
+        },
+        "pending_age_ms_p50": 8000,
+        "pending_age_ms_p95": 17000,
+        "pending_age_ms_max": 17000,
+        "resume_latency_ms": [
+          800,
+          800,
+          800,
+          800
+        ],
+        "blocked_duration_ms": [
+          8000,
+          10200,
+          7400,
+          17000
+        ],
+        "queue_depth_over_time": [
+          {
+            "timestampIso": "2026-04-30T00:00:00.000Z",
+            "depth": 1
+          },
+          {
+            "timestampIso": "2026-04-30T00:00:03.500Z",
+            "depth": 4
+          },
+          {
+            "timestampIso": "2026-04-30T00:00:09.900Z",
+            "depth": 4
+          },
+          {
+            "timestampIso": "2026-04-30T00:00:10.300Z",
+            "depth": 2
+          },
+          {
+            "timestampIso": "2026-04-30T00:00:10.700Z",
+            "depth": 1
+          },
+          {
+            "timestampIso": "2026-04-30T00:00:18.500Z",
+            "depth": 0
+          }
+        ],
+        "denial_count": 0,
+        "request_changes_count": 0,
+        "escalation_count": 0,
+        "expiry_count": 0,
+        "duplicate_execution_count": 0,
+        "evidence_completeness_count": 4,
+        "restart_count": 0,
+        "successful_resume_count": 4
+      }
+    },
+    "evidenceSummary": {
+      "schemaVersion": 1,
+      "scenarioId": "openclaw-concurrent-sessions",
+      "attemptId": "deterministic-concurrency-v1",
+      "generatedAtIso": "2026-04-30T00:00:25.000Z",
+      "requiredArtifacts": [
+        "outcome.json",
+        "queue-metrics.json",
+        "evidence-summary.json",
+        "report.md"
+      ],
+      "presentArtifacts": [
+        "outcome.json",
+        "queue-metrics.json",
+        "evidence-summary.json",
+        "report.md"
+      ],
+      "missingArtifacts": [],
+      "evidenceCompletenessCount": 4,
+      "complete": true
+    },
+    "artifactPaths": {
+      "queueMetricsPath": "experiments\\iteration-2\\results\\openclaw-concurrent-sessions\\deterministic-concurrency-v1\\queue-metrics.json",
+      "evidenceSummaryPath": "experiments\\iteration-2\\results\\openclaw-concurrent-sessions\\deterministic-concurrency-v1\\evidence-summary.json",
+      "reportPath": "experiments\\iteration-2\\results\\openclaw-concurrent-sessions\\deterministic-concurrency-v1\\report.md"
+    },
+    "thresholdAssertions": [
+      {
+        "label": "duplicate execution count within threshold",
+        "passed": true,
+        "detail": "0 <= 0"
+      },
+      {
+        "label": "pending age p95 within threshold",
+        "passed": true,
+        "detail": "17000 <= 20000"
+      },
+      {
+        "label": "resume latency within threshold",
+        "passed": true,
+        "detail": "800 <= 1000"
+      },
+      {
+        "label": "evidence completeness count meets threshold",
+        "passed": true,
+        "detail": "4 >= 4"
+      },
+      {
+        "label": "successful resume count meets threshold",
+        "passed": true,
+        "detail": "4 >= 4"
+      }
+    ]
+  }
+}

@@ -1,0 +1,42 @@
+[
+  {
+    "variantId": "process-crash",
+    "runId": "run-recovery-crash",
+    "controlState": "degraded",
+    "cockpitState": {
+      "visibleStatus": "approved-resume-pending",
+      "degradedReasonVisible": true,
+      "approvalStillActionable": true
+    }
+  },
+  {
+    "variantId": "service-restart",
+    "runId": "run-recovery-service",
+    "controlState": "waiting",
+    "cockpitState": {
+      "visibleStatus": "approved-resume-pending",
+      "degradedReasonVisible": false,
+      "approvalStillActionable": true
+    }
+  },
+  {
+    "variantId": "deploy-restart",
+    "runId": "run-recovery-deploy",
+    "controlState": "degraded",
+    "cockpitState": {
+      "visibleStatus": "approved-resume-pending",
+      "degradedReasonVisible": true,
+      "approvalStillActionable": true
+    }
+  },
+  {
+    "variantId": "provider-outage",
+    "runId": "run-recovery-provider",
+    "controlState": "blocked",
+    "cockpitState": {
+      "visibleStatus": "waiting-recovery",
+      "degradedReasonVisible": true,
+      "approvalStillActionable": true
+    }
+  }
+]

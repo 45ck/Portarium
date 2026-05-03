@@ -1,0 +1,133 @@
+[
+  {
+    "variantId": "active-in-progress",
+    "requestKey": "execute-reservation-active-in-progress",
+    "reservationBefore": "InProgress",
+    "reservationAfter": "InProgress",
+    "fingerprint": "e40f07e130bf93fe139b72e685e745367d8eeb3c44df8f3555c535951f4a2afb",
+    "originalFingerprint": "e40f07e130bf93fe139b72e685e745367d8eeb3c44df8f3555c535951f4a2afb",
+    "leaseExpiresAtIso": "2026-04-30T03:16:00.000Z",
+    "released": false,
+    "completed": false,
+    "rawRequest": {
+      "workspaceId": "ws-reservation-recovery",
+      "approvalId": "appr-reservation-active-in-progress",
+      "flowRef": "flow-send-approved-action",
+      "payload": {
+        "action": "send-approved-update",
+        "externalObjectRef": "sor://crm/opportunity/redacted-fixture",
+        "oauthToken": "[REDACTED]",
+        "customerEmail": "[REDACTED_EMAIL]",
+        "vendorUrl": "[REDACTED_PATH]"
+      },
+      "principalId": "agent-reservation-recovery",
+      "authorization": "[REDACTED]",
+      "operatorEmail": "[REDACTED_EMAIL]"
+    }
+  },
+  {
+    "variantId": "completed-replay",
+    "requestKey": "execute-reservation-completed-replay",
+    "reservationBefore": "Completed",
+    "reservationAfter": "Completed",
+    "fingerprint": "d02f58ab0f3b027cb26b8782cb61f4554951dd3ccb4c8a3eb5f2f84d95a3cbae",
+    "originalFingerprint": "d02f58ab0f3b027cb26b8782cb61f4554951dd3ccb4c8a3eb5f2f84d95a3cbae",
+    "leaseExpiresAtIso": "2026-04-30T03:16:03.000Z",
+    "released": false,
+    "completed": true,
+    "rawRequest": {
+      "workspaceId": "ws-reservation-recovery",
+      "approvalId": "appr-reservation-completed-replay",
+      "flowRef": "flow-send-approved-action",
+      "payload": {
+        "action": "send-approved-update",
+        "externalObjectRef": "sor://crm/opportunity/redacted-fixture",
+        "oauthToken": "[REDACTED]",
+        "customerEmail": "[REDACTED_EMAIL]",
+        "vendorUrl": "[REDACTED_PATH]"
+      },
+      "principalId": "agent-reservation-recovery",
+      "authorization": "[REDACTED]",
+      "operatorEmail": "[REDACTED_EMAIL]"
+    }
+  },
+  {
+    "variantId": "fingerprint-conflict",
+    "requestKey": "execute-reservation-fingerprint-conflict",
+    "reservationBefore": "InProgress",
+    "reservationAfter": "Conflict",
+    "fingerprint": "9bcb4d703ceb9f731596d8cfcb206cb9135ab1da9a1416b3850c3654b7acb0f7",
+    "originalFingerprint": "251148d11a201b1541f680b2622d1d07696f0a24105bbf37fadbd4b0809602a3",
+    "leaseExpiresAtIso": "2026-04-30T03:16:06.000Z",
+    "released": false,
+    "completed": false,
+    "rawRequest": {
+      "workspaceId": "ws-reservation-recovery",
+      "approvalId": "appr-reservation-fingerprint-conflict",
+      "flowRef": "flow-send-approved-action",
+      "payload": {
+        "action": "send-mutated-update",
+        "externalObjectRef": "sor://crm/opportunity/redacted-fixture",
+        "oauthToken": "[REDACTED]",
+        "customerEmail": "[REDACTED_EMAIL]",
+        "vendorUrl": "[REDACTED_PATH]"
+      },
+      "principalId": "agent-reservation-recovery",
+      "authorization": "[REDACTED]",
+      "operatorEmail": "[REDACTED_EMAIL]"
+    }
+  },
+  {
+    "variantId": "claim-lost-release",
+    "requestKey": "execute-reservation-claim-lost-release",
+    "reservationBefore": "Began",
+    "reservationAfter": "Released",
+    "fingerprint": "c2f6446429efa735e5a698b46338a562a04f10df4c9f56bcdd5398319642e04c",
+    "originalFingerprint": "c2f6446429efa735e5a698b46338a562a04f10df4c9f56bcdd5398319642e04c",
+    "leaseExpiresAtIso": "2026-04-30T03:16:09.000Z",
+    "released": true,
+    "completed": false,
+    "rawRequest": {
+      "workspaceId": "ws-reservation-recovery",
+      "approvalId": "appr-reservation-claim-lost-release",
+      "flowRef": "flow-send-approved-action",
+      "payload": {
+        "action": "send-approved-update",
+        "externalObjectRef": "sor://crm/opportunity/redacted-fixture",
+        "oauthToken": "[REDACTED]",
+        "customerEmail": "[REDACTED_EMAIL]",
+        "vendorUrl": "[REDACTED_PATH]"
+      },
+      "principalId": "agent-reservation-recovery",
+      "authorization": "[REDACTED]",
+      "operatorEmail": "[REDACTED_EMAIL]"
+    }
+  },
+  {
+    "variantId": "complete-lost-recovery",
+    "requestKey": "execute-reservation-complete-lost-recovery",
+    "reservationBefore": "Began",
+    "reservationAfter": "InProgress",
+    "fingerprint": "f8a8cd069b53b65778a8b236de4b9d1f0effc6d8895a77bb4b18540e17c2c4cd",
+    "originalFingerprint": "f8a8cd069b53b65778a8b236de4b9d1f0effc6d8895a77bb4b18540e17c2c4cd",
+    "leaseExpiresAtIso": "2026-04-30T03:16:12.000Z",
+    "released": false,
+    "completed": false,
+    "completionFailure": "reservation-complete-returned-false",
+    "rawRequest": {
+      "workspaceId": "ws-reservation-recovery",
+      "approvalId": "appr-reservation-complete-lost-recovery",
+      "flowRef": "flow-send-approved-action",
+      "payload": {
+        "action": "send-approved-update",
+        "externalObjectRef": "sor://crm/opportunity/redacted-fixture",
+        "oauthToken": "[REDACTED]",
+        "customerEmail": "[REDACTED_EMAIL]",
+        "vendorUrl": "[REDACTED_PATH]"
+      },
+      "principalId": "agent-reservation-recovery",
+      "authorization": "[REDACTED]",
+      "operatorEmail": "[REDACTED_EMAIL]"
+    }
+  }
+]

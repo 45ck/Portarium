@@ -1,0 +1,726 @@
+{
+  "experiment": "execution-reservation-recovery",
+  "timestamp": "2026-05-03T03:22:44.117Z",
+  "outcome": "confirmed",
+  "duration_ms": 34,
+  "assertions": [
+    {
+      "label": "all execution reservation recovery variants are represented",
+      "passed": true,
+      "detail": "variants=active-in-progress,completed-replay,fingerprint-conflict,claim-lost-release,complete-lost-recovery"
+    },
+    {
+      "label": "matching active reservation returns Executing without duplicate dispatch",
+      "passed": true,
+      "detail": "{\"status\":\"Executing\",\"replayed\":false,\"dispatchCount\":0,\"duplicateDispatchCount\":0,\"conflict\":false}"
+    },
+    {
+      "label": "completed reservation replays terminal output without dispatch",
+      "passed": true,
+      "detail": "{\"status\":\"Executed\",\"replayed\":true,\"dispatchCount\":0,\"duplicateDispatchCount\":0,\"conflict\":false}"
+    },
+    {
+      "label": "conflicting fingerprints fail closed before dispatch",
+      "passed": true,
+      "detail": "{\"status\":\"Conflict\",\"replayed\":false,\"dispatchCount\":0,\"duplicateDispatchCount\":0,\"conflict\":true}"
+    },
+    {
+      "label": "lost approval claim releases reservation without dispatch",
+      "passed": true,
+      "detail": "{\"variantId\":\"claim-lost-release\",\"requestKey\":\"execute-reservation-claim-lost-release\",\"reservationBefore\":\"Began\",\"reservationAfter\":\"Released\",\"fingerprint\":\"c2f6446429efa735e5a698b46338a562a04f10df4c9f56bcdd5398319642e04c\",\"originalFingerprint\":\"c2f6446429efa735e5a698b46338a562a04f10df4c9f56bcdd5398319642e04c\",\"leaseExpiresAtIso\":\"2026-04-30T03:16:09.000Z\",\"released\":true,\"completed\":false,\"rawRequest\":{\"workspaceId\":\"ws-reservation-recovery\",\"approvalId\":\"appr-reservation-claim-lost-release\",\"flowRef\":\"flow-send-approved-action\",\"payload\":{\"action\":\"send-approved-update\",\"externalObjectRef\":\"sor://crm/opportunity/redacted-fixture\",\"oauthToken\":\"[REDACTED]\",\"customerEmail\":\"[REDACTED_EMAIL]\",\"vendorUrl\":\"[REDACTED_PATH]\"},\"principalId\":\"agent-reservation-recovery\",\"authorization\":\"[REDACTED]\",\"operatorEmail\":\"[REDACTED_EMAIL]\"}}"
+    },
+    {
+      "label": "lost completion recovery stays in progress and does not dispatch again",
+      "passed": true,
+      "detail": "{\"status\":\"Executing\",\"replayed\":false,\"dispatchCount\":1,\"duplicateDispatchCount\":0,\"conflict\":false}"
+    },
+    {
+      "label": "reservation artifacts are redacted before write",
+      "passed": true,
+      "detail": "{\"checkedAtIso\":\"2026-04-30T03:01:35.000Z\",\"forbiddenFragmentCount\":5,\"reservationLedgerRedacted\":true,\"dispatchAttemptsRedacted\":true,\"recoveryDecisionsRedacted\":true}"
+    },
+    {
+      "label": "telemetry records no duplicate execution",
+      "passed": true,
+      "detail": "duplicates=0, dispatchDuplicates=0"
+    },
+    {
+      "label": "evidence chains remain continuous across recovery",
+      "passed": true,
+      "detail": "chains=5"
+    },
+    {
+      "label": "telemetry artifacts are complete",
+      "passed": true,
+      "detail": "present=7, missing="
+    },
+    {
+      "label": "threshold assertions pass",
+      "passed": true,
+      "detail": "[{\"label\":\"duplicate execution count within threshold\",\"passed\":true,\"detail\":\"0 <= 0\"},{\"label\":\"pending age p95 within threshold\",\"passed\":true,\"detail\":\"60000 <= 80000\"},{\"label\":\"resume latency within threshold\",\"passed\":true,\"detail\":\"700 <= 1000\"},{\"label\":\"evidence completeness count meets threshold\",\"passed\":true,\"detail\":\"7 >= 7\"},{\"label\":\"successful resume count meets threshold\",\"passed\":true,\"detail\":\"1 >= 1\"}]"
+    }
+  ],
+  "trace": {
+    "beadId": "bead-1142",
+    "comparesTo": "governed-resume-recovery",
+    "mode": "deterministic-reservation-recovery",
+    "variants": [
+      {
+        "variantId": "active-in-progress",
+        "runId": "run-reservation-active-in-progress",
+        "sessionId": "session-reservation-active-in-progress",
+        "approvalId": "appr-reservation-active-in-progress",
+        "commandResult": {
+          "status": "Executing",
+          "replayed": false,
+          "dispatchCount": 0,
+          "duplicateDispatchCount": 0,
+          "conflict": false
+        },
+        "reservationLedger": {
+          "variantId": "active-in-progress",
+          "requestKey": "execute-reservation-active-in-progress",
+          "reservationBefore": "InProgress",
+          "reservationAfter": "InProgress",
+          "fingerprint": "e40f07e130bf93fe139b72e685e745367d8eeb3c44df8f3555c535951f4a2afb",
+          "originalFingerprint": "e40f07e130bf93fe139b72e685e745367d8eeb3c44df8f3555c535951f4a2afb",
+          "leaseExpiresAtIso": "2026-04-30T03:16:00.000Z",
+          "released": false,
+          "completed": false,
+          "rawRequest": {
+            "workspaceId": "ws-reservation-recovery",
+            "approvalId": "appr-reservation-active-in-progress",
+            "flowRef": "flow-send-approved-action",
+            "payload": {
+              "action": "send-approved-update",
+              "externalObjectRef": "sor://crm/opportunity/redacted-fixture",
+              "oauthToken": "[REDACTED]",
+              "customerEmail": "[REDACTED_EMAIL]",
+              "vendorUrl": "[REDACTED_PATH]"
+            },
+            "principalId": "agent-reservation-recovery",
+            "authorization": "[REDACTED]",
+            "operatorEmail": "[REDACTED_EMAIL]"
+          }
+        },
+        "dispatchAttempt": {
+          "variantId": "active-in-progress",
+          "requestKey": "execute-reservation-active-in-progress",
+          "attemptedDispatches": 0,
+          "duplicateDispatches": 0,
+          "actionRunnerCalled": false,
+          "dispatchPayload": {
+            "action": "send-approved-update",
+            "externalObjectRef": "sor://crm/opportunity/redacted-fixture",
+            "oauthToken": "[REDACTED]",
+            "customerEmail": "[REDACTED_EMAIL]",
+            "vendorUrl": "[REDACTED_PATH]"
+          }
+        },
+        "recoveryDecision": {
+          "variantId": "active-in-progress",
+          "recoveryPath": "return-executing",
+          "returnedStatus": "Executing",
+          "operatorVisibleState": "execution-reservation-in-progress",
+          "safeToRetry": true,
+          "requiresOperatorReconcile": false,
+          "redaction": {
+            "artifactPolicy": "sensitive request fields redacted before write",
+            "forbiddenFragments": [
+              "[REDACTED]",
+              "[REDACTED]",
+              "[REDACTED]",
+              "[REDACTED]",
+              "[REDACTED]"
+            ]
+          }
+        },
+        "evidenceChain": [
+          {
+            "evidenceId": "active-in-progress-ev-01",
+            "phase": "approval-approved",
+            "atIso": "2026-04-30T03:01:00.000Z",
+            "summary": "Approval Gate decision permits Action execution",
+            "previousHash": "genesis",
+            "hash": "534b119d125cfed79d3afdb6a9b2a2a3e40452c225f93f46f8972fe4b1792c81"
+          },
+          {
+            "evidenceId": "active-in-progress-ev-02",
+            "phase": "reservation-observed",
+            "atIso": "2026-04-30T03:01:00.250Z",
+            "summary": "Execution reservation observed as InProgress",
+            "previousHash": "534b119d125cfed79d3afdb6a9b2a2a3e40452c225f93f46f8972fe4b1792c81",
+            "hash": "6227037a0822990a2f402bfbd4566259527ee6fbbd32d37aa8eeff24a9cddebc"
+          },
+          {
+            "evidenceId": "active-in-progress-ev-03",
+            "phase": "recovery-retry",
+            "atIso": "2026-04-30T03:01:10.000Z",
+            "summary": "Retry path resolved as return-executing",
+            "previousHash": "6227037a0822990a2f402bfbd4566259527ee6fbbd32d37aa8eeff24a9cddebc",
+            "hash": "195a420e32b0442577f22500dadfbe3368b977ff987ac79c40a47751451fe23e"
+          },
+          {
+            "evidenceId": "active-in-progress-ev-04",
+            "phase": "artifact-redacted",
+            "atIso": "2026-04-30T03:01:10.250Z",
+            "summary": "Reservation recovery artifacts written with redacted request data",
+            "previousHash": "195a420e32b0442577f22500dadfbe3368b977ff987ac79c40a47751451fe23e",
+            "hash": "ea7038317b47819b637556fafb1d69fa3cfa7e47b2a91afed45052b41a564fc5"
+          }
+        ]
+      },
+      {
+        "variantId": "completed-replay",
+        "runId": "run-reservation-completed-replay",
+        "sessionId": "session-reservation-completed-replay",
+        "approvalId": "appr-reservation-completed-replay",
+        "commandResult": {
+          "status": "Executed",
+          "replayed": true,
+          "dispatchCount": 0,
+          "duplicateDispatchCount": 0,
+          "conflict": false
+        },
+        "reservationLedger": {
+          "variantId": "completed-replay",
+          "requestKey": "execute-reservation-completed-replay",
+          "reservationBefore": "Completed",
+          "reservationAfter": "Completed",
+          "fingerprint": "d02f58ab0f3b027cb26b8782cb61f4554951dd3ccb4c8a3eb5f2f84d95a3cbae",
+          "originalFingerprint": "d02f58ab0f3b027cb26b8782cb61f4554951dd3ccb4c8a3eb5f2f84d95a3cbae",
+          "leaseExpiresAtIso": "2026-04-30T03:16:03.000Z",
+          "released": false,
+          "completed": true,
+          "rawRequest": {
+            "workspaceId": "ws-reservation-recovery",
+            "approvalId": "appr-reservation-completed-replay",
+            "flowRef": "flow-send-approved-action",
+            "payload": {
+              "action": "send-approved-update",
+              "externalObjectRef": "sor://crm/opportunity/redacted-fixture",
+              "oauthToken": "[REDACTED]",
+              "customerEmail": "[REDACTED_EMAIL]",
+              "vendorUrl": "[REDACTED_PATH]"
+            },
+            "principalId": "agent-reservation-recovery",
+            "authorization": "[REDACTED]",
+            "operatorEmail": "[REDACTED_EMAIL]"
+          }
+        },
+        "dispatchAttempt": {
+          "variantId": "completed-replay",
+          "requestKey": "execute-reservation-completed-replay",
+          "attemptedDispatches": 0,
+          "duplicateDispatches": 0,
+          "actionRunnerCalled": false,
+          "dispatchPayload": {
+            "action": "send-approved-update",
+            "externalObjectRef": "sor://crm/opportunity/redacted-fixture",
+            "oauthToken": "[REDACTED]",
+            "customerEmail": "[REDACTED_EMAIL]",
+            "vendorUrl": "[REDACTED_PATH]"
+          }
+        },
+        "recoveryDecision": {
+          "variantId": "completed-replay",
+          "recoveryPath": "replay-completed-output",
+          "returnedStatus": "Executed",
+          "operatorVisibleState": "execution-reservation-completed",
+          "safeToRetry": false,
+          "requiresOperatorReconcile": false,
+          "redaction": {
+            "artifactPolicy": "sensitive request fields redacted before write",
+            "forbiddenFragments": [
+              "[REDACTED]",
+              "[REDACTED]",
+              "[REDACTED]",
+              "[REDACTED]",
+              "[REDACTED]"
+            ]
+          }
+        },
+        "evidenceChain": [
+          {
+            "evidenceId": "completed-replay-ev-01",
+            "phase": "approval-approved",
+            "atIso": "2026-04-30T03:01:03.000Z",
+            "summary": "Approval Gate decision permits Action execution",
+            "previousHash": "genesis",
+            "hash": "3fe90de7cfee51edae8bcf64cbf9aabb7e3b476165dc4c2d137bb8f33bd001b6"
+          },
+          {
+            "evidenceId": "completed-replay-ev-02",
+            "phase": "reservation-observed",
+            "atIso": "2026-04-30T03:01:03.250Z",
+            "summary": "Execution reservation observed as Completed",
+            "previousHash": "3fe90de7cfee51edae8bcf64cbf9aabb7e3b476165dc4c2d137bb8f33bd001b6",
+            "hash": "7fd5d40720dc61efed4094c98f6b50365d2ceacca5616d3a489b92aad209b0ca"
+          },
+          {
+            "evidenceId": "completed-replay-ev-03",
+            "phase": "recovery-retry",
+            "atIso": "2026-04-30T03:01:08.000Z",
+            "summary": "Retry path resolved as replay-completed-output",
+            "previousHash": "7fd5d40720dc61efed4094c98f6b50365d2ceacca5616d3a489b92aad209b0ca",
+            "hash": "d2f9bcd7aa0217d72423bc78ab72ddda02207f44526b3f35defda4ddd876bed6"
+          },
+          {
+            "evidenceId": "completed-replay-ev-04",
+            "phase": "artifact-redacted",
+            "atIso": "2026-04-30T03:01:08.250Z",
+            "summary": "Reservation recovery artifacts written with redacted request data",
+            "previousHash": "d2f9bcd7aa0217d72423bc78ab72ddda02207f44526b3f35defda4ddd876bed6",
+            "hash": "990f9154c56726bd673730d2285290c523cb7fdb8779c69c144d57b152f7cd42"
+          }
+        ]
+      },
+      {
+        "variantId": "fingerprint-conflict",
+        "runId": "run-reservation-fingerprint-conflict",
+        "sessionId": "session-reservation-fingerprint-conflict",
+        "approvalId": "appr-reservation-fingerprint-conflict",
+        "commandResult": {
+          "status": "Conflict",
+          "replayed": false,
+          "dispatchCount": 0,
+          "duplicateDispatchCount": 0,
+          "conflict": true
+        },
+        "reservationLedger": {
+          "variantId": "fingerprint-conflict",
+          "requestKey": "execute-reservation-fingerprint-conflict",
+          "reservationBefore": "InProgress",
+          "reservationAfter": "Conflict",
+          "fingerprint": "9bcb4d703ceb9f731596d8cfcb206cb9135ab1da9a1416b3850c3654b7acb0f7",
+          "originalFingerprint": "251148d11a201b1541f680b2622d1d07696f0a24105bbf37fadbd4b0809602a3",
+          "leaseExpiresAtIso": "2026-04-30T03:16:06.000Z",
+          "released": false,
+          "completed": false,
+          "rawRequest": {
+            "workspaceId": "ws-reservation-recovery",
+            "approvalId": "appr-reservation-fingerprint-conflict",
+            "flowRef": "flow-send-approved-action",
+            "payload": {
+              "action": "send-mutated-update",
+              "externalObjectRef": "sor://crm/opportunity/redacted-fixture",
+              "oauthToken": "[REDACTED]",
+              "customerEmail": "[REDACTED_EMAIL]",
+              "vendorUrl": "[REDACTED_PATH]"
+            },
+            "principalId": "agent-reservation-recovery",
+            "authorization": "[REDACTED]",
+            "operatorEmail": "[REDACTED_EMAIL]"
+          }
+        },
+        "dispatchAttempt": {
+          "variantId": "fingerprint-conflict",
+          "requestKey": "execute-reservation-fingerprint-conflict",
+          "attemptedDispatches": 0,
+          "duplicateDispatches": 0,
+          "actionRunnerCalled": false,
+          "dispatchPayload": {
+            "action": "send-mutated-update",
+            "externalObjectRef": "sor://crm/opportunity/redacted-fixture",
+            "oauthToken": "[REDACTED]",
+            "customerEmail": "[REDACTED_EMAIL]",
+            "vendorUrl": "[REDACTED_PATH]"
+          }
+        },
+        "recoveryDecision": {
+          "variantId": "fingerprint-conflict",
+          "recoveryPath": "fail-closed-conflict",
+          "returnedStatus": "Conflict",
+          "operatorVisibleState": "execution-reservation-conflict",
+          "safeToRetry": false,
+          "requiresOperatorReconcile": false,
+          "redaction": {
+            "artifactPolicy": "sensitive request fields redacted before write",
+            "forbiddenFragments": [
+              "[REDACTED]",
+              "[REDACTED]",
+              "[REDACTED]",
+              "[REDACTED]",
+              "[REDACTED]"
+            ]
+          }
+        },
+        "evidenceChain": [
+          {
+            "evidenceId": "fingerprint-conflict-ev-01",
+            "phase": "approval-approved",
+            "atIso": "2026-04-30T03:01:06.000Z",
+            "summary": "Approval Gate decision permits Action execution",
+            "previousHash": "genesis",
+            "hash": "6840c45080b427acf4d9c40de5104bab7927ecd2c9369eb10bb4b73addb2d91b"
+          },
+          {
+            "evidenceId": "fingerprint-conflict-ev-02",
+            "phase": "reservation-observed",
+            "atIso": "2026-04-30T03:01:06.250Z",
+            "summary": "Execution reservation observed as InProgress",
+            "previousHash": "6840c45080b427acf4d9c40de5104bab7927ecd2c9369eb10bb4b73addb2d91b",
+            "hash": "be40c6368e4804410ac62f9d2fa59466ad3fd14050cc28fb0bc1c66ad8326752"
+          },
+          {
+            "evidenceId": "fingerprint-conflict-ev-03",
+            "phase": "recovery-retry",
+            "atIso": "2026-04-30T03:01:12.000Z",
+            "summary": "Retry path resolved as fail-closed-conflict",
+            "previousHash": "be40c6368e4804410ac62f9d2fa59466ad3fd14050cc28fb0bc1c66ad8326752",
+            "hash": "8442949e7618eb4fa9b6e44b0169d10f4e3858e327ca3c5a8bd37fa0c4f84fa1"
+          },
+          {
+            "evidenceId": "fingerprint-conflict-ev-04",
+            "phase": "artifact-redacted",
+            "atIso": "2026-04-30T03:01:12.250Z",
+            "summary": "Reservation recovery artifacts written with redacted request data",
+            "previousHash": "8442949e7618eb4fa9b6e44b0169d10f4e3858e327ca3c5a8bd37fa0c4f84fa1",
+            "hash": "12e1c1c02d2ba3d916e7a5c3990be11b8749c902d192589dcb028f91be628ceb"
+          }
+        ]
+      },
+      {
+        "variantId": "claim-lost-release",
+        "runId": "run-reservation-claim-lost-release",
+        "sessionId": "session-reservation-claim-lost-release",
+        "approvalId": "appr-reservation-claim-lost-release",
+        "commandResult": {
+          "status": "Conflict",
+          "replayed": false,
+          "dispatchCount": 0,
+          "duplicateDispatchCount": 0,
+          "conflict": true
+        },
+        "reservationLedger": {
+          "variantId": "claim-lost-release",
+          "requestKey": "execute-reservation-claim-lost-release",
+          "reservationBefore": "Began",
+          "reservationAfter": "Released",
+          "fingerprint": "c2f6446429efa735e5a698b46338a562a04f10df4c9f56bcdd5398319642e04c",
+          "originalFingerprint": "c2f6446429efa735e5a698b46338a562a04f10df4c9f56bcdd5398319642e04c",
+          "leaseExpiresAtIso": "2026-04-30T03:16:09.000Z",
+          "released": true,
+          "completed": false,
+          "rawRequest": {
+            "workspaceId": "ws-reservation-recovery",
+            "approvalId": "appr-reservation-claim-lost-release",
+            "flowRef": "flow-send-approved-action",
+            "payload": {
+              "action": "send-approved-update",
+              "externalObjectRef": "sor://crm/opportunity/redacted-fixture",
+              "oauthToken": "[REDACTED]",
+              "customerEmail": "[REDACTED_EMAIL]",
+              "vendorUrl": "[REDACTED_PATH]"
+            },
+            "principalId": "agent-reservation-recovery",
+            "authorization": "[REDACTED]",
+            "operatorEmail": "[REDACTED_EMAIL]"
+          }
+        },
+        "dispatchAttempt": {
+          "variantId": "claim-lost-release",
+          "requestKey": "execute-reservation-claim-lost-release",
+          "attemptedDispatches": 0,
+          "duplicateDispatches": 0,
+          "actionRunnerCalled": false,
+          "dispatchPayload": {
+            "action": "send-approved-update",
+            "externalObjectRef": "sor://crm/opportunity/redacted-fixture",
+            "oauthToken": "[REDACTED]",
+            "customerEmail": "[REDACTED_EMAIL]",
+            "vendorUrl": "[REDACTED_PATH]"
+          }
+        },
+        "recoveryDecision": {
+          "variantId": "claim-lost-release",
+          "recoveryPath": "release-reservation-after-claim-loss",
+          "returnedStatus": "Conflict",
+          "operatorVisibleState": "execution-reservation-conflict",
+          "safeToRetry": false,
+          "requiresOperatorReconcile": false,
+          "redaction": {
+            "artifactPolicy": "sensitive request fields redacted before write",
+            "forbiddenFragments": [
+              "[REDACTED]",
+              "[REDACTED]",
+              "[REDACTED]",
+              "[REDACTED]",
+              "[REDACTED]"
+            ]
+          }
+        },
+        "evidenceChain": [
+          {
+            "evidenceId": "claim-lost-release-ev-01",
+            "phase": "approval-approved",
+            "atIso": "2026-04-30T03:01:09.000Z",
+            "summary": "Approval Gate decision permits Action execution",
+            "previousHash": "genesis",
+            "hash": "8f1f43ffc821857b5e5bf942ef9e5414ea8ee0c1b04dc71d7d073bea2a45dd44"
+          },
+          {
+            "evidenceId": "claim-lost-release-ev-02",
+            "phase": "reservation-observed",
+            "atIso": "2026-04-30T03:01:09.250Z",
+            "summary": "Execution reservation observed as Began",
+            "previousHash": "8f1f43ffc821857b5e5bf942ef9e5414ea8ee0c1b04dc71d7d073bea2a45dd44",
+            "hash": "544e94bd19ebe5940949d8a231c46666e9004c39ce8cbccdc2f8d24a104951e0"
+          },
+          {
+            "evidenceId": "claim-lost-release-ev-03",
+            "phase": "recovery-retry",
+            "atIso": "2026-04-30T03:01:14.000Z",
+            "summary": "Retry path resolved as release-reservation-after-claim-loss",
+            "previousHash": "544e94bd19ebe5940949d8a231c46666e9004c39ce8cbccdc2f8d24a104951e0",
+            "hash": "725d1ae90ffab4b7c4620d4bd13098bb8fd39284d780ce4f7aa6b89b5d5c7220"
+          },
+          {
+            "evidenceId": "claim-lost-release-ev-04",
+            "phase": "artifact-redacted",
+            "atIso": "2026-04-30T03:01:14.250Z",
+            "summary": "Reservation recovery artifacts written with redacted request data",
+            "previousHash": "725d1ae90ffab4b7c4620d4bd13098bb8fd39284d780ce4f7aa6b89b5d5c7220",
+            "hash": "24fe6dc2a29cbd4c52400ef31521f9b9ce847132d0e3d525d74cb29114a37dc4"
+          }
+        ]
+      },
+      {
+        "variantId": "complete-lost-recovery",
+        "runId": "run-reservation-complete-lost-recovery",
+        "sessionId": "session-reservation-complete-lost-recovery",
+        "approvalId": "appr-reservation-complete-lost-recovery",
+        "commandResult": {
+          "status": "Executing",
+          "replayed": false,
+          "dispatchCount": 1,
+          "duplicateDispatchCount": 0,
+          "conflict": false
+        },
+        "reservationLedger": {
+          "variantId": "complete-lost-recovery",
+          "requestKey": "execute-reservation-complete-lost-recovery",
+          "reservationBefore": "Began",
+          "reservationAfter": "InProgress",
+          "fingerprint": "f8a8cd069b53b65778a8b236de4b9d1f0effc6d8895a77bb4b18540e17c2c4cd",
+          "originalFingerprint": "f8a8cd069b53b65778a8b236de4b9d1f0effc6d8895a77bb4b18540e17c2c4cd",
+          "leaseExpiresAtIso": "2026-04-30T03:16:12.000Z",
+          "released": false,
+          "completed": false,
+          "completionFailure": "reservation-complete-returned-false",
+          "rawRequest": {
+            "workspaceId": "ws-reservation-recovery",
+            "approvalId": "appr-reservation-complete-lost-recovery",
+            "flowRef": "flow-send-approved-action",
+            "payload": {
+              "action": "send-approved-update",
+              "externalObjectRef": "sor://crm/opportunity/redacted-fixture",
+              "oauthToken": "[REDACTED]",
+              "customerEmail": "[REDACTED_EMAIL]",
+              "vendorUrl": "[REDACTED_PATH]"
+            },
+            "principalId": "agent-reservation-recovery",
+            "authorization": "[REDACTED]",
+            "operatorEmail": "[REDACTED_EMAIL]"
+          }
+        },
+        "dispatchAttempt": {
+          "variantId": "complete-lost-recovery",
+          "requestKey": "execute-reservation-complete-lost-recovery",
+          "attemptedDispatches": 1,
+          "duplicateDispatches": 0,
+          "actionRunnerCalled": true,
+          "dispatchPayload": {
+            "action": "send-approved-update",
+            "externalObjectRef": "sor://crm/opportunity/redacted-fixture",
+            "oauthToken": "[REDACTED]",
+            "customerEmail": "[REDACTED_EMAIL]",
+            "vendorUrl": "[REDACTED_PATH]"
+          }
+        },
+        "recoveryDecision": {
+          "variantId": "complete-lost-recovery",
+          "recoveryPath": "dispatch-once-then-retry-in-progress",
+          "returnedStatus": "Executing",
+          "operatorVisibleState": "execution-reservation-in-progress",
+          "safeToRetry": true,
+          "requiresOperatorReconcile": true,
+          "redaction": {
+            "artifactPolicy": "sensitive request fields redacted before write",
+            "forbiddenFragments": [
+              "[REDACTED]",
+              "[REDACTED]",
+              "[REDACTED]",
+              "[REDACTED]",
+              "[REDACTED]"
+            ]
+          }
+        },
+        "evidenceChain": [
+          {
+            "evidenceId": "complete-lost-recovery-ev-01",
+            "phase": "approval-approved",
+            "atIso": "2026-04-30T03:01:12.000Z",
+            "summary": "Approval Gate decision permits Action execution",
+            "previousHash": "genesis",
+            "hash": "e5a0f9252b2106a4af43c05f3dea2d33171978fc593914e86a3462401d9ec5e4"
+          },
+          {
+            "evidenceId": "complete-lost-recovery-ev-02",
+            "phase": "reservation-observed",
+            "atIso": "2026-04-30T03:01:12.250Z",
+            "summary": "Execution reservation observed as Began",
+            "previousHash": "e5a0f9252b2106a4af43c05f3dea2d33171978fc593914e86a3462401d9ec5e4",
+            "hash": "666d6e806540c749380c857260bc65be24fe882914adaa7c783ff69f5e71230a"
+          },
+          {
+            "evidenceId": "complete-lost-recovery-ev-03",
+            "phase": "recovery-retry",
+            "atIso": "2026-04-30T03:01:20.000Z",
+            "summary": "Retry path resolved as dispatch-once-then-retry-in-progress",
+            "previousHash": "666d6e806540c749380c857260bc65be24fe882914adaa7c783ff69f5e71230a",
+            "hash": "38adeaa7add1511a5bf3104a3264f52a41dcbb436c6f26adb3345819e34aea82"
+          },
+          {
+            "evidenceId": "complete-lost-recovery-ev-04",
+            "phase": "artifact-redacted",
+            "atIso": "2026-04-30T03:01:20.250Z",
+            "summary": "Reservation recovery artifacts written with redacted request data",
+            "previousHash": "38adeaa7add1511a5bf3104a3264f52a41dcbb436c6f26adb3345819e34aea82",
+            "hash": "109c6b5fb2bfab890c36fc82f5cb89b5ed22775e3ba24b747eda2a3d80afcb1f"
+          }
+        ]
+      }
+    ],
+    "redactionAudit": {
+      "checkedAtIso": "2026-04-30T03:01:35.000Z",
+      "forbiddenFragmentCount": 5,
+      "reservationLedgerRedacted": true,
+      "dispatchAttemptsRedacted": true,
+      "recoveryDecisionsRedacted": true
+    },
+    "queueMetrics": {
+      "schemaVersion": 1,
+      "scenarioId": "execution-reservation-recovery",
+      "attemptId": "deterministic-reservation-recovery-v1",
+      "generatedAtIso": "2026-04-30T03:01:35.000Z",
+      "metrics": {
+        "approval_count_by_tier": {
+          "Human-approve": 5
+        },
+        "approval_count_by_session": {
+          "session-reservation-active-in-progress": 1,
+          "session-reservation-completed-replay": 1,
+          "session-reservation-fingerprint-conflict": 1,
+          "session-reservation-claim-lost-release": 1,
+          "session-reservation-complete-lost-recovery": 1
+        },
+        "pending_age_ms_p50": 60000,
+        "pending_age_ms_p95": 60000,
+        "pending_age_ms_max": 60000,
+        "resume_latency_ms": [
+          700
+        ],
+        "blocked_duration_ms": [
+          60000,
+          60000,
+          60000,
+          60000,
+          60000
+        ],
+        "queue_depth_over_time": [
+          {
+            "timestampIso": "2026-04-30T03:00:00.000Z",
+            "depth": 1
+          },
+          {
+            "timestampIso": "2026-04-30T03:01:05.000Z",
+            "depth": 3
+          },
+          {
+            "timestampIso": "2026-04-30T03:01:12.000Z",
+            "depth": 0
+          },
+          {
+            "timestampIso": "2026-04-30T03:01:20.000Z",
+            "depth": 0
+          },
+          {
+            "timestampIso": "2026-04-30T03:01:30.000Z",
+            "depth": 0
+          }
+        ],
+        "denial_count": 0,
+        "request_changes_count": 0,
+        "escalation_count": 0,
+        "expiry_count": 0,
+        "duplicate_execution_count": 0,
+        "evidence_completeness_count": 7,
+        "restart_count": 5,
+        "successful_resume_count": 1
+      }
+    },
+    "evidenceSummary": {
+      "schemaVersion": 1,
+      "scenarioId": "execution-reservation-recovery",
+      "attemptId": "deterministic-reservation-recovery-v1",
+      "generatedAtIso": "2026-04-30T03:01:35.000Z",
+      "requiredArtifacts": [
+        "outcome.json",
+        "queue-metrics.json",
+        "evidence-summary.json",
+        "report.md",
+        "reservation-ledger-redacted.json",
+        "dispatch-attempts-redacted.json",
+        "recovery-decisions-redacted.json"
+      ],
+      "presentArtifacts": [
+        "outcome.json",
+        "queue-metrics.json",
+        "evidence-summary.json",
+        "report.md",
+        "reservation-ledger-redacted.json",
+        "dispatch-attempts-redacted.json",
+        "recovery-decisions-redacted.json"
+      ],
+      "missingArtifacts": [],
+      "evidenceCompletenessCount": 7,
+      "complete": true
+    },
+    "artifactPaths": {
+      "queueMetricsPath": "experiments\\iteration-2\\results\\execution-reservation-recovery\\deterministic-reservation-recovery-v1\\queue-metrics.json",
+      "evidenceSummaryPath": "experiments\\iteration-2\\results\\execution-reservation-recovery\\deterministic-reservation-recovery-v1\\evidence-summary.json",
+      "reportPath": "experiments\\iteration-2\\results\\execution-reservation-recovery\\deterministic-reservation-recovery-v1\\report.md",
+      "reservationLedgerPath": "experiments\\iteration-2\\results\\execution-reservation-recovery\\deterministic-reservation-recovery-v1\\reservation-ledger-redacted.json",
+      "dispatchAttemptsPath": "experiments\\iteration-2\\results\\execution-reservation-recovery\\deterministic-reservation-recovery-v1\\dispatch-attempts-redacted.json",
+      "recoveryDecisionsPath": "experiments\\iteration-2\\results\\execution-reservation-recovery\\deterministic-reservation-recovery-v1\\recovery-decisions-redacted.json"
+    },
+    "thresholdAssertions": [
+      {
+        "label": "duplicate execution count within threshold",
+        "passed": true,
+        "detail": "0 <= 0"
+      },
+      {
+        "label": "pending age p95 within threshold",
+        "passed": true,
+        "detail": "60000 <= 80000"
+      },
+      {
+        "label": "resume latency within threshold",
+        "passed": true,
+        "detail": "700 <= 1000"
+      },
+      {
+        "label": "evidence completeness count meets threshold",
+        "passed": true,
+        "detail": "7 >= 7"
+      },
+      {
+        "label": "successful resume count meets threshold",
+        "passed": true,
+        "detail": "1 >= 1"
+      }
+    ]
+  }
+}
