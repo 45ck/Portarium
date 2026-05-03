@@ -6,6 +6,7 @@ export * from './policy-change-workflow-v1.js';
 export * from './delegated-autonomy-hierarchy-v1.js';
 export * from './delegated-autonomy-exceptions-v1.js';
 export * from './delegated-autonomy-verification-sampling-v1.js';
+export * from './delegated-autonomy-scorecard-v1.js';
 export * from './policy-shadow-replay-v1.js';
 export * from './execution-tier-policy-v1.js';
 export * from './policy-evaluation-pipeline-v1.js';
