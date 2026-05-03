@@ -211,6 +211,12 @@ For each primary screen, show dedicated state components for:
 - Missing command governance dependencies, missing API scopes, missing capabilities, workspace mismatch, activation-source failure, or malformed activation state must fail closed by omitting the surface or returning Problem Details before any extension route receives a partial permission context.
 - The backend host contract must not expose credentials, system-of-record endpoints, vault paths, provider APIs, gateway management APIs, runtime daemon endpoints, tenant-specific endpoints, or manifest-defined egress grants.
 
+### R14d Cockpit extension SDK conformance
+
+- The Cockpit extension manifest v1 contract must be available from a versioned SDK package so external packages can import the shared manifest types.
+- The SDK conformance helper must let extension packages validate their manifest, registry activation, host-owned guards, install-boundary metadata, route module IDs, and deterministic route projection without executing extension UI code.
+- SDK documentation and examples must remain generic and must not include tenant-specific routes, schemas, names, object samples, workspace IDs, provider endpoints, or browser egress allowlists.
+
 ## Acceptance signals
 
 - Screen rendering remains stable with partial API failures.
