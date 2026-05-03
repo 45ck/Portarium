@@ -1,5 +1,5 @@
 import { Link, useNavigate } from '@tanstack/react-router';
-import { ExternalLink, GitPullRequest, Loader2 } from 'lucide-react';
+import { ExternalLink, FileText, GitPullRequest, Loader2 } from 'lucide-react';
 import { useMemo } from 'react';
 import { BeadKanbanBoard } from '@/components/cockpit/bead-kanban-board';
 import { BeadNavList } from '@/components/cockpit/bead-nav-list';
@@ -99,12 +99,23 @@ function DetailPanel({ bead }: { bead?: EngineeringBead }) {
           </LinkComponent>
         )}
         {bead.primaryRun && (
-          <Button variant="outline" className="mt-2 w-full" asChild>
-            <LinkComponent to="/runs/$runId" params={{ runId: bead.primaryRun.runId }}>
-              <ExternalLink className="h-4 w-4" />
-              Open Run
-            </LinkComponent>
-          </Button>
+          <div className="mt-2 grid grid-cols-1 gap-2">
+            <Button variant="outline" className="w-full" asChild>
+              <LinkComponent to="/runs/$runId" params={{ runId: bead.primaryRun.runId }}>
+                <ExternalLink className="h-4 w-4" />
+                Open Run
+              </LinkComponent>
+            </Button>
+            <Button variant="outline" className="w-full" asChild>
+              <LinkComponent
+                to="/engineering/beads/$beadId/artifact"
+                params={{ beadId: bead.beadId }}
+              >
+                <FileText className="h-4 w-4" />
+                Run Artifact
+              </LinkComponent>
+            </Button>
+          </div>
         )}
       </div>
       <div className="min-h-0 flex-1 p-3">

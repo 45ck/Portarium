@@ -29,6 +29,11 @@ interface GalleryClip {
   tags: string[];
   generatedAt: string;
   outputs: { gif?: string; mp4?: string };
+  artifact: {
+    markdown: string;
+    descriptor: string;
+    mediaRefs: { type: 'gif' | 'mp4' | 'png'; url: string; sha256: string }[];
+  };
   frameCount: number;
 }
 
@@ -200,7 +205,7 @@ describe('dry-run gallery render', () => {
     expect(galleryIndex!.clips).toHaveLength(6);
   });
 
-  it('each clip entry has id, title, tags, generatedAt, outputs, frameCount', () => {
+  it('each clip entry has id, title, tags, generatedAt, outputs, artifact, frameCount', () => {
     expect(galleryIndex).not.toBeNull();
     for (const clip of galleryIndex!.clips) {
       expect(typeof clip.id).toBe('string');
@@ -210,6 +215,10 @@ describe('dry-run gallery render', () => {
       expect(Array.isArray(clip.tags)).toBe(true);
       expect(clip.generatedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
       expect(typeof clip.outputs).toBe('object');
+      expect(typeof clip.artifact).toBe('object');
+      expect(clip.artifact.markdown).toMatch(/\.artifact\.md$/);
+      expect(clip.artifact.descriptor).toMatch(/\.artifact\.json$/);
+      expect(Array.isArray(clip.artifact.mediaRefs)).toBe(true);
       expect(typeof clip.frameCount).toBe('number');
       expect(clip.frameCount).toBeGreaterThanOrEqual(0);
     }
@@ -253,6 +262,31 @@ describe('dry-run gallery render', () => {
       expect(meta.title).toBe(clip.title);
       expect(Array.isArray(meta.frames)).toBe(true);
       expect(typeof meta.outputs).toBe('object');
+      expect(meta.artifact.markdown).toBe(clip.artifact.markdown);
+      expect(meta.artifact.descriptor).toBe(clip.artifact.descriptor);
+    }
+  });
+
+  it('per-clip artifact markdown and ArtifactV1 descriptor are written', () => {
+    expect(galleryIndex).not.toBeNull();
+    for (const clip of galleryIndex!.clips) {
+      const markdownPath = path.join(rootDir, clip.artifact.markdown);
+      const descriptorPath = path.join(rootDir, clip.artifact.descriptor);
+      expect(fs.existsSync(markdownPath), `missing artifact markdown for: ${clip.id}`).toBe(true);
+      expect(fs.existsSync(descriptorPath), `missing artifact descriptor for: ${clip.id}`).toBe(
+        true,
+      );
+
+      const markdown = fs.readFileSync(markdownPath, 'utf8');
+      const descriptor = JSON.parse(fs.readFileSync(descriptorPath, 'utf8'));
+      expect(markdown).toContain('# Demo:');
+      expect(descriptor.schemaVersion).toBe(1);
+      expect(descriptor.artifactId).toBe(`demo-artifact-${clip.id}`);
+      expect(descriptor.runId).toBe(`demo-machine:${clip.id}`);
+      expect(descriptor.mimeType).toBe('text/markdown');
+      expect(descriptor.storageRef).toBe(clip.artifact.markdown);
+      expect(descriptor.hashSha256).toMatch(/^[a-f0-9]{64}$/);
+      expect(Array.isArray(descriptor.mediaRefs)).toBe(true);
     }
   });
 });

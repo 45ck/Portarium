@@ -19,6 +19,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import { spawnSync, execFileSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { pathToFileURL, fileURLToPath } from 'node:url';
@@ -77,6 +78,22 @@ function hasPython() {
       // try next
     }
   }
+  return null;
+}
+
+function sha256File(filePath) {
+  return crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
+}
+
+function sha256Text(text) {
+  return crypto.createHash('sha256').update(text, 'utf8').digest('hex');
+}
+
+function artifactMediaType(filePath) {
+  const ext = path.extname(filePath).toLowerCase();
+  if (ext === '.gif') return 'gif';
+  if (ext === '.mp4') return 'mp4';
+  if (ext === '.png') return 'png';
   return null;
 }
 
@@ -363,6 +380,7 @@ function buildMetadata(clipId, spec, clipOutputDir, framePaths, gifPath, mp4Path
   if (mp4Path && fs.existsSync(mp4Path)) {
     outputs.mp4 = path.relative(rootDir, mp4Path).replaceAll('\\', '/');
   }
+  const artifact = writeRunArtifact(clipId, spec, clipOutputDir, framePaths, gifPath, mp4Path);
 
   const meta = {
     id: clipId,
@@ -372,12 +390,68 @@ function buildMetadata(clipId, spec, clipOutputDir, framePaths, gifPath, mp4Path
     generatedAt: new Date().toISOString(),
     frames: framePaths.map((p) => path.relative(rootDir, p).replaceAll('\\', '/')),
     outputs,
+    artifact,
   };
 
   const metaPath = path.join(clipOutputDir, 'metadata.json');
   fs.writeFileSync(metaPath, `${JSON.stringify(meta, null, 2)}\n`);
 
   return meta;
+}
+
+function buildMediaRefs(mediaPaths) {
+  return mediaPaths
+    .filter((mediaPath) => mediaPath && fs.existsSync(mediaPath))
+    .map((mediaPath) => {
+      const type = artifactMediaType(mediaPath);
+      if (!type) return null;
+      return {
+        type,
+        url: path.relative(rootDir, mediaPath).replaceAll('\\', '/'),
+        sha256: sha256File(mediaPath),
+      };
+    })
+    .filter(Boolean);
+}
+
+function writeRunArtifact(clipId, spec, clipOutputDir, framePaths, gifPath, mp4Path) {
+  const mediaRefs = buildMediaRefs([gifPath, mp4Path, ...framePaths]);
+  const primaryMedia = mediaRefs.find((ref) => ref.type === 'gif') ?? mediaRefs[0];
+  const markdown = [
+    `# Demo: ${spec.title.replace(/^Cockpit Demo:\s*/i, '')}`,
+    '',
+    ...(primaryMedia ? [`![${spec.title}](${primaryMedia.url})`, ''] : []),
+    `Shows: ${spec.chapterTitles.join(' -> ')}.`,
+    '',
+    '## Evidence Media',
+    '',
+    ...mediaRefs.map(
+      (ref) => `- ${ref.type.toUpperCase()}: [${path.basename(ref.url)}](${ref.url})`,
+    ),
+    '',
+  ].join('\n');
+  const markdownPath = path.join(clipOutputDir, `${clipId}.artifact.md`);
+  fs.writeFileSync(markdownPath, markdown);
+
+  const artifact = {
+    schemaVersion: 1,
+    artifactId: `demo-artifact-${clipId}`,
+    runId: `demo-machine:${clipId}`,
+    mimeType: 'text/markdown',
+    sizeBytes: Buffer.byteLength(markdown, 'utf8'),
+    storageRef: path.relative(rootDir, markdownPath).replaceAll('\\', '/'),
+    hashSha256: sha256Text(markdown),
+    mediaRefs,
+    createdAtIso: new Date().toISOString(),
+  };
+  const artifactPath = path.join(clipOutputDir, `${clipId}.artifact.json`);
+  fs.writeFileSync(artifactPath, `${JSON.stringify(artifact, null, 2)}\n`);
+
+  return {
+    markdown: artifact.storageRef,
+    descriptor: path.relative(rootDir, artifactPath).replaceAll('\\', '/'),
+    mediaRefs,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -397,6 +471,7 @@ function writeGalleryIndex(clipsMetadata) {
       tags: m.tags,
       generatedAt: m.generatedAt,
       outputs: m.outputs,
+      artifact: m.artifact,
       frameCount: m.frames.length,
     })),
   };
@@ -421,7 +496,7 @@ function writeGallerySchema() {
         type: 'array',
         items: {
           type: 'object',
-          required: ['id', 'title', 'tags', 'generatedAt', 'outputs', 'frameCount'],
+          required: ['id', 'title', 'tags', 'generatedAt', 'outputs', 'artifact', 'frameCount'],
           properties: {
             id: { type: 'string' },
             title: { type: 'string' },
@@ -432,6 +507,26 @@ function writeGallerySchema() {
               properties: {
                 gif: { type: 'string' },
                 mp4: { type: 'string' },
+              },
+            },
+            artifact: {
+              type: 'object',
+              required: ['markdown', 'descriptor', 'mediaRefs'],
+              properties: {
+                markdown: { type: 'string' },
+                descriptor: { type: 'string' },
+                mediaRefs: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    required: ['type', 'url', 'sha256'],
+                    properties: {
+                      type: { enum: ['gif', 'mp4', 'png'] },
+                      url: { type: 'string' },
+                      sha256: { type: 'string' },
+                    },
+                  },
+                },
               },
             },
             frameCount: { type: 'integer', minimum: 0 },
