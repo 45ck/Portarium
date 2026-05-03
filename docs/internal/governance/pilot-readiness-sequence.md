@@ -16,6 +16,8 @@ A controlled operator pilot is ready when Portarium can show:
 - Policy changes are permissioned, versioned, and reversible
 - evidence, telemetry, privacy, and retention rules are explicit
 - onboarding and recovery playbooks exist for the pilot workflow
+- post-action verification sampling can prove reduced approval volume did not
+  hide defects
 
 ## Core Sequence
 
@@ -46,6 +48,10 @@ The bead-1075 artifact is the shared packet contract in `.specify/specs/decision
 The bead-1076 artifact is the Run intervention surface in `apps/cockpit/src/components/cockpit/run-intervention-panel.tsx`.
 The bead-1065 artifact is the operator onboarding and recovery guide in `docs/how-to/operate-cockpit-governed-workflows.md`, with traceability in `.specify/specs/cockpit-operator-onboarding-playbooks-v1.md`.
 The bead-1077 artifact is the readiness and calibration model in `.specify/specs/governed-autonomy-readiness-calibration-v1.md`, applied through `docs/internal/governance/operator-readiness-calibration.md`.
+The bead-1094 artifact is the post-action verification sampling and audit
+queue contract in `.specify/specs/delegated-autonomy-verification-sampling-v1.md`,
+implemented by
+`src/domain/policy/delegated-autonomy-verification-sampling-v1.ts`.
 
 ## Not Core For This Sequence
 

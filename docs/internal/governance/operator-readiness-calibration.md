@@ -84,7 +84,9 @@ Classify recommendations as `policy`, `ux`, or `training`, matching
 
 ## Verification Sampling
 
-Create a sampling cadence before enabling broader autonomy:
+Create a sampling cadence before enabling broader autonomy. The normative
+contract is
+`.specify/specs/delegated-autonomy-verification-sampling-v1.md`.
 
 | Sample type              | Purpose                                                           |
 | ------------------------ | ----------------------------------------------------------------- |
@@ -97,6 +99,18 @@ Create a sampling cadence before enabling broader autonomy:
 Sampling findings feed enablement, evidence packet quality, Policy
 calibration, and approval routing. They do not silently change Policy.
 
+Configure sampling rules by Action class, Execution Tier, blast radius,
+novelty, and track record. Increase sampling during drift, incidents, new
+capability rollout, or degraded provider posture. Track outcomes as
+`correct`, `risky-but-allowed`, `should-have-escalated`, `policy-too-strict`,
+or `evidence-insufficient` so findings can route to reusable Policy, runbook,
+prompt strategy, or operator enablement work.
+
+For pilot readiness, record Cockpit coverage by capability or Action class:
+completed count, sampled count, sampling coverage, defect rate, and current
+confidence. Do not treat reduced approval volume as success unless this
+coverage shows defects are still visible.
+
 ## Pilot Gate Checklist
 
 Before a governed autonomy pilot proceeds, record:
@@ -108,6 +122,8 @@ Before a governed autonomy pilot proceeds, record:
 - unresolved training or calibration gaps
 - workload limits and escalation route
 - verification sampling owner and cadence
+- sampling coverage and current confidence by selected capability or Action
+  class
 - go/no-go decision for any remaining gap
 
 If the checklist cannot prove that oversight is prepared in practice, the pilot

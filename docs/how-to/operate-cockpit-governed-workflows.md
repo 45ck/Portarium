@@ -250,6 +250,28 @@ Inspect deeply when any are true:
 
 Escalate instead of deciding when inspection still does not produce confidence.
 
+## Post-Action Audit Queue
+
+Use the audit queue when Cockpit assigns you after-the-fact review of completed
+Actions or Runs. This queue checks delegated autonomy without turning every
+low-risk Action into a blocking Approval Gate.
+
+1. Open the audit queue item and confirm the Workspace, Run, Action class,
+   Execution Tier, and sampling reason.
+2. Inspect the required Evidence Artifacts, including the Policy decision and
+   verified effects where available.
+3. Record one structured outcome: `correct`, `risky-but-allowed`,
+   `should-have-escalated`, `policy-too-strict`, or `evidence-insufficient`.
+4. Add a short rationale that cites the evidence relied on or the missing
+   evidence.
+5. Let Cockpit route findings to Policy change, runbook update, prompt
+   strategy, or operator enablement. Do not bury reusable governance changes in
+   notes.
+
+Treat `correct` findings as useful confidence evidence. Treat repeated
+`should-have-escalated` or `evidence-insufficient` findings as a signal that
+approval volume may have fallen by hiding defects, not by improving autonomy.
+
 ## Pilot Exit Criteria
 
 A first controlled pilot operator is ready to run without hands-on support when
@@ -262,6 +284,8 @@ they can demonstrate:
 - handing off or escalating with context continuity
 - diagnosing a stuck Run from Cockpit state and Evidence Log entries
 - explaining when they used fast-path trust versus deeper inspection
+- reviewing at least one sampled post-action audit queue item or explaining
+  the configured sampling owner and cadence
 - describing who can disable a plugin and who can roll back Policy
 
 Record gaps as operator enablement feedback, workflow changes, or Policy change

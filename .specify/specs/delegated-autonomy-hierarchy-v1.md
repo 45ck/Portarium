@@ -198,11 +198,36 @@ free text:
 - `emergency-disable`
 - `draft-policy-change`
 
+## Post-Action Verification Sampling
+
+Delegated autonomy also requires after-the-fact verification for completed
+Actions and Runs that did not need a blocking Approval Gate. Sampling is the
+calm counterpart to exception routing: it checks completed work, preserves
+human judgement, and exposes hidden defects without interrupting every low-risk
+Action.
+
+Sampling semantics are defined in
+[Delegated Autonomy Verification Sampling v1](./delegated-autonomy-verification-sampling-v1.md).
+The verification layer must:
+
+- choose samples by Action class, Execution Tier, blast radius, novelty, and
+  operator or agent track record
+- increase sample rates during drift, incidents, new capability rollout, and
+  degraded provider posture
+- create a dedicated audit queue item, not a retroactive Approval Gate
+- record structured review outcomes
+- route findings into reusable Policy, runbook, prompt strategy, or operator
+  enablement work
+- expose sampling coverage and confidence for Cockpit and pilot readiness
+
 ## Traceability
 
 - [Operator Interaction Model v1](./operator-interaction-model-v1.md)
 - [Policy Change Workflow v1](./policy-change-workflow-v1.md)
 - [Agent Action Governance Lifecycle v1](./agent-action-governance-lifecycle-v1.md)
+- [Delegated Autonomy Verification Sampling v1](./delegated-autonomy-verification-sampling-v1.md)
 - Implementation: `src/domain/policy/delegated-autonomy-hierarchy-v1.ts`
 - Exception routing implementation:
   `src/domain/policy/delegated-autonomy-exceptions-v1.ts`
+- Verification sampling implementation:
+  `src/domain/policy/delegated-autonomy-verification-sampling-v1.ts`

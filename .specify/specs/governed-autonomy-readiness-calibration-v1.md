@@ -115,6 +115,12 @@ Sampling results should feed operator enablement, Policy calibration, evidence
 packet quality, and approval routing. They should not silently change authority
 or punish good-faith escalation.
 
+The sampling contract is defined in
+[delegated-autonomy-verification-sampling-v1.md](./delegated-autonomy-verification-sampling-v1.md).
+Readiness evaluation must treat sampling coverage and current confidence by
+Action class or capability as pilot evidence, not as a single global trust
+score.
+
 ### R7 Pilot readiness includes human oversight readiness
 
 A controlled pilot is not ready merely because humans are listed in an approval
@@ -136,6 +142,8 @@ queue. The pilot readiness gate must show:
   remains the deterministic calibration evaluation entry point.
 - [docs/internal/governance/pilot-readiness-sequence.md](../../docs/internal/governance/pilot-readiness-sequence.md)
   sequences this model into the pilot readiness gate.
+- [delegated-autonomy-verification-sampling-v1.md](./delegated-autonomy-verification-sampling-v1.md)
+  defines the post-action audit queue and sampling coverage contract.
 
 ## Acceptance
 
