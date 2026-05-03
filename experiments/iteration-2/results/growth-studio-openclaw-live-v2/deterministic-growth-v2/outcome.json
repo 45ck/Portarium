@@ -1,5 +1,6 @@
 {
   "experiment": "growth-studio-openclaw-live-v2",
+  "attemptId": "deterministic-growth-v2",
   "timestamp": "2026-05-03T03:22:43.118Z",
   "outcome": "confirmed",
   "duration_ms": 8,
@@ -240,7 +241,7 @@
     "queueMetrics": {
       "schemaVersion": 1,
       "scenarioId": "growth-studio-openclaw-live-v2",
-      "attemptId": "deterministic-live-v2",
+      "attemptId": "deterministic-growth-v2",
       "generatedAtIso": "2026-04-30T08:00:00.000Z",
       "metrics": {
         "approval_count_by_tier": {
@@ -301,7 +302,7 @@
     "evidenceSummary": {
       "schemaVersion": 1,
       "scenarioId": "growth-studio-openclaw-live-v2",
-      "attemptId": "deterministic-live-v2",
+      "attemptId": "deterministic-growth-v2",
       "generatedAtIso": "2026-04-30T08:00:00.000Z",
       "requiredArtifacts": [
         "outcome.json",
