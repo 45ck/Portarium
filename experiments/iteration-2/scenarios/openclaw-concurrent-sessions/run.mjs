@@ -6,12 +6,19 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
+import {
+  buildLiveRerunTrace,
+  resolveIteration2LiveOpenClawRerun,
+  writeLiveRerunMetadataArtifact,
+} from '../../../shared/iteration2-live-openclaw-rerun.js';
 import { createIteration2Telemetry } from '../../../shared/iteration2-telemetry.js';
 
 const EXPERIMENT_NAME = 'openclaw-concurrent-sessions';
 const DEFAULT_RESULTS_DIR = join(dirname(fileURLToPath(import.meta.url)), 'results');
 const FIXED_STARTED_AT_ISO = '2026-04-30T00:00:00.000Z';
 const CONCURRENCY_LEVEL = 4;
+const DETERMINISTIC_ATTEMPT_ID = 'deterministic-concurrency-v1';
+const LIVE_ATTEMPT_ID = 'live-openclaw-rerun-v1';
 
 function addMs(iso, ms) {
   return new Date(Date.parse(iso) + ms).toISOString();
@@ -331,96 +338,161 @@ export async function runOpenClawConcurrentSessions(options = {}) {
   const resultsDir = options.resultsDir ?? DEFAULT_RESULTS_DIR;
   const writeResults = options.writeResults ?? true;
   const log = options.log ?? console.log;
-  const attemptId = 'deterministic-concurrency-v1';
+  const liveRerun = await resolveIteration2LiveOpenClawRerun({
+    scenarioId: EXPERIMENT_NAME,
+    env: options.env,
+    fetchImpl: options.fetchImpl,
+    codexExecImpl: options.codexExecImpl,
+  });
+  const attemptId = liveRerun.status === 'ready' ? LIVE_ATTEMPT_ID : DETERMINISTIC_ATTEMPT_ID;
   let trace = {};
   let assertions = [];
   let error;
+  let skipReason;
 
   try {
-    log('[openclaw-concurrent-sessions] simulating governed concurrent sessions');
-    const telemetry = createIteration2Telemetry({
-      scenarioId: EXPERIMENT_NAME,
-      attemptId,
-      resultsDir,
-      requiredEvidenceArtifacts: [
-        'outcome.json',
-        'queue-metrics.json',
-        'evidence-summary.json',
-        'report.md',
-      ],
-    });
+    if (liveRerun.status === 'skipped' || liveRerun.status === 'inconclusive') {
+      skipReason = liveRerun.status === 'skipped' ? liveRerun.reason : undefined;
+      if (liveRerun.status === 'inconclusive') error = liveRerun.reason;
+      trace = {
+        mode: 'live-llm-openclaw-rerun',
+        liveModelPreflight: liveRerun.liveModelPreflight,
+        classification: liveRerun.classification,
+      };
+    } else {
+      log('[openclaw-concurrent-sessions] simulating governed concurrent sessions');
+      const telemetry = createIteration2Telemetry({
+        scenarioId: EXPERIMENT_NAME,
+        attemptId,
+        resultsDir,
+        requiredEvidenceArtifacts: [
+          'outcome.json',
+          'queue-metrics.json',
+          'evidence-summary.json',
+          'report.md',
+          ...(liveRerun.status === 'ready' ? ['live-rerun-metadata.json'] : []),
+        ],
+      });
 
-    const sessions = makeSessions();
-    const approvals = sessions.map((session) => session.approval);
-    const decisionTrace = applyMixedOrderDecisions(sessions, telemetry);
-    recordQueueSamples(telemetry, approvals);
+      const sessions = makeSessions();
+      const approvals = sessions.map((session) => session.approval);
+      const decisionTrace = applyMixedOrderDecisions(sessions, telemetry);
+      recordQueueSamples(telemetry, approvals);
 
-    telemetry.recordEvidenceArtifact({ artifactName: 'outcome.json', present: true });
-    telemetry.recordEvidenceArtifact({ artifactName: 'queue-metrics.json', present: true });
-    telemetry.recordEvidenceArtifact({ artifactName: 'evidence-summary.json', present: true });
-    telemetry.recordEvidenceArtifact({ artifactName: 'report.md', present: true });
+      telemetry.recordEvidenceArtifact({ artifactName: 'outcome.json', present: true });
+      telemetry.recordEvidenceArtifact({ artifactName: 'queue-metrics.json', present: true });
+      telemetry.recordEvidenceArtifact({ artifactName: 'evidence-summary.json', present: true });
+      telemetry.recordEvidenceArtifact({ artifactName: 'report.md', present: true });
+      if (liveRerun.status === 'ready') {
+        telemetry.recordEvidenceArtifact({
+          artifactName: 'live-rerun-metadata.json',
+          present: true,
+        });
+      }
 
-    const observedAtIso = addMs(FIXED_STARTED_AT_ISO, 25_000);
-    const thresholdAssertions = telemetry.evaluateThresholds(
-      {
-        maxDuplicateExecutionCount: 0,
-        maxPendingAgeMsP95: 20_000,
-        maxResumeLatencyMs: 1_000,
-        minEvidenceCompletenessCount: 4,
-        minSuccessfulResumeCount: CONCURRENCY_LEVEL,
-      },
-      observedAtIso,
-    );
-    const artifactPaths = writeResults ? telemetry.writeArtifacts(observedAtIso) : {};
-    const queueMetrics = telemetry.buildQueueMetrics(observedAtIso);
-    const evidenceSummary = telemetry.buildEvidenceSummary(observedAtIso);
-    const outputBySession = new Map(
-      decisionTrace.outputBundles.map((output) => [output.sessionId, output]),
-    );
-    const sessionTraces = sessions.map((session) => ({
-      ...session,
-      approval: { ...session.approval },
-      output: outputBySession.get(session.sessionId),
-      evidenceChain: buildEvidenceChain(session, session.approval),
-    }));
+      const observedAtIso = addMs(FIXED_STARTED_AT_ISO, 25_000);
+      const thresholdAssertions = telemetry.evaluateThresholds(
+        {
+          maxDuplicateExecutionCount: 0,
+          maxPendingAgeMsP95: 20_000,
+          maxResumeLatencyMs: 1_000,
+          minEvidenceCompletenessCount: 4,
+          minSuccessfulResumeCount: CONCURRENCY_LEVEL,
+        },
+        observedAtIso,
+      );
+      const artifactPaths = writeResults ? telemetry.writeArtifacts(observedAtIso) : {};
+      const queueMetrics = telemetry.buildQueueMetrics(observedAtIso);
+      const evidenceSummary = telemetry.buildEvidenceSummary(observedAtIso);
+      const outputBySession = new Map(
+        decisionTrace.outputBundles.map((output) => [output.sessionId, output]),
+      );
+      const sessionTraces = sessions.map((session) => ({
+        ...session,
+        approval: { ...session.approval },
+        output: outputBySession.get(session.sessionId),
+        evidenceChain: buildEvidenceChain(session, session.approval),
+      }));
 
-    trace = {
-      comparesTo: 'exp-A-transparency',
-      mode: 'deterministic-concurrency',
-      concurrencyLevel: CONCURRENCY_LEVEL,
-      nearSimultaneousDecisionWindowMs: 400,
-      maxConcurrentBlockedSessions: Math.max(
-        ...queueMetrics.metrics.queue_depth_over_time.map((sample) => sample.depth),
-      ),
-      sessions: sessionTraces,
-      decisionOrder: decisionTrace.decisionOrder,
-      outputBundles: decisionTrace.outputBundles,
-      crossSessionLeaks: decisionTrace.crossSessionLeaks,
-      throughput: buildThroughputSummary(sessions, decisionTrace.outputBundles),
-      observedBottlenecks: [],
-      queueMetrics,
-      evidenceSummary,
-      artifactPaths,
-      thresholdAssertions,
-    };
-    assertions = buildAssertions({
-      sessionTraces,
-      outputBundles: decisionTrace.outputBundles,
-      queueMetrics,
-      evidenceSummary,
-      trace,
-    });
+      const baseTrace = {
+        comparesTo: 'exp-A-transparency',
+        mode:
+          liveRerun.status === 'ready' ? 'live-llm-openclaw-rerun' : 'deterministic-concurrency',
+        concurrencyLevel: CONCURRENCY_LEVEL,
+        nearSimultaneousDecisionWindowMs: 400,
+        maxConcurrentBlockedSessions: Math.max(
+          ...queueMetrics.metrics.queue_depth_over_time.map((sample) => sample.depth),
+        ),
+        sessions: sessionTraces,
+        decisionOrder: decisionTrace.decisionOrder,
+        outputBundles: decisionTrace.outputBundles,
+        crossSessionLeaks: decisionTrace.crossSessionLeaks,
+        throughput: buildThroughputSummary(sessions, decisionTrace.outputBundles),
+        observedBottlenecks: [],
+        queueMetrics,
+        evidenceSummary,
+        artifactPaths,
+        thresholdAssertions,
+      };
+      const exactOnceResume = {
+        duplicateExecutionCount: queueMetrics.metrics.duplicate_execution_count,
+        successfulResumeCount: queueMetrics.metrics.successful_resume_count,
+        result:
+          Number(queueMetrics.metrics.duplicate_execution_count) === 0 &&
+          Number(queueMetrics.metrics.successful_resume_count) === CONCURRENCY_LEVEL
+            ? 'exact-once'
+            : 'not-exact-once',
+      };
+      const liveTrace =
+        liveRerun.status === 'ready'
+          ? buildLiveRerunTrace({
+              scenarioId: EXPERIMENT_NAME,
+              deterministicAttemptId: DETERMINISTIC_ATTEMPT_ID,
+              deterministicOutcome: 'confirmed',
+              liveAttemptId: LIVE_ATTEMPT_ID,
+              liveModelPreflight: liveRerun.liveModelPreflight,
+              classification: liveRerun.classification,
+              approvalIds: sessionTraces.map((session) => session.approval.approvalId),
+              queueMetrics,
+              evidenceSummary,
+              exactOnceResume,
+            })
+          : undefined;
+      trace = liveTrace ? { ...baseTrace, liveOpenClawRerun: liveTrace } : baseTrace;
+      if (writeResults && liveTrace) {
+        artifactPaths.liveRerunMetadataPath = writeLiveRerunMetadataArtifact(resultsDir, liveTrace);
+      }
+      assertions = buildAssertions({
+        sessionTraces,
+        outputBundles: decisionTrace.outputBundles,
+        queueMetrics,
+        evidenceSummary,
+        trace,
+      });
+      if (liveTrace) {
+        assertions.push(
+          assert(
+            'live rerun records redacted provider metadata and separates variability',
+            liveTrace.liveModelPreflight.status === 'ready' &&
+              liveTrace.classification.productDefects.length === 0,
+            `provider=${liveTrace.liveModelPreflight.provider ?? 'none'}, defects=${liveTrace.classification.productDefects.length}`,
+          ),
+        );
+      }
+    }
   } catch (err) {
     error = err instanceof Error ? err.message : String(err);
   }
 
   const duration_ms = Date.now() - startedAt;
   const outcome =
-    error != null
-      ? 'inconclusive'
-      : assertions.length > 0 && assertions.every((item) => item.passed)
-        ? 'confirmed'
-        : 'refuted';
+    skipReason != null
+      ? 'skipped'
+      : error != null
+        ? 'inconclusive'
+        : assertions.length > 0 && assertions.every((item) => item.passed)
+          ? 'confirmed'
+          : 'refuted';
 
   const result = {
     experiment: EXPERIMENT_NAME,
@@ -429,6 +501,7 @@ export async function runOpenClawConcurrentSessions(options = {}) {
     duration_ms,
     assertions,
     trace,
+    ...(skipReason ? { skipReason } : {}),
     ...(error ? { error } : {}),
   };
 

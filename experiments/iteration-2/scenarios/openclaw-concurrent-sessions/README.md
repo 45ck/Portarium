@@ -28,3 +28,19 @@ The default runner uses four deterministic concurrent sessions. It writes
 `outcome.json`, `queue-metrics.json`, `evidence-summary.json`, and `report.md`,
 and records mixed-order decisions, per-session Evidence Artifact chains, output
 bundle paths, throughput, and observed bottlenecks.
+
+## Live OpenClaw Rerun
+
+```bash
+PORTARIUM_LIVE_OPENCLAW_RERUNS=true \
+PORTARIUM_EXPERIMENT_LIVE_LLM=true \
+PORTARIUM_LIVE_MODEL_PROVIDER=openai \
+OPENAI_API_KEY=... \
+node experiments/iteration-2/scenarios/openclaw-concurrent-sessions/run.mjs \
+  --results-dir experiments/iteration-2/results/openclaw-concurrent-sessions/live-openclaw-rerun-v1
+```
+
+The live path requires the explicit live OpenClaw env var and an explicit live
+model provider. It records redacted provider/model metadata, session-scoped
+Approval IDs, queue metrics, Evidence Artifacts, exact-once resume results, and
+comparison with `deterministic-concurrency-v1` in `live-rerun-metadata.json`.

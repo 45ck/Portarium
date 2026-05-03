@@ -120,4 +120,78 @@ describe('growth-studio-openclaw-live-v2 experiment', () => {
     expect(evidenceSummary.attemptId).toBe(attemptId);
     expect(report).toContain(`# growth-studio-openclaw-live-v2 ${attemptId}`);
   });
+
+  it('records opt-in live OpenClaw rerun metadata without leaking provider secrets', async () => {
+    const attemptId = 'live-openclaw-rerun-v1';
+    const resultsRoot = mkdtempSync(join(tmpdir(), 'portarium-growth-live-v2-rerun-'));
+    const resultsDir = join(resultsRoot, 'growth-studio-openclaw-live-v2', attemptId);
+    tempDirs.push(resultsRoot);
+
+    const runnerPath =
+      '../../experiments/iteration-2/scenarios/growth-studio-openclaw-live-v2/run.mjs';
+    const mod = await import(runnerPath);
+    const outcome = await mod.runGrowthStudioOpenClawLiveV2({
+      resultsDir,
+      log: () => {},
+      env: {
+        PORTARIUM_LIVE_OPENCLAW_RERUNS: 'true',
+        PORTARIUM_EXPERIMENT_LIVE_LLM: 'true',
+        PORTARIUM_LIVE_MODEL_PROVIDER: 'openai',
+        OPENAI_API_KEY: 'sk-live-secret',
+      },
+      fetchImpl: async () => new Response('{}', { status: 200 }),
+    });
+
+    expect(outcome.outcome).toBe('confirmed');
+    const trace = outcome.trace as Record<string, any>;
+    expect(trace['mode']).toBe('live-llm-openclaw-rerun');
+    expect(trace['liveOpenClawRerun']).toMatchObject({
+      scenarioId: 'growth-studio-openclaw-live-v2',
+      mode: 'live-llm-openclaw-rerun',
+      liveAttemptId: 'live-openclaw-rerun-v1',
+      liveModelPreflight: {
+        status: 'ready',
+        providerSelection: 'forced',
+        provider: 'openai',
+        model: 'gpt-4o',
+        probe: 'chat-completions',
+        httpStatus: 200,
+      },
+      exactOnceResume: {
+        duplicateExecutionCount: 0,
+        successfulResumeCount: 4,
+        priorWritesReplayed: false,
+        result: 'exact-once',
+      },
+    });
+    expect(trace['liveOpenClawRerun'].approvalIds).toEqual([
+      'appr-growth-live-copy',
+      'appr-growth-live-send',
+      'appr-growth-restart-content',
+      'appr-growth-restart-publish',
+    ]);
+    expect(trace['liveOpenClawRerun'].classification.productDefects).toEqual([]);
+    expect(trace['liveOpenClawRerun'].deterministicComparison).toMatchObject({
+      deterministicAttemptId: 'deterministic-growth-v2',
+      deterministicOutcome: 'confirmed',
+      exactOnceResumeMatch: true,
+    });
+
+    const serializedOutcome = JSON.stringify(outcome);
+    expect(serializedOutcome).not.toContain('sk-live-secret');
+    expect(serializedOutcome).not.toContain('OPENAI_API_KEY');
+
+    const metadataPath = join(resultsDir, 'live-rerun-metadata.json');
+    expect(existsSync(metadataPath)).toBe(true);
+    const metadata = readFileSync(metadataPath, 'utf8');
+    expect(metadata).toContain('"provider": "openai"');
+    expect(metadata).not.toContain('sk-live-secret');
+    expect(metadata).not.toContain('OPENAI_API_KEY');
+
+    const evidenceSummary = JSON.parse(
+      readFileSync(join(resultsDir, 'evidence-summary.json'), 'utf8'),
+    );
+    expect(evidenceSummary.requiredArtifacts).toContain('live-rerun-metadata.json');
+    expect(evidenceSummary.presentArtifacts).toContain('live-rerun-metadata.json');
+  });
 });
