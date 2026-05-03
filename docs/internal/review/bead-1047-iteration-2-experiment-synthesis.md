@@ -97,7 +97,7 @@ The result directory name for `growth-studio-openclaw-live-v2` is
 `deterministic-growth-v2`, while the telemetry artifact payloads identify the
 attempt as `deterministic-live-v2`. The artifacts are internally complete, but
 this naming mismatch weakens traceability and should be fixed before larger
-evidence ingestion or dashboarding.
+evidence ingestion or dashboard work.
 
 Iteration 2 remains mostly deterministic replay. That is suitable for CI and
 scientific comparison, but it is weaker than the Iteration 1 live OpenClaw run
@@ -135,74 +135,18 @@ after-hours coverage modeling, and execution reservation recovery. The strongest
 remaining risks are live toolchain realism, production persistence, browser
 operator workflow, and real provider/SoR integration.
 
-## Follow-up Bead Drafts
+## Follow-up Beads
 
-I did not create follow-up Beads from this worktree. The root checkout reported
-`bead-1047` claimed by `codex-b7`, while the worktree-local Beads state reported
-it unclaimed; mutating `.beads/issues.jsonl` from the stale worktree would risk
-conflicting with other agents. The following drafts are ready to create through
-the normal root Beads workflow:
+Open follow-up work has been converted into root Beads, all blocked by
+`bead-1047` so they become ready only after this synthesis lands:
 
-### Draft 1
+| Bead        | Priority | Phase         | Title                                                                        |
+| ----------- | -------- | ------------- | ---------------------------------------------------------------------------- |
+| `bead-1144` | `P2`     | `integration` | Fix iteration 2 attempt-id traceability mismatch                             |
+| `bead-1145` | `P1`     | `integration` | Run micro-saas-toolchain-redo with content-machine and demo-machine evidence |
+| `bead-1146` | `P1`     | `integration` | Production-like pilot rehearsal for governed approval queues                 |
+| `bead-1147` | `P2`     | `integration` | Live LLM rerun for Iteration 2 concurrency and delayed resume                |
 
-Title: `Fix iteration 2 attempt-id traceability mismatch`
-Priority: `P2`
-Phase: `integration`
-BlockedBy: `bead-1047`
-
-Body:
-
-`growth-studio-openclaw-live-v2` writes result bundles under an operator-supplied
-attempt directory, but its telemetry payloads still identify the attempt as
-`deterministic-live-v2`. Update the runner or telemetry call so the directory,
-`queue-metrics.json`, `evidence-summary.json`, `report.md`, and `outcome.json`
-use one stable attempt id. Add a focused test that fails on directory/payload
-attempt-id drift.
-
-### Draft 2
-
-Title: `Run micro-saas-toolchain-redo with content-machine and demo-machine evidence`
-Priority: `P1`
-Phase: `integration`
-BlockedBy: `bead-1047`
-
-Body:
-
-Install or expose the required `content-machine` CLI in the experiment
-environment, rerun `micro-saas-toolchain-redo`, and capture the full required
-artifact set: `toolchain-preflight.json`, `tool-usage-evidence.json`,
-`content-machine-output.json`, `external-effect-stubs.json`, `queue-metrics.json`,
-`evidence-summary.json`, and `report.md`. If `demo-machine` remains unavailable,
-record an explicit skip reason and preserve the post-validation demo path as
-unproven.
-
-### Draft 3
-
-Title: `Production-like pilot rehearsal for governed approval queues`
-Priority: `P1`
-Phase: `integration`
-BlockedBy: `bead-1047`
-
-Body:
-
-Run the confirmed Iteration 2 approval, handoff, backlog, shift coverage, resume,
-and reservation scenarios against a production-like stack using durable stores,
-real authorization, Cockpit browser operator actions, and stubbed external SoR
-effects. Capture queue SLOs, persistence behavior across restarts, browser QA
-evidence, redaction checks, and any divergence from deterministic replay.
-
-### Draft 4
-
-Title: `Live LLM rerun for Iteration 2 concurrency and delayed resume`
-Priority: `P2`
-Phase: `integration`
-BlockedBy: `bead-1047`
-
-Body:
-
-Gate an opt-in live LLM/OpenClaw rerun of `growth-studio-openclaw-live-v2` and
-`openclaw-concurrent-sessions` behind explicit environment variables. Record
-redacted model/provider metadata, approval IDs, queue metrics, Evidence
-Artifacts, and exact-once resume results. Compare live behavior with the
-deterministic bundles and classify model/provider variability separately from
-Portarium product defects.
+These Beads carry the acceptance criteria for traceability repair, real
+Machine/toolchain evidence, production-like Cockpit and durable-store rehearsal,
+and opt-in live LLM/OpenClaw reruns.
