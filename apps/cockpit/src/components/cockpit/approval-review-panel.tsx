@@ -24,6 +24,7 @@ import type {
   EvidenceEntry,
   PolicyRule,
   DecisionHistoryEntry,
+  ApprovalPacket,
 } from '@portarium/cockpit-types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -43,6 +44,10 @@ import {
   Hash,
   ChevronRight,
   GitBranch,
+  PackageCheck,
+  FileText,
+  KeyRound,
+  Layers3,
 } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
@@ -287,6 +292,108 @@ function EffectsList({ effects }: { effects: PlanEffect[] }) {
   );
 }
 
+function ApprovalPacketPanel({ packet }: { packet: ApprovalPacket }) {
+  const primaryArtifact = packet.artifacts.find((artifact) => artifact.role === 'primary');
+  const supportingArtifacts = packet.artifacts.filter((artifact) => artifact.role !== 'primary');
+
+  return (
+    <section
+      aria-label="Approval packet"
+      className="grid gap-4 border-b border-border bg-background px-6 py-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]"
+    >
+      <div className="space-y-3">
+        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+          <PackageCheck className="h-4 w-4" />
+          Artifact
+        </div>
+        {primaryArtifact && (
+          <div className="rounded-md border border-border p-3">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold">{primaryArtifact.title}</p>
+                <p className="mt-1 font-mono text-[11px] text-muted-foreground">
+                  {primaryArtifact.artifactId}
+                </p>
+              </div>
+              <Badge variant="secondary" className="shrink-0 text-[10px]">
+                {primaryArtifact.mimeType}
+              </Badge>
+            </div>
+            {primaryArtifact.sha256 && (
+              <p className="mt-2 truncate font-mono text-[10px] text-muted-foreground">
+                {primaryArtifact.sha256}
+              </p>
+            )}
+          </div>
+        )}
+        {supportingArtifacts.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {supportingArtifacts.map((artifact) => (
+              <Badge key={artifact.artifactId} variant="outline" className="max-w-full truncate">
+                {artifact.title}
+              </Badge>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="grid gap-3 md:grid-cols-3 lg:grid-cols-1">
+        <div className="rounded-md border border-border p-3">
+          <div className="flex items-center gap-2 text-xs font-semibold">
+            <Layers3 className="h-4 w-4 text-muted-foreground" />
+            Plan Scope
+          </div>
+          <p className="mt-2 text-sm">{packet.planScope.summary}</p>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {packet.planScope.actionIds.map((actionId) => (
+              <Badge key={actionId} variant="secondary" className="font-mono text-[10px]">
+                {actionId}
+              </Badge>
+            ))}
+            {packet.planScope.plannedEffectIds.map((effectId) => (
+              <Badge key={effectId} variant="outline" className="font-mono text-[10px]">
+                {effectId}
+              </Badge>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-md border border-border p-3">
+          <div className="flex items-center gap-2 text-xs font-semibold">
+            <KeyRound className="h-4 w-4 text-muted-foreground" />
+            Capabilities
+          </div>
+          <div className="mt-2 space-y-1.5">
+            {packet.requestedCapabilities.map((capability) => (
+              <div key={capability.capabilityId} className="text-xs">
+                <span className="font-mono">{capability.capabilityId}</span>
+                <span className="text-muted-foreground"> - {capability.reason}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-md border border-border p-3">
+          <div className="flex items-center gap-2 text-xs font-semibold">
+            <FileText className="h-4 w-4 text-muted-foreground" />
+            Review Docs
+          </div>
+          <div className="mt-2 space-y-2">
+            {packet.reviewDocs.map((doc) => (
+              <details key={doc.title} className="group" open={packet.reviewDocs.length === 1}>
+                <summary className="cursor-pointer text-xs font-medium">{doc.title}</summary>
+                <p className="mt-1 whitespace-pre-wrap text-xs leading-relaxed text-muted-foreground">
+                  {doc.markdown}
+                </p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function DiscussionPanel({ history }: { history: DecisionHistoryEntry[] }) {
   if (history.length === 0) {
     return (
@@ -423,6 +530,12 @@ export function ApprovalReviewPanel({
             proposal={approval.agentActionProposal}
             policyRule={approval.policyRule}
           />
+        </div>
+      )}
+
+      {approval.approvalPacket && (
+        <div className="shrink-0">
+          <ApprovalPacketPanel packet={approval.approvalPacket} />
         </div>
       )}
 

@@ -92,6 +92,45 @@ export interface ArtifactV1 {
   createdAtIso: string;
 }
 
+export type ApprovalPacketArtifactRole = 'primary' | 'supporting';
+
+export interface ApprovalPacketArtifactRef {
+  artifactId: string;
+  title: string;
+  mimeType: string;
+  role: ApprovalPacketArtifactRole;
+  evidenceId?: string;
+  uri?: string;
+  sha256?: string;
+}
+
+export interface ApprovalPacketReviewDoc {
+  title: string;
+  markdown: string;
+}
+
+export interface ApprovalPacketRequestedCapability {
+  capabilityId: string;
+  reason: string;
+  required: boolean;
+}
+
+export interface ApprovalPacketPlanScope {
+  planId: string;
+  summary: string;
+  actionIds: string[];
+  plannedEffectIds: string[];
+}
+
+export interface ApprovalPacket {
+  schemaVersion: 1;
+  packetId: string;
+  artifacts: ApprovalPacketArtifactRef[];
+  reviewDocs: ApprovalPacketReviewDoc[];
+  requestedCapabilities: ApprovalPacketRequestedCapability[];
+  planScope: ApprovalPacketPlanScope;
+}
+
 export interface IntentPlanRequest {
   triggerText: string;
   source?: IntentTriggerSource;
@@ -625,6 +664,7 @@ export interface ApprovalSummary {
   policyRule?: PolicyRule;
   decisionHistory?: DecisionHistoryEntry[];
   agentActionProposal?: AgentActionProposalMeta;
+  approvalPacket?: ApprovalPacket;
 }
 
 export interface CreateApprovalRequest {

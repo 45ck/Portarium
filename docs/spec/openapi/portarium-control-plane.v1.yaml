@@ -3742,6 +3742,119 @@ components:
     ApprovalStatus:
       type: string
       enum: [Pending, Approved, Executing, Denied, Executed, Expired, RequestChanges]
+    ApprovalPacketArtifactRefV1:
+      type: object
+      additionalProperties: false
+      properties:
+        artifactId:
+          type: string
+          minLength: 1
+        title:
+          type: string
+          minLength: 1
+        mimeType:
+          type: string
+          minLength: 1
+        role:
+          type: string
+          enum: [primary, supporting]
+        evidenceId:
+          $ref: '#/components/schemas/EvidenceId'
+        uri:
+          type: string
+          minLength: 1
+        sha256:
+          type: string
+          minLength: 1
+      required: [artifactId, title, mimeType, role]
+    ApprovalPacketReviewDocV1:
+      type: object
+      additionalProperties: false
+      properties:
+        title:
+          type: string
+          minLength: 1
+        markdown:
+          type: string
+          minLength: 1
+      required: [title, markdown]
+    ApprovalPacketRequestedCapabilityV1:
+      type: object
+      additionalProperties: false
+      properties:
+        capabilityId:
+          type: string
+          minLength: 1
+        reason:
+          type: string
+          minLength: 1
+        required:
+          type: boolean
+      required: [capabilityId, reason, required]
+    ApprovalPacketPlanScopeV1:
+      type: object
+      additionalProperties: false
+      properties:
+        planId:
+          $ref: '#/components/schemas/PlanId'
+        summary:
+          type: string
+          minLength: 1
+        actionIds:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            type: string
+            minLength: 1
+        plannedEffectIds:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            type: string
+            minLength: 1
+      required: [planId, summary, actionIds, plannedEffectIds]
+    ApprovalPacketV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schemaVersion:
+          type: integer
+          const: 1
+        packetId:
+          type: string
+          minLength: 1
+        artifacts:
+          type: array
+          minItems: 1
+          contains:
+            type: object
+            required: [role]
+            properties:
+              role:
+                const: primary
+          items:
+            $ref: '#/components/schemas/ApprovalPacketArtifactRefV1'
+        reviewDocs:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/ApprovalPacketReviewDocV1'
+        requestedCapabilities:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/ApprovalPacketRequestedCapabilityV1'
+        planScope:
+          $ref: '#/components/schemas/ApprovalPacketPlanScopeV1'
+      required:
+        - schemaVersion
+        - packetId
+        - artifacts
+        - reviewDocs
+        - requestedCapabilities
+        - planScope
     ApprovalV1:
       type: object
       additionalProperties: false
@@ -3779,6 +3892,8 @@ components:
         rationale:
           type: string
           minLength: 1
+        approvalPacket:
+          $ref: '#/components/schemas/ApprovalPacketV1'
       required:
         - schemaVersion
         - approvalId
@@ -3818,6 +3933,8 @@ components:
           $ref: '#/components/schemas/UserId'
         dueAtIso:
           $ref: '#/components/schemas/IsoTimestamp'
+        approvalPacket:
+          $ref: '#/components/schemas/ApprovalPacketV1'
       required: [runId, planId, prompt]
     DecideApprovalRequest:
       type: object

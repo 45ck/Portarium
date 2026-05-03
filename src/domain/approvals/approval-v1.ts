@@ -23,6 +23,7 @@ import {
   readString,
 } from '../validation/parse-utils.js';
 import { parseApprovalFeedbackV1, type ApprovalFeedbackV1 } from './approval-feedback-v1.js';
+import { parseApprovalPacketV1, type ApprovalPacketV1 } from './approval-packet-v1.js';
 
 export type ApprovalExecutionStatus = 'Executing';
 export type ApprovalStatus = 'Pending' | ApprovalDecision | ApprovalExecutionStatus;
@@ -46,6 +47,7 @@ type ApprovalBaseV1 = Readonly<{
   assigneeUserId?: UserIdType;
   dueAtIso?: string;
   escalationChain?: readonly EscalationStepV1[];
+  approvalPacket?: ApprovalPacketV1;
 }>;
 
 export type ApprovalPendingV1 = Readonly<
@@ -124,6 +126,9 @@ function parseApprovalBaseV1(value: Record<string, unknown>): ApprovalBaseV1 {
   const escalationChainRaw = value['escalationChain'];
   const escalationChain =
     escalationChainRaw === undefined ? undefined : parseEscalationChain(escalationChainRaw);
+  const approvalPacketRaw = value['approvalPacket'];
+  const approvalPacket =
+    approvalPacketRaw === undefined ? undefined : parseApprovalPacketV1(approvalPacketRaw);
 
   return {
     schemaVersion: 1,
@@ -138,6 +143,7 @@ function parseApprovalBaseV1(value: Record<string, unknown>): ApprovalBaseV1 {
     ...(assigneeUserId ? { assigneeUserId } : {}),
     ...(dueAtIso ? { dueAtIso } : {}),
     ...(escalationChain ? { escalationChain } : {}),
+    ...(approvalPacket ? { approvalPacket } : {}),
   };
 }
 

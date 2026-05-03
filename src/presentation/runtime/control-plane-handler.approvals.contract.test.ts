@@ -338,6 +338,90 @@ describe('POST /approvals', () => {
 
     expect(res.status).toBe(403);
   });
+
+  it('accepts and returns an artifact-first approval packet', async () => {
+    await startWith();
+
+    const res = await fetch(createUrl(), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        runId: 'run-1',
+        planId: 'plan-1',
+        prompt: 'Need approval',
+        approvalPacket: {
+          schemaVersion: 1,
+          packetId: 'packet-contract-1',
+          artifacts: [
+            {
+              artifactId: 'artifact-contract-1',
+              title: 'Generated launch brief',
+              mimeType: 'text/markdown',
+              role: 'primary',
+            },
+          ],
+          reviewDocs: [{ title: 'Review brief', markdown: '# Review' }],
+          requestedCapabilities: [
+            {
+              capabilityId: 'marketing.campaign.write',
+              reason: 'Publish approved campaign assets.',
+              required: true,
+            },
+          ],
+          planScope: {
+            planId: 'plan-1',
+            summary: 'Publish generated artifact and metadata.',
+            actionIds: ['action-render', 'action-publish'],
+            plannedEffectIds: ['effect-1', 'effect-2'],
+          },
+        },
+      }),
+    });
+
+    expect(res.status).toBe(201);
+    const body = (await res.json()) as {
+      approvalPacket?: { packetId?: string; planScope?: { actionIds?: string[] } };
+    };
+    expect(body.approvalPacket?.packetId).toBe('packet-contract-1');
+    expect(body.approvalPacket?.planScope?.actionIds).toEqual(['action-render', 'action-publish']);
+  });
+
+  it('returns 422 when the approval packet is malformed', async () => {
+    await startWith();
+
+    const res = await fetch(createUrl(), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        runId: 'run-1',
+        planId: 'plan-1',
+        prompt: 'Need approval',
+        approvalPacket: {
+          schemaVersion: 1,
+          packetId: 'packet-contract-1',
+          artifacts: [],
+          reviewDocs: [{ title: 'Review brief', markdown: '# Review' }],
+          requestedCapabilities: [
+            {
+              capabilityId: 'marketing.campaign.write',
+              reason: 'Publish approved campaign assets.',
+              required: true,
+            },
+          ],
+          planScope: {
+            planId: 'plan-1',
+            summary: 'Publish generated artifact and metadata.',
+            actionIds: ['action-render'],
+            plannedEffectIds: ['effect-1'],
+          },
+        },
+      }),
+    });
+
+    expect(res.status).toBe(422);
+    const body = (await res.json()) as { detail: string };
+    expect(body.detail).toMatch(/artifacts/);
+  });
 });
 
 // ---------------------------------------------------------------------------

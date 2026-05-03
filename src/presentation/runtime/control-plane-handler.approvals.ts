@@ -18,6 +18,7 @@ import {
   type TenantId,
 } from '../../domain/primitives/index.js';
 import type { ApprovalStatus, ApprovalV1 } from '../../domain/approvals/index.js';
+import { parseApprovalPacketV1 } from '../../domain/approvals/index.js';
 import type { AgentActionProposalV1 } from '../../domain/machines/index.js';
 import type { AgentActionProposalStore } from '../../application/ports/index.js';
 import { listApprovals } from '../../application/queries/list-approvals.js';
@@ -59,6 +60,7 @@ const CREATE_APPROVAL_REQUEST_FIELDS = new Set([
   'prompt',
   'assigneeUserId',
   'dueAtIso',
+  'approvalPacket',
 ]);
 
 function isApprovalStatusQueryValue(value: string): value is ApprovalStatus {
@@ -422,6 +424,27 @@ export async function handleCreateApproval(args: ApprovalHandlerArgs): Promise<v
   };
 
   const idempotencyKey = normalizeHeader(req.headers['idempotency-key'])?.trim();
+  let approvalPacket: ReturnType<typeof parseApprovalPacketV1> | undefined;
+  if (record['approvalPacket'] !== undefined) {
+    try {
+      approvalPacket = parseApprovalPacketV1(record['approvalPacket']);
+    } catch (error) {
+      respondProblem(
+        res,
+        problemFromError(
+          {
+            kind: 'ValidationFailed',
+            message:
+              error instanceof Error ? error.message : 'approvalPacket must be a valid packet.',
+          },
+          pathname,
+        ),
+        correlationId,
+        traceContext,
+      );
+      return;
+    }
+  }
   const result = await createApproval(commandDeps, auth.ctx, {
     workspaceId,
     runId: typeof record['runId'] === 'string' ? record['runId'] : '',
@@ -432,6 +455,7 @@ export async function handleCreateApproval(args: ApprovalHandlerArgs): Promise<v
       ? { assigneeUserId: record['assigneeUserId'] }
       : {}),
     ...(typeof record['dueAtIso'] === 'string' ? { dueAtIso: record['dueAtIso'] } : {}),
+    ...(approvalPacket ? { approvalPacket } : {}),
     ...(idempotencyKey ? { idempotencyKey } : {}),
   } as Parameters<typeof createApproval>[2] & { idempotencyKey?: string });
 

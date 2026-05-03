@@ -326,6 +326,94 @@ describe('createApproval', () => {
     expect(savedApproval['escalationChain']).toHaveLength(2);
   });
 
+  it('creates approval with an artifact-first approval packet', async () => {
+    const result = await createApproval(
+      { authorization, clock, idGenerator, approvalStore, unitOfWork, eventPublisher },
+      toAppContext({
+        tenantId: 'tenant-1',
+        principalId: 'user-1',
+        correlationId: 'corr-1',
+        roles: ['operator'],
+      }),
+      {
+        ...VALID_INPUT,
+        approvalPacket: {
+          schemaVersion: 1,
+          packetId: 'packet-1',
+          artifacts: [
+            {
+              artifactId: 'artifact-1',
+              title: 'Generated launch brief',
+              mimeType: 'text/markdown',
+              role: 'primary',
+            },
+          ],
+          reviewDocs: [{ title: 'Review brief', markdown: '# Review' }],
+          requestedCapabilities: [
+            {
+              capabilityId: 'marketing.campaign.write',
+              reason: 'Publish approved campaign assets.',
+              required: true,
+            },
+          ],
+          planScope: {
+            planId: 'plan-1',
+            summary: 'Publish generated artifact and metadata.',
+            actionIds: ['action-render', 'action-publish'],
+            plannedEffectIds: ['effect-1', 'effect-2'],
+          },
+        },
+      },
+    );
+
+    expect(result.ok).toBe(true);
+    const savedApproval = (approvalStore.saveApproval as ReturnType<typeof vi.fn>).mock
+      .calls[0]?.[1] as Record<string, unknown>;
+    expect(savedApproval['approvalPacket']).toMatchObject({
+      packetId: 'packet-1',
+      planScope: { actionIds: ['action-render', 'action-publish'] },
+    });
+  });
+
+  it('rejects an invalid approval packet', async () => {
+    const result = await createApproval(
+      { authorization, clock, idGenerator, approvalStore, unitOfWork, eventPublisher },
+      toAppContext({
+        tenantId: 'tenant-1',
+        principalId: 'user-1',
+        correlationId: 'corr-1',
+        roles: ['operator'],
+      }),
+      {
+        ...VALID_INPUT,
+        approvalPacket: {
+          schemaVersion: 1,
+          packetId: 'packet-1',
+          artifacts: [],
+          reviewDocs: [{ title: 'Review brief', markdown: '# Review' }],
+          requestedCapabilities: [
+            {
+              capabilityId: 'marketing.campaign.write',
+              reason: 'Publish approved campaign assets.',
+              required: true,
+            },
+          ],
+          planScope: {
+            planId: 'plan-1',
+            summary: 'Publish generated artifact and metadata.',
+            actionIds: ['action-render'],
+            plannedEffectIds: ['effect-1'],
+          },
+        } as never,
+      },
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('Expected validation error.');
+    expect(result.error.kind).toBe('ValidationFailed');
+    expect(result.error.message).toMatch(/artifacts/);
+  });
+
   it('records evidence when evidenceLog is provided', async () => {
     const result = await createApproval(
       { authorization, clock, idGenerator, approvalStore, unitOfWork, eventPublisher, evidenceLog },
