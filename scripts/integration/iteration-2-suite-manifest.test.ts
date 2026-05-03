@@ -68,6 +68,7 @@ describe('Iteration 2 governed experiment suite manifest', () => {
             scenario.scenarioId !== 'approval-backlog-soak' &&
             scenario.scenarioId !== 'micro-saas-agent-stack-v2' &&
             scenario.scenarioId !== 'micro-saas-toolchain-redo' &&
+            scenario.scenarioId !== 'source-to-artifact-citation-loop' &&
             scenario.scenarioId !== 'governed-resume-recovery' &&
             scenario.scenarioId !== 'shift-aware-approval-coverage' &&
             scenario.scenarioId !== 'execution-reservation-recovery' &&
@@ -155,6 +156,7 @@ describe('Iteration 2 governed experiment suite manifest', () => {
       'bead-1046',
       'bead-1059',
       'bead-1069',
+      'bead-1103',
       'bead-1142',
       'bead-1146',
     ]) {
@@ -213,6 +215,32 @@ describe('Iteration 2 governed experiment suite manifest', () => {
       'tool-usage-evidence.json',
       'content-machine-output.json',
       'external-effect-stubs.json',
+    ]);
+  });
+
+  it('marks source-to-artifact-citation-loop as runnable with cited artifact evidence', () => {
+    const manifest = readManifest();
+    const scenario = manifest.scenarios.find(
+      (candidate) => candidate.scenarioId === 'source-to-artifact-citation-loop',
+    );
+
+    expect(scenario?.status).toBe('runnable-deterministic');
+    expect(scenario?.beadId).toBe('bead-1103');
+    expect(scenario?.runnerPath).toBe(
+      'experiments/iteration-2/scenarios/source-to-artifact-citation-loop/run.mjs',
+    );
+    expect(scenario?.comparesTo).toBe('micro-saas-toolchain-redo');
+    expect(existsSync(join(repoRoot, scenario?.runnerPath ?? 'missing'))).toBe(true);
+    expect(scenario?.artifactExpectations?.requiredArtifacts).toEqual([
+      'outcome.json',
+      'queue-metrics.json',
+      'evidence-summary.json',
+      'report.md',
+      'source-snapshots.json',
+      'research-dossier.json',
+      'downstream-artifacts.json',
+      'operator-interventions.json',
+      'citation-provenance.json',
     ]);
   });
 
