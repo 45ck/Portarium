@@ -19,6 +19,7 @@ import {
   readRecord,
   readString,
 } from '../validation/parse-utils.js';
+import { parseRunCharterV1, type RunCharterV1 } from './run-charter-v1.js';
 
 export type RunStatus =
   | 'Pending'
@@ -45,6 +46,7 @@ export type RunV1 = Readonly<{
   endedAtIso?: string;
   controlState?: RunControlState;
   operatorOwnerId?: string;
+  runCharter?: RunCharterV1;
 }>;
 
 export class RunParseError extends Error {
@@ -87,6 +89,8 @@ export function parseRunV1(value: unknown): RunV1 {
   const endedAtIso = readOptionalIsoString(record, 'endedAtIso', RunParseError);
   const controlState = readOptionalRunControlState(record);
   const operatorOwnerId = readOptionalNonEmptyString(record, 'operatorOwnerId');
+  const runCharter =
+    record['runCharter'] === undefined ? undefined : parseRunCharterV1(record['runCharter']);
 
   if (startedAtIso !== undefined) {
     assertNotBefore(createdAtIso, startedAtIso, RunParseError, {
@@ -117,6 +121,7 @@ export function parseRunV1(value: unknown): RunV1 {
     ...(endedAtIso ? { endedAtIso } : {}),
     ...(controlState ? { controlState } : {}),
     ...(operatorOwnerId ? { operatorOwnerId } : {}),
+    ...(runCharter ? { runCharter } : {}),
   };
 }
 
