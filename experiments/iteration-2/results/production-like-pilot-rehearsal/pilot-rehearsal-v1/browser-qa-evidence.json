@@ -15,7 +15,11 @@
     "npm run ab -- click @inbox-approvals",
     "npm run ab -- click @approval-apr-pilot-001",
     "npm run ab -- click @approve",
-    "npm run ab -- screenshot ./qa-artifacts/bead-1146/pilot-approval-approved.png"
+    "npm run ab -- screenshot ./qa-artifacts/bead-1146/pilot-approval-approved.png",
+    "npm run dev:all",
+    "docker compose --profile baseline --profile runtime --profile auth --profile idp --profile authz --profile erp --profile tools --profile cockpit -f docker-compose.yml -f docker-compose.local.yml up --wait",
+    "npm run ci:cockpit:live-stack-smoke:required",
+    "Playwright Chromium headed capture against http://localhost:5173/runs with VITE_PORTARIUM_ENABLE_MSW=false"
   ],
   "verifiedOperatorSurfaces": [
     "Inbox approval queue",
@@ -26,8 +30,27 @@
   ],
   "artifactPaths": [
     "experiments/iteration-2/results/production-like-pilot-rehearsal/pilot-rehearsal-v1/browser-qa-evidence.json",
+    "experiments/iteration-2/results/production-like-pilot-rehearsal/pilot-rehearsal-v1/release-candidate-live-browser-evidence.json",
     "qa-artifacts/bead-1146/pilot-approval-approved.png",
-    "qa-artifacts/bead-1146/pilot-evidence-redaction.png"
+    "qa-artifacts/bead-1146/pilot-evidence-redaction.png",
+    "qa-artifacts/bead-1150/live-msw-disabled-runs-boundary.png",
+    "qa-artifacts/bead-1150/live-msw-disabled-dev-session-failure.png",
+    "qa-artifacts/bead-1150/live-msw-disabled-boundary-trace.zip",
+    "qa-artifacts/bead-1150/live-msw-disabled-boundary-video.webm",
+    "qa-artifacts/bead-1150/live-browser-capture-result.json",
+    "qa-artifacts/bead-1150/dev-all-preflight.log",
+    "qa-artifacts/bead-1150/docker-compose-tools-preflight.log",
+    "qa-artifacts/bead-1150/live-stack-smoke-required.log"
   ],
-  "currentRunEvidence": "Deterministic boundary captured; live browser screenshots are required for release-candidate execution."
+  "releaseCandidateAttempt": {
+    "beadId": "bead-1150",
+    "attemptedAtIso": "2026-05-03T10:29:55.649Z",
+    "tool": "Playwright Chromium",
+    "requestedMode": "headed",
+    "headedLaunch": true,
+    "msw": "disabled",
+    "status": "limited-boundary-capture",
+    "summary": "Cockpit was captured in Dev live mode with MSW disabled, but the production-like API stack was unavailable and local API fetches were blocked by the current Cockpit CSP. This does not verify queue/detail/decision/resume/redaction through the live UI."
+  },
+  "currentRunEvidence": "Deterministic boundary captured; release-candidate headed browser attempt recorded an environment limitation and does not promote the browser evidence gate."
 }

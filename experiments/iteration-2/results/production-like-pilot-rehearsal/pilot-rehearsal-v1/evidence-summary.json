@@ -10,6 +10,7 @@
     "report.md",
     "restart-persistence.json",
     "browser-qa-evidence.json",
+    "release-candidate-live-browser-evidence.json",
     "redaction-audit.json",
     "divergence-classification.json",
     "external-sor-stubs.json"
@@ -21,11 +22,12 @@
     "report.md",
     "restart-persistence.json",
     "browser-qa-evidence.json",
+    "release-candidate-live-browser-evidence.json",
     "redaction-audit.json",
     "divergence-classification.json",
     "external-sor-stubs.json"
   ],
   "missingArtifacts": [],
-  "evidenceCompletenessCount": 9,
+  "evidenceCompletenessCount": 10,
   "complete": true
 }
