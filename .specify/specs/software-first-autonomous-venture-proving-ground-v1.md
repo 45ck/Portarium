@@ -131,3 +131,23 @@ The proving ground is credible when:
   gated by their own evidence;
 - the backlog clearly separates current software proving work from deferred
   showcase, distribution, prompt-language, and speculative robotics expansion.
+
+## Self-Use Alpha Artifact Pack
+
+The first executable alpha pack for `bead-1102` is
+`docs/internal/governance/source-to-micro-saas-self-use-alpha.json`, with the
+operator runbook at
+`docs/internal/governance/source-to-micro-saas-self-use-alpha.md`.
+
+The pack must remain valid under
+`scripts/governance/validate-self-use-alpha.mjs`. The validator is the minimum
+contract for this alpha slice: it checks the chosen recurring workflow,
+baseline capture, useful outcome definition, required Artifact classes,
+operator-effort evidence, exception and failure capture, rollback protocol,
+manual fallback, stop-using-it capture, run-ledger fields, and the stable
+usefulness scorecard metrics.
+
+Passing validation does not prove that self-use succeeded. It proves that each
+Run has the required structure to record whether the workflow saved time,
+produced useful Artifacts, exposed failures, or required rollback before any
+broader public claim is made.

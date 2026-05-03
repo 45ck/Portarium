@@ -1,0 +1,288 @@
+{
+  "schemaVersion": 1,
+  "beadId": "bead-1102",
+  "workflowId": "source-to-micro-saas-builder",
+  "projectTypeId": "micro-saas-agent-stack",
+  "workspaceId": "workspace-portarium-internal",
+  "projectId": "project-self-use-alpha-source-to-micro-saas",
+  "owner": {
+    "role": "builder",
+    "userId": "user-builder"
+  },
+  "readinessLabel": "self-use",
+  "productionClaim": "self-use",
+  "recurrence": {
+    "cadence": "weekly",
+    "minimumPilotRuns": 3,
+    "minimumCalendarDays": 7,
+    "pilotWindow": {
+      "plannedStartIso": "2026-05-03T00:00:00.000Z",
+      "plannedEndIso": "2026-05-17T00:00:00.000Z"
+    }
+  },
+  "baseline": {
+    "comparisonWorkflow": "manual source research, backlog shaping, implementation planning, QA notes, and release or rollback notes without Portarium-governed execution",
+    "minimumSampleSizeRuns": 3,
+    "captureMethods": [
+      "operator diary",
+      "git commit and pull request timestamps",
+      "test output timestamps",
+      "manual issue or Work Item notes"
+    ]
+  },
+  "usefulOutcome": {
+    "definition": "A governed source-to-micro-SaaS Artifact package accepted for builder use, including cited source evidence, product or technical brief, bounded implementation or backlog Artifact, QA evidence, and release or rollback notes.",
+    "acceptanceSignals": [
+      "operator accepts the Artifact package for builder use",
+      "required source claims cite Source Snapshots or user-provided references",
+      "tests, review, or QA evidence exists for implementation-bearing Artifacts",
+      "manual fallback, rollback, and stop-using-it events are recorded when they occur"
+    ]
+  },
+  "trustedSources": [
+    {
+      "sourceClass": "T1",
+      "allowedUse": "implementation-affecting official docs, API references, release notes, and repository refs"
+    },
+    {
+      "sourceClass": "T3",
+      "allowedUse": "implementation hypotheses, package behaviour, and community issue context with confidence boundaries"
+    },
+    {
+      "sourceClass": "T5",
+      "allowedUse": "builder intent, constraints, non-goals, quality bar, and local workflow context"
+    }
+  ],
+  "controlledActions": [
+    {
+      "actionClass": "source-ingestion",
+      "executionTier": "Assisted",
+      "requiresApprovalGate": false
+    },
+    {
+      "actionClass": "repository-file-edit",
+      "executionTier": "Human-approve",
+      "requiresApprovalGate": true
+    },
+    {
+      "actionClass": "test-or-quality-gate-run",
+      "executionTier": "Assisted",
+      "requiresApprovalGate": false
+    },
+    {
+      "actionClass": "git-commit",
+      "executionTier": "Human-approve",
+      "requiresApprovalGate": true
+    },
+    {
+      "actionClass": "external-publish-or-distribution",
+      "executionTier": "Manual-only",
+      "requiresApprovalGate": true
+    }
+  ],
+  "approvalPolicy": {
+    "approvalGateRefs": [
+      "scope-approval",
+      "repository-change-approval",
+      "artifact-acceptance-approval",
+      "rollback-approval"
+    ],
+    "makerCheckerRequiredFor": [
+      "repository-file-edit",
+      "git-commit",
+      "external-publish-or-distribution"
+    ],
+    "blockedActionClasses": [
+      "real outbound send",
+      "public publish",
+      "paid distribution",
+      "production credential rotation"
+    ]
+  },
+  "artifactPlan": [
+    {
+      "artifactKind": "project-brief",
+      "required": true,
+      "evidenceDepth": "brief objective, audience, constraints, quality bar, taste notes, non-goals, and acceptance thresholds"
+    },
+    {
+      "artifactKind": "research-dossier",
+      "required": true,
+      "evidenceDepth": "Source Snapshots, cited claims, freshness, confidence, claim boundaries, and open questions"
+    },
+    {
+      "artifactKind": "opportunity-brief",
+      "required": true,
+      "evidenceDepth": "problem hypothesis, target user, integration feasibility, non-goals, and acceptance criteria"
+    },
+    {
+      "artifactKind": "implementation-or-backlog-artifact",
+      "required": true,
+      "evidenceDepth": "bounded spec, Work Item list, code change, or handoff package linked to the dossier"
+    },
+    {
+      "artifactKind": "qa-or-release-evidence",
+      "required": true,
+      "evidenceDepth": "focused test output, typecheck or dependency-cruiser status when feasible, review notes, and release or rollback notes"
+    },
+    {
+      "artifactKind": "usefulness-scorecard",
+      "required": true,
+      "evidenceDepth": "baseline and pilot metric table with acceptance rating and follow-up Beads"
+    }
+  ],
+  "requiredEvidenceEvents": [
+    {
+      "eventKind": "operator-effort",
+      "description": "Active operator minutes spent starting, steering, reviewing, approving, fixing, and closing each Run."
+    },
+    {
+      "eventKind": "exception",
+      "description": "An approval denial, request-changes decision, blocked Run, missing evidence signal, or policy exception."
+    },
+    {
+      "eventKind": "rollback-event",
+      "description": "Rollback trigger, scope, decision, recovery action, evidence refs, and completion criteria."
+    },
+    {
+      "eventKind": "failure",
+      "description": "Failed generation, failed test, incorrect Artifact, missing source, stale source, tool error, or operator rejection."
+    },
+    {
+      "eventKind": "manual-fallback",
+      "description": "Work moved outside Portarium because the governed path was blocked, too slow, wrong, unsafe, or not worth continuing."
+    },
+    {
+      "eventKind": "stop-using-it",
+      "description": "A moment where the builder stopped using the workflow for a bounded piece of work, with reason and recovery route."
+    },
+    {
+      "eventKind": "useful-output",
+      "description": "Accepted Artifact package, rejected package with rationale, or package carried forward into builder work."
+    },
+    {
+      "eventKind": "artifact-review",
+      "description": "Accept, reject, request-changes, or wrong-direction review signal with evidence refs and rationale."
+    }
+  ],
+  "rollbackProtocol": {
+    "rollbackScopeLevels": [
+      {
+        "level": "L1",
+        "scope": "Run-level revert",
+        "actions": [
+          "stop current Run",
+          "mark generated Artifact as rejected or superseded",
+          "restore prior branch or file state",
+          "record evidence refs and operator rationale"
+        ]
+      },
+      {
+        "level": "L2",
+        "scope": "Workflow pause",
+        "actions": [
+          "pause source-to-micro-saas-builder recurrence",
+          "route remaining work as Manual-only Human Tasks",
+          "create follow-up Beads for missing Policy, evidence, or tooling"
+        ]
+      },
+      {
+        "level": "L3",
+        "scope": "Stop self-use claim",
+        "actions": [
+          "change readiness label to pilot-candidate or demo-only in the next truthful artifact update",
+          "publish a failure or concern report",
+          "restart only after the blocker has evidence-backed remediation"
+        ]
+      }
+    ],
+    "rollbackTriggers": [
+      "duplicate externally-effectful Action",
+      "unsafe Action or Policy violation escape",
+      "uncited material claim drives implementation or approval context",
+      "operator minutes increase without accepted quality or KPI tradeoff",
+      "same exception fingerprint repeats twice without remediation",
+      "builder stops using the workflow for real work during the pilot window"
+    ],
+    "completionCriteria": [
+      "affected Run is stopped, corrected, or explicitly moved to Manual-only",
+      "Artifact status reflects accepted, rejected, superseded, or rolled back",
+      "Evidence Log records trigger, scope, operator decision, and recovery action",
+      "follow-up Beads exist for unresolved defects before a broader claim is made"
+    ]
+  },
+  "manualFallbackProtocol": {
+    "allowedRoutes": [
+      "manual research note",
+      "manual code or spec change",
+      "manual QA run",
+      "manual release note",
+      "manual Work Item update"
+    ],
+    "requiredFields": [
+      "reason",
+      "operatorMinutes",
+      "workMovedOutsidePortarium",
+      "evidenceRefs",
+      "returnCondition"
+    ]
+  },
+  "stopUsingItProtocol": {
+    "requiredTriggers": [
+      "workflow becomes slower than manual path",
+      "evidence is insufficient for trust",
+      "Artifact quality is below acceptance threshold",
+      "governance blocks progress without useful safety signal",
+      "operator cannot reconstruct what happened"
+    ],
+    "requiredFields": [
+      "stoppedAtIso",
+      "runId",
+      "reason",
+      "manualFallbackUsed",
+      "restartCondition",
+      "followUpBeadRefs"
+    ]
+  },
+  "scorecardMetrics": [
+    "operator_minutes_per_run",
+    "approval_latency_ms_p50",
+    "approval_latency_ms_p95",
+    "blocked_duration_ms_p50",
+    "blocked_duration_ms_p95",
+    "throughput_per_operator_per_day",
+    "throughput_per_workspace_per_day",
+    "denial_rate",
+    "rework_rate",
+    "duplicate_execution_rate",
+    "unsafe_action_escape_rate",
+    "policy_violation_escape_rate",
+    "cost_per_useful_outcome",
+    "model_cost_per_useful_outcome",
+    "tool_cost_per_useful_outcome",
+    "operator_cost_per_useful_outcome",
+    "business_kpi_delta_primary",
+    "business_kpi_delta_secondary",
+    "useful_outcome_count",
+    "baseline_comparison_confidence",
+    "baseline_sample_size_runs",
+    "pilot_sample_size_runs"
+  ],
+  "runLedgerTemplate": {
+    "requiredFields": [
+      "runId",
+      "startedAtIso",
+      "endedAtIso",
+      "operatorMinutes",
+      "approvalGateRefs",
+      "artifactRefs",
+      "evidenceRefs",
+      "usefulOutcomeAccepted",
+      "exceptionEvents",
+      "rollbackEvents",
+      "manualFallbackEvents",
+      "stopUsingItEvents",
+      "followUpBeadRefs"
+    ]
+  }
+}
