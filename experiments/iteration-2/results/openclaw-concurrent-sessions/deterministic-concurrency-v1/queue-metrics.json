@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "scenarioId": "openclaw-concurrent-sessions",
+  "attemptId": "deterministic-concurrency-v1",
+  "generatedAtIso": "2026-04-30T00:00:25.000Z",
+  "metrics": {
+    "approval_count_by_tier": {
+      "Human-approve": 1,
+      "Assisted": 3
+    },
+    "approval_count_by_session": {
+      "openclaw-session-01": 1,
+      "openclaw-session-02": 1,
+      "openclaw-session-03": 1,
+      "openclaw-session-04": 1
+    },
+    "pending_age_ms_p50": 8000,
+    "pending_age_ms_p95": 17000,
+    "pending_age_ms_max": 17000,
+    "resume_latency_ms": [
+      800,
+      800,
+      800,
+      800
+    ],
+    "blocked_duration_ms": [
+      8000,
+      10200,
+      7400,
+      17000
+    ],
+    "queue_depth_over_time": [
+      {
+        "timestampIso": "2026-04-30T00:00:00.000Z",
+        "depth": 1
+      },
+      {
+        "timestampIso": "2026-04-30T00:00:03.500Z",
+        "depth": 4
+      },
+      {
+        "timestampIso": "2026-04-30T00:00:09.900Z",
+        "depth": 4
+      },
+      {
+        "timestampIso": "2026-04-30T00:00:10.300Z",
+        "depth": 2
+      },
+      {
+        "timestampIso": "2026-04-30T00:00:10.700Z",
+        "depth": 1
+      },
+      {
+        "timestampIso": "2026-04-30T00:00:18.500Z",
+        "depth": 0
+      }
+    ],
+    "denial_count": 0,
+    "request_changes_count": 0,
+    "escalation_count": 0,
+    "expiry_count": 0,
+    "duplicate_execution_count": 0,
+    "evidence_completeness_count": 4,
+    "restart_count": 0,
+    "successful_resume_count": 4
+  }
+}

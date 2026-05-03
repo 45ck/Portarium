@@ -1,0 +1,10 @@
+{
+  "tool": "demo-machine",
+  "status": "intentionally-skipped",
+  "checkedAt": "2026-05-03T03:22:43.222Z",
+  "command": "demo-machine",
+  "probe": "cli-help",
+  "rationale": "demo-machine CLI is not installed on this workstation; Cockpit demo-machine playback is optional and skipped for this experiment run.",
+  "clipSpecPath": "docs/internal/ui/cockpit/demo-machine/clips/01-approval-gate-unblocks-run.demo.yaml",
+  "required": false
+}

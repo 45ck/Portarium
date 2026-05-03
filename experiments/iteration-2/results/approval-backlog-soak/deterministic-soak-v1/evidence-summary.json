@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "scenarioId": "approval-backlog-soak",
+  "attemptId": "deterministic-soak-v1",
+  "generatedAtIso": "2026-04-29T00:01:30.000Z",
+  "requiredArtifacts": [
+    "outcome.json",
+    "queue-metrics.json",
+    "evidence-summary.json",
+    "report.md"
+  ],
+  "presentArtifacts": [
+    "outcome.json",
+    "queue-metrics.json",
+    "evidence-summary.json",
+    "report.md"
+  ],
+  "missingArtifacts": [],
+  "evidenceCompletenessCount": 4,
+  "complete": true
+}

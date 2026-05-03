@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "scenarioId": "micro-saas-agent-stack-v2",
+  "attemptId": "deterministic-handoff-v1",
+  "generatedAtIso": "2026-04-29T02:00:40.000Z",
+  "requiredArtifacts": [
+    "outcome.json",
+    "queue-metrics.json",
+    "evidence-summary.json",
+    "report.md",
+    "demo-machine-preflight.json"
+  ],
+  "presentArtifacts": [
+    "outcome.json",
+    "queue-metrics.json",
+    "evidence-summary.json",
+    "report.md",
+    "demo-machine-preflight.json"
+  ],
+  "missingArtifacts": [],
+  "evidenceCompletenessCount": 5,
+  "complete": true
+}

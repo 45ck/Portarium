@@ -1,0 +1,92 @@
+[
+  {
+    "variantId": "active-in-progress",
+    "recoveryPath": "return-executing",
+    "returnedStatus": "Executing",
+    "operatorVisibleState": "execution-reservation-in-progress",
+    "safeToRetry": true,
+    "requiresOperatorReconcile": false,
+    "redaction": {
+      "artifactPolicy": "sensitive request fields redacted before write",
+      "forbiddenFragments": [
+        "[REDACTED]",
+        "[REDACTED]",
+        "[REDACTED]",
+        "[REDACTED]",
+        "[REDACTED]"
+      ]
+    }
+  },
+  {
+    "variantId": "completed-replay",
+    "recoveryPath": "replay-completed-output",
+    "returnedStatus": "Executed",
+    "operatorVisibleState": "execution-reservation-completed",
+    "safeToRetry": false,
+    "requiresOperatorReconcile": false,
+    "redaction": {
+      "artifactPolicy": "sensitive request fields redacted before write",
+      "forbiddenFragments": [
+        "[REDACTED]",
+        "[REDACTED]",
+        "[REDACTED]",
+        "[REDACTED]",
+        "[REDACTED]"
+      ]
+    }
+  },
+  {
+    "variantId": "fingerprint-conflict",
+    "recoveryPath": "fail-closed-conflict",
+    "returnedStatus": "Conflict",
+    "operatorVisibleState": "execution-reservation-conflict",
+    "safeToRetry": false,
+    "requiresOperatorReconcile": false,
+    "redaction": {
+      "artifactPolicy": "sensitive request fields redacted before write",
+      "forbiddenFragments": [
+        "[REDACTED]",
+        "[REDACTED]",
+        "[REDACTED]",
+        "[REDACTED]",
+        "[REDACTED]"
+      ]
+    }
+  },
+  {
+    "variantId": "claim-lost-release",
+    "recoveryPath": "release-reservation-after-claim-loss",
+    "returnedStatus": "Conflict",
+    "operatorVisibleState": "execution-reservation-conflict",
+    "safeToRetry": false,
+    "requiresOperatorReconcile": false,
+    "redaction": {
+      "artifactPolicy": "sensitive request fields redacted before write",
+      "forbiddenFragments": [
+        "[REDACTED]",
+        "[REDACTED]",
+        "[REDACTED]",
+        "[REDACTED]",
+        "[REDACTED]"
+      ]
+    }
+  },
+  {
+    "variantId": "complete-lost-recovery",
+    "recoveryPath": "dispatch-once-then-retry-in-progress",
+    "returnedStatus": "Executing",
+    "operatorVisibleState": "execution-reservation-in-progress",
+    "safeToRetry": true,
+    "requiresOperatorReconcile": true,
+    "redaction": {
+      "artifactPolicy": "sensitive request fields redacted before write",
+      "forbiddenFragments": [
+        "[REDACTED]",
+        "[REDACTED]",
+        "[REDACTED]",
+        "[REDACTED]",
+        "[REDACTED]"
+      ]
+    }
+  }
+]

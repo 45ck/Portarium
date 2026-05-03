@@ -1,0 +1,35 @@
+{
+  "experiment": "micro-saas-toolchain-redo",
+  "timestamp": "2026-05-03T03:22:43.650Z",
+  "outcome": "inconclusive",
+  "duration_ms": 14,
+  "assertions": [],
+  "trace": {
+    "toolchainPreflight": {
+      "schemaVersion": 1,
+      "checkedAt": "2026-04-29T03:00:01.000Z",
+      "tools": {
+        "contentMachine": {
+          "tool": "content-machine",
+          "status": "failed",
+          "checkedAt": "2026-05-03T03:22:43.637Z",
+          "command": "content-machine",
+          "probe": "cli-help",
+          "rationale": "content-machine CLI is required for this experiment but is not installed or not on PATH.",
+          "required": true
+        },
+        "demoMachine": {
+          "tool": "demo-machine",
+          "status": "intentionally-skipped",
+          "checkedAt": "2026-05-03T03:22:43.644Z",
+          "command": "demo-machine",
+          "probe": "cli-help",
+          "rationale": "demo-machine CLI is not installed on this workstation; Cockpit demo-machine playback is optional and skipped for this experiment run.",
+          "clipSpecPath": "docs/internal/ui/cockpit/demo-machine/clips/01-approval-gate-unblocks-run.demo.yaml",
+          "required": false
+        }
+      }
+    }
+  },
+  "error": "Required content-machine preflight failed: content-machine CLI is required for this experiment but is not installed or not on PATH."
+}

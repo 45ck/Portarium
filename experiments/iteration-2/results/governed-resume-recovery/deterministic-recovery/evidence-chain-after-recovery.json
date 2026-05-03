@@ -1,0 +1,154 @@
+[
+  {
+    "variantId": "process-crash",
+    "continuous": true,
+    "evidenceChain": [
+      {
+        "evidenceId": "process-crash-ev-01",
+        "phase": "plan-before-interruption",
+        "atIso": "2026-04-30T00:00:00.000Z",
+        "summary": "Plan and evidence packet existed before interruption",
+        "previousHash": "genesis",
+        "hash": "f6a157da895a6310d19b2a29a8503a42c662f26314d6ef34d9e2d83c806b811c"
+      },
+      {
+        "evidenceId": "process-crash-ev-02",
+        "phase": "approval-pending-during-interruption",
+        "atIso": "2026-04-30T00:02:00.000Z",
+        "summary": "Approval Gate was pending while the agent or service was unavailable",
+        "previousHash": "f6a157da895a6310d19b2a29a8503a42c662f26314d6ef34d9e2d83c806b811c",
+        "hash": "94c1d69991d08afa75417ac4996c841b5bd3c195b249622c811fc6534dfe1f94"
+      },
+      {
+        "evidenceId": "process-crash-ev-03",
+        "phase": "recovered-state-visible",
+        "atIso": "2026-04-30T00:45:00.000Z",
+        "summary": "Cockpit shows degraded recovery state",
+        "previousHash": "94c1d69991d08afa75417ac4996c841b5bd3c195b249622c811fc6534dfe1f94",
+        "hash": "b1a90c9dec11f69cbe0d0689630e9a7510f7b396b490f7b0fe08976426551c9d"
+      },
+      {
+        "evidenceId": "process-crash-ev-04",
+        "phase": "after-governed-resume",
+        "atIso": "2026-04-30T01:05:01.250Z",
+        "summary": "Agent resumed once after Approval Gate decision",
+        "previousHash": "b1a90c9dec11f69cbe0d0689630e9a7510f7b396b490f7b0fe08976426551c9d",
+        "hash": "3fc3220c02fdc66aea3daa0acd5798849566888ecf00578c9717769921d75c21"
+      }
+    ]
+  },
+  {
+    "variantId": "service-restart",
+    "continuous": true,
+    "evidenceChain": [
+      {
+        "evidenceId": "service-restart-ev-01",
+        "phase": "plan-before-interruption",
+        "atIso": "2026-04-30T00:00:00.000Z",
+        "summary": "Plan and evidence packet existed before interruption",
+        "previousHash": "genesis",
+        "hash": "a57bafb305bc9dccaea52245da56177d0bb4e6ab379cb820ba8c6cd61fb9e12c"
+      },
+      {
+        "evidenceId": "service-restart-ev-02",
+        "phase": "approval-pending-during-interruption",
+        "atIso": "2026-04-30T00:03:00.000Z",
+        "summary": "Approval Gate was pending while the agent or service was unavailable",
+        "previousHash": "a57bafb305bc9dccaea52245da56177d0bb4e6ab379cb820ba8c6cd61fb9e12c",
+        "hash": "4f27c4ab095cad3ed81c4db6366da1cf5c0647dae32340f489e3779eaeaa131c"
+      },
+      {
+        "evidenceId": "service-restart-ev-03",
+        "phase": "recovered-state-visible",
+        "atIso": "2026-04-30T00:25:00.000Z",
+        "summary": "Cockpit shows waiting recovery state",
+        "previousHash": "4f27c4ab095cad3ed81c4db6366da1cf5c0647dae32340f489e3779eaeaa131c",
+        "hash": "1fb49cbe977b2dccdba2694cf691e00b46c25a9fc6c8e1c28d2e0ddcd746c9c5"
+      },
+      {
+        "evidenceId": "service-restart-ev-04",
+        "phase": "after-governed-resume",
+        "atIso": "2026-04-30T00:50:01.000Z",
+        "summary": "Agent resumed once after Approval Gate decision",
+        "previousHash": "1fb49cbe977b2dccdba2694cf691e00b46c25a9fc6c8e1c28d2e0ddcd746c9c5",
+        "hash": "c3ac97ae548b5f90283a8543f8c327eeae7473f540a44c3e21d6de14a773c876"
+      }
+    ]
+  },
+  {
+    "variantId": "deploy-restart",
+    "continuous": true,
+    "evidenceChain": [
+      {
+        "evidenceId": "deploy-restart-ev-01",
+        "phase": "plan-before-interruption",
+        "atIso": "2026-04-30T00:00:00.000Z",
+        "summary": "Plan and evidence packet existed before interruption",
+        "previousHash": "genesis",
+        "hash": "2695f94fa8a94f18a15f88d5e9919f76620d1c60e339f8949344fb39387bce43"
+      },
+      {
+        "evidenceId": "deploy-restart-ev-02",
+        "phase": "approval-pending-during-interruption",
+        "atIso": "2026-04-30T00:04:00.000Z",
+        "summary": "Approval Gate was pending while the agent or service was unavailable",
+        "previousHash": "2695f94fa8a94f18a15f88d5e9919f76620d1c60e339f8949344fb39387bce43",
+        "hash": "9ad0f591ce444e60ab0351f4e7b99ff20e36448886d8f6c7206026af46fb274a"
+      },
+      {
+        "evidenceId": "deploy-restart-ev-03",
+        "phase": "recovered-state-visible",
+        "atIso": "2026-04-30T00:35:00.000Z",
+        "summary": "Cockpit shows degraded recovery state",
+        "previousHash": "9ad0f591ce444e60ab0351f4e7b99ff20e36448886d8f6c7206026af46fb274a",
+        "hash": "b34111d9b8febc70f290108e18766a20f0d056a8db7515909318d3fa54b18372"
+      },
+      {
+        "evidenceId": "deploy-restart-ev-04",
+        "phase": "after-governed-resume",
+        "atIso": "2026-04-30T00:55:01.500Z",
+        "summary": "Agent resumed once after Approval Gate decision",
+        "previousHash": "b34111d9b8febc70f290108e18766a20f0d056a8db7515909318d3fa54b18372",
+        "hash": "bff9cde3a839f2faaf473c14947c4c91d8b6cdc405502e7dd327b0b1a2839844"
+      }
+    ]
+  },
+  {
+    "variantId": "provider-outage",
+    "continuous": true,
+    "evidenceChain": [
+      {
+        "evidenceId": "provider-outage-ev-01",
+        "phase": "plan-before-interruption",
+        "atIso": "2026-04-30T00:00:00.000Z",
+        "summary": "Plan and evidence packet existed before interruption",
+        "previousHash": "genesis",
+        "hash": "e60fd1ae3f84486ffed51a368142281236646aecc7ba3789775cd794a22dbbf6"
+      },
+      {
+        "evidenceId": "provider-outage-ev-02",
+        "phase": "approval-pending-during-interruption",
+        "atIso": "2026-04-30T00:05:00.000Z",
+        "summary": "Approval Gate was pending while the agent or service was unavailable",
+        "previousHash": "e60fd1ae3f84486ffed51a368142281236646aecc7ba3789775cd794a22dbbf6",
+        "hash": "702bf25b74c6b228c4c2daf6401355b3a712ee4dd1ba89784928ef46bb660b35"
+      },
+      {
+        "evidenceId": "provider-outage-ev-03",
+        "phase": "recovered-state-visible",
+        "atIso": "2026-04-30T00:30:00.000Z",
+        "summary": "Cockpit shows blocked recovery state",
+        "previousHash": "702bf25b74c6b228c4c2daf6401355b3a712ee4dd1ba89784928ef46bb660b35",
+        "hash": "41321754343f1cfd52ec36370f2c345f2891f8820a217d6702966a551a59d043"
+      },
+      {
+        "evidenceId": "provider-outage-ev-04",
+        "phase": "resume-deferred",
+        "atIso": "2026-04-30T00:30:00.000Z",
+        "summary": "Resume deferred because dependency outage remained active",
+        "previousHash": "41321754343f1cfd52ec36370f2c345f2891f8820a217d6702966a551a59d043",
+        "hash": "ac1400562bb89202b794b19ddb871d15e4320851213cd4eee60655c3d4e10717"
+      }
+    ]
+  }
+]

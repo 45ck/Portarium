@@ -1,0 +1,72 @@
+[
+  {
+    "variantId": "active-in-progress",
+    "requestKey": "execute-reservation-active-in-progress",
+    "attemptedDispatches": 0,
+    "duplicateDispatches": 0,
+    "actionRunnerCalled": false,
+    "dispatchPayload": {
+      "action": "send-approved-update",
+      "externalObjectRef": "sor://crm/opportunity/redacted-fixture",
+      "oauthToken": "[REDACTED]",
+      "customerEmail": "[REDACTED_EMAIL]",
+      "vendorUrl": "[REDACTED_PATH]"
+    }
+  },
+  {
+    "variantId": "completed-replay",
+    "requestKey": "execute-reservation-completed-replay",
+    "attemptedDispatches": 0,
+    "duplicateDispatches": 0,
+    "actionRunnerCalled": false,
+    "dispatchPayload": {
+      "action": "send-approved-update",
+      "externalObjectRef": "sor://crm/opportunity/redacted-fixture",
+      "oauthToken": "[REDACTED]",
+      "customerEmail": "[REDACTED_EMAIL]",
+      "vendorUrl": "[REDACTED_PATH]"
+    }
+  },
+  {
+    "variantId": "fingerprint-conflict",
+    "requestKey": "execute-reservation-fingerprint-conflict",
+    "attemptedDispatches": 0,
+    "duplicateDispatches": 0,
+    "actionRunnerCalled": false,
+    "dispatchPayload": {
+      "action": "send-mutated-update",
+      "externalObjectRef": "sor://crm/opportunity/redacted-fixture",
+      "oauthToken": "[REDACTED]",
+      "customerEmail": "[REDACTED_EMAIL]",
+      "vendorUrl": "[REDACTED_PATH]"
+    }
+  },
+  {
+    "variantId": "claim-lost-release",
+    "requestKey": "execute-reservation-claim-lost-release",
+    "attemptedDispatches": 0,
+    "duplicateDispatches": 0,
+    "actionRunnerCalled": false,
+    "dispatchPayload": {
+      "action": "send-approved-update",
+      "externalObjectRef": "sor://crm/opportunity/redacted-fixture",
+      "oauthToken": "[REDACTED]",
+      "customerEmail": "[REDACTED_EMAIL]",
+      "vendorUrl": "[REDACTED_PATH]"
+    }
+  },
+  {
+    "variantId": "complete-lost-recovery",
+    "requestKey": "execute-reservation-complete-lost-recovery",
+    "attemptedDispatches": 1,
+    "duplicateDispatches": 0,
+    "actionRunnerCalled": true,
+    "dispatchPayload": {
+      "action": "send-approved-update",
+      "externalObjectRef": "sor://crm/opportunity/redacted-fixture",
+      "oauthToken": "[REDACTED]",
+      "customerEmail": "[REDACTED_EMAIL]",
+      "vendorUrl": "[REDACTED_PATH]"
+    }
+  }
+]

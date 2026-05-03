@@ -1,0 +1,495 @@
+{
+  "experiment": "approval-backlog-soak",
+  "timestamp": "2026-05-03T03:22:43.509Z",
+  "outcome": "confirmed",
+  "duration_ms": 13,
+  "assertions": [
+    {
+      "label": "escalation and expiry happen independently per approval",
+      "passed": true,
+      "detail": "escalated=4, expired=3"
+    },
+    {
+      "label": "queue depth and pending age are recorded over time",
+      "passed": true,
+      "detail": "samples=9"
+    },
+    {
+      "label": "no duplicate escalation events are emitted",
+      "passed": true,
+      "detail": "duplicates=0"
+    },
+    {
+      "label": "runtime memory and error rate are captured",
+      "passed": true,
+      "detail": "samples=9, errors=0"
+    },
+    {
+      "label": "telemetry artifacts are complete",
+      "passed": true,
+      "detail": "present=4, missing="
+    },
+    {
+      "label": "threshold assertions pass",
+      "passed": true,
+      "detail": "[{\"label\":\"duplicate execution count within threshold\",\"passed\":true,\"detail\":\"0 <= 0\"},{\"label\":\"pending age p95 within threshold\",\"passed\":true,\"detail\":\"52000 <= 60000\"},{\"label\":\"resume latency within threshold\",\"passed\":true,\"detail\":\"1250 <= 2000\"},{\"label\":\"evidence completeness count meets threshold\",\"passed\":true,\"detail\":\"4 >= 4\"},{\"label\":\"successful resume count meets threshold\",\"passed\":true,\"detail\":\"14 >= 8\"}]"
+    }
+  ],
+  "trace": {
+    "approvals": [
+      {
+        "approvalId": "appr-soak-01",
+        "sessionId": "session-a",
+        "tenantId": "tenant-soak-a",
+        "tier": "Human-approve",
+        "requestedAtIso": "2026-04-29T00:00:00.000Z",
+        "status": "expired",
+        "expiredAtIso": "2026-04-29T00:00:52.000Z",
+        "decidedAtIso": "2026-04-29T00:00:52.000Z"
+      },
+      {
+        "approvalId": "appr-soak-02",
+        "sessionId": "session-b",
+        "tenantId": "tenant-soak-b",
+        "tier": "Assisted",
+        "requestedAtIso": "2026-04-29T00:00:01.000Z",
+        "status": "approved",
+        "decidedAtIso": "2026-04-29T00:00:13.000Z"
+      },
+      {
+        "approvalId": "appr-soak-03",
+        "sessionId": "session-c",
+        "tenantId": "tenant-soak-a",
+        "tier": "Assisted",
+        "requestedAtIso": "2026-04-29T00:00:02.000Z",
+        "status": "approved",
+        "decidedAtIso": "2026-04-29T00:00:14.000Z"
+      },
+      {
+        "approvalId": "appr-soak-04",
+        "sessionId": "session-d",
+        "tenantId": "tenant-soak-b",
+        "tier": "Human-approve",
+        "requestedAtIso": "2026-04-29T00:00:03.000Z",
+        "status": "approved",
+        "decidedAtIso": "2026-04-29T00:00:15.000Z"
+      },
+      {
+        "approvalId": "appr-soak-05",
+        "sessionId": "session-a",
+        "tenantId": "tenant-soak-a",
+        "tier": "Assisted",
+        "requestedAtIso": "2026-04-29T00:00:04.000Z",
+        "status": "approved",
+        "decidedAtIso": "2026-04-29T00:00:16.000Z"
+      },
+      {
+        "approvalId": "appr-soak-06",
+        "sessionId": "session-b",
+        "tenantId": "tenant-soak-b",
+        "tier": "Assisted",
+        "requestedAtIso": "2026-04-29T00:00:05.000Z",
+        "status": "escalated",
+        "escalatedAtIso": "2026-04-29T00:00:35.000Z",
+        "decidedAtIso": "2026-04-29T00:00:35.000Z"
+      },
+      {
+        "approvalId": "appr-soak-07",
+        "sessionId": "session-c",
+        "tenantId": "tenant-soak-a",
+        "tier": "Human-approve",
+        "requestedAtIso": "2026-04-29T00:00:06.000Z",
+        "status": "approved",
+        "decidedAtIso": "2026-04-29T00:00:18.000Z"
+      },
+      {
+        "approvalId": "appr-soak-08",
+        "sessionId": "session-d",
+        "tenantId": "tenant-soak-b",
+        "tier": "Assisted",
+        "requestedAtIso": "2026-04-29T00:00:07.000Z",
+        "status": "request_changes",
+        "decidedAtIso": "2026-04-29T00:00:25.000Z"
+      },
+      {
+        "approvalId": "appr-soak-09",
+        "sessionId": "session-a",
+        "tenantId": "tenant-soak-a",
+        "tier": "Assisted",
+        "requestedAtIso": "2026-04-29T00:00:08.000Z",
+        "status": "approved",
+        "decidedAtIso": "2026-04-29T00:00:20.000Z"
+      },
+      {
+        "approvalId": "appr-soak-10",
+        "sessionId": "session-b",
+        "tenantId": "tenant-soak-b",
+        "tier": "Human-approve",
+        "requestedAtIso": "2026-04-29T00:00:09.000Z",
+        "status": "approved",
+        "decidedAtIso": "2026-04-29T00:00:21.000Z"
+      },
+      {
+        "approvalId": "appr-soak-11",
+        "sessionId": "session-c",
+        "tenantId": "tenant-soak-a",
+        "tier": "Assisted",
+        "requestedAtIso": "2026-04-29T00:00:10.000Z",
+        "status": "escalated",
+        "escalatedAtIso": "2026-04-29T00:00:40.000Z",
+        "decidedAtIso": "2026-04-29T00:00:40.000Z"
+      },
+      {
+        "approvalId": "appr-soak-12",
+        "sessionId": "session-d",
+        "tenantId": "tenant-soak-b",
+        "tier": "Assisted",
+        "requestedAtIso": "2026-04-29T00:00:11.000Z",
+        "status": "expired",
+        "expiredAtIso": "2026-04-29T00:01:03.000Z",
+        "decidedAtIso": "2026-04-29T00:01:03.000Z"
+      },
+      {
+        "approvalId": "appr-soak-13",
+        "sessionId": "session-a",
+        "tenantId": "tenant-soak-a",
+        "tier": "Human-approve",
+        "requestedAtIso": "2026-04-29T00:00:12.000Z",
+        "status": "approved",
+        "decidedAtIso": "2026-04-29T00:00:24.000Z"
+      },
+      {
+        "approvalId": "appr-soak-14",
+        "sessionId": "session-b",
+        "tenantId": "tenant-soak-b",
+        "tier": "Assisted",
+        "requestedAtIso": "2026-04-29T00:00:13.000Z",
+        "status": "approved",
+        "decidedAtIso": "2026-04-29T00:00:25.000Z"
+      },
+      {
+        "approvalId": "appr-soak-15",
+        "sessionId": "session-c",
+        "tenantId": "tenant-soak-a",
+        "tier": "Assisted",
+        "requestedAtIso": "2026-04-29T00:00:14.000Z",
+        "status": "request_changes",
+        "decidedAtIso": "2026-04-29T00:00:32.000Z"
+      },
+      {
+        "approvalId": "appr-soak-16",
+        "sessionId": "session-d",
+        "tenantId": "tenant-soak-b",
+        "tier": "Human-approve",
+        "requestedAtIso": "2026-04-29T00:00:15.000Z",
+        "status": "escalated",
+        "escalatedAtIso": "2026-04-29T00:00:45.000Z",
+        "decidedAtIso": "2026-04-29T00:00:45.000Z"
+      },
+      {
+        "approvalId": "appr-soak-17",
+        "sessionId": "session-a",
+        "tenantId": "tenant-soak-a",
+        "tier": "Assisted",
+        "requestedAtIso": "2026-04-29T00:00:16.000Z",
+        "status": "approved",
+        "decidedAtIso": "2026-04-29T00:00:28.000Z"
+      },
+      {
+        "approvalId": "appr-soak-18",
+        "sessionId": "session-b",
+        "tenantId": "tenant-soak-b",
+        "tier": "Assisted",
+        "requestedAtIso": "2026-04-29T00:00:17.000Z",
+        "status": "approved",
+        "decidedAtIso": "2026-04-29T00:00:29.000Z"
+      },
+      {
+        "approvalId": "appr-soak-19",
+        "sessionId": "session-c",
+        "tenantId": "tenant-soak-a",
+        "tier": "Human-approve",
+        "requestedAtIso": "2026-04-29T00:00:18.000Z",
+        "status": "approved",
+        "decidedAtIso": "2026-04-29T00:00:30.000Z"
+      },
+      {
+        "approvalId": "appr-soak-20",
+        "sessionId": "session-d",
+        "tenantId": "tenant-soak-b",
+        "tier": "Assisted",
+        "requestedAtIso": "2026-04-29T00:00:19.000Z",
+        "status": "approved",
+        "decidedAtIso": "2026-04-29T00:00:31.000Z"
+      },
+      {
+        "approvalId": "appr-soak-21",
+        "sessionId": "session-a",
+        "tenantId": "tenant-soak-a",
+        "tier": "Assisted",
+        "requestedAtIso": "2026-04-29T00:00:20.000Z",
+        "status": "escalated",
+        "escalatedAtIso": "2026-04-29T00:00:50.000Z",
+        "decidedAtIso": "2026-04-29T00:00:50.000Z"
+      },
+      {
+        "approvalId": "appr-soak-22",
+        "sessionId": "session-b",
+        "tenantId": "tenant-soak-b",
+        "tier": "Human-approve",
+        "requestedAtIso": "2026-04-29T00:00:21.000Z",
+        "status": "request_changes",
+        "decidedAtIso": "2026-04-29T00:00:39.000Z"
+      },
+      {
+        "approvalId": "appr-soak-23",
+        "sessionId": "session-c",
+        "tenantId": "tenant-soak-a",
+        "tier": "Assisted",
+        "requestedAtIso": "2026-04-29T00:00:22.000Z",
+        "status": "expired",
+        "expiredAtIso": "2026-04-29T00:01:14.000Z",
+        "decidedAtIso": "2026-04-29T00:01:14.000Z"
+      },
+      {
+        "approvalId": "appr-soak-24",
+        "sessionId": "session-d",
+        "tenantId": "tenant-soak-b",
+        "tier": "Assisted",
+        "requestedAtIso": "2026-04-29T00:00:23.000Z",
+        "status": "approved",
+        "decidedAtIso": "2026-04-29T00:00:35.000Z"
+      }
+    ],
+    "queueMetrics": {
+      "schemaVersion": 1,
+      "scenarioId": "approval-backlog-soak",
+      "attemptId": "deterministic-soak-v1",
+      "generatedAtIso": "2026-04-29T00:01:30.000Z",
+      "metrics": {
+        "approval_count_by_tier": {
+          "Human-approve": 8,
+          "Assisted": 16
+        },
+        "approval_count_by_session": {
+          "session-a": 6,
+          "session-b": 6,
+          "session-c": 6,
+          "session-d": 6
+        },
+        "pending_age_ms_p50": 12000,
+        "pending_age_ms_p95": 52000,
+        "pending_age_ms_max": 52000,
+        "resume_latency_ms": [
+          1250,
+          1250,
+          1250,
+          1250,
+          1250,
+          1250,
+          1250,
+          1250,
+          1250,
+          1250,
+          1250,
+          1250,
+          1250,
+          1250
+        ],
+        "blocked_duration_ms": [
+          52000,
+          12000,
+          12000,
+          12000,
+          12000,
+          30000,
+          12000,
+          18000,
+          12000,
+          12000,
+          30000,
+          52000,
+          12000,
+          12000,
+          18000,
+          30000,
+          12000,
+          12000,
+          12000,
+          12000,
+          30000,
+          18000,
+          52000,
+          12000
+        ],
+        "queue_depth_over_time": [
+          {
+            "timestampIso": "2026-04-29T00:00:00.000Z",
+            "depth": 1
+          },
+          {
+            "timestampIso": "2026-04-29T00:00:07.500Z",
+            "depth": 8
+          },
+          {
+            "timestampIso": "2026-04-29T00:00:15.000Z",
+            "depth": 16
+          },
+          {
+            "timestampIso": "2026-04-29T00:00:22.500Z",
+            "depth": 23
+          },
+          {
+            "timestampIso": "2026-04-29T00:00:30.000Z",
+            "depth": 24
+          },
+          {
+            "timestampIso": "2026-04-29T00:00:37.500Z",
+            "depth": 24
+          },
+          {
+            "timestampIso": "2026-04-29T00:00:45.000Z",
+            "depth": 24
+          },
+          {
+            "timestampIso": "2026-04-29T00:00:52.500Z",
+            "depth": 24
+          },
+          {
+            "timestampIso": "2026-04-29T00:01:00.000Z",
+            "depth": 24
+          }
+        ],
+        "denial_count": 0,
+        "request_changes_count": 3,
+        "escalation_count": 4,
+        "expiry_count": 3,
+        "duplicate_execution_count": 0,
+        "evidence_completeness_count": 4,
+        "restart_count": 0,
+        "successful_resume_count": 14
+      }
+    },
+    "evidenceSummary": {
+      "schemaVersion": 1,
+      "scenarioId": "approval-backlog-soak",
+      "attemptId": "deterministic-soak-v1",
+      "generatedAtIso": "2026-04-29T00:01:30.000Z",
+      "requiredArtifacts": [
+        "outcome.json",
+        "queue-metrics.json",
+        "evidence-summary.json",
+        "report.md"
+      ],
+      "presentArtifacts": [
+        "outcome.json",
+        "queue-metrics.json",
+        "evidence-summary.json",
+        "report.md"
+      ],
+      "missingArtifacts": [],
+      "evidenceCompletenessCount": 4,
+      "complete": true
+    },
+    "artifactPaths": {
+      "queueMetricsPath": "experiments\\iteration-2\\results\\approval-backlog-soak\\deterministic-soak-v1\\queue-metrics.json",
+      "evidenceSummaryPath": "experiments\\iteration-2\\results\\approval-backlog-soak\\deterministic-soak-v1\\evidence-summary.json",
+      "reportPath": "experiments\\iteration-2\\results\\approval-backlog-soak\\deterministic-soak-v1\\report.md"
+    },
+    "thresholdAssertions": [
+      {
+        "label": "duplicate execution count within threshold",
+        "passed": true,
+        "detail": "0 <= 0"
+      },
+      {
+        "label": "pending age p95 within threshold",
+        "passed": true,
+        "detail": "52000 <= 60000"
+      },
+      {
+        "label": "resume latency within threshold",
+        "passed": true,
+        "detail": "1250 <= 2000"
+      },
+      {
+        "label": "evidence completeness count meets threshold",
+        "passed": true,
+        "detail": "4 >= 4"
+      },
+      {
+        "label": "successful resume count meets threshold",
+        "passed": true,
+        "detail": "14 >= 8"
+      }
+    ],
+    "duplicateEscalationIds": [],
+    "escalationIds": [
+      "appr-soak-06",
+      "appr-soak-11",
+      "appr-soak-16",
+      "appr-soak-21"
+    ],
+    "runtime": {
+      "runtimeSamples": [
+        {
+          "timestampIso": "2026-04-29T00:00:00.000Z",
+          "rssBytes": 80000000,
+          "heapUsedBytes": 18000000,
+          "errorCount": 0
+        },
+        {
+          "timestampIso": "2026-04-29T00:00:07.500Z",
+          "rssBytes": 80125000,
+          "heapUsedBytes": 18064000,
+          "errorCount": 0
+        },
+        {
+          "timestampIso": "2026-04-29T00:00:15.000Z",
+          "rssBytes": 80250000,
+          "heapUsedBytes": 18128000,
+          "errorCount": 0
+        },
+        {
+          "timestampIso": "2026-04-29T00:00:22.500Z",
+          "rssBytes": 80375000,
+          "heapUsedBytes": 18192000,
+          "errorCount": 0
+        },
+        {
+          "timestampIso": "2026-04-29T00:00:30.000Z",
+          "rssBytes": 80500000,
+          "heapUsedBytes": 18256000,
+          "errorCount": 0
+        },
+        {
+          "timestampIso": "2026-04-29T00:00:37.500Z",
+          "rssBytes": 80625000,
+          "heapUsedBytes": 18320000,
+          "errorCount": 0
+        },
+        {
+          "timestampIso": "2026-04-29T00:00:45.000Z",
+          "rssBytes": 80750000,
+          "heapUsedBytes": 18384000,
+          "errorCount": 0
+        },
+        {
+          "timestampIso": "2026-04-29T00:00:52.500Z",
+          "rssBytes": 80875000,
+          "heapUsedBytes": 18448000,
+          "errorCount": 0
+        },
+        {
+          "timestampIso": "2026-04-29T00:01:00.000Z",
+          "rssBytes": 81000000,
+          "heapUsedBytes": 18512000,
+          "errorCount": 0
+        }
+      ],
+      "errorEvents": [],
+      "hostLimitations": [],
+      "defectClassification": "No product defects observed in deterministic soak; host resource use stayed bounded."
+    }
+  }
+}
