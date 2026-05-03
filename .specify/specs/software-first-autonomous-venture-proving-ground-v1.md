@@ -11,6 +11,29 @@ The program does not make robotics a current delivery target. Robotics remains a
 later expansion path for `RoboticsActuation` once capital, hardware access,
 site-specific safety controls, and physical safety testing exist.
 
+## Chosen Proving Strategy
+
+The first self-use proving workflow is `source-to-micro-saas-builder`.
+
+This workflow turns trusted source material into a cited research dossier,
+product brief, bounded software Artifacts, QA or release evidence, and review
+outcomes inside one governed Project. It is the primary near-term proving target
+because it exercises source provenance, planning, implementation, artifact
+acceptance, rollback, and usefulness measurement in the same workflow the
+builder can actually use.
+
+The secondary public workflow is `source-to-content-studio`. It may appear in
+Cockpit and demo-machine narratives as a second Project type, but its
+`productionClaim` is `demo-only` until separate self-use evidence exists.
+
+`software-distribution-growth-loop` is deferred until the primary workflow has
+accepted product Artifact evidence and outbound compliance gates are ready for
+real send, post, publish, or distribution Actions.
+
+`hybrid-content-product-showcase` is allowed as a public narrative only when the
+primary Project remains the proof target and the content Project is labeled as
+showcase-only.
+
 ## Current Proving Workflows
 
 The current backlog may include software proving workflows when they satisfy all
@@ -27,13 +50,18 @@ of these constraints:
    broader public claim is made.
 6. The workflow can be demonstrated as one of multiple governed Project types
    without claiming every Project type is production-ready.
+7. Near-term implementation work is ordered around
+   `source-to-micro-saas-builder` unless a later strategy bead changes this
+   choice.
 
 Examples in scope:
 
-- Growth Studio research, content, outbound draft, and measurement loops.
-- Micro-SaaS research, backlog shaping, implementation planning, and release
-  evidence loops.
-- Content and media Artifact generation governed by Plans and Evidence.
+- Source-to-micro-SaaS research, backlog shaping, implementation planning,
+  artifact review, QA evidence, release evidence, and rollback loops.
+- Source-to-content Artifact generation governed by Plans and Evidence, when
+  labeled as demo-only or separately proven.
+- Growth Studio research, content, outbound draft, and measurement loops, after
+  outbound communication compliance and distribution gates are satisfied.
 - Operator-governance experiments that improve approval quality, recovery,
   context sufficiency, or policy calibration for software work.
 
@@ -92,9 +120,14 @@ it or mark the robotics portion as explicitly deferred.
 
 The proving ground is credible when:
 
-- one bounded software workflow has been used by the builder on real work;
+- the `source-to-micro-saas-builder` workflow has been used by the builder on
+  real work;
 - Cockpit can show multiple governed Project types with truthful readiness
   labels;
 - Evidence Logs link objectives, Plans, Approval Gates, Actions, and Artifacts;
-- the backlog clearly separates current software proving work from later
-  speculative robotics expansion.
+- the content studio path is labeled as showcase-only until it has its own
+  self-use evidence;
+- distribution, outbound growth loops, prompt-language work, and robotics remain
+  gated by their own evidence;
+- the backlog clearly separates current software proving work from deferred
+  showcase, distribution, prompt-language, and speculative robotics expansion.
