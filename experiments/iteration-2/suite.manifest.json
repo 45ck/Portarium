@@ -77,6 +77,41 @@
       ]
     },
     {
+      "scenarioId": "micro-saas-toolchain-redo",
+      "beadId": "bead-1046",
+      "status": "runnable-deterministic",
+      "blockedBy": [],
+      "runnerPath": "experiments/iteration-2/scenarios/micro-saas-toolchain-redo/run.mjs",
+      "contractPath": "experiments/iteration-2/scenarios/micro-saas-toolchain-redo/README.md",
+      "comparesTo": "micro-saas-agent-stack-v2",
+      "validates": [
+        "content-machine required preflight",
+        "demo-machine runnable or explicit skip",
+        "tool usage evidence",
+        "stubbed external publish and send effects",
+        "post-validation demo path state"
+      ],
+      "artifactExpectations": {
+        "requiredArtifacts": [
+          "outcome.json",
+          "queue-metrics.json",
+          "evidence-summary.json",
+          "report.md",
+          "toolchain-preflight.json",
+          "tool-usage-evidence.json",
+          "content-machine-output.json",
+          "external-effect-stubs.json"
+        ],
+        "redactedArtifacts": [],
+        "forbiddenFragments": [
+          "https://publisher.example.invalid/landing-pages/private",
+          "https://email.example.invalid/messages/private",
+          "Authorization: Bearer",
+          "customer@example.test"
+        ]
+      }
+    },
+    {
       "scenarioId": "openclaw-concurrent-sessions",
       "beadId": "bead-1044",
       "status": "runnable-deterministic",

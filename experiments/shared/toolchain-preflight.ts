@@ -8,7 +8,7 @@
 import { spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
 
-export type ExperimentToolName = 'demo-machine';
+export type ExperimentToolName = 'content-machine' | 'demo-machine';
 
 export type ExperimentToolPreflightStatus = 'runnable' | 'intentionally-skipped' | 'failed';
 
@@ -30,6 +30,7 @@ export interface ExperimentToolPreflightOptions {
   readonly probeImpl?: ToolProbe;
   readonly timeoutMs?: number;
   readonly clipSpecPath?: string;
+  readonly required?: boolean;
 }
 
 export interface ExperimentToolPreflightResult {
@@ -40,14 +41,20 @@ export interface ExperimentToolPreflightResult {
   readonly probe: 'cli-help';
   readonly rationale?: string;
   readonly clipSpecPath?: string;
+  readonly required: boolean;
 }
 
 const DEFAULT_DEMO_MACHINE_CLIP =
   'docs/internal/ui/cockpit/demo-machine/clips/01-approval-gate-unblocks-run.demo.yaml';
 
-const SKIP_REASON_ENV_KEYS = [
+const DEMO_SKIP_REASON_ENV_KEYS = [
   'PORTARIUM_DEMO_MACHINE_SKIP_REASON',
   'PORTARIUM_EXPERIMENT_DEMO_MACHINE_SKIP_REASON',
+];
+
+const CONTENT_SKIP_REASON_ENV_KEYS = [
+  'PORTARIUM_CONTENT_MACHINE_SKIP_REASON',
+  'PORTARIUM_EXPERIMENT_CONTENT_MACHINE_SKIP_REASON',
 ];
 
 export async function runExperimentToolPreflight(
@@ -55,8 +62,9 @@ export async function runExperimentToolPreflight(
 ): Promise<ExperimentToolPreflightResult> {
   const tool = options.tool ?? 'demo-machine';
   const checkedAt = new Date().toISOString();
+  const required = options.required ?? false;
 
-  if (tool !== 'demo-machine') {
+  if (tool !== 'content-machine' && tool !== 'demo-machine') {
     return {
       tool,
       status: 'failed',
@@ -64,15 +72,19 @@ export async function runExperimentToolPreflight(
       command: tool,
       probe: 'cli-help',
       rationale: `Unsupported experiment tool "${tool}".`,
+      required,
     };
   }
 
   const env = options.env ?? process.env;
-  const command = 'demo-machine';
+  const command = tool;
   const clipSpecPath = options.clipSpecPath ?? DEFAULT_DEMO_MACHINE_CLIP;
-  const explicitSkipReason = readFirstEnv(env, SKIP_REASON_ENV_KEYS);
+  const explicitSkipReason = readFirstEnv(
+    env,
+    tool === 'demo-machine' ? DEMO_SKIP_REASON_ENV_KEYS : CONTENT_SKIP_REASON_ENV_KEYS,
+  );
 
-  if (explicitSkipReason) {
+  if (explicitSkipReason && !required) {
     return {
       tool,
       status: 'intentionally-skipped',
@@ -80,11 +92,25 @@ export async function runExperimentToolPreflight(
       command,
       probe: 'cli-help',
       rationale: explicitSkipReason,
-      clipSpecPath,
+      ...(tool === 'demo-machine' ? { clipSpecPath } : {}),
+      required,
     };
   }
 
-  if (!existsSync(clipSpecPath)) {
+  if (explicitSkipReason && required) {
+    return {
+      tool,
+      status: 'failed',
+      checkedAt,
+      command,
+      probe: 'cli-help',
+      rationale: `${tool} is required for this experiment and cannot be skipped: ${explicitSkipReason}`,
+      ...(tool === 'demo-machine' ? { clipSpecPath } : {}),
+      required,
+    };
+  }
+
+  if (tool === 'demo-machine' && !existsSync(clipSpecPath)) {
     return {
       tool,
       status: 'failed',
@@ -93,6 +119,7 @@ export async function runExperimentToolPreflight(
       probe: 'cli-help',
       rationale: `Demo-machine clip spec not found: ${clipSpecPath}`,
       clipSpecPath,
+      required,
     };
   }
 
@@ -110,21 +137,25 @@ export async function runExperimentToolPreflight(
         checkedAt,
         command,
         probe: 'cli-help',
-        rationale: 'demo-machine CLI responded to --help and clip spec is present.',
-        clipSpecPath,
+        rationale:
+          tool === 'demo-machine'
+            ? 'demo-machine CLI responded to --help and clip spec is present.'
+            : 'content-machine CLI responded to --help.',
+        ...(tool === 'demo-machine' ? { clipSpecPath } : {}),
+        required,
       };
     }
 
     if (isCommandMissing(output)) {
       return {
         tool,
-        status: 'intentionally-skipped',
+        status: required ? 'failed' : 'intentionally-skipped',
         checkedAt,
         command,
         probe: 'cli-help',
-        rationale:
-          'demo-machine CLI is not installed on this workstation; Cockpit demo-machine playback is optional and skipped for this experiment run.',
-        clipSpecPath,
+        rationale: missingToolRationale(tool, required),
+        ...(tool === 'demo-machine' ? { clipSpecPath } : {}),
+        required,
       };
     }
 
@@ -134,23 +165,22 @@ export async function runExperimentToolPreflight(
       checkedAt,
       command,
       probe: 'cli-help',
-      rationale: truncateDetail(
-        output.trim() || `demo-machine exited with ${String(probe.exitCode)}`,
-      ),
-      clipSpecPath,
+      rationale: truncateDetail(output.trim() || `${tool} exited with ${String(probe.exitCode)}`),
+      ...(tool === 'demo-machine' ? { clipSpecPath } : {}),
+      required,
     };
   } catch (error: unknown) {
     const detail = error instanceof Error ? error.message : String(error);
+    const commandMissing = isCommandMissing(detail);
     return {
       tool,
-      status: isCommandMissing(detail) ? 'intentionally-skipped' : 'failed',
+      status: commandMissing && !required ? 'intentionally-skipped' : 'failed',
       checkedAt,
       command,
       probe: 'cli-help',
-      rationale: isCommandMissing(detail)
-        ? 'demo-machine CLI is not installed on this workstation; Cockpit demo-machine playback is optional and skipped for this experiment run.'
-        : truncateDetail(detail),
-      clipSpecPath,
+      rationale: commandMissing ? missingToolRationale(tool, required) : truncateDetail(detail),
+      ...(tool === 'demo-machine' ? { clipSpecPath } : {}),
+      required,
     };
   }
 }
@@ -178,6 +208,18 @@ function isCommandMissing(value: string): boolean {
 
 function truncateDetail(value: string): string {
   return value.length <= 240 ? value : `${value.slice(0, 237)}...`;
+}
+
+function missingToolRationale(tool: ExperimentToolName, required: boolean): string {
+  if (required) {
+    return `${tool} CLI is required for this experiment but is not installed or not on PATH.`;
+  }
+
+  if (tool === 'demo-machine') {
+    return 'demo-machine CLI is not installed on this workstation; Cockpit demo-machine playback is optional and skipped for this experiment run.';
+  }
+
+  return 'content-machine CLI is not installed on this workstation; optional content-machine playback is skipped for this experiment run.';
 }
 
 function runCliHelpProbe(
