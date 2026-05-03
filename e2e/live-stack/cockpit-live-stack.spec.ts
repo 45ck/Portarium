@@ -183,12 +183,10 @@ test.describe('Cockpit live-stack smoke', () => {
     await page.goto(`/approvals?focus=${approvalId}&from=notification`);
     await expect(page.getByRole('heading', { name: 'Approval Review' })).toBeVisible();
     await expect(page.getByText(approvalId, { exact: false })).toBeVisible();
-    await expect(page.getByTitle('Approve (A)')).toBeVisible();
-    await expect(page.getByTitle('Request changes (R)')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Approve' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Request changes' })).toBeVisible();
     await page.getByTitle('Request changes (R)').click();
-    await page
-      .getByPlaceholder('Describe what the requestor needs to update before you can approve')
-      .fill(decisionRationale);
+    await page.getByLabel('What needs to change?').fill(decisionRationale);
     await page.getByRole('button', { name: 'Submit request for changes' }).click();
 
     const response = await decisionResponse;

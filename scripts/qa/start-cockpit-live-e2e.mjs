@@ -15,6 +15,7 @@ const child = spawn(npmCommand, ['run', '-w', 'apps/cockpit', 'dev:e2e'], {
   env: {
     ...process.env,
     VITE_PORTARIUM_API_BASE_URL: apiBaseUrl,
+    VITE_PORTARIUM_CSP_CONNECT_MODE: 'local-only',
     VITE_PORTARIUM_DEFAULT_WORKSPACE_ID: workspaceId,
     VITE_PORTARIUM_ENABLE_MSW: 'false',
   },

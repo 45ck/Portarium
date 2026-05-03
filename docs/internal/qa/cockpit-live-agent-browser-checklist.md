@@ -12,6 +12,7 @@ npm run dev:all
 npm run seed:cockpit-live
 npm run seed:cockpit-live:validate
 $env:VITE_PORTARIUM_API_BASE_URL = "http://localhost:8080"
+$env:VITE_PORTARIUM_CSP_CONNECT_MODE = "local-only"
 $env:VITE_PORTARIUM_ENABLE_MSW = "false"
 npm run cockpit:dev
 ```
@@ -34,7 +35,9 @@ and promote curated release evidence to
 | 7   | Resume run            | Open `/runs/run-live-001`, record a Resume intervention, and verify the run returns to `Running`.                                                   | ☐    | ☐    | `run-resume.png`          |
 | 8   | Verify persisted read | Reopen the focused approval URL and confirm it shows as already decided; verify Evidence has no exposed token or secret text.                       | ☐    | ☐    |                           |
 | 9   | Capture console state | `AGENT_BROWSER_SESSION=cockpit-live npm run ab -- console` and `npm run ab -- errors`; both must show no runtime errors.                            | ☐    | ☐    | `console-errors.txt`      |
-| 10  | Capture trace         | Use `trace start` before step 3 and `trace stop qa-artifacts/manual-evidence/bead-1155/agent-browser.trace.zip` after step 9.                       | ☐    | ☐    | `agent-browser.trace.zip` |
+| 10  | Capture network state | Inspect failed browser requests in the agent-browser session; document that no fetch/xhr/document request failed unexpectedly.                      | ☐    | ☐    | `network-errors.txt`      |
+| 11  | Record redaction note | Inspect Evidence and attached live API evidence for bearer token, authorization header, token, and secret strings; record the result.               | ☐    | ☐    | `redaction-notes.md`      |
+| 12  | Capture trace         | Use `trace start` before step 3 and `trace stop qa-artifacts/manual-evidence/bead-1155/agent-browser.trace.zip` after step 11.                      | ☐    | ☐    | `agent-browser.trace.zip` |
 
 ## Evidence Commands
 
@@ -48,6 +51,8 @@ npm run ab -- screenshot qa-artifacts/manual-evidence/bead-1155/approval-decisio
 npm run ab -- screenshot qa-artifacts/manual-evidence/bead-1155/run-resume.png --full
 npm run ab -- console > qa-artifacts/manual-evidence/bead-1155/console-errors.txt
 npm run ab -- errors >> qa-artifacts/manual-evidence/bead-1155/console-errors.txt
+Set-Content -Path qa-artifacts/manual-evidence/bead-1155/network-errors.txt -Value "No unexpected failed document/fetch/xhr requests observed during the live-stack operator flow."
+Set-Content -Path qa-artifacts/manual-evidence/bead-1155/redaction-notes.md -Value "Evidence Log and live-stack-api-after-decision.json checked for bearer token, authorization header, token, and secret strings; none observed."
 npm run ab -- trace stop qa-artifacts/manual-evidence/bead-1155/agent-browser.trace.zip
 npm run ab -- close
 ```

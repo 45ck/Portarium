@@ -1,8 +1,12 @@
-const DEFAULT_CONNECT_SOURCES = [
+const PRODUCTION_CONNECT_SOURCES = [
   "'self'",
   'https://api.portarium.io',
   'wss://events.portarium.io',
 ] as const;
+
+export const COCKPIT_CSP_CONNECT_MODES = ['production-defaults', 'local-only'] as const;
+
+export type CockpitCspConnectMode = (typeof COCKPIT_CSP_CONNECT_MODES)[number];
 
 const CSP_DIRECTIVES = {
   defaultSrc: "default-src 'self'",
@@ -14,8 +18,22 @@ const CSP_DIRECTIVES = {
 
 const CSP_META_PATTERN = /(<meta\s+http-equiv="Content-Security-Policy"\s+content=")[^"]*(")/;
 
-export function buildCockpitContentSecurityPolicy(options: { apiBaseUrl?: string } = {}): string {
-  const connectSources = new Set<string>(DEFAULT_CONNECT_SOURCES);
+export function normalizeCockpitCspConnectMode(rawMode?: string): CockpitCspConnectMode {
+  const mode = rawMode?.trim();
+  if (!mode) return 'production-defaults';
+  if (mode === 'production-defaults' || mode === 'local-only') return mode;
+
+  throw new Error(
+    `Unsupported Cockpit CSP connect mode "${mode}". Expected "production-defaults" or "local-only".`,
+  );
+}
+
+export function buildCockpitContentSecurityPolicy(
+  options: { apiBaseUrl?: string; connectMode?: CockpitCspConnectMode } = {},
+): string {
+  const connectSources = new Set<string>(
+    options.connectMode === 'local-only' ? ["'self'"] : PRODUCTION_CONNECT_SOURCES,
+  );
   const localApiOrigin = localHttpApiOriginFromUrl(options.apiBaseUrl);
   if (localApiOrigin) connectSources.add(localApiOrigin);
 

@@ -5,27 +5,35 @@ import { resolve } from 'path';
 import { fileURLToPath } from 'url';
 import {
   buildCockpitContentSecurityPolicy,
+  normalizeCockpitCspConnectMode,
   replaceCockpitContentSecurityPolicy,
+  type CockpitCspConnectMode,
 } from './src/lib/cockpit-csp';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const capacitorStub = resolve(__dirname, 'src/lib/capacitor-stubs.ts');
 const apiBaseUrl = process.env['VITE_PORTARIUM_API_BASE_URL']?.trim();
+const cspConnectMode = normalizeCockpitCspConnectMode(
+  process.env['VITE_PORTARIUM_CSP_CONNECT_MODE'],
+);
 
-function cockpitContentSecurityPolicyPlugin(apiBaseUrl?: string): Plugin {
+function cockpitContentSecurityPolicyPlugin(
+  apiBaseUrl: string | undefined,
+  connectMode: CockpitCspConnectMode,
+): Plugin {
   return {
     name: 'cockpit-content-security-policy',
     transformIndexHtml(html) {
       return replaceCockpitContentSecurityPolicy(
         html,
-        buildCockpitContentSecurityPolicy({ apiBaseUrl }),
+        buildCockpitContentSecurityPolicy({ apiBaseUrl, connectMode }),
       );
     },
   };
 }
 
 export default defineConfig({
-  plugins: [cockpitContentSecurityPolicyPlugin(apiBaseUrl), react(), tailwindcss()],
+  plugins: [cockpitContentSecurityPolicyPlugin(apiBaseUrl, cspConnectMode), react(), tailwindcss()],
   server: apiBaseUrl
     ? {
         proxy: {

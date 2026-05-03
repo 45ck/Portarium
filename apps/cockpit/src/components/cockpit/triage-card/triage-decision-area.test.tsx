@@ -43,6 +43,7 @@ describe('TriageDecisionArea', () => {
     expect(screen.getByTitle('Approve (A)')).toBeTruthy();
     expect(screen.getByTitle('Deny (D)')).toBeTruthy();
     expect(screen.getByTitle('Request changes (R)')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Request changes' })).toBeTruthy();
     expect(screen.getByTitle('Skip (S)')).toBeTruthy();
   });
 

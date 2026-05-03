@@ -20,12 +20,12 @@ Local raw captures:
 
 1. `npm run ci:cockpit:live-stack-smoke:required` exits 0 against a seeded local stack.
 2. The Playwright smoke runs with `VITE_PORTARIUM_ENABLE_MSW=false`.
-3. The Cockpit CSP permits the exact configured local API origin without `*`, `http:`, `ws:`, or broad localhost wildcards.
+3. The Cockpit live-stack browser harness sets `VITE_PORTARIUM_CSP_CONNECT_MODE=local-only`, so `connect-src` permits only `'self'` and the exact configured local API origin without `*`, `http:`, `ws:`, production API origins, or broad localhost wildcards.
 4. The smoke verifies seeded runs, approvals, work items, run evidence, and one approval decision write.
 5. The approval write is verified through an independent API read after the UI action.
 6. The smoke proves the request-changes control and a run resume intervention against the live API.
 7. The agent-browser checklist passes against `http://cockpit.localhost:1355` or the live-stack Vite URL.
-8. Evidence includes runs, evidence, approval-decision, run-resume screenshots, a trace zip, console output, network output, and redaction spot-check notes.
+8. Evidence includes runs, evidence, approval-decision, run-resume screenshots, a trace zip, console output, network output, redaction spot-check notes, and the redacted `live-stack-api-after-decision.json` API readback attachment.
 
 ## Required Commands
 
@@ -39,6 +39,7 @@ For manual evidence:
 
 ```powershell
 $env:VITE_PORTARIUM_API_BASE_URL = "http://localhost:8080"
+$env:VITE_PORTARIUM_CSP_CONNECT_MODE = "local-only"
 $env:VITE_PORTARIUM_ENABLE_MSW = "false"
 npm run cockpit:dev
 ```

@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildCockpitContentSecurityPolicy,
   localHttpApiOriginFromUrl,
+  normalizeCockpitCspConnectMode,
   replaceCockpitContentSecurityPolicy,
 } from './cockpit-csp';
 
@@ -42,6 +43,25 @@ describe('Cockpit CSP', () => {
   it('adds the configured local API origin without broadening other directives', () => {
     expect(buildCockpitContentSecurityPolicy({ apiBaseUrl: 'http://localhost:8080' })).toBe(
       "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.portarium.io wss://events.portarium.io http://localhost:8080; img-src 'self' data:; font-src 'self'",
+    );
+  });
+
+  it('supports a live-stack local-only connect-src mode', () => {
+    expect(
+      buildCockpitContentSecurityPolicy({
+        apiBaseUrl: 'http://localhost:8080',
+        connectMode: 'local-only',
+      }),
+    ).toBe(
+      "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' http://localhost:8080; img-src 'self' data:; font-src 'self'",
+    );
+  });
+
+  it('rejects unsupported CSP connect modes', () => {
+    expect(normalizeCockpitCspConnectMode(undefined)).toBe('production-defaults');
+    expect(normalizeCockpitCspConnectMode('local-only')).toBe('local-only');
+    expect(() => normalizeCockpitCspConnectMode('localhost-only')).toThrow(
+      'Unsupported Cockpit CSP connect mode',
     );
   });
 

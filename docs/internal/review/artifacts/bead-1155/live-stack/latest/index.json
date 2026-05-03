@@ -16,7 +16,7 @@
     "apiBaseUrl": "http://localhost:8080",
     "workspaceId": "ws-local-dev",
     "mswEnabled": false,
-    "cspStatus": "configured-local-origin-only"
+    "cspStatus": "live-stack-local-only-connect-src"
   },
   "requiredArtifacts": [
     "runs.png",
@@ -26,6 +26,7 @@
     "agent-browser.trace.zip",
     "console-errors.txt",
     "network-errors.txt",
+    "redaction-notes.md",
     "live-stack-api-after-decision.json"
   ],
   "controlsTested": [
@@ -42,7 +43,7 @@
     {
       "control": "csp-browser-flow",
       "result": "pending-live-stack-run",
-      "evidence": "Cockpit CSP permits only the exact configured localhost API origin for live-stack browser mode."
+      "evidence": "Cockpit live-stack browser mode must set VITE_PORTARIUM_CSP_CONNECT_MODE=local-only so connect-src permits only 'self' and the exact configured localhost API origin."
     },
     {
       "control": "seeded-operator-read-path",
@@ -62,7 +63,7 @@
     {
       "control": "browser-error-and-redaction-check",
       "result": "pending-live-stack-run",
-      "evidence": "Console, network, and attached API evidence must not expose auth tokens or secrets."
+      "evidence": "Console, network, redaction notes, and attached API evidence must not expose auth tokens or secrets."
     }
   ],
   "validation": {

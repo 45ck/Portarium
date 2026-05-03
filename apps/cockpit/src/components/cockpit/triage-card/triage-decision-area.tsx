@@ -162,6 +162,7 @@ export function TriageDecisionArea({
           disabled={Boolean(loading)}
           onClick={() => onAction('RequestChanges')}
           title="Request changes (R)"
+          aria-label="Request changes"
           aria-keyshortcuts="r"
         >
           <RotateCcw className="h-5 w-5" />

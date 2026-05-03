@@ -1,3 +1,5 @@
+import { useId } from 'react';
+
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { RotateCcw } from 'lucide-react';
@@ -18,15 +20,18 @@ export function RequestChangesForm({
   onCancel,
   loading,
 }: RequestChangesFormProps) {
+  const messageId = useId();
+
   return (
     <div className="shrink-0 space-y-3 rounded-lg border border-warning/30 bg-warning/10 p-4">
-      <label className="text-xs font-semibold text-warning-foreground">
+      <label htmlFor={messageId} className="text-xs font-semibold text-warning-foreground">
         What needs to change?{' '}
         <span className="text-red-500" aria-hidden>
           *
         </span>
       </label>
       <Textarea
+        id={messageId}
         autoFocus
         className="text-xs min-h-[80px] resize-none bg-background"
         placeholder="Describe what the requestor needs to update before you can approve…"
