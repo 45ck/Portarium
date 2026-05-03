@@ -61,6 +61,10 @@ npm run bd:sync                       →  compatibility wrapper: tries `bd sync
 .beads/issues.jsonl                    →  shared source of truth (committed to git)
 ```
 
+When `npm run bd:sync` falls back to modern `bd import`, it updates the local
+upstream `bd` database from the committed JSONL file. That fallback does not by
+itself push or verify a remote `beads-metadata` branch.
+
 ### Starting Work
 
 1. Pick an unblocked issue:
@@ -68,7 +72,7 @@ npm run bd:sync                       →  compatibility wrapper: tries `bd sync
    ```bash
    git fetch origin --prune
    git pull --rebase origin main
-   bd sync --status               # if global bd is unavailable, run: npm run bd:sync
+   bd sync --status               # if global bd is unavailable, run: npm run bd:sync for local import fallback
    npm run bd:ready        # show issues ready to work (upstream bd)
    # or
    npm run bd -- issue list --status open
@@ -114,11 +118,11 @@ npm run bd -- issue finish <bead-id>
 # merges branch → main, removes worktree, closes bead
 ```
 
-Then sync issue state to GitHub and commit:
+Then sync or import issue state, commit, and push:
 
 ```bash
 git pull --rebase origin main
-npm run bd:sync                      # push to beads-metadata branch
+npm run bd:sync                      # upstream sync, or local import fallback on modern bd
 git add .beads/issues.jsonl
 git commit -m "chore: close <bead-id>"
 git push origin main
@@ -129,8 +133,8 @@ git status  # MUST show: "Your branch is up to date with 'origin/main'"
 
 ```bash
 bd ready                     # show unblocked issues ready to claim
-bd sync                      # push issue state to beads-metadata on GitHub
-bd sync --status             # check sync status vs remote
+bd sync                      # push issue state to beads-metadata on GitHub when supported by installed bd
+bd sync --status             # check sync status vs remote when supported by installed bd
 bd doctor                    # verify database health
 bd dep <id> <depends-on>     # record dependency between beads
 bd dep list <id>             # show deps for an issue

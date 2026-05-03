@@ -45,7 +45,7 @@ Repeat this entire cycle until you decide to stop (or no issues remain):
 # From repo root:
 git fetch origin --prune
 git pull --rebase origin main
-bd sync --status || npm run bd:sync
+bd sync --status || npm run bd:sync  # fallback imports local issues when modern bd has no sync/status
 npm run bd -- issue next --json
 ```
 
@@ -78,6 +78,12 @@ npm run bd:sync
 git push origin main
 npm run bd -- issue view "$ISSUE_ID"   # confirm claimedBy is still you
 ```
+
+`npm run bd:sync` is a compatibility wrapper. On older upstream `bd` it uses
+remote sync/status semantics; on modern `bd` versions without `sync`, it imports
+the tracked `.beads/issues.jsonl` into the local upstream database and does not
+push a `beads-metadata` branch by itself. The authoritative portable state is
+still the committed `.beads/issues.jsonl`.
 
 If claim ownership is no longer yours after sync/pull, run `npm run bd -- issue unclaim "$ISSUE_ID"` and return to Step A.
 

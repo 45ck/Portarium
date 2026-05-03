@@ -18,6 +18,7 @@ Architecture Decision Records live in `docs/internal/adr/`.
 - Mission control integration strategy: `docs/internal/adr/ADR-0140-mission-control-integration.md`
 - Cockpit and Portarium plugin extensibility: `docs/internal/adr/ADR-0141-cockpit-portarium-plugin-extensibility.md`
 - Approval execution atomic claims: `docs/internal/adr/ADR-0142-approval-execution-atomic-claim-cas.md`
+- Beads sync compatibility wrapper: `docs/internal/adr/ADR-0144-beads-sync-compatibility-wrapper.md`
 
 ## Working rule
 

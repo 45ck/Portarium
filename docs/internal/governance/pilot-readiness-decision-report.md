@@ -141,8 +141,10 @@ Recovery is ready for contained pilot use under deterministic conditions:
 - the production-like rehearsal survives process/API/worker restart.
 
 Recovery is not ready for broad use because provider outage remains a blocked
-state, live external effects are stubbed, and headed browser evidence is still
-missing for the release-candidate flow.
+state, live external effects are stubbed, and the remaining production-like
+live-stack browser proof is tracked separately in `bead-1155` after `bead-1150`
+captured constrained evidence but could not prove the API/CSP-backed operator
+flow.
 
 Policy management is ready for contained pilot use with maker-checker discipline:
 the Policy change workflow supports diff, scope, expiry, replay report evidence,
@@ -177,7 +179,8 @@ Continue the contained pilot with these constraints:
   gate approves real effects;
 - require the self-use alpha ledger and usefulness scorecard before any Success
   claim;
-- require headed browser evidence for the production-like operator flow;
+- require the `bead-1155` live-stack browser proof for the production-like
+  operator flow;
 - require the verification-sampling coverage artifact to stay current, and do
   not treat reduced approval volume as a positive signal until the real
   self-use ledger lifts confidence above insufficient-data;
@@ -189,11 +192,12 @@ Continue the contained pilot with these constraints:
 
 | Bead        | Gap                                                                                         |
 | ----------- | ------------------------------------------------------------------------------------------- |
-| `bead-1148` | Complete the real source-to-Micro-SaaS self-use alpha ledger and scorecard export.          |
-| `bead-1149` | Resolve the required `content-machine` pilot preflight failure and rerun toolchain realism. |
-| `bead-1150` | Capture headed live-browser evidence for the production-like pilot rehearsal.               |
-| `bead-1151` | Publish verification-sampling coverage for the contained pilot.                             |
-| `bead-1152` | Red-team plugin and agent-generated UI pilot paths.                                         |
+| `bead-1148` | Open: complete the real source-to-Micro-SaaS self-use alpha ledger and scorecard export.    |
+| `bead-1149` | Closed: resolved the required `content-machine` pilot preflight failure and reran realism.  |
+| `bead-1150` | Closed with constrained evidence: headed browser capture found remaining API/CSP proof gap. |
+| `bead-1151` | Closed: published verification-sampling coverage for the contained pilot.                   |
+| `bead-1152` | Closed: red-team pass for plugin and agent-generated UI pilot paths.                        |
+| `bead-1155` | Open: prove the live-stack browser operator flow with API availability and CSP fixed.       |
 
 ## Final Gate
 
@@ -204,7 +208,7 @@ only if:
    governed Runs across at least seven calendar days,
 2. all safety veto metrics remain zero,
 3. real operator effort and cost per useful outcome are measured,
-4. live operator-flow browser evidence is captured,
+4. `bead-1155` live-stack browser evidence is captured,
 5. plugin/generated UI live-path residual risks have no blocking findings, and
 6. verification sampling shows hidden defects are visible and routed, and the
    current coverage artifact has enough real self-use samples to move beyond

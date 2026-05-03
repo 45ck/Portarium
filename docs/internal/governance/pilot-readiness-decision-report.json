@@ -42,31 +42,44 @@
       "id": "bead-1148",
       "title": "Pilot: complete source-to-micro-SaaS self-use alpha ledger and scorecard export",
       "phase": "cross-cutting",
-      "priority": "P1"
+      "priority": "P1",
+      "status": "open"
     },
     {
       "id": "bead-1149",
       "title": "Integration: resolve content-machine pilot preflight regression and rerun toolchain realism",
       "phase": "integration",
-      "priority": "P1"
+      "priority": "P1",
+      "status": "closed"
     },
     {
       "id": "bead-1150",
       "title": "Release: capture headed live-browser evidence for production-like pilot rehearsal",
       "phase": "release",
-      "priority": "P1"
+      "priority": "P1",
+      "status": "closed",
+      "outcome": "constrained-evidence-api-csp-gap-remains"
     },
     {
       "id": "bead-1151",
       "title": "Governance: publish verification-sampling coverage for the contained pilot",
       "phase": "governance",
-      "priority": "P1"
+      "priority": "P1",
+      "status": "closed"
     },
     {
       "id": "bead-1152",
       "title": "Security: red-team plugin and agent-generated UI pilot paths",
       "phase": "security",
-      "priority": "P1"
+      "priority": "P1",
+      "status": "closed"
+    },
+    {
+      "id": "bead-1155",
+      "title": "Release: prove live-stack browser operator flow with CSP/API fixed",
+      "phase": "release",
+      "priority": "P1",
+      "status": "open"
     }
   ],
   "nextGateRequirements": [
@@ -74,7 +87,7 @@
     "Medium or high baseline comparison confidence.",
     "Zero duplicate execution, unsafe-action escape, and policy-violation escape rates.",
     "Measured operator effort and cost per useful outcome.",
-    "Headed browser evidence for the production-like operator flow.",
+    "Live-stack browser evidence for the production-like operator flow with API availability and CSP fixed (bead-1155).",
     "Pilot-path plugin and generated-UI red-team evidence.",
     "Verification-sampling coverage by Action class with structured finding routes and enough real self-use samples to move beyond insufficient-data confidence."
   ]
