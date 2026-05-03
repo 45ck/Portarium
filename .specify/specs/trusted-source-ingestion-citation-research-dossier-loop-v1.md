@@ -302,6 +302,35 @@ change context, the Decision Context Packet must include:
 If any material claim lacks citations, is stale, conflict-unresolved, or outside
 its boundary, the packet must not be `sufficient`.
 
+## Source-To-Artifact Experiment Contract
+
+The Iteration 2 `source-to-artifact-citation-loop` scenario uses
+`CitedSourceArtifactLoopV1` as its durable internal contract. The contract
+connects:
+
+- Source Snapshots with Evidence IDs and trust classes;
+- a Research Dossier with cited claims, confidence, freshness, conflict state,
+  allowed uses, forbidden uses, and claim boundaries;
+- downstream content and micro-SaaS Artifacts with claim IDs, Source Snapshot
+  IDs, transformation types, readiness, and Evidence IDs;
+- a Decision Context Packet assembled from the same provenance chain.
+
+The contract deliberately does not add new `DerivedArtifactKind` values. The
+existing derived-artifact enum remains closed; research dossiers and opportunity
+briefs are represented as governed artifact packets with Evidence linkage until
+a later schema-version bead expands Derived Artifacts explicitly.
+
+`assessCitedSourceArtifactLoopV1` is the blocking rule for the experiment:
+
+- all material claims must cite known Source Snapshots;
+- stale or needs-reread claims make the packet insufficient;
+- unknown-confidence approval-context claims are blocked;
+- unresolved source conflicts are blocked;
+- downstream Artifacts that change claim boundaries require more evidence;
+- draft-only Artifacts cannot support execution input.
+
+Implementation: `src/domain/approvals/cited-source-artifact-loop-v1.ts`.
+
 ## Acceptance Signals
 
 - Generated claims that affect product direction, content direction, Approval
