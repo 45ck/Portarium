@@ -69,6 +69,79 @@ must map `pending_age_ms_p50`, `pending_age_ms_p95`, `blocked_duration_ms`,
 `denial_count`, `request_changes_count`, and `duplicate_execution_count` into
 the scorecard fields above.
 
+## Delegated Autonomy Scorecard
+
+Pilot reporting must include a delegated-autonomy scorecard when the workflow
+contains governed Actions. This scorecard complements the usefulness baseline:
+it explains whether approvals are shrinking because the organisation is safely
+delegating more work, not because risk is hidden or evidence is missing.
+
+The scorecard is built from the same event vocabulary used by Policy replay,
+delegated-autonomy exception routing, and verification sampling:
+
+- Action outcomes: `auto-resolved`, `exception-routed`, `human-approved`,
+  `manual-only`, and `emergency-stop`.
+- Decision contexts: `routine-approval`, `exception-escalation`, and
+  `policy-change`.
+- Policy learning outcomes: `policy-improvement`, `policy-regression`,
+  `operator-load`, and `unclassified`.
+
+### Required fields
+
+| Field group                  | Required content                                                                                              |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Delegation counts and ratios | Auto-resolved, exception-routed, human-approved, Manual-only, and emergency-stop Actions.                     |
+| Approval-volume trend        | Current approval Actions, prior-window approval Actions, absolute delta, percent delta, direction.            |
+| Exception hotspots           | Repeated exception fingerprints by Action class and exception class with linked learning outcome.             |
+| Policy learning              | Policy churn count, replay improvements/regressions, and policies changed during the window.                  |
+| Precedent conversion         | Runtime precedents created, precedents converted to Policy, and conversion rate.                              |
+| Decision timing              | p50/p95 time-to-decision and time-to-resume for routine approvals, exception escalations, and Policy changes. |
+| Escape indicators            | Unsafe-action escape rate, policy-violation escape rate, and false-escalation rate.                           |
+| Cockpit export               | A JSON export with metric rows, trend series, and hotspot rows for `/cockpit/governance/autonomy-scorecard`.  |
+
+### Stable delegated-autonomy metric names
+
+The following names are stable for Cockpit dashboards and longitudinal pilot
+exports:
+
+| Metric name                            | Unit         | Definition                                                                              |
+| -------------------------------------- | ------------ | --------------------------------------------------------------------------------------- |
+| `auto_resolved_action_count`           | count        | Actions completed under delegated autonomy without human approval.                      |
+| `auto_resolved_action_ratio`           | ratio        | Auto-resolved Actions divided by all governed Actions.                                  |
+| `exception_routed_action_count`        | count        | Actions routed by delegated-autonomy exception handling.                                |
+| `exception_routed_action_ratio`        | ratio        | Exception-routed Actions divided by all governed Actions.                               |
+| `human_approved_action_count`          | count        | Actions that proceeded after a human approval decision.                                 |
+| `human_approved_action_ratio`          | ratio        | Human-approved Actions divided by all governed Actions.                                 |
+| `manual_only_action_count`             | count        | Actions left outside automation and tracked as Manual-only work.                        |
+| `manual_only_action_ratio`             | ratio        | Manual-only Actions divided by all governed Actions.                                    |
+| `emergency_stop_count`                 | count        | Emergency stops triggered during governed execution.                                    |
+| `emergency_stop_ratio`                 | ratio        | Emergency stops divided by all governed Actions.                                        |
+| `approval_volume_delta`                | count        | Current approval volume minus prior-window approval volume.                             |
+| `approval_volume_delta_percent`        | ratio        | Approval-volume delta divided by prior-window approval volume.                          |
+| `repeated_exception_hotspot_count`     | count        | Repeated exception fingerprints above the configured hotspot threshold.                 |
+| `policy_churn_count`                   | count        | Created, updated, and retired Policies during the window.                               |
+| `precedent_to_policy_conversion_rate`  | ratio        | Runtime precedents converted to Policy divided by precedents created.                   |
+| `routine_approval_decision_ms_p50`     | milliseconds | Median time from routine Approval Gate request to decision.                             |
+| `routine_approval_decision_ms_p95`     | milliseconds | p95 time from routine Approval Gate request to decision.                                |
+| `routine_approval_resume_ms_p50`       | milliseconds | Median time from routine approval decision to Run resume.                               |
+| `routine_approval_resume_ms_p95`       | milliseconds | p95 time from routine approval decision to Run resume.                                  |
+| `exception_escalation_decision_ms_p50` | milliseconds | Median time from exception escalation request to decision.                              |
+| `exception_escalation_decision_ms_p95` | milliseconds | p95 time from exception escalation request to decision.                                 |
+| `exception_escalation_resume_ms_p50`   | milliseconds | Median time from exception escalation decision to Run resume.                           |
+| `exception_escalation_resume_ms_p95`   | milliseconds | p95 time from exception escalation decision to Run resume.                              |
+| `policy_change_decision_ms_p50`        | milliseconds | Median time from Policy change approval request to decision.                            |
+| `policy_change_decision_ms_p95`        | milliseconds | p95 time from Policy change approval request to decision.                               |
+| `policy_change_resume_ms_p50`          | milliseconds | Median time from Policy change decision to affected Run or rollout resume.              |
+| `policy_change_resume_ms_p95`          | milliseconds | p95 time from Policy change decision to affected Run or rollout resume.                 |
+| `unsafe_action_escape_rate`            | ratio        | Unsafe or policy-violating Actions that escaped prevention divided by governed Actions. |
+| `policy_violation_escape_rate`         | ratio        | Policy violations detected after execution divided by governed Actions.                 |
+| `false_escalation_rate`                | ratio        | Escalations later marked unnecessary divided by escalated Actions.                      |
+
+Approval volume is healthy only when escape indicators remain zero, repeated
+exception hotspots are converted into Policy improvement or runbook/operator
+work, and Manual-only or emergency-stop volume does not grow without a named
+incident or governance rationale.
+
 ## Useful Outcome
 
 Each pilot must define a useful outcome before baseline capture starts.
