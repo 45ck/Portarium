@@ -32,6 +32,7 @@ every remaining gap into tracked Beads.
 | ------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
 | `.specify/specs/governed-pilot-usefulness-scorecard-v1.md`                                        | Stable metric names, thresholds, and guardrail vetoes for pilot usefulness.                                                                           | Requires baseline and pilot observations; current self-use evidence does not satisfy that bar.             |
 | `docs/internal/governance/source-to-micro-saas-self-use-alpha.md` and `.json`                     | Narrow self-use alpha plan, rollback protocol, event vocabulary, and ledger template.                                                                 | The pilot window starts 2026-05-03 and the required recurring Run evidence is not yet committed.           |
+| `docs/internal/governance/contained-pilot-verification-sampling-coverage.json`                    | Verification sampling coverage by controlled Action class, with completed count, sampled count, defect rate, confidence state, and finding routes.    | Samples contained-pilot deterministic evidence; confidence remains insufficient for broader business use.  |
 | `experiments/iteration-2/results/micro-saas-agent-stack-v2/deterministic-handoff-v2/*`            | Operator-team handoff, SoD, request-changes/denial isolation, queue metrics, and complete evidence bundle.                                            | Deterministic single-run scenario, not a real recurring self-use workflow.                                 |
 | `experiments/iteration-2/results/micro-saas-toolchain-redo/toolchain-realism-v2/*`                | Tool disposition is recorded; external publish/send effects stay stubbed.                                                                             | Outcome is `inconclusive`; required `content-machine` is unavailable and demo path is unproven.            |
 | `experiments/iteration-2/results/governed-resume-recovery/deterministic-recovery/*`               | Pending approvals survive interruption; resumed effects execute exactly once; evidence chains continue.                                               | Provider outage remains a blocked state, not a completed live recovery.                                    |
@@ -102,9 +103,11 @@ every remaining gap into tracked Beads.
 - Business value: no committed primary KPI delta for accepted software Artifact
   packages per week.
 - Cost: no model/tool/operator cost per accepted self-use outcome.
-- Verification sampling: the contract exists, but pilot evidence does not yet
-  report completed count, sampled count, defect rate, and confidence by Action
-  class.
+- Verification sampling: the contained-pilot coverage artifact now reports
+  completed count, sampled count, defect rate, and confidence by controlled
+  Action class. It shows hidden defects are visible and routed, but confidence
+  remains insufficient because the real recurring self-use ledger is still
+  absent.
 - Live System of Record posture: external effects remain stubbed. That is the
   correct safety boundary for this stage, but it means broader business use is
   unproven.
@@ -175,8 +178,9 @@ Continue the contained pilot with these constraints:
 - require the self-use alpha ledger and usefulness scorecard before any Success
   claim;
 - require headed browser evidence for the production-like operator flow;
-- require verification-sampling coverage before using reduced approval volume as
-  a positive signal;
+- require the verification-sampling coverage artifact to stay current, and do
+  not treat reduced approval volume as a positive signal until the real
+  self-use ledger lifts confidence above insufficient-data;
 - freeze or roll back the pilot if duplicate execution, unsafe-action escape,
   policy-violation escape, repeated unremediated exception fingerprints, or
   stop-using-it events occur.
@@ -202,4 +206,6 @@ only if:
 3. real operator effort and cost per useful outcome are measured,
 4. live operator-flow browser evidence is captured,
 5. plugin/generated UI live-path residual risks have no blocking findings, and
-6. verification sampling shows hidden defects are visible and routed.
+6. verification sampling shows hidden defects are visible and routed, and the
+   current coverage artifact has enough real self-use samples to move beyond
+   insufficient-data confidence.
