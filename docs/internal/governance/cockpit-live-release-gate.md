@@ -1,8 +1,8 @@
 # Cockpit Live Release Gate
 
-**Bead:** bead-1138
-**Status:** accepted
-**Reviewed:** 2026-04-30
+**Bead:** bead-1155
+**Status:** pending live-stack proof
+**Reviewed:** 2026-05-04
 
 This is the release gate for Cockpit operating against live control-plane data.
 It complements the live-preview build gate in ADR-0127 by requiring seeded API
@@ -11,19 +11,21 @@ reads, one persisted UI write path, and agent-browser evidence.
 ## Latest Live-Stack Evidence
 
 Latest curated evidence:
-`docs/internal/review/artifacts/bead-1138/live-stack/latest/index.json`
+`docs/internal/review/artifacts/bead-1155/live-stack/latest/index.json`
 
 Local raw captures:
-`qa-artifacts/manual-evidence/bead-1138/`
+`qa-artifacts/manual-evidence/bead-1155/`
 
 ## Release Gate Criteria
 
 1. `npm run ci:cockpit:live-stack-smoke:required` exits 0 against a seeded local stack.
 2. The Playwright smoke runs with `VITE_PORTARIUM_ENABLE_MSW=false`.
-3. The smoke verifies seeded runs, approvals, work items, run evidence, and one approval decision write.
-4. The approval write is verified through an independent API read after the UI action.
-5. The agent-browser checklist passes against `http://cockpit.localhost:1355`.
-6. Evidence includes runs, evidence, and approval-decision screenshots, a trace zip, and console/error output.
+3. The Cockpit CSP permits the exact configured local API origin without `*`, `http:`, `ws:`, or broad localhost wildcards.
+4. The smoke verifies seeded runs, approvals, work items, run evidence, and one approval decision write.
+5. The approval write is verified through an independent API read after the UI action.
+6. The smoke proves the request-changes control and a run resume intervention against the live API.
+7. The agent-browser checklist passes against `http://cockpit.localhost:1355` or the live-stack Vite URL.
+8. Evidence includes runs, evidence, approval-decision, run-resume screenshots, a trace zip, console output, network output, and redaction spot-check notes.
 
 ## Required Commands
 
@@ -49,9 +51,9 @@ Then run `docs/internal/qa/cockpit-live-agent-browser-checklist.md`.
 | ------------------------ | ----------------------------------------------------------------------- |
 | Automated smoke manifest | `playwright-report/live-stack/`                                         |
 | Playwright attachments   | `qa-artifacts/playwright-live-stack/`                                   |
-| Manual raw evidence      | `qa-artifacts/manual-evidence/bead-1138/`                               |
-| Curated release evidence | `docs/internal/review/artifacts/bead-1138/live-stack/<stamp>/`          |
-| Latest evidence manifest | `docs/internal/review/artifacts/bead-1138/live-stack/latest/index.json` |
+| Manual raw evidence      | `qa-artifacts/manual-evidence/bead-1155/`                               |
+| Curated release evidence | `docs/internal/review/artifacts/bead-1155/live-stack/<stamp>/`          |
+| Latest evidence manifest | `docs/internal/review/artifacts/bead-1155/live-stack/latest/index.json` |
 | Agent-browser checklist  | `docs/internal/qa/cockpit-live-agent-browser-checklist.md`              |
 
 ## Residual Unsupported Surfaces

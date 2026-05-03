@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "bead": "bead-1155",
+  "artifactKind": "cockpit-live-stack-release-evidence",
+  "recordedAtIso": "2026-05-04T00:00:00.000Z",
+  "mode": "live-stack-browser-operator-flow",
+  "decision": "pending-live-stack-run",
+  "latestEvidencePolicy": "Replace this manifest with the latest curated release run before approving the next Cockpit live-data readiness gate.",
+  "requiredCommand": "npm run ci:cockpit:live-stack-smoke:required",
+  "manualChecklist": "docs/internal/qa/cockpit-live-agent-browser-checklist.md",
+  "rawEvidenceDirectory": "qa-artifacts/manual-evidence/bead-1155/",
+  "curatedEvidenceDirectory": "docs/internal/review/artifacts/bead-1155/live-stack/<stamp>/",
+  "curatedEvidenceDirectoryPattern": "docs/internal/review/artifacts/bead-1155/live-stack/<stamp>/",
+  "scope": {
+    "cockpitUrl": "http://localhost:5173",
+    "apiBaseUrl": "http://localhost:8080",
+    "workspaceId": "ws-local-dev",
+    "mswEnabled": false,
+    "cspStatus": "configured-local-origin-only"
+  },
+  "requiredArtifacts": [
+    "runs.png",
+    "evidence.png",
+    "approval-decision.png",
+    "run-resume.png",
+    "agent-browser.trace.zip",
+    "console-errors.txt",
+    "network-errors.txt",
+    "live-stack-api-after-decision.json"
+  ],
+  "controlsTested": [
+    {
+      "control": "api-availability",
+      "result": "pending-live-stack-run",
+      "evidence": "Required smoke must not skip; /healthz must be available."
+    },
+    {
+      "control": "msw-disabled-live-api-path",
+      "result": "pending-live-stack-run",
+      "evidence": "Playwright starts Cockpit with VITE_PORTARIUM_ENABLE_MSW=false."
+    },
+    {
+      "control": "csp-browser-flow",
+      "result": "pending-live-stack-run",
+      "evidence": "Cockpit CSP permits only the exact configured localhost API origin for live-stack browser mode."
+    },
+    {
+      "control": "seeded-operator-read-path",
+      "result": "pending-live-stack-run",
+      "evidence": "Runs, work items, approvals, and evidence must render from seeded live API data."
+    },
+    {
+      "control": "approval-request-changes-persistence",
+      "result": "pending-live-stack-run",
+      "evidence": "RequestChanges decision POST must return 200 and persist on API readback."
+    },
+    {
+      "control": "run-resume-persistence",
+      "result": "pending-live-stack-run",
+      "evidence": "Run intervention POST must resume the waiting run and persist Action evidence."
+    },
+    {
+      "control": "browser-error-and-redaction-check",
+      "result": "pending-live-stack-run",
+      "evidence": "Console, network, and attached API evidence must not expose auth tokens or secrets."
+    }
+  ],
+  "validation": {
+    "focusedCommands": [
+      "npm run -w apps/cockpit test -- src/lib/cockpit-csp.test.ts",
+      "npm run cockpit:build",
+      "npm run ci:cockpit:live-stack-smoke:required"
+    ],
+    "testFiles": [
+      "apps/cockpit/src/lib/cockpit-csp.test.ts",
+      "e2e/live-stack/cockpit-live-stack.spec.ts",
+      "e2e/live-stack/playwright.config.ts",
+      "scripts/qa/run-cockpit-live-stack-smoke.mjs"
+    ],
+    "outputDirectories": ["qa-artifacts/playwright-live-stack", "playwright-report/live-stack"]
+  },
+  "sourceContracts": [
+    "docs/internal/governance/pilot-readiness-decision-report.md",
+    "docs/internal/governance/pilot-readiness-decision-report.json",
+    "docs/internal/qa/cockpit-live-agent-browser-checklist.md",
+    "docs/internal/governance/cockpit-live-release-gate.md"
+  ],
+  "blockingFindings": [],
+  "followUpBeadsCreated": [],
+  "residualRisks": [
+    "This manifest records the evidence contract until a required local live-stack run replaces it with concrete captured artifacts.",
+    "The CSP meta tag covers the Vite-hosted Cockpit shell; any stronger upstream HTTP CSP header must use the same exact-origin rule."
+  ]
+}

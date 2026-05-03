@@ -1,15 +1,31 @@
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { resolve } from 'path';
 import { fileURLToPath } from 'url';
+import {
+  buildCockpitContentSecurityPolicy,
+  replaceCockpitContentSecurityPolicy,
+} from './src/lib/cockpit-csp';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const capacitorStub = resolve(__dirname, 'src/lib/capacitor-stubs.ts');
 const apiBaseUrl = process.env['VITE_PORTARIUM_API_BASE_URL']?.trim();
 
+function cockpitContentSecurityPolicyPlugin(apiBaseUrl?: string): Plugin {
+  return {
+    name: 'cockpit-content-security-policy',
+    transformIndexHtml(html) {
+      return replaceCockpitContentSecurityPolicy(
+        html,
+        buildCockpitContentSecurityPolicy({ apiBaseUrl }),
+      );
+    },
+  };
+}
+
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [cockpitContentSecurityPolicyPlugin(apiBaseUrl), react(), tailwindcss()],
   server: apiBaseUrl
     ? {
         proxy: {

@@ -7,7 +7,8 @@ const approvalId = 'apr-live-001';
 const runId = 'run-live-001';
 const runningRunId = 'run-live-002';
 const workItemId = 'wi-live-001';
-const decisionRationale = 'Live-stack smoke approval persisted through the Cockpit UI.';
+const decisionRationale = 'Live-stack smoke request changes persisted through the Cockpit UI.';
+const resumeRationale = 'Live-stack smoke resumed the waiting run after operator review.';
 
 interface PageResponse<T> {
   items: T[];
@@ -63,23 +64,65 @@ async function createDevSession(request: APIRequestContext): Promise<void> {
   expect(response.ok(), `dev session returned ${response.status()}`).toBe(true);
 }
 
-function installRuntimeErrorGuard(page: Page): string[] {
-  const failures: string[] = [];
-  page.on('pageerror', (error) => failures.push(`pageerror: ${error.message}`));
+function installRuntimeGuards(page: Page): {
+  runtimeFailures: string[];
+  networkFailures: string[];
+} {
+  const runtimeFailures: string[] = [];
+  const networkFailures: string[] = [];
+  page.on('pageerror', (error) => runtimeFailures.push(`pageerror: ${error.message}`));
   page.on('console', (message) => {
     if (message.type() === 'error') {
-      failures.push(`console.error: ${message.text()}`);
+      runtimeFailures.push(`console.error: ${message.text()}`);
     }
   });
-  return failures;
+  page.on('requestfailed', (request) => {
+    const failure = request.failure();
+    const errorText = failure?.errorText ?? '';
+    if (/aborted|cancelled/i.test(errorText)) return;
+    networkFailures.push(
+      `requestfailed: ${request.method()} ${redactUrl(request.url())} ${errorText}`,
+    );
+  });
+  page.on('response', (response) => {
+    const resourceType = response.request().resourceType();
+    if (
+      response.status() >= 400 &&
+      (resourceType === 'document' || resourceType === 'fetch' || resourceType === 'xhr')
+    ) {
+      networkFailures.push(
+        `response: ${response.status()} ${response.request().method()} ${redactUrl(response.url())}`,
+      );
+    }
+  });
+  return { runtimeFailures, networkFailures };
+}
+
+function redactUrl(value: string): string {
+  try {
+    const url = new URL(value);
+    return `${url.origin}${url.pathname}`;
+  } catch {
+    return value.split('?')[0] ?? value;
+  }
+}
+
+function expectNoSensitiveMaterial(label: string, value: unknown): void {
+  const serialized = JSON.stringify(value);
+  expect(serialized, `${label} must not contain the dev bearer token`).not.toContain(devToken);
+  expect(serialized.toLowerCase(), `${label} must not expose auth headers`).not.toContain(
+    'authorization',
+  );
+  expect(serialized.toLowerCase(), `${label} must not expose token fields`).not.toContain('token');
+  expect(serialized.toLowerCase(), `${label} must not expose secrets`).not.toContain('secret');
 }
 
 test.describe('Cockpit live-stack smoke', () => {
-  test('loads seeded live data and persists an approval decision with MSW disabled', async ({
+  test('loads seeded live data and proves the operator approval and resume flow with MSW disabled', async ({
     context,
     page,
   }, testInfo) => {
-    const runtimeFailures = installRuntimeErrorGuard(page);
+    const { runtimeFailures, networkFailures } = installRuntimeGuards(page);
     await createDevSession(context.request);
 
     const runsBefore = await apiGet<PageResponse<RunApiView>>(
@@ -140,10 +183,13 @@ test.describe('Cockpit live-stack smoke', () => {
     await page.goto(`/approvals?focus=${approvalId}&from=notification`);
     await expect(page.getByRole('heading', { name: 'Approval Review' })).toBeVisible();
     await expect(page.getByText(approvalId, { exact: false })).toBeVisible();
+    await expect(page.getByTitle('Approve (A)')).toBeVisible();
+    await expect(page.getByTitle('Request changes (R)')).toBeVisible();
+    await page.getByTitle('Request changes (R)').click();
     await page
-      .getByRole('textbox', { name: new RegExp(`Decision rationale for approval ${approvalId}`) })
+      .getByPlaceholder('Describe what the requestor needs to update before you can approve')
       .fill(decisionRationale);
-    await page.getByTitle('Approve (A)').click();
+    await page.getByRole('button', { name: 'Submit request for changes' }).click();
 
     const response = await decisionResponse;
     expect(response.status()).toBe(200);
@@ -152,7 +198,7 @@ test.describe('Cockpit live-stack smoke', () => {
       context.request,
       `/v1/workspaces/${workspaceId}/approvals/${approvalId}`,
     );
-    expect(approvalAfter.status).toBe('Approved');
+    expect(approvalAfter.status).toBe('RequestChanges');
     expect(approvalAfter.rationale).toBe(decisionRationale);
 
     const approvalEvidence = await apiGet<PageResponse<EvidenceApiView>>(
@@ -162,18 +208,70 @@ test.describe('Cockpit live-stack smoke', () => {
     expect(
       approvalEvidence.items.some(
         (entry) =>
-          entry.links?.approvalId === approvalId && entry.summary.includes('decided: Approved'),
+          entry.links?.approvalId === approvalId &&
+          entry.summary.includes('decided: RequestChanges'),
       ),
     ).toBe(true);
 
     await page.goto(`/approvals?focus=${approvalId}&from=notification`);
     await expect(page.getByText('Approval already decided')).toBeVisible();
 
+    const resumeResponse = page.waitForResponse(
+      (candidate) =>
+        candidate.url().includes(`/runs/${runId}/interventions`) &&
+        candidate.request().method() === 'POST',
+      { timeout: 20_000 },
+    );
+
+    await page.goto(`/runs/${runId}`);
+    await expect(page.getByRole('heading', { name: `Run: ${runId}` })).toBeVisible();
+    await page.getByRole('combobox', { name: 'Action' }).click();
+    await page.getByRole('option', { name: 'Resume' }).click();
+    await page.getByLabel('Rationale').fill(resumeRationale);
+    await page.getByRole('button', { name: 'Record Resume' }).click();
+
+    const resume = await resumeResponse;
+    expect(resume.status()).toBe(200);
+
+    const runAfterResume = await apiGet<RunApiView>(
+      context.request,
+      `/v1/workspaces/${workspaceId}/runs/${runId}`,
+    );
+    expect(runAfterResume.status).toBe('Running');
+
+    const actionEvidence = await apiGet<PageResponse<EvidenceApiView>>(
+      context.request,
+      `/v1/workspaces/${workspaceId}/evidence?category=Action&limit=50`,
+    );
+    expect(
+      actionEvidence.items.some(
+        (entry) =>
+          entry.links?.runId === runId &&
+          entry.summary.includes('resume:') &&
+          entry.summary.includes(resumeRationale),
+      ),
+    ).toBe(true);
+
+    await page.goto('/evidence');
+    await expect(page.getByRole('heading', { name: 'Evidence' })).toBeVisible();
+    await expect(page.getByText(devToken, { exact: false })).toHaveCount(0);
+
+    const operatorFlowEvidence = {
+      approvalAfter,
+      approvalEvidence,
+      runAfterResume,
+      actionEvidence,
+      runtimeFailures,
+      networkFailures,
+    };
+    expectNoSensitiveMaterial('live-stack operator evidence', operatorFlowEvidence);
+
     await testInfo.attach('live-stack-api-after-decision.json', {
-      body: JSON.stringify({ approvalAfter, approvalEvidence }, null, 2),
+      body: JSON.stringify(operatorFlowEvidence, null, 2),
       contentType: 'application/json',
     });
 
     expect(runtimeFailures, runtimeFailures.join('\n')).toEqual([]);
+    expect(networkFailures, networkFailures.join('\n')).toEqual([]);
   });
 });
