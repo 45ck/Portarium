@@ -6,6 +6,40 @@ const clipSpecPath =
   'docs/internal/ui/cockpit/demo-machine/clips/01-approval-gate-unblocks-run.demo.yaml';
 
 describe('experiment toolchain preflight', () => {
+  it('classifies required content-machine as runnable when the CLI probe succeeds', async () => {
+    const result = await runExperimentToolPreflight({
+      tool: 'content-machine',
+      required: true,
+      probeImpl: async (command, args) => ({
+        exitCode: 0,
+        stdout: `${command} ${args.join(' ')} usage`,
+        stderr: '',
+      }),
+    });
+
+    expect(result).toMatchObject({
+      tool: 'content-machine',
+      status: 'runnable',
+      command: 'content-machine',
+      probe: 'cli-help',
+      required: true,
+    });
+  });
+
+  it('fails early when required content-machine is unavailable', async () => {
+    const result = await runExperimentToolPreflight({
+      tool: 'content-machine',
+      required: true,
+      probeImpl: async () => {
+        throw new Error('spawn content-machine ENOENT');
+      },
+    });
+
+    expect(result.status).toBe('failed');
+    expect(result.required).toBe(true);
+    expect(result.rationale).toContain('required for this experiment');
+  });
+
   it('classifies demo-machine as runnable when the CLI probe succeeds', async () => {
     const result = await runExperimentToolPreflight({
       tool: 'demo-machine',

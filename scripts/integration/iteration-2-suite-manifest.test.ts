@@ -66,6 +66,7 @@ describe('Iteration 2 governed experiment suite manifest', () => {
             scenario.scenarioId !== 'openclaw-concurrent-sessions' &&
             scenario.scenarioId !== 'approval-backlog-soak' &&
             scenario.scenarioId !== 'micro-saas-agent-stack-v2' &&
+            scenario.scenarioId !== 'micro-saas-toolchain-redo' &&
             scenario.scenarioId !== 'governed-resume-recovery' &&
             scenario.scenarioId !== 'shift-aware-approval-coverage' &&
             scenario.scenarioId !== 'execution-reservation-recovery',
@@ -120,6 +121,7 @@ describe('Iteration 2 governed experiment suite manifest', () => {
       'bead-1043',
       'bead-1044',
       'bead-1045',
+      'bead-1046',
       'bead-1059',
       'bead-1069',
       'bead-1142',
@@ -155,6 +157,31 @@ describe('Iteration 2 governed experiment suite manifest', () => {
       'experiments/iteration-2/scenarios/micro-saas-agent-stack-v2/run.mjs',
     );
     expect(existsSync(join(repoRoot, scenario?.runnerPath ?? 'missing'))).toBe(true);
+  });
+
+  it('marks micro-saas-toolchain-redo as runnable with toolchain artifacts', () => {
+    const manifest = readManifest();
+    const scenario = manifest.scenarios.find(
+      (candidate) => candidate.scenarioId === 'micro-saas-toolchain-redo',
+    );
+
+    expect(scenario?.status).toBe('runnable-deterministic');
+    expect(scenario?.beadId).toBe('bead-1046');
+    expect(scenario?.runnerPath).toBe(
+      'experiments/iteration-2/scenarios/micro-saas-toolchain-redo/run.mjs',
+    );
+    expect(scenario?.comparesTo).toBe('micro-saas-agent-stack-v2');
+    expect(existsSync(join(repoRoot, scenario?.runnerPath ?? 'missing'))).toBe(true);
+    expect(scenario?.artifactExpectations?.requiredArtifacts).toEqual([
+      'outcome.json',
+      'queue-metrics.json',
+      'evidence-summary.json',
+      'report.md',
+      'toolchain-preflight.json',
+      'tool-usage-evidence.json',
+      'content-machine-output.json',
+      'external-effect-stubs.json',
+    ]);
   });
 
   it('marks growth-studio-openclaw-live-v2 as runnable with a checked runner', () => {
