@@ -89,6 +89,14 @@ const CORE_SHELL_SECTIONS: readonly CockpitShellNavigationSection[] = [
         matchPath: '/dashboard',
       },
       {
+        id: 'projects',
+        label: 'Projects',
+        to: '/projects',
+        icon: <EntityIcon entityType="project" size="sm" decorative />,
+        shortcut: 'G P',
+        matchPath: '/projects',
+      },
+      {
         id: 'work-items',
         label: 'Work Items',
         to: '/work-items',

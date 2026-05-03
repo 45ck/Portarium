@@ -26,6 +26,7 @@ import {
 } from '@/mocks/fixtures/demo';
 import { buildMockWorkflows } from '@/mocks/fixtures/workflows';
 import { buildMockHumanTasks } from '@/mocks/fixtures/human-tasks';
+import { buildProjectPortfolio } from '@/mocks/fixtures/projects';
 import { ROBOT_LOCATIONS, GEOFENCES, SPATIAL_ALERTS } from '@/mocks/fixtures/robot-locations';
 import { MOCK_USERS } from '@/mocks/fixtures/users';
 import { MOCK_POLICIES, MOCK_SOD_CONSTRAINTS } from '@/mocks/fixtures/policies';
@@ -80,6 +81,18 @@ function routeResponse(pathname: string, init?: RequestInit): Response {
 
   if (/^\/v1\/workspaces\/[^/]+\/work-items$/.test(pathname)) {
     return json({ items: WORK_ITEMS });
+  }
+
+  if (/^\/v1\/workspaces\/[^/]+\/projects$/.test(pathname)) {
+    return json({
+      items: buildProjectPortfolio({
+        workspaceId: 'ws-demo',
+        workItems: WORK_ITEMS,
+        runs: RUNS,
+        approvals: APPROVALS,
+        evidence: EVIDENCE,
+      }),
+    });
   }
 
   const workItemMatch = pathname.match(/^\/v1\/workspaces\/[^/]+\/work-items\/([^/]+)$/);
@@ -268,6 +281,7 @@ const PAGE_CASES = [
   { path: '/', heading: 'Inbox' },
   { path: '/dashboard', heading: 'Dashboard' },
   { path: '/inbox', heading: 'Inbox' },
+  { path: '/projects', heading: 'Projects' },
   { path: '/work-items', heading: 'Work Items' },
   { path: '/work-items/wi-1001', heading: 'Invoice mismatch: requires remediation approval' },
   { path: '/runs', heading: 'Runs' },

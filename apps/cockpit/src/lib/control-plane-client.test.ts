@@ -446,6 +446,26 @@ describe('ControlPlaneClient', () => {
     expect(init.method).toBeUndefined();
   });
 
+  it('builds the Project portfolio endpoint', async () => {
+    const fetchImpl = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ items: [] }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+    );
+    const client = new ControlPlaneClient({
+      baseUrl: 'https://api.example.test',
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+
+    await client.listProjects('workspace with spaces');
+
+    const [url, init] = fetchImpl.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toBe('https://api.example.test/v1/workspaces/workspace%20with%20spaces/projects');
+    expect(init.method).toBeUndefined();
+  });
+
   it('builds plan, evidence, and run evidence endpoints', async () => {
     const fetchImpl = vi.fn(
       async () =>
