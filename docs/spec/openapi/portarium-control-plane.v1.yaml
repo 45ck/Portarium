@@ -4195,6 +4195,229 @@ components:
     RunControlState:
       type: string
       enum: [waiting, blocked, degraded, frozen, operator-owned]
+    RunCharterEvidenceDepth:
+      type: string
+      enum: [minimal, standard, deep, forensic]
+    RunCharterBudgetCap:
+      type: object
+      additionalProperties: false
+      properties:
+        metric:
+          type: string
+          enum: [ModelSpendCents, ToolCalls, OutboundActions, ApprovalRequests]
+        hardStopAt:
+          type: integer
+          minimum: 1
+        currency:
+          type: string
+          minLength: 1
+      required: [metric, hardStopAt]
+    RunCharterTimeWindow:
+      type: object
+      additionalProperties: false
+      properties:
+        startsAtIso:
+          $ref: '#/components/schemas/IsoTimestamp'
+        endsAtIso:
+          $ref: '#/components/schemas/IsoTimestamp'
+      required: [startsAtIso, endsAtIso]
+    RunCharterEscalationTrigger:
+      type: object
+      additionalProperties: false
+      properties:
+        triggerId:
+          type: string
+          minLength: 1
+        exceptionClass:
+          type: string
+          enum:
+            - policy-violation
+            - evidence-gap
+            - anomaly-signal
+            - execution-failure
+            - capability-drift
+            - budget-threshold
+            - approval-fatigue
+            - stale-or-degraded-state
+            - unknown-risk
+        minSeverity:
+          type: string
+          enum: [info, low, medium, high, critical]
+        actionClass:
+          type: string
+          minLength: 1
+        nextStepOptions:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        rationale:
+          type: string
+          minLength: 1
+      required: [triggerId, exceptionClass, minSeverity, nextStepOptions, rationale]
+    RunCharterDecisionBoundary:
+      type: object
+      additionalProperties: false
+      properties:
+        localDecisionActionClasses:
+          type: array
+          items:
+            type: string
+            minLength: 1
+        approvalGateActionClasses:
+          type: array
+          items:
+            type: string
+            minLength: 1
+        interventionActionClasses:
+          type: array
+          items:
+            type: string
+            minLength: 1
+      required:
+        - localDecisionActionClasses
+        - approvalGateActionClasses
+        - interventionActionClasses
+    RunCharterSourceLayerRef:
+      type: object
+      additionalProperties: false
+      properties:
+        layerId:
+          type: string
+          minLength: 1
+        scopeKind:
+          type: string
+          enum: [PlatformBaseline, Tenant, Workspace, RoleOrQueue, RunCharter]
+        summary:
+          type: string
+          minLength: 1
+      required: [layerId, scopeKind, summary]
+    RunCharterCockpitSummary:
+      type: object
+      additionalProperties: false
+      properties:
+        title:
+          type: string
+          minLength: 1
+        goal:
+          type: string
+          minLength: 1
+        successCondition:
+          type: string
+          minLength: 1
+        scopeBoundary:
+          type: string
+          minLength: 1
+        localDecisionSummary:
+          type: string
+          minLength: 1
+        approvalGateSummary:
+          type: string
+          minLength: 1
+        interventionSummary:
+          type: string
+          minLength: 1
+        budgetSummary:
+          type: string
+          minLength: 1
+        timeWindowSummary:
+          type: string
+          minLength: 1
+        evidenceSummary:
+          type: string
+          minLength: 1
+        escalationSummary:
+          type: string
+          minLength: 1
+        blockedWeakeningCount:
+          type: integer
+          minimum: 0
+      required:
+        - title
+        - goal
+        - successCondition
+        - scopeBoundary
+        - localDecisionSummary
+        - approvalGateSummary
+        - interventionSummary
+        - budgetSummary
+        - timeWindowSummary
+        - evidenceSummary
+        - escalationSummary
+        - blockedWeakeningCount
+    RunCharterV1:
+      type: object
+      additionalProperties: false
+      properties:
+        schemaVersion:
+          type: integer
+          const: 1
+        charterId:
+          type: string
+          minLength: 1
+        version:
+          type: integer
+          minimum: 1
+        goal:
+          type: string
+          minLength: 1
+        successCondition:
+          type: string
+          minLength: 1
+        scopeBoundary:
+          type: string
+          minLength: 1
+        allowedActionClasses:
+          type: array
+          items:
+            type: string
+            minLength: 1
+          minItems: 1
+        blockedActionClasses:
+          type: array
+          items:
+            type: string
+            minLength: 1
+        budgetCaps:
+          type: array
+          items:
+            $ref: '#/components/schemas/RunCharterBudgetCap'
+        timeWindow:
+          $ref: '#/components/schemas/RunCharterTimeWindow'
+        evidenceDepth:
+          $ref: '#/components/schemas/RunCharterEvidenceDepth'
+        escalationTriggers:
+          type: array
+          items:
+            $ref: '#/components/schemas/RunCharterEscalationTrigger'
+        decisionBoundary:
+          $ref: '#/components/schemas/RunCharterDecisionBoundary'
+        sourceLayers:
+          type: array
+          items:
+            $ref: '#/components/schemas/RunCharterSourceLayerRef'
+          minItems: 1
+        expandedAtIso:
+          $ref: '#/components/schemas/IsoTimestamp'
+        expansionEvidenceHashSha256:
+          type: string
+          minLength: 1
+      required:
+        - schemaVersion
+        - charterId
+        - version
+        - goal
+        - successCondition
+        - scopeBoundary
+        - allowedActionClasses
+        - blockedActionClasses
+        - budgetCaps
+        - timeWindow
+        - evidenceDepth
+        - escalationTriggers
+        - decisionBoundary
+        - sourceLayers
+        - expandedAtIso
     RunInterventionKind:
       type: string
       enum:
@@ -4291,6 +4514,10 @@ components:
           $ref: '#/components/schemas/IsoTimestamp'
         endedAtIso:
           $ref: '#/components/schemas/IsoTimestamp'
+        runCharter:
+          $ref: '#/components/schemas/RunCharterV1'
+        runCharterCockpitSummary:
+          $ref: '#/components/schemas/RunCharterCockpitSummary'
       required:
         - schemaVersion
         - runId

@@ -132,6 +132,83 @@ export type RunStatus =
 
 export type RunControlState = 'waiting' | 'blocked' | 'degraded' | 'frozen' | 'operator-owned';
 
+export type RunCharterEvidenceDepth = 'minimal' | 'standard' | 'deep' | 'forensic';
+
+export interface RunCharterBudgetCap {
+  metric: 'ModelSpendCents' | 'ToolCalls' | 'OutboundActions' | 'ApprovalRequests';
+  hardStopAt: number;
+  currency?: string;
+}
+
+export interface RunCharterTimeWindow {
+  startsAtIso: string;
+  endsAtIso: string;
+}
+
+export interface RunCharterEscalationTrigger {
+  triggerId: string;
+  exceptionClass:
+    | 'policy-violation'
+    | 'evidence-gap'
+    | 'anomaly-signal'
+    | 'execution-failure'
+    | 'capability-drift'
+    | 'budget-threshold'
+    | 'approval-fatigue'
+    | 'stale-or-degraded-state'
+    | 'unknown-risk';
+  minSeverity: 'info' | 'low' | 'medium' | 'high' | 'critical';
+  actionClass?: string;
+  nextStepOptions: string[];
+  rationale: string;
+}
+
+export interface RunCharterDecisionBoundary {
+  localDecisionActionClasses: string[];
+  approvalGateActionClasses: string[];
+  interventionActionClasses: string[];
+}
+
+export interface RunCharterSourceLayerRef {
+  layerId: string;
+  scopeKind: 'PlatformBaseline' | 'Tenant' | 'Workspace' | 'RoleOrQueue' | 'RunCharter';
+  summary: string;
+}
+
+export interface RunCharterSummary {
+  schemaVersion: 1;
+  charterId: string;
+  version: number;
+  goal: string;
+  successCondition: string;
+  scopeBoundary: string;
+  allowedActionClasses: string[];
+  blockedActionClasses: string[];
+  budgetCaps: RunCharterBudgetCap[];
+  timeWindow: RunCharterTimeWindow;
+  evidenceDepth: RunCharterEvidenceDepth;
+  escalationTriggers: RunCharterEscalationTrigger[];
+  decisionBoundary: RunCharterDecisionBoundary;
+  sourceLayers: RunCharterSourceLayerRef[];
+  expandedAtIso: string;
+  expansionEvidenceHashSha256?: string;
+}
+
+export interface RunCharterCockpitSummary {
+  title: string;
+  goal: string;
+  successCondition: string;
+  scopeBoundary: string;
+  localDecisionSummary: string;
+  approvalGateSummary: string;
+  interventionSummary: string;
+  budgetSummary: string;
+  timeWindowSummary: string;
+  evidenceSummary: string;
+  escalationSummary: string;
+  blockedWeakeningCount: number;
+}
+
 export interface RunSummary {
   schemaVersion: number;
   runId: string;
@@ -149,6 +226,8 @@ export interface RunSummary {
   agentIds?: string[];
   robotIds?: string[];
   workforceMemberIds?: string[];
+  runCharter?: RunCharterSummary;
+  runCharterCockpitSummary?: RunCharterCockpitSummary;
 }
 
 export type RunDetail = RunSummary;

@@ -17,8 +17,14 @@ Autonomy controls are evaluated in this fixed order:
 5. `RunCharter`
 6. `Action`
 
-Lower scopes may tighten a control. Lower scopes may replace a higher default with a weaker value.
+Lower scopes may tighten a control. Lower scopes may replace a higher `default` with a weaker value.
 Lower scopes must not silently weaken a higher `hard-limit`.
+
+Run charter expansion uses the same hierarchy up to `RunCharter` and emits an immutable expansion
+diff. It must block and record silent weakening attempts for allowed Action class expansion, blocked
+class removal, budget cap increases, time window widening, evidence depth reduction, and movement
+from Approval Gate/intervention authority into local Run decisions.
+The canonical schema is [Run Charter v1](./run-charter-v1.md).
 
 ## Control Kinds
 

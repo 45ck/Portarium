@@ -42,7 +42,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import type { RunStatus } from '@portarium/cockpit-types';
+import type { RunCharterCockpitSummary, RunStatus } from '@portarium/cockpit-types';
 import type { Step } from '@/components/cockpit/step-list';
 
 function deriveSteps(status: RunStatus): Step[] {
@@ -87,6 +87,59 @@ function deriveSteps(status: RunStatus): Step[] {
 
 function isDecidedApproval(status: string): boolean {
   return status === 'Approved' || status === 'Executed';
+}
+
+function runCharterSummary(run: {
+  runCharter?: {
+    goal: string;
+    version?: number;
+    successCondition: string;
+    scopeBoundary: string;
+    evidenceDepth: string;
+    allowedActionClasses: string[];
+    budgetCaps: Array<{ metric: string; hardStopAt: number; currency?: string }>;
+    timeWindow: { startsAtIso: string; endsAtIso: string };
+    escalationTriggers: unknown[];
+    decisionBoundary: {
+      localDecisionActionClasses: string[];
+      approvalGateActionClasses: string[];
+      interventionActionClasses: string[];
+    };
+  };
+  runCharterCockpitSummary?: RunCharterCockpitSummary;
+}): RunCharterCockpitSummary | undefined {
+  if (run.runCharterCockpitSummary) return run.runCharterCockpitSummary;
+  const charter = run.runCharter;
+  if (!charter) return undefined;
+  return {
+    title: 'Run charter',
+    goal: charter.goal,
+    successCondition: charter.successCondition,
+    scopeBoundary: charter.scopeBoundary,
+    localDecisionSummary: formatList(charter.decisionBoundary.localDecisionActionClasses),
+    approvalGateSummary: formatList(charter.decisionBoundary.approvalGateActionClasses),
+    interventionSummary: formatList(charter.decisionBoundary.interventionActionClasses),
+    budgetSummary:
+      charter.budgetCaps.length === 0
+        ? 'No budget caps declared'
+        : charter.budgetCaps
+            .map(
+              (cap) =>
+                `${cap.metric} <= ${cap.hardStopAt}${cap.currency ? ` ${cap.currency}` : ''}`,
+            )
+            .join('; '),
+    timeWindowSummary: `${charter.timeWindow.startsAtIso} to ${charter.timeWindow.endsAtIso}`,
+    evidenceSummary: `${charter.evidenceDepth} evidence required`,
+    escalationSummary:
+      charter.escalationTriggers.length === 0
+        ? 'No escalation triggers declared'
+        : `${charter.escalationTriggers.length} escalation trigger(s)`,
+    blockedWeakeningCount: 0,
+  };
+}
+
+function formatList(values: string[]): string {
+  return values.length === 0 ? 'None declared' : values.join(', ');
 }
 
 function RunDetailPage() {
@@ -157,6 +210,7 @@ function RunDetailPage() {
   }
 
   const steps = deriveSteps(run.status);
+  const charterSummary = runCharterSummary(run);
 
   const agents = agentsData?.items ?? [];
   const workforceMembers = workforceData?.items ?? [];
@@ -287,6 +341,42 @@ function RunDetailPage() {
         </AlertDialog>
 
         <ChainIntegrityBanner status={evidence.isLoading ? 'pending' : 'verified'} />
+
+        {charterSummary ? (
+          <Card className="shadow-none">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">{charterSummary.title}</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-3 text-sm md:grid-cols-2">
+              <div>
+                <p className="text-xs text-muted-foreground">Goal</p>
+                <p className="font-medium">{charterSummary.goal}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Success</p>
+                <p className="font-medium">{charterSummary.successCondition}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Local decisions</p>
+                <p>{charterSummary.localDecisionSummary}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Approval Gate</p>
+                <p>{charterSummary.approvalGateSummary}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Intervention</p>
+                <p>{charterSummary.interventionSummary}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Budget and evidence</p>
+                <p>
+                  {charterSummary.budgetSummary}; {charterSummary.evidenceSummary}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        ) : null}
 
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6">
           <Tabs defaultValue="steps">

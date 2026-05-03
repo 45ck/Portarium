@@ -253,6 +253,12 @@ Captured API interactions used to deterministically test adapters without live c
 
 A single execution instance of a workflow (status, timings, retries, outcomes).
 
+### Run Charter
+
+A versioned, Run-scoped declaration of delegated authority: goal, success
+condition, scope boundary, allowed and blocked Action classes, budget caps,
+time window, evidence depth, and escalation triggers.
+
 ## S
 
 ### SoD Constraint (Separation of Duties)
