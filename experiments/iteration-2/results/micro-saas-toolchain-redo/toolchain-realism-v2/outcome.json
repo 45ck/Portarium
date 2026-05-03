@@ -1,0 +1,208 @@
+{
+  "experiment": "micro-saas-toolchain-redo",
+  "timestamp": "2026-05-03T04:41:30.834Z",
+  "outcome": "inconclusive",
+  "duration_ms": 36,
+  "assertions": [
+    {
+      "label": "required content-machine preflight is runnable",
+      "passed": false,
+      "detail": "content-machine CLI is required for this experiment but is not installed or not on PATH."
+    },
+    {
+      "label": "demo-machine is runnable or explicitly recorded as skipped",
+      "passed": true,
+      "detail": "demo-machine CLI is not installed on this workstation; Cockpit demo-machine playback is optional and skipped for this experiment run."
+    },
+    {
+      "label": "tool usage evidence records Machine disposition and stubbed states",
+      "passed": true,
+      "detail": "[\"content-machine:failed\",\"demo-machine:intentionally-skipped\",\"publish-gateway:stubbed\",\"email-gateway:stubbed\"]"
+    },
+    {
+      "label": "external publish and send effects remain stubbed",
+      "passed": true,
+      "detail": "[{\"action\":\"publish:landing-page\",\"status\":\"stubbed\",\"endpoint\":\"https://publisher.example.invalid/landing-pages\",\"rationale\":\"External publish effects are disabled for experiment safety.\"},{\"action\":\"send:launch-email\",\"status\":\"stubbed\",\"endpoint\":\"https://email.example.invalid/messages\",\"rationale\":\"External send effects are disabled for experiment safety.\"}]"
+    },
+    {
+      "label": "post-validation demo path state is explicit",
+      "passed": true,
+      "detail": "unproven"
+    },
+    {
+      "label": "evidence artifacts are complete",
+      "passed": true,
+      "detail": "present=8, missing="
+    }
+  ],
+  "trace": {
+    "comparesTo": "micro-saas-agent-stack-v2",
+    "toolchainPreflight": {
+      "schemaVersion": 1,
+      "checkedAt": "2026-04-29T03:00:01.000Z",
+      "tools": {
+        "contentMachine": {
+          "tool": "content-machine",
+          "status": "failed",
+          "checkedAt": "2026-05-03T04:41:30.800Z",
+          "command": "content-machine",
+          "probe": "cli-help",
+          "rationale": "content-machine CLI is required for this experiment but is not installed or not on PATH.",
+          "required": true
+        },
+        "demoMachine": {
+          "tool": "demo-machine",
+          "status": "intentionally-skipped",
+          "checkedAt": "2026-05-03T04:41:30.814Z",
+          "command": "demo-machine",
+          "probe": "cli-help",
+          "rationale": "demo-machine CLI is not installed on this workstation; Cockpit demo-machine playback is optional and skipped for this experiment run.",
+          "clipSpecPath": "docs/internal/ui/cockpit/demo-machine/clips/01-approval-gate-unblocks-run.demo.yaml",
+          "required": false
+        }
+      }
+    },
+    "toolUsageEvidence": [
+      {
+        "tool": "content-machine",
+        "status": "failed",
+        "phase": "preflight-and-content-draft",
+        "evidenceSource": "toolchain-preflight.json",
+        "command": "content-machine",
+        "args": [
+          "--help"
+        ],
+        "rationale": "content-machine CLI is required for this experiment but is not installed or not on PATH.",
+        "externalEffect": "none"
+      },
+      {
+        "tool": "demo-machine",
+        "status": "intentionally-skipped",
+        "phase": "post-validation-demo",
+        "evidenceSource": "toolchain-preflight.json",
+        "command": "demo-machine",
+        "args": [
+          "--help"
+        ],
+        "rationale": "demo-machine CLI is not installed on this workstation; Cockpit demo-machine playback is optional and skipped for this experiment run.",
+        "externalEffect": "none"
+      },
+      {
+        "tool": "publish-gateway",
+        "status": "stubbed",
+        "phase": "external-publish",
+        "evidenceSource": "external-effect-stubs.json",
+        "rationale": "Publish Action is represented by a stubbed gateway receipt only.",
+        "externalEffect": "stubbed"
+      },
+      {
+        "tool": "email-gateway",
+        "status": "stubbed",
+        "phase": "external-send",
+        "evidenceSource": "external-effect-stubs.json",
+        "rationale": "Send Action is represented by a stubbed gateway receipt only.",
+        "externalEffect": "stubbed"
+      }
+    ],
+    "contentMachineOutput": {
+      "schemaVersion": 1,
+      "generatedBy": "content-machine",
+      "mode": "not-generated-unavailable-tool",
+      "runId": "micro-saas-redo-run-1",
+      "status": "unavailable",
+      "rationale": "content-machine CLI is required for this experiment but is not installed or not on PATH.",
+      "artifacts": []
+    },
+    "externalEffectStubs": [
+      {
+        "action": "publish:landing-page",
+        "status": "stubbed",
+        "endpoint": "https://publisher.example.invalid/landing-pages",
+        "rationale": "External publish effects are disabled for experiment safety."
+      },
+      {
+        "action": "send:launch-email",
+        "status": "stubbed",
+        "endpoint": "https://email.example.invalid/messages",
+        "rationale": "External send effects are disabled for experiment safety."
+      }
+    ],
+    "demoPathState": "unproven",
+    "queueMetrics": {
+      "schemaVersion": 1,
+      "scenarioId": "micro-saas-toolchain-redo",
+      "attemptId": "toolchain-realism-v2",
+      "generatedAtIso": "2026-04-29T03:00:10.000Z",
+      "metrics": {
+        "approval_count_by_tier": {
+          "Assisted": 1
+        },
+        "approval_count_by_session": {
+          "micro-saas-redo-run-1": 1
+        },
+        "pending_age_ms_p50": 5000,
+        "pending_age_ms_p95": 5000,
+        "pending_age_ms_max": 5000,
+        "resume_latency_ms": [
+          800
+        ],
+        "blocked_duration_ms": [
+          5000
+        ],
+        "queue_depth_over_time": [
+          {
+            "timestampIso": "2026-04-29T03:00:02.000Z",
+            "depth": 1
+          },
+          {
+            "timestampIso": "2026-04-29T03:00:08.000Z",
+            "depth": 0
+          }
+        ],
+        "denial_count": 0,
+        "request_changes_count": 0,
+        "escalation_count": 0,
+        "expiry_count": 0,
+        "duplicate_execution_count": 0,
+        "evidence_completeness_count": 8,
+        "restart_count": 0,
+        "successful_resume_count": 1
+      }
+    },
+    "evidenceSummary": {
+      "schemaVersion": 1,
+      "scenarioId": "micro-saas-toolchain-redo",
+      "attemptId": "toolchain-realism-v2",
+      "generatedAtIso": "2026-04-29T03:00:10.000Z",
+      "requiredArtifacts": [
+        "outcome.json",
+        "queue-metrics.json",
+        "evidence-summary.json",
+        "report.md",
+        "toolchain-preflight.json",
+        "tool-usage-evidence.json",
+        "content-machine-output.json",
+        "external-effect-stubs.json"
+      ],
+      "presentArtifacts": [
+        "outcome.json",
+        "queue-metrics.json",
+        "evidence-summary.json",
+        "report.md",
+        "toolchain-preflight.json",
+        "tool-usage-evidence.json",
+        "content-machine-output.json",
+        "external-effect-stubs.json"
+      ],
+      "missingArtifacts": [],
+      "evidenceCompletenessCount": 8,
+      "complete": true
+    },
+    "artifactPaths": {
+      "queueMetricsPath": "experiments\\iteration-2\\results\\micro-saas-toolchain-redo\\toolchain-realism-v2\\queue-metrics.json",
+      "evidenceSummaryPath": "experiments\\iteration-2\\results\\micro-saas-toolchain-redo\\toolchain-realism-v2\\evidence-summary.json",
+      "reportPath": "experiments\\iteration-2\\results\\micro-saas-toolchain-redo\\toolchain-realism-v2\\report.md"
+    }
+  },
+  "error": "Required content-machine preflight failed: content-machine CLI is required for this experiment but is not installed or not on PATH."
+}

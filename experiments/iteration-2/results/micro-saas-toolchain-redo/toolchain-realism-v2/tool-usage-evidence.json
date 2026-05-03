@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "scenarioId": "micro-saas-toolchain-redo",
+  "attemptId": "toolchain-realism-v2",
+  "evidence": [
+    {
+      "tool": "content-machine",
+      "status": "failed",
+      "phase": "preflight-and-content-draft",
+      "evidenceSource": "toolchain-preflight.json",
+      "command": "content-machine",
+      "args": [
+        "--help"
+      ],
+      "rationale": "content-machine CLI is required for this experiment but is not installed or not on PATH.",
+      "externalEffect": "none"
+    },
+    {
+      "tool": "demo-machine",
+      "status": "intentionally-skipped",
+      "phase": "post-validation-demo",
+      "evidenceSource": "toolchain-preflight.json",
+      "command": "demo-machine",
+      "args": [
+        "--help"
+      ],
+      "rationale": "demo-machine CLI is not installed on this workstation; Cockpit demo-machine playback is optional and skipped for this experiment run.",
+      "externalEffect": "none"
+    },
+    {
+      "tool": "publish-gateway",
+      "status": "stubbed",
+      "phase": "external-publish",
+      "evidenceSource": "external-effect-stubs.json",
+      "rationale": "Publish Action is represented by a stubbed gateway receipt only.",
+      "externalEffect": "stubbed"
+    },
+    {
+      "tool": "email-gateway",
+      "status": "stubbed",
+      "phase": "external-send",
+      "evidenceSource": "external-effect-stubs.json",
+      "rationale": "Send Action is represented by a stubbed gateway receipt only.",
+      "externalEffect": "stubbed"
+    }
+  ]
+}

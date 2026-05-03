@@ -105,7 +105,7 @@ describe('micro-saas-toolchain-redo experiment', () => {
     expect(report).toContain('State: unproven');
   });
 
-  it('fails early and clearly when required content-machine is unavailable', async () => {
+  it('records the full evidence bundle when required content-machine is unavailable', async () => {
     const resultsDir = mkdtempSync(join(tmpdir(), 'portarium-micro-saas-redo-fail-'));
     tempDirs.push(resultsDir);
 
@@ -133,7 +133,23 @@ describe('micro-saas-toolchain-redo experiment', () => {
     expect(outcome.error).toContain('Required content-machine preflight failed');
     const trace = outcome.trace as Record<string, any>;
     expect(trace['toolchainPreflight'].tools.contentMachine.status).toBe('failed');
+    expect(trace['demoPathState']).toBe('unproven');
     expect(existsSync(join(resultsDir, 'outcome.json'))).toBe(true);
-    expect(existsSync(join(resultsDir, 'tool-usage-evidence.json'))).toBe(false);
+    expect(existsSync(join(resultsDir, 'queue-metrics.json'))).toBe(true);
+    expect(existsSync(join(resultsDir, 'evidence-summary.json'))).toBe(true);
+    expect(existsSync(join(resultsDir, 'report.md'))).toBe(true);
+    expect(existsSync(join(resultsDir, 'toolchain-preflight.json'))).toBe(true);
+    expect(existsSync(join(resultsDir, 'tool-usage-evidence.json'))).toBe(true);
+    expect(existsSync(join(resultsDir, 'content-machine-output.json'))).toBe(true);
+    expect(existsSync(join(resultsDir, 'external-effect-stubs.json'))).toBe(true);
+
+    const contentMachineOutput = JSON.parse(
+      readFileSync(join(resultsDir, 'content-machine-output.json'), 'utf8'),
+    ) as { status: string; artifacts: unknown[] };
+    expect(contentMachineOutput.status).toBe('unavailable');
+    expect(contentMachineOutput.artifacts).toEqual([]);
+
+    const report = readFileSync(join(resultsDir, 'report.md'), 'utf8');
+    expect(report).toContain('State: unproven');
   });
 });

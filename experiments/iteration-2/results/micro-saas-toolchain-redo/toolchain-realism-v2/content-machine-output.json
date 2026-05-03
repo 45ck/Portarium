@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "generatedBy": "content-machine",
+  "mode": "not-generated-unavailable-tool",
+  "runId": "micro-saas-redo-run-1",
+  "status": "unavailable",
+  "rationale": "content-machine CLI is required for this experiment but is not installed or not on PATH.",
+  "artifacts": []
+}

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "stubs": [
+    {
+      "action": "publish:landing-page",
+      "status": "stubbed",
+      "endpoint": "https://publisher.example.invalid/landing-pages",
+      "rationale": "External publish effects are disabled for experiment safety."
+    },
+    {
+      "action": "send:launch-email",
+      "status": "stubbed",
+      "endpoint": "https://email.example.invalid/messages",
+      "rationale": "External send effects are disabled for experiment safety."
+    }
+  ]
+}

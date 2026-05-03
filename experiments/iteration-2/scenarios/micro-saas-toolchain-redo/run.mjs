@@ -51,6 +51,7 @@ const FIXED_STARTED_AT_ISO = '2026-04-29T03:00:00.000Z';
  *   writeResults?: boolean;
  *   log?: (line: string) => void;
  *   toolPreflightImpl?: typeof runExperimentToolPreflight;
+ *   attemptId?: string;
  * }} RunMicroSaasToolchainRedoOptions
  */
 
@@ -75,7 +76,19 @@ function normalizeToolStatus(status) {
   return status === 'intentionally-skipped' ? 'intentionally-skipped' : status;
 }
 
-function buildContentMachineOutput() {
+function buildContentMachineOutput(contentMachinePreflight) {
+  if (contentMachinePreflight.status !== 'runnable') {
+    return {
+      schemaVersion: 1,
+      generatedBy: 'content-machine',
+      mode: 'not-generated-unavailable-tool',
+      runId: 'micro-saas-redo-run-1',
+      status: 'unavailable',
+      rationale: contentMachinePreflight.rationale ?? 'content-machine was not runnable.',
+      artifacts: [],
+    };
+  }
+
   return {
     schemaVersion: 1,
     generatedBy: 'content-machine',
@@ -191,6 +204,56 @@ function buildReportSections({
   ];
 }
 
+function recordToolchainTelemetry(telemetry) {
+  telemetry.recordApprovalRequested({
+    approvalId: 'appr-toolchain-01',
+    sessionId: 'micro-saas-redo-run-1',
+    tier: 'Assisted',
+    requestedAtIso: addMs(FIXED_STARTED_AT_ISO, 2_000),
+  });
+  telemetry.recordApprovalDecision({
+    approvalId: 'appr-toolchain-01',
+    status: 'approved',
+    decidedAtIso: addMs(FIXED_STARTED_AT_ISO, 7_000),
+  });
+  telemetry.recordSessionBlocked({
+    sessionId: 'micro-saas-redo-run-1',
+    blockedAtIso: addMs(FIXED_STARTED_AT_ISO, 2_000),
+    unblockedAtIso: addMs(FIXED_STARTED_AT_ISO, 7_000),
+  });
+  telemetry.recordResume({
+    sessionId: 'micro-saas-redo-run-1',
+    approvalId: 'appr-toolchain-01',
+    decidedAtIso: addMs(FIXED_STARTED_AT_ISO, 7_000),
+    resumedAtIso: addMs(FIXED_STARTED_AT_ISO, 7_800),
+    successful: true,
+  });
+  telemetry.recordQueueDepth({
+    timestampIso: addMs(FIXED_STARTED_AT_ISO, 2_000),
+    depth: 1,
+  });
+  telemetry.recordQueueDepth({
+    timestampIso: addMs(FIXED_STARTED_AT_ISO, 8_000),
+    depth: 0,
+  });
+  telemetry.recordDuplicateExecution('micro-saas-redo-run-1:publish-stub');
+}
+
+function recordRequiredArtifacts(telemetry) {
+  for (const artifactName of [
+    'outcome.json',
+    'queue-metrics.json',
+    'evidence-summary.json',
+    'report.md',
+    'toolchain-preflight.json',
+    'tool-usage-evidence.json',
+    'content-machine-output.json',
+    'external-effect-stubs.json',
+  ]) {
+    telemetry.recordEvidenceArtifact({ artifactName, present: true });
+  }
+}
+
 function buildAssertions({
   contentMachinePreflight,
   demoMachinePreflight,
@@ -212,13 +275,19 @@ function buildAssertions({
       demoMachinePreflight.rationale ?? 'n/a',
     ),
     assert(
-      'tool usage evidence records runnable and stubbed states plus demo-machine disposition',
-      toolUsageEvidence.some((item) => item.status === 'runnable') &&
+      'tool usage evidence records Machine disposition and stubbed states',
+      toolUsageEvidence.some(
+        (item) =>
+          item.tool === 'content-machine' &&
+          (item.status === 'runnable' || item.status === 'failed'),
+      ) &&
         toolUsageEvidence.some((item) => item.status === 'stubbed') &&
         toolUsageEvidence.some(
           (item) =>
             item.tool === 'demo-machine' &&
-            (item.status === 'runnable' || item.status === 'intentionally-skipped'),
+            (item.status === 'runnable' ||
+              item.status === 'intentionally-skipped' ||
+              item.status === 'failed'),
         ),
       JSON.stringify(toolUsageEvidence.map((item) => `${item.tool}:${item.status}`)),
     ),
@@ -252,7 +321,7 @@ export async function runMicroSaasToolchainRedo(options = {}) {
   const writeResults = options.writeResults ?? true;
   const log = options.log ?? console.log;
   const toolPreflightImpl = options.toolPreflightImpl ?? runExperimentToolPreflight;
-  const attemptId = 'toolchain-realism-v1';
+  const attemptId = options.attemptId ?? 'toolchain-realism-v1';
   let trace = {};
   let assertions = [];
   let error;
@@ -276,13 +345,6 @@ export async function runMicroSaasToolchainRedo(options = {}) {
       },
     };
 
-    if (contentMachinePreflight.status !== 'runnable') {
-      trace = { toolchainPreflight };
-      throw new Error(
-        `Required content-machine preflight failed: ${contentMachinePreflight.rationale ?? contentMachinePreflight.status}`,
-      );
-    }
-
     const telemetry = createIteration2Telemetry({
       scenarioId: EXPERIMENT_NAME,
       attemptId,
@@ -299,40 +361,8 @@ export async function runMicroSaasToolchainRedo(options = {}) {
       ],
     });
 
-    telemetry.recordApprovalRequested({
-      approvalId: 'appr-toolchain-01',
-      sessionId: 'micro-saas-redo-run-1',
-      tier: 'Assisted',
-      requestedAtIso: addMs(FIXED_STARTED_AT_ISO, 2_000),
-    });
-    telemetry.recordApprovalDecision({
-      approvalId: 'appr-toolchain-01',
-      status: 'approved',
-      decidedAtIso: addMs(FIXED_STARTED_AT_ISO, 7_000),
-    });
-    telemetry.recordSessionBlocked({
-      sessionId: 'micro-saas-redo-run-1',
-      blockedAtIso: addMs(FIXED_STARTED_AT_ISO, 2_000),
-      unblockedAtIso: addMs(FIXED_STARTED_AT_ISO, 7_000),
-    });
-    telemetry.recordResume({
-      sessionId: 'micro-saas-redo-run-1',
-      approvalId: 'appr-toolchain-01',
-      decidedAtIso: addMs(FIXED_STARTED_AT_ISO, 7_000),
-      resumedAtIso: addMs(FIXED_STARTED_AT_ISO, 7_800),
-      successful: true,
-    });
-    telemetry.recordQueueDepth({
-      timestampIso: addMs(FIXED_STARTED_AT_ISO, 2_000),
-      depth: 1,
-    });
-    telemetry.recordQueueDepth({
-      timestampIso: addMs(FIXED_STARTED_AT_ISO, 8_000),
-      depth: 0,
-    });
-    telemetry.recordDuplicateExecution('micro-saas-redo-run-1:publish-stub');
-
-    const contentMachineOutput = buildContentMachineOutput();
+    recordToolchainTelemetry(telemetry);
+    const contentMachineOutput = buildContentMachineOutput(contentMachinePreflight);
     const externalEffectStubs = buildExternalEffectStubs();
     const toolUsageEvidence = buildToolUsageEvidence({
       contentMachinePreflight,
@@ -340,18 +370,7 @@ export async function runMicroSaasToolchainRedo(options = {}) {
     });
     const demoPathState = demoMachinePreflight.status === 'runnable' ? 'proven' : 'unproven';
 
-    for (const artifactName of [
-      'outcome.json',
-      'queue-metrics.json',
-      'evidence-summary.json',
-      'report.md',
-      'toolchain-preflight.json',
-      'tool-usage-evidence.json',
-      'content-machine-output.json',
-      'external-effect-stubs.json',
-    ]) {
-      telemetry.recordEvidenceArtifact({ artifactName, present: true });
-    }
+    recordRequiredArtifacts(telemetry);
 
     const observedAtIso = addMs(FIXED_STARTED_AT_ISO, 10_000);
     if (writeResults) {
@@ -402,6 +421,10 @@ export async function runMicroSaasToolchainRedo(options = {}) {
       evidenceSummary,
       trace,
     });
+
+    if (contentMachinePreflight.status !== 'runnable') {
+      error = `Required content-machine preflight failed: ${contentMachinePreflight.rationale ?? contentMachinePreflight.status}`;
+    }
   } catch (err) {
     error = err instanceof Error ? err.message : String(err);
   }
@@ -450,11 +473,15 @@ if (isMain) {
   const { values } = parseArgs({
     options: {
       'results-dir': { type: 'string' },
+      'attempt-id': { type: 'string' },
     },
   });
 
   const resultsDir = values['results-dir'] ?? DEFAULT_RESULTS_DIR;
-  const outcome = await runMicroSaasToolchainRedo({ resultsDir });
+  const outcome = await runMicroSaasToolchainRedo({
+    resultsDir,
+    attemptId: values['attempt-id'],
+  });
   printSummary(outcome, resultsDir);
   process.exitCode = outcome.outcome === 'confirmed' ? 0 : 1;
 }

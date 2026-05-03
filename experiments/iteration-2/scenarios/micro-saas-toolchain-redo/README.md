@@ -34,6 +34,10 @@ The script writes `outcome.json`, `queue-metrics.json`,
 `evidence-summary.json`, `report.md`, `toolchain-preflight.json`,
 `tool-usage-evidence.json`, `content-machine-output.json`, and
 `external-effect-stubs.json` under this scenario's `results/` directory.
+When `content-machine` is unavailable, the workflow remains inconclusive and the
+content output artifact records `status: unavailable` instead of pretending that
+content was generated. `demo-machine` remains optional and is either proven by
+preflight or marked unproven with a skip/failure rationale.
 
 The report fixture at `fixtures/report.md` shows the required report sections
 without depending on local workstation tool availability.
