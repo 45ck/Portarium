@@ -20,6 +20,10 @@ type WindowWithFetchShimFlag = Window & {
   [FETCH_SHIM_KEY]?: boolean;
 };
 
+type CockpitMockWorker = {
+  start(options: { onUnhandledRequest: 'bypass' }): unknown;
+};
+
 function installLiveFetchShim(): void {
   if (typeof window === 'undefined') return;
   const fetchShimWindow = window as WindowWithFetchShimFlag;
@@ -53,6 +57,32 @@ function installLiveFetchShim(): void {
   fetchShimWindow[FETCH_SHIM_KEY] = true;
 }
 
+function startCockpitMockWorker(worker: CockpitMockWorker, timeoutMs = 8000): Promise<void> {
+  return new Promise((resolve, reject) => {
+    let settled = false;
+
+    const settle = (callback: () => void) => {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timeoutId);
+      callback();
+    };
+
+    const timeoutId = window.setTimeout(() => {
+      settle(resolve);
+    }, timeoutMs);
+
+    try {
+      Promise.resolve(worker.start({ onUnhandledRequest: 'bypass' })).then(
+        () => settle(resolve),
+        (error: unknown) => settle(() => reject(error)),
+      );
+    } catch (error) {
+      settle(() => reject(error));
+    }
+  });
+}
+
 async function bootstrap() {
   const retentionPolicy = getCockpitDataRetentionPolicy();
   hydrateQueryCacheFromStorage(undefined, undefined, retentionPolicy);
@@ -63,10 +93,7 @@ async function bootstrap() {
     const { worker } = await import('./mocks/browser');
     const { loadActiveDataset } = await import('./mocks/handlers');
     await loadActiveDataset();
-    await Promise.race([
-      worker.start({ onUnhandledRequest: 'bypass' }),
-      new Promise<void>((resolve) => setTimeout(resolve, 8000)),
-    ]);
+    await startCockpitMockWorker(worker);
   } else {
     installLiveFetchShim();
   }
