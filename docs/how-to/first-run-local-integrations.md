@@ -70,6 +70,10 @@ portarium-evidence-db     running (healthy)   0.0.0.0:5432->5432/tcp
 portarium-temporal        running (healthy)   0.0.0.0:7233->7233/tcp
 portarium-evidence-store  running (healthy)   0.0.0.0:9000->9000/tcp
 portarium-vault           running             0.0.0.0:8200->8200/tcp
+portarium-otel-collector  running             0.0.0.0:4317->4317/tcp
+portarium-keycloak        running (healthy)   0.0.0.0:8180->8080/tcp
+portarium-openfga         running (healthy)   0.0.0.0:8888->8080/tcp
+portarium-odoo            running (healthy)   0.0.0.0:4000->8069/tcp
 portarium-api             running (healthy)   0.0.0.0:8080->8080/tcp
 portarium-worker          running (healthy)   0.0.0.0:8081->8081/tcp
 ```
@@ -91,6 +95,9 @@ npm run dev:seed
 Keycloak, OpenFGA, and Odoo are part of the default `dev:all` local stack.
 OpenFGA store/model initialization and local DB initialization are also part of
 `dev:all`; `npm run dev:seed` only seeds canonical demo and Cockpit data.
+
+> **Tools profile:** The API and worker depend on the OTel collector in local compose,
+> so `dev:all` includes the `tools` profile with the integration profiles.
 
 ---
 

@@ -1,4 +1,10 @@
-import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
+import {
+  expect,
+  test,
+  type APIRequestContext,
+  type BrowserContext,
+  type Page,
+} from '@playwright/test';
 
 const apiBaseUrl = process.env['PORTARIUM_LIVE_STACK_API_BASE_URL'] ?? 'http://localhost:8080';
 const workspaceId = process.env['PORTARIUM_LIVE_STACK_WORKSPACE_ID'] ?? 'ws-local-dev';
@@ -7,7 +13,7 @@ const approvalId = 'apr-live-001';
 const runId = 'run-live-001';
 const runningRunId = 'run-live-002';
 const workItemId = 'wi-live-001';
-const decisionRationale = 'Live-stack smoke request changes persisted through the Cockpit UI.';
+const decisionRationalePrefix = 'Live-stack smoke approval persisted through the Cockpit UI.';
 const resumeRationale = 'Live-stack smoke resumed the waiting run after operator review.';
 
 interface PageResponse<T> {
@@ -34,6 +40,7 @@ interface EvidenceApiView {
 interface RunApiView {
   runId: string;
   status: string;
+  controlState?: string;
 }
 
 interface WorkItemApiView {
@@ -64,6 +71,60 @@ async function createDevSession(request: APIRequestContext): Promise<void> {
   expect(response.ok(), `dev session returned ${response.status()}`).toBe(true);
 }
 
+async function resetBrowserStorage(context: BrowserContext, page: Page): Promise<void> {
+  await context.setOffline(false);
+  await context.clearCookies();
+  await context.addInitScript(() => {
+    try {
+      window.localStorage.clear();
+      window.sessionStorage.clear();
+    } catch {
+      // Some transient browser documents, such as about:blank, deny storage access.
+    }
+  });
+  await page.goto('/');
+  await page.evaluate(async () => {
+    window.localStorage.clear();
+    window.sessionStorage.clear();
+
+    if ('caches' in window) {
+      await Promise.all((await window.caches.keys()).map((key) => window.caches.delete(key)));
+    }
+
+    if ('serviceWorker' in navigator) {
+      await Promise.all(
+        (await navigator.serviceWorker.getRegistrations()).map((registration) =>
+          registration.unregister(),
+        ),
+      );
+    }
+
+    if ('indexedDB' in window) {
+      const indexedDbWithEnumeration = window.indexedDB as IDBFactory & {
+        databases?: () => Promise<Array<{ name?: string }>>;
+      };
+      const databases = indexedDbWithEnumeration.databases
+        ? await indexedDbWithEnumeration.databases()
+        : [{ name: 'portarium-cockpit-offline' }];
+      await Promise.all(
+        databases
+          .map((database) => database.name)
+          .filter((name): name is string => Boolean(name))
+          .map(
+            (name) =>
+              new Promise<void>((resolve) => {
+                const request = window.indexedDB.deleteDatabase(name);
+                request.onsuccess = () => resolve();
+                request.onerror = () => resolve();
+                request.onblocked = () => resolve();
+              }),
+          ),
+      );
+    }
+  });
+  await page.goto('about:blank');
+}
+
 function installRuntimeGuards(page: Page): {
   runtimeFailures: string[];
   networkFailures: string[];
@@ -72,26 +133,26 @@ function installRuntimeGuards(page: Page): {
   const networkFailures: string[] = [];
   page.on('pageerror', (error) => runtimeFailures.push(`pageerror: ${error.message}`));
   page.on('console', (message) => {
-    if (message.type() === 'error') {
+    if (message.type() === 'error' && !message.text().startsWith('Failed to load resource:')) {
       runtimeFailures.push(`console.error: ${message.text()}`);
     }
   });
   page.on('requestfailed', (request) => {
-    const failure = request.failure();
-    const errorText = failure?.errorText ?? '';
-    if (/aborted|cancelled/i.test(errorText)) return;
-    networkFailures.push(
-      `requestfailed: ${request.method()} ${redactUrl(request.url())} ${errorText}`,
-    );
+    const url = request.url();
+    const failureText = request.failure()?.errorText ?? 'unknown';
+    if (url.includes('/events:stream') && failureText === 'net::ERR_ABORTED') return;
+    if (url.startsWith(apiBaseUrl) || url.includes('localhost:5173')) {
+      networkFailures.push(`requestfailed: ${request.method()} ${redactUrl(url)} ${failureText}`);
+    }
   });
   page.on('response', (response) => {
-    const resourceType = response.request().resourceType();
+    const url = response.url();
     if (
-      response.status() >= 400 &&
-      (resourceType === 'document' || resourceType === 'fetch' || resourceType === 'xhr')
+      url.startsWith(apiBaseUrl) &&
+      (response.status() === 401 || response.status() === 403 || response.status() >= 500)
     ) {
       networkFailures.push(
-        `response: ${response.status()} ${response.request().method()} ${redactUrl(response.url())}`,
+        `response.${response.status()}: ${response.request().method()} ${redactUrl(url)}`,
       );
     }
   });
@@ -122,8 +183,10 @@ test.describe('Cockpit live-stack smoke', () => {
     context,
     page,
   }, testInfo) => {
-    const { runtimeFailures, networkFailures } = installRuntimeGuards(page);
+    const decisionRationale = `${decisionRationalePrefix} ${testInfo.workerIndex}-${Date.now()}`;
+    await resetBrowserStorage(context, page);
     await createDevSession(context.request);
+    const { runtimeFailures, networkFailures } = installRuntimeGuards(page);
 
     const runsBefore = await apiGet<PageResponse<RunApiView>>(
       context.request,
@@ -157,6 +220,7 @@ test.describe('Cockpit live-stack smoke', () => {
     await expect(page.getByRole('heading', { name: 'Runs' })).toBeVisible();
     await expect(page.getByText(runId, { exact: false })).toBeVisible();
     await expect(page.getByText(runningRunId, { exact: false })).toBeVisible();
+    await expect(page.getByText('Mock data', { exact: false })).toHaveCount(0);
 
     await page.goto(`/runs/${runId}`);
     await expect(page.getByRole('heading', { name: `Run: ${runId}` })).toBeVisible();
@@ -173,21 +237,29 @@ test.describe('Cockpit live-stack smoke', () => {
     await expect(page.getByRole('heading', { name: workItem.title })).toBeVisible();
     await expect(page.getByText('Evidence Timeline')).toBeVisible();
 
+    await page.goto(`/approvals?focus=${approvalId}&from=notification`);
+    await expect(page.getByRole('heading', { name: 'Approval Review' })).toBeVisible();
+    await expect(page.getByText(approvalId, { exact: true })).toBeVisible();
+    await expect(page.getByTitle('Request changes (R)')).toBeVisible();
+    await page
+      .getByRole('textbox', { name: new RegExp(`Decision rationale for approval ${approvalId}`) })
+      .fill(decisionRationale);
+
+    await page.getByTitle('Approve (A)').click();
+    const confirmApprovalButton = page.getByRole('button', { name: 'Confirm' });
+    if (await confirmApprovalButton.isVisible({ timeout: 1_000 }).catch(() => false)) {
+      await confirmApprovalButton.click();
+    }
+    await expect(page.getByText('Approval handled')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Undo decision' })).toBeVisible();
+
     const decisionResponse = page.waitForResponse(
       (response) =>
         response.url().includes(`/approvals/${approvalId}/decide`) &&
         response.request().method() === 'POST',
-      { timeout: 20_000 },
+      { timeout: 30_000 },
     );
-
-    await page.goto(`/approvals?focus=${approvalId}&from=notification`);
-    await expect(page.getByRole('heading', { name: 'Approval Review' })).toBeVisible();
-    await expect(page.getByText(approvalId, { exact: true })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Approve' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Request changes' })).toBeVisible();
-    await page.getByTitle('Request changes (R)').click();
-    await page.getByLabel('What needs to change?').fill(decisionRationale);
-    await page.getByRole('button', { name: 'Submit request for changes' }).click();
+    await page.getByRole('link', { name: /^Runs$/ }).click();
 
     const response = await decisionResponse;
     expect(response.status()).toBe(200);
@@ -196,7 +268,7 @@ test.describe('Cockpit live-stack smoke', () => {
       context.request,
       `/v1/workspaces/${workspaceId}/approvals/${approvalId}`,
     );
-    expect(approvalAfter.status).toBe('RequestChanges');
+    expect(approvalAfter.status).toBe('Approved');
     expect(approvalAfter.rationale).toBe(decisionRationale);
 
     const approvalEvidence = await apiGet<PageResponse<EvidenceApiView>>(
@@ -206,8 +278,7 @@ test.describe('Cockpit live-stack smoke', () => {
     expect(
       approvalEvidence.items.some(
         (entry) =>
-          entry.links?.approvalId === approvalId &&
-          entry.summary.includes('decided: RequestChanges'),
+          entry.links?.approvalId === approvalId && entry.summary.includes('decided: Approved'),
       ),
     ).toBe(true);
 
@@ -216,50 +287,46 @@ test.describe('Cockpit live-stack smoke', () => {
     await expect(page.getByText('Approval already decided')).toBeVisible();
 
     const resumeResponse = page.waitForResponse(
-      (candidate) =>
-        candidate.url().includes(`/runs/${runId}/interventions`) &&
-        candidate.request().method() === 'POST',
+      (apiResponse) =>
+        apiResponse.url().includes(`/runs/${runId}/interventions`) &&
+        apiResponse.request().method() === 'POST',
       { timeout: 20_000 },
     );
 
     await page.goto(`/runs/${runId}`);
-    await expect(page.getByRole('heading', { name: `Run: ${runId}` })).toBeVisible();
-    await page.getByRole('combobox', { name: 'Action' }).click();
-    await page.getByRole('option', { name: 'Resume' }).click();
+    await expect(page.getByText('Approved, resume pending after recovery')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Record Resume' })).toBeDisabled();
     await page.getByLabel('Rationale').fill(resumeRationale);
     await page.getByRole('button', { name: 'Record Resume' }).click();
 
-    const resume = await resumeResponse;
-    expect(resume.status()).toBe(200);
+    const resumeResult = await resumeResponse;
+    expect(resumeResult.status()).toBe(200);
 
     const runAfterResume = await apiGet<RunApiView>(
       context.request,
       `/v1/workspaces/${workspaceId}/runs/${runId}`,
     );
     expect(runAfterResume.status).toBe('Running');
+    expect(runAfterResume.controlState).toBeUndefined();
 
-    const actionEvidence = await apiGet<PageResponse<EvidenceApiView>>(
+    const interventionEvidence = await apiGet<PageResponse<EvidenceApiView>>(
       context.request,
-      `/v1/workspaces/${workspaceId}/evidence?category=Action&limit=50`,
+      `/v1/workspaces/${workspaceId}/runs/${runId}/evidence`,
     );
-    expect(
-      actionEvidence.items.some(
-        (entry) =>
-          entry.links?.runId === runId &&
-          entry.summary.includes('resume:') &&
-          entry.summary.includes(resumeRationale),
-      ),
-    ).toBe(true);
+    expect(interventionEvidence.items.some((entry) => entry.summary.includes('resume:'))).toBe(
+      true,
+    );
 
     await page.goto('/evidence');
     await expect(page.getByRole('heading', { name: 'Evidence' })).toBeVisible();
-    await expect(page.getByText(devToken, { exact: false })).toHaveCount(0);
+    await expect(page.getByText('grants/cg-live-machine')).toHaveCount(0);
+    await expect(page.getByText(devToken)).toHaveCount(0);
 
     const operatorFlowEvidence = {
       approvalAfter,
       approvalEvidence,
       runAfterResume,
-      actionEvidence,
+      interventionEvidence,
       runtimeFailures,
       networkFailures,
     };

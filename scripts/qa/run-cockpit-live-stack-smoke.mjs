@@ -1,10 +1,18 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
-import { resolve } from 'node:path';
+import { existsSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
 
 const repoRoot = resolve(import.meta.dirname, '../..');
 const npmCommand = 'npm';
 const nodeCommand = process.execPath;
+const bundledNpmCliPath = join(dirname(nodeCommand), 'node_modules', 'npm', 'bin', 'npm-cli.js');
+const npmCliPath =
+  process.env['npm_execpath'] && process.env['npm_execpath'] !== 'undefined'
+    ? process.env['npm_execpath']
+    : existsSync(bundledNpmCliPath)
+      ? bundledNpmCliPath
+      : undefined;
 const args = new Set(process.argv.slice(2));
 const apiBaseUrl =
   process.env.PORTARIUM_LIVE_STACK_API_BASE_URL ??
@@ -34,9 +42,21 @@ function run(command, commandArgs, env = process.env) {
     shell: false,
     stdio: 'inherit',
   });
+  if (result.error) {
+    console.error(`[cockpit-live-stack] failed to start ${command}: ${result.error.message}`);
+    process.exit(1);
+  }
   if (result.status !== 0) {
     process.exit(result.status ?? 1);
   }
+}
+
+function runNpm(commandArgs, env = process.env) {
+  if (npmCliPath) {
+    run(nodeCommand, [npmCliPath, ...commandArgs], env);
+    return;
+  }
+  run(npmCommand, commandArgs, env);
 }
 
 async function isApiHealthy() {
@@ -77,8 +97,8 @@ const smokeEnv = {
 
 if (!skipSeed) {
   console.log('[cockpit-live-stack] seeding live Cockpit workspace');
-  run(npmCommand, ['run', 'seed:cockpit-live'], smokeEnv);
-  run(npmCommand, ['run', 'seed:cockpit-live:validate'], smokeEnv);
+  runNpm(['run', 'seed:cockpit-live'], smokeEnv);
+  runNpm(['run', 'seed:cockpit-live:validate'], smokeEnv);
 }
 
 console.log('[cockpit-live-stack] running Playwright live-stack smoke');

@@ -79,6 +79,29 @@ describe('cockpit web session helpers', () => {
     expect(result?.ok).toBe(true);
   });
 
+  it('accepts cookie-backed unsafe requests from configured CORS origins', () => {
+    const previousCorsAllowedOrigins = process.env['PORTARIUM_CORS_ALLOWED_ORIGINS'];
+    process.env['PORTARIUM_CORS_ALLOWED_ORIGINS'] = 'http://localhost:5173';
+    try {
+      const req = makeRequest(
+        {
+          [WEB_SESSION_REQUEST_HEADER]: '1',
+          host: 'localhost:8080',
+          origin: 'http://localhost:5173',
+        },
+        'POST',
+      );
+
+      expect(isUnsafeSessionRequestAllowed(req)).toBe(true);
+    } finally {
+      if (previousCorsAllowedOrigins === undefined) {
+        delete process.env['PORTARIUM_CORS_ALLOWED_ORIGINS'];
+      } else {
+        process.env['PORTARIUM_CORS_ALLOWED_ORIGINS'] = previousCorsAllowedOrigins;
+      }
+    }
+  });
+
   it('requires the request marker for cookie-authenticated mutations', async () => {
     const store = new InMemoryCockpitWebSessionStore();
     const record = store.create({

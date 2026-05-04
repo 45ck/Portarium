@@ -18,8 +18,31 @@ name: portarium-local
 # ---------------------------------------------------------------------------
 
 services:
+  db-init:
+    profiles: [cockpit]
+    image: portarium-local-api
+    build:
+      context: .
+      dockerfile: infra/docker/control-plane.Dockerfile
+    container_name: portarium-db-init
+    command:
+      - /bin/sh
+      - -c
+      - |
+        node dist/src/infrastructure/migrations/cli.js bootstrap --tenants ws-local-dev
+        node -e 'const { Client } = require("pg"); const client = new Client({ connectionString: process.env.DATABASE_URL }); client.connect().then(() => client.query("INSERT INTO workspace_registry (tenant_id) VALUES ('\''ws-local-dev'\'') ON CONFLICT DO NOTHING")).then(() => client.end()).catch((error) => { console.error(error); process.exit(1); });'
+    environment:
+      DATABASE_URL: postgresql://portarium:portarium@evidence-db:5432/portarium
+      PORTARIUM_DEV_WORKSPACE_ID: ws-local-dev
+    depends_on:
+      evidence-db:
+        condition: service_healthy
+    networks:
+      - portarium-control
+
   api:
     profiles: [cockpit]
+    image: portarium-local-api
     build:
       context: .
       dockerfile: infra/docker/control-plane.Dockerfile
@@ -47,6 +70,8 @@ services:
         condition: service_healthy
       evidence-db:
         condition: service_healthy
+      db-init:
+        condition: service_completed_successfully
       evidence-store:
         condition: service_healthy
       vault:
@@ -72,6 +97,7 @@ services:
 
   worker:
     profiles: [cockpit]
+    image: portarium-local-worker
     build:
       context: .
       dockerfile: infra/docker/worker.Dockerfile

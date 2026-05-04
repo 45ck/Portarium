@@ -259,6 +259,7 @@ function ApprovalsPage() {
       clearTimeout(pendingActionRef.current.timerId);
       toast.dismiss(pendingActionRef.current.toastId);
       commitAction(pendingActionRef.current);
+      pendingActionRef.current = null;
       setPendingAction(null);
     }
 
@@ -292,6 +293,7 @@ function ApprovalsPage() {
       const current = pendingActionRef.current;
       if (current?.approvalId === approvalId) {
         commitAction(current);
+        pendingActionRef.current = null;
         setPendingAction(null);
         toast.dismiss(toastId);
       }
@@ -305,6 +307,7 @@ function ApprovalsPage() {
       timerId,
       queueIndex: displayIndex,
     };
+    pendingActionRef.current = pa;
     setPendingAction(pa);
 
     toast('Decision recorded', {
@@ -323,6 +326,7 @@ function ApprovalsPage() {
 
     clearTimeout(target.timerId);
     toast.dismiss(target.toastId);
+    pendingActionRef.current = null;
     setPendingAction(null);
     if (singleCaseMode && target.approvalId === singleCaseApprovalId) {
       setSingleCaseResult(null);

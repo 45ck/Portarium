@@ -56,13 +56,18 @@ services:
       POSTGRES_USER: portarium
       POSTGRES_PWD: portarium
       POSTGRES_SEEDS: evidence-db
+      DBNAME: temporal
     depends_on:
       evidence-db:
         condition: service_healthy
     ports:
       - '7233:7233'
     healthcheck:
-      test: ['CMD-SHELL', 'tctl --address "$$(hostname -i):7233" cluster health >/dev/null 2>&1']
+      test:
+        [
+          'CMD-SHELL',
+          'tctl --address "$(hostname -i):7233" cluster health >/dev/null 2>&1 || temporal operator cluster health --address "$(hostname -i):7233" >/dev/null 2>&1',
+        ]
       interval: 10s
       timeout: 5s
       retries: 18
@@ -105,7 +110,7 @@ services:
         mc alias set portarium http://evidence-store:9000 "$${MINIO_ROOT_USER}" "$${MINIO_ROOT_PASSWORD}"
         mc mb --ignore-existing --with-lock portarium/portarium-evidence
         mc retention set --default COMPLIANCE 365d portarium/portarium-evidence || true
-        exit 0
+        tail -f /dev/null
     environment:
       MINIO_ROOT_USER: portarium
       MINIO_ROOT_PASSWORD: portarium123
@@ -114,7 +119,7 @@ services:
 
   vault:
     profiles: [auth]
-    image: hashicorp/vault:latest
+    image: hashicorp/vault:1.15
     container_name: portarium-vault
     environment:
       VAULT_DEV_ROOT_TOKEN_ID: portarium-root-token
@@ -160,7 +165,7 @@ services:
     container_name: portarium-tempo
     command: ['-config.file=/etc/tempo.yaml']
     volumes:
-      - ./infra/otel/tempo-config.yaml:/etc/tempo.yaml:ro
+      - ./infra/otel/tempo-local-config.yaml:/etc/tempo.yaml:ro
       - tempo-data:/var/tempo
     ports:
       - '3200:3200'
@@ -293,7 +298,7 @@ services:
     container_name: portarium-openfga-init
     environment:
       OPENFGA_BASE_URL: http://openfga:8080
-    command: ['node', '/scripts/init.mjs']
+    command: ['/bin/sh', '-c', 'node /scripts/init.mjs && tail -f /dev/null']
     volumes:
       - ./infra/openfga/init.mjs:/scripts/init.mjs:ro
     depends_on:

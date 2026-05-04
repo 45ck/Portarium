@@ -6,6 +6,11 @@ import type { AuthenticationPort } from '../../application/ports/authentication.
 import { err, ok, type Result } from '../../application/common/result.js';
 import type { Unauthorized } from '../../application/common/errors.js';
 import type { TraceContext } from '../../application/common/trace-context.js';
+import {
+  isAllowedCorsOrigin,
+  isProductionLikeRuntime,
+  parseCorsAllowedOrigins,
+} from './control-plane-origin-policy.js';
 
 export const DEFAULT_COCKPIT_SESSION_COOKIE = 'portarium_cockpit_session';
 export const WEB_SESSION_REQUEST_HEADER = 'x-portarium-request';
@@ -431,13 +436,46 @@ function isTrustedUnsafeRequestContext(
   try {
     const parsed = new URL(origin);
     if (config?.trustedOrigins?.includes(parsed.origin)) return true;
-    if (parsed.host !== host) return false;
+    if (parsed.host !== host) {
+      return isTrustedConfiguredCorsOrigin(origin) || isTrustedLocalDevelopmentOrigin(parsed, host);
+    }
     const forwardedProto = firstHeader(req.headers['x-forwarded-proto']);
     if (!forwardedProto) return true;
     return parsed.protocol.replace(/:$/, '').toLowerCase() === forwardedProto.toLowerCase();
   } catch {
     return false;
   }
+}
+
+function isTrustedConfiguredCorsOrigin(origin: string): boolean {
+  try {
+    const allowedOrigins = parseCorsAllowedOrigins(process.env['PORTARIUM_CORS_ALLOWED_ORIGINS']);
+    return isAllowedCorsOrigin(origin, allowedOrigins);
+  } catch {
+    return false;
+  }
+}
+
+function isTrustedLocalDevelopmentOrigin(origin: URL, host: string): boolean {
+  if (isProductionLikeRuntime()) return false;
+
+  try {
+    const requestUrl = new URL(`http://${host}`);
+    return isLoopbackHost(origin.hostname) && isLoopbackHost(requestUrl.hostname);
+  } catch {
+    return false;
+  }
+}
+
+function isLoopbackHost(hostname: string): boolean {
+  const normalized = hostname.toLowerCase();
+  return (
+    normalized === 'localhost' ||
+    normalized.endsWith('.localhost') ||
+    normalized === '127.0.0.1' ||
+    normalized === '::1' ||
+    normalized === '[::1]'
+  );
 }
 
 function firstHeader(value: string | string[] | undefined): string | undefined {

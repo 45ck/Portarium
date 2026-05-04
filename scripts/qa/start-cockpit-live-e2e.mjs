@@ -1,22 +1,30 @@
 #!/usr/bin/env node
 import { spawn } from 'node:child_process';
-import { resolve } from 'node:path';
+import { existsSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
 
 const repoRoot = resolve(import.meta.dirname, '../..');
-const npmCommand = 'npm';
-const npmArgs = ['run', '-w', 'apps/cockpit', 'dev:e2e'];
+const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+const nodeCommand = process.execPath;
+const bundledNpmCliPath = join(dirname(nodeCommand), 'node_modules', 'npm', 'bin', 'npm-cli.js');
+const npmCliPath =
+  process.env['npm_execpath'] && process.env['npm_execpath'] !== 'undefined'
+    ? process.env['npm_execpath']
+    : existsSync(bundledNpmCliPath)
+      ? bundledNpmCliPath
+      : undefined;
 const apiBaseUrl =
   process.env.PORTARIUM_LIVE_STACK_API_BASE_URL ??
   process.env.VITE_PORTARIUM_API_BASE_URL ??
   'http://localhost:8080';
 const workspaceId = process.env.PORTARIUM_LIVE_STACK_WORKSPACE_ID ?? 'ws-local-dev';
 
-const [spawnCommand, spawnArgs] =
-  process.platform === 'win32'
-    ? [process.env.ComSpec ?? 'cmd.exe', ['/d', '/s', '/c', [npmCommand, ...npmArgs].join(' ')]]
-    : [npmCommand, npmArgs];
+const command = npmCliPath ? nodeCommand : npmCommand;
+const commandArgs = npmCliPath
+  ? [npmCliPath, 'run', '-w', 'apps/cockpit', 'dev:e2e']
+  : ['run', '-w', 'apps/cockpit', 'dev:e2e'];
 
-const child = spawn(spawnCommand, spawnArgs, {
+const child = spawn(command, commandArgs, {
   cwd: repoRoot,
   env: {
     ...process.env,
