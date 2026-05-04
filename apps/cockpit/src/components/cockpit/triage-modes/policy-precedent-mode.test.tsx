@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type {
   ApprovalSummary,
@@ -156,8 +156,7 @@ describe('PolicyPrecedentMode', () => {
     const rationale = screen.getByLabelText('Rationale');
     expect(rationale).toHaveProperty('value', 'Initial reviewer note');
 
-    await user.clear(rationale);
-    await user.type(rationale, 'Escalate future production updates.');
+    fireEvent.change(rationale, { target: { value: 'Escalate future production updates.' } });
     await user.click(screen.getByRole('button', { name: 'Future similar cases' }));
     await user.click(screen.getByRole('button', { name: 'Escalate this Action class' }));
 
