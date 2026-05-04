@@ -1,5 +1,6 @@
 import { DesktopMapWorkbenchLayout } from './desktop-map-workbench-layout';
 import { MobileMapWorkbenchLayout } from './mobile-map-workbench-layout';
+import { ReadOnlyMapHostPanel } from './read-only-map-host-panel';
 import { cn } from '@/lib/utils';
 import type { MapHostPanelTab, MapHostWorkbenchProps } from './types';
 
@@ -57,7 +58,26 @@ export function MapWorkbenchShell<TTabId extends string>({
   status,
   selectionLabel,
   className,
+  layers,
+  entities,
+  selection,
+  panels,
+  commands,
+  readOnlyItems,
+  readOnlyItemGroups,
 }: MapHostWorkbenchProps<TTabId>) {
+  const panelNode = panel ?? (
+    <ReadOnlyMapHostPanel
+      dataState={dataState}
+      layers={layers}
+      entities={entities}
+      selection={selection}
+      panels={panels}
+      commands={commands}
+      readOnlyItems={readOnlyItems}
+      readOnlyItemGroups={readOnlyItemGroups}
+    />
+  );
   const panelContent = (
     <>
       <div className="shrink-0 border-b border-border bg-muted/20 px-4 py-3">
@@ -73,7 +93,7 @@ export function MapWorkbenchShell<TTabId extends string>({
         ) : null}
       </div>
       <PanelTabs tabs={tabs} activeTab={activeTab} onTabChange={onTabChange} />
-      <div className="min-h-0 flex-1 overflow-y-auto">{panel}</div>
+      <div className="min-h-0 flex-1 overflow-y-auto">{panelNode}</div>
     </>
   );
 

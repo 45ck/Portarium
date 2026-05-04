@@ -29,6 +29,14 @@ export type MapHostEntityStatus = 'normal' | 'warning' | 'critical' | 'unknown';
 
 export type MapHostCommandScope = 'workbench' | 'selection';
 
+export type MapHostReadOnlyItemSeverity =
+  | 'neutral'
+  | 'info'
+  | 'success'
+  | 'warning'
+  | 'critical'
+  | 'unknown';
+
 export interface MapHostFreshnessSummary {
   state: MapHostFreshnessState;
   label: string;
@@ -73,6 +81,37 @@ export interface MapHostEntity<
   locationRef?: string;
   status?: MapHostEntityStatus;
   payload: TEntityPayload;
+}
+
+export interface MapHostReadOnlyAttribute {
+  label: string;
+  value: string;
+}
+
+export interface MapHostReadOnlyItem<
+  TItemAttributes = unknown,
+> extends MapHostContributionMetadata {
+  id: string;
+  label: string;
+  kind: string;
+  summary?: string;
+  sourceSystem?: string;
+  sourceMode?: string;
+  sourceRef?: string;
+  subjectRef?: string;
+  status?: MapHostReadOnlyItemSeverity;
+  observedAtIso?: string;
+  attributes?: readonly MapHostReadOnlyAttribute[];
+  data?: TItemAttributes;
+}
+
+export interface MapHostReadOnlyItemGroup<
+  TItemAttributes = unknown,
+> extends MapHostContributionMetadata {
+  id: string;
+  label: string;
+  description?: string;
+  items: readonly MapHostReadOnlyItem<TItemAttributes>[];
 }
 
 export interface MapHostLayer<TLayerId extends string = string> {
@@ -159,6 +198,7 @@ export interface MapHostWorkbenchProps<
   TEntityPayload = unknown,
   TLayerPayload = unknown,
   TCommandPayload = unknown,
+  TItemAttributes = unknown,
 > {
   title: string;
   subtitle?: string;
@@ -167,7 +207,7 @@ export interface MapHostWorkbenchProps<
   tabs: readonly MapHostPanelTab<TTabId>[];
   activeTab: TTabId;
   onTabChange: (tabId: TTabId) => void;
-  panel: ReactNode;
+  panel?: ReactNode;
   toolbar?: ReactNode;
   status?: ReactNode;
   selectionLabel?: string;
@@ -177,4 +217,6 @@ export interface MapHostWorkbenchProps<
   selection?: MapHostSelectionState;
   panels?: readonly MapHostPanelContribution<TEntityPayload, TCommandPayload>[];
   commands?: readonly MapHostCommandContribution<TCommandPayload>[];
+  readOnlyItems?: readonly MapHostReadOnlyItem<TItemAttributes>[];
+  readOnlyItemGroups?: readonly MapHostReadOnlyItemGroup<TItemAttributes>[];
 }

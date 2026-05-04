@@ -111,4 +111,49 @@ describe('MapWorkbenchShell', () => {
 
     expect(onTabChange).not.toHaveBeenCalled();
   });
+
+  it('renders generic read-only contribution items when no custom panel is supplied', () => {
+    render(
+      <MapWorkbenchShell
+        title="Operations map"
+        dataState="ready"
+        map={<div aria-label="map canvas">Map content</div>}
+        tabs={[]}
+        activeTab="details"
+        onTabChange={vi.fn()}
+        readOnlyItemGroups={[
+          {
+            id: 'freshservice',
+            label: 'Freshservice',
+            description: 'Redacted ticket references',
+            privacyClass: 'restricted',
+            freshness: { state: 'cached', label: 'Local read model' },
+            items: [
+              {
+                id: 'ticket-1',
+                label: 'FS-48112',
+                kind: 'ticket',
+                sourceSystem: 'freshservice',
+                sourceMode: 'unofficial_session',
+                summary: 'Room-linked display ticket reference.',
+                privacyClass: 'restricted',
+                freshness: { state: 'cached', label: 'Fresh' },
+                status: 'warning',
+                attributes: [
+                  { label: 'status', value: 'open' },
+                  { label: 'priority', value: 'medium' },
+                ],
+              },
+            ],
+          },
+        ]}
+      />,
+    );
+
+    expect(screen.getAllByText('Read-only context')).toHaveLength(2);
+    expect(screen.getAllByText('Freshservice')).toHaveLength(2);
+    expect(screen.getAllByText('FS-48112')).toHaveLength(2);
+    expect(screen.getAllByText('Room-linked display ticket reference.')).toHaveLength(2);
+    expect(screen.getAllByText('medium')).toHaveLength(2);
+  });
 });
