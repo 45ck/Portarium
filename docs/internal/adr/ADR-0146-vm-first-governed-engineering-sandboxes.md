@@ -60,13 +60,13 @@ must never silently lower isolation. Any downgrade from `vm` to `container` or
 
 ## Options considered
 
-| Option | Outcome |
-| --- | --- |
-| Worktree-only | Fastest to build, but weak containment and weaker governance story |
-| Container-first | Good reproducibility, but still shared-kernel and weaker for untrusted agent work |
-| VM-first with provider fallback | Best alignment with autonomous coding risk while preserving lower-cost modes |
-| Hosted-only sandboxes | Good startup and scale, but weaker source/secrets control and vendor dependency |
-| Self-hosted Kata-only | Strong isolation, but too heavy as the only local development path |
+| Option                          | Outcome                                                                           |
+| ------------------------------- | --------------------------------------------------------------------------------- |
+| Worktree-only                   | Fastest to build, but weak containment and weaker governance story                |
+| Container-first                 | Good reproducibility, but still shared-kernel and weaker for untrusted agent work |
+| VM-first with provider fallback | Best alignment with autonomous coding risk while preserving lower-cost modes      |
+| Hosted-only sandboxes           | Good startup and scale, but weaker source/secrets control and vendor dependency   |
+| Self-hosted Kata-only           | Strong isolation, but too heavy as the only local development path                |
 
 ## Consequences
 

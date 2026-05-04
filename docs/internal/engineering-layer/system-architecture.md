@@ -50,23 +50,23 @@ Any actor (human / ops / agent)
 
 ## Component placement
 
-| Component                            | Layer                          | Status                           |
-| ------------------------------------ | ------------------------------ | -------------------------------- |
-| `IntentRouter`                       | `src/application/`             | New                              |
-| `ProjectIntent` value object         | `src/domain/`                  | New                              |
-| `BeadPlanner`                        | `src/application/`             | New — PlanV1 exists              |
-| `BeadProposal/v1` domain event       | `src/domain/`                  | New — versioned                  |
-| `SandboxExecutor` Temporal activity  | `src/infrastructure/temporal/` | New — wraps worktree/container/VM providers |
-| `WorktreePort` interface             | `src/infrastructure/`          | New — thin adapter over `bd` CLI |
-| `SandboxProviderPort` interface      | `src/application/ports/`       | New — provider-neutral sandbox lifecycle |
-| `AgentRuntimePort` interface         | `src/application/ports/`       | New — launch Codex/OpenCode/etc with Portarium hook |
-| `MachineInvokerPort`                 | `src/application/ports/`       | Existing direction — agent/tool invocation, not sandbox lifecycle |
-| `PreviewPort` interface              | `src/application/ports/`       | New — dev server, browser, and snapshot evidence |
-| portarium plugin sandbox             | `packages/portarium/`          | Extend (beads 0959/0960)         |
-| `@portarium/engine`                  | `packages/engine/`             | Stable                           |
-| `ArtifactCollector`                  | `src/infrastructure/`          | New                              |
-| `DiffApprovalSurface` API endpoint   | `src/presentation/`            | New                              |
-| `MergeExecutor` Temporal activity    | `src/infrastructure/temporal/` | New                              |
+| Component                           | Layer                          | Status                                                            |
+| ----------------------------------- | ------------------------------ | ----------------------------------------------------------------- |
+| `IntentRouter`                      | `src/application/`             | New                                                               |
+| `ProjectIntent` value object        | `src/domain/`                  | New                                                               |
+| `BeadPlanner`                       | `src/application/`             | New — PlanV1 exists                                               |
+| `BeadProposal/v1` domain event      | `src/domain/`                  | New — versioned                                                   |
+| `SandboxExecutor` Temporal activity | `src/infrastructure/temporal/` | New — wraps worktree/container/VM providers                       |
+| `WorktreePort` interface            | `src/infrastructure/`          | New — thin adapter over `bd` CLI                                  |
+| `SandboxProviderPort` interface     | `src/application/ports/`       | New — provider-neutral sandbox lifecycle                          |
+| `AgentRuntimePort` interface        | `src/application/ports/`       | New — launch Codex/OpenCode/etc with Portarium hook               |
+| `MachineInvokerPort`                | `src/application/ports/`       | Existing direction — agent/tool invocation, not sandbox lifecycle |
+| `PreviewPort` interface             | `src/application/ports/`       | New — dev server, browser, and snapshot evidence                  |
+| portarium plugin sandbox            | `packages/portarium/`          | Extend (beads 0959/0960)                                          |
+| `@portarium/engine`                 | `packages/engine/`             | Stable                                                            |
+| `ArtifactCollector`                 | `src/infrastructure/`          | New                                                               |
+| `DiffApprovalSurface` API endpoint  | `src/presentation/`            | New                                                               |
+| `MergeExecutor` Temporal activity   | `src/infrastructure/temporal/` | New                                                               |
 
 ---
 
@@ -137,32 +137,32 @@ the workflow activities above.
 
 ## Failure modes
 
-| Failure                       | Detection                                       | Response                                                             |
-| ----------------------------- | ----------------------------------------------- | -------------------------------------------------------------------- |
-| Agent execution loop          | `callLimits` in engine + Temporal heartbeat 60s | Workflow → `NeedsReview`, creates approval request                   |
-| Malformed artifact (CI fails) | `ArtifactCollector` non-zero exit               | `ArtifactFailed`, worktree preserved, bd finish does NOT run         |
+| Failure                       | Detection                                       | Response                                                                    |
+| ----------------------------- | ----------------------------------------------- | --------------------------------------------------------------------------- |
+| Agent execution loop          | `callLimits` in engine + Temporal heartbeat 60s | Workflow → `NeedsReview`, creates approval request                          |
+| Malformed artifact (CI fails) | `ArtifactCollector` non-zero exit               | `ArtifactFailed`, worktree preserved, bd finish does NOT run                |
 | Sandbox provisioning fails    | Provider state/error event                      | `ProvisionFailed`, bead preserved, evidence appended, retry/choose provider |
-| Silent mode downgrade         | Mode evidence does not match policy             | Block approval/merge; require explicit operator approval             |
-| Cleanup fails                 | Provider cleanup result missing or failed       | `CleanupFailed`, bead cannot close until acknowledged or retried     |
-| Approval queue backup         | >5 pending Class A items                        | Stop accepting new HUMAN-APPROVE, new requests → BLOCKED             |
-| Temporal signal loss          | CloudEvent retry with backoff                   | Escalation chain fires if no signal within N hours                   |
-| BeadPlanner overdecomposition | Output validation                               | Proposal gate + maxBeadsPerIntent:20, each bead needs spec reference |
+| Silent mode downgrade         | Mode evidence does not match policy             | Block approval/merge; require explicit operator approval                    |
+| Cleanup fails                 | Provider cleanup result missing or failed       | `CleanupFailed`, bead cannot close until acknowledged or retried            |
+| Approval queue backup         | >5 pending Class A items                        | Stop accepting new HUMAN-APPROVE, new requests → BLOCKED                    |
+| Temporal signal loss          | CloudEvent retry with backoff                   | Escalation chain fires if no signal within N hours                          |
+| BeadPlanner overdecomposition | Output validation                               | Proposal gate + maxBeadsPerIntent:20, each bead needs spec reference        |
 
 ---
 
 ## New domain types needed
 
-| Type                   | Why                                                                                      |
-| ---------------------- | ---------------------------------------------------------------------------------------- |
-| `ProjectIntent`        | Branded value object for trigger input                                                   |
-| `BeadProposal/v1`      | Versioned domain event from BeadPlanner — must be versioned before autonomous production |
-| `AutonomyPolicy`       | Per-workspace tier matrix                                                                |
-| `PolicyTierAssignment` | Explicit PolicyRuleV1 → resolved ExecutionTier                                           |
-| `WorktreeHandle`       | Bead ID + worktree path + branch name                                                    |
-| `ExecutionMode`        | `worktree`, `container`, `vm`, or `remote`                                               |
+| Type                         | Why                                                                                          |
+| ---------------------------- | -------------------------------------------------------------------------------------------- |
+| `ProjectIntent`              | Branded value object for trigger input                                                       |
+| `BeadProposal/v1`            | Versioned domain event from BeadPlanner — must be versioned before autonomous production     |
+| `AutonomyPolicy`             | Per-workspace tier matrix                                                                    |
+| `PolicyTierAssignment`       | Explicit PolicyRuleV1 → resolved ExecutionTier                                               |
+| `WorktreeHandle`             | Bead ID + worktree path + branch name                                                        |
+| `ExecutionMode`              | `worktree`, `container`, `vm`, or `remote`                                                   |
 | `EngineeringRuntimePolicyV1` | Workspace policy for default mode, allowed fallbacks, provider allowlist, and approval rules |
-| `EngineeringSandboxV1` | Provider, sandbox ID, mode, state, TTL, resource limits, and evidence refs               |
-| `SandboxProviderCapability` | Provider support matrix for modes, browser, Docker, snapshots, and offline mode       |
+| `EngineeringSandboxV1`       | Provider, sandbox ID, mode, state, TTL, resource limits, and evidence refs                   |
+| `SandboxProviderCapability`  | Provider support matrix for modes, browser, Docker, snapshots, and offline mode              |
 
 ---
 

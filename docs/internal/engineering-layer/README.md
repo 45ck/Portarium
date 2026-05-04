@@ -38,16 +38,16 @@ Portarium's wedge: **policy evaluation at the action boundary, not the commit bo
 
 ## Document map
 
-| Document                                           | What it covers                                                                                                                      |
-| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| [ux-layout.md](./ux-layout.md)                     | The cockpit UI — T3 Code base layout + Mission Control operational awareness                                                        |
-| [cockpit-integration.md](./cockpit-integration.md) | Exact routes, new components, what to reuse from existing cockpit                                                                   |
-| [system-architecture.md](./system-architecture.md) | Full pipeline: IntentRouter → BeadPlanner → SandboxExecutor → ArtifactCollector → DiffApprovalSurface → MergeExecutor              |
-| [vm-sandbox-execution-plan.md](./vm-sandbox-execution-plan.md) | VM-first sandbox execution plane, provider ports, execution modes, and rollout path |
-| [inspiration-validation-plan.md](./inspiration-validation-plan.md) | How Portarium takes inspiration from T3 Code, Vibe Kanban, and OpenCode, plus validation gates |
-| [hci-principles.md](./hci-principles.md)           | HCI/HAI grounding — levels of automation, trust calibration, operator state machine, "I can sleep" checklist, ironies of automation |
-| [artifacts.md](./artifacts.md)                     | Artifact system — Run/Plan/Approval/Demo/Digest artifacts, demo-machine integration, markdown-first with embedded mp4/gif           |
-| [build-plan.md](./build-plan.md)                   | What to build in what order, with bead assignments                                                                                  |
+| Document                                                           | What it covers                                                                                                                      |
+| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| [ux-layout.md](./ux-layout.md)                                     | The cockpit UI — T3 Code base layout + Mission Control operational awareness                                                        |
+| [cockpit-integration.md](./cockpit-integration.md)                 | Exact routes, new components, what to reuse from existing cockpit                                                                   |
+| [system-architecture.md](./system-architecture.md)                 | Full pipeline: IntentRouter → BeadPlanner → SandboxExecutor → ArtifactCollector → DiffApprovalSurface → MergeExecutor               |
+| [vm-sandbox-execution-plan.md](./vm-sandbox-execution-plan.md)     | VM-first sandbox execution plane, provider ports, execution modes, and rollout path                                                 |
+| [inspiration-validation-plan.md](./inspiration-validation-plan.md) | How Portarium takes inspiration from T3 Code, Vibe Kanban, and OpenCode, plus validation gates                                      |
+| [hci-principles.md](./hci-principles.md)                           | HCI/HAI grounding — levels of automation, trust calibration, operator state machine, "I can sleep" checklist, ironies of automation |
+| [artifacts.md](./artifacts.md)                                     | Artifact system — Run/Plan/Approval/Demo/Digest artifacts, demo-machine integration, markdown-first with embedded mp4/gif           |
+| [build-plan.md](./build-plan.md)                                   | What to build in what order, with bead assignments                                                                                  |
 
 ---
 

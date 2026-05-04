@@ -30,11 +30,11 @@ This README turns those three reports into concrete recommendations that feed th
 
 ## Per-product snapshot
 
-| Product | Repo | License | Activity | Stack | Sandbox? | Hosted coupling | Direct vendor candidate? |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| T3 Code | `pingdotgg/t3code` | MIT | Active (HEAD 2026-05-03) | TS / React / Effect / Bun / Electron | No (worktree only) | No | One small file (`worktreeCleanup.ts`) |
-| Vibe Kanban | `BloopAI/vibe-kanban` | Apache-2.0 | **Sunsetting** | Rust / Axum / SQLx / TS / Tauri | No (host child process) | **Yes** (PostHog/Sentry/Cloud tier) | None (stack divergence + EOL) |
-| OpenCode | `sst/opencode` | MIT | Active (HEAD 2026-05-03) | TS / Bun / Hono / Effect / Solid+OpenTUI | No (host worktree) | Console/paid-tier surfaces | **Yes** (3 small artifacts, attribution-gated) |
+| Product     | Repo                  | License    | Activity                 | Stack                                    | Sandbox?                | Hosted coupling                     | Direct vendor candidate?                       |
+| ----------- | --------------------- | ---------- | ------------------------ | ---------------------------------------- | ----------------------- | ----------------------------------- | ---------------------------------------------- |
+| T3 Code     | `pingdotgg/t3code`    | MIT        | Active (HEAD 2026-05-03) | TS / React / Effect / Bun / Electron     | No (worktree only)      | No                                  | One small file (`worktreeCleanup.ts`)          |
+| Vibe Kanban | `BloopAI/vibe-kanban` | Apache-2.0 | **Sunsetting**           | Rust / Axum / SQLx / TS / Tauri          | No (host child process) | **Yes** (PostHog/Sentry/Cloud tier) | None (stack divergence + EOL)                  |
+| OpenCode    | `sst/opencode`        | MIT        | Active (HEAD 2026-05-03) | TS / Bun / Hono / Effect / Solid+OpenTUI | No (host worktree)      | Console/paid-tier surfaces          | **Yes** (3 small artifacts, attribution-gated) |
 
 ---
 
@@ -43,46 +43,55 @@ This README turns those three reports into concrete recommendations that feed th
 These are the patterns where two or three of the products independently agreed. High confidence that Portarium should adopt these.
 
 ### 1. Worktree-per-task is the unit of isolation
+
 T3 Code (`Thread.worktreePath`), Vibe Kanban (`WorktreeManager` + `vk/<short-uuid>-<slug>` branches), OpenCode (`worktree/index.ts` per session/branch). All three. Portarium's `.trees/<bead>/` flow is the same idea.
 
 **Action**: harden Portarium's worktree lifecycle by adopting Vibe Kanban's pattern: global creation lock keyed on path, configurable workspace root, periodic cleanup loop with env-var kill-switch (`DISABLE_WORKTREE_CLEANUP`-equivalent), `mark_worktree_deleted` rather than hard delete.
 
 ### 2. Diff-as-review-surface, virtualised, route-state-driven
+
 T3 Code's `DiffPanel` + `diffRouteSearch.ts` + `@pierre/diffs` is the cleanest implementation; Vibe Kanban has the equivalent in `ChangesPanelContainer.tsx` with inline-comment-as-follow-up-message.
 
 **Action**: Portarium's `DiffApprovalSurface` adopts URL-state for diff selection so approval evidence is **deep-linkable** (`/engineering/bead/<id>/diff?turn=…&file=…`). Evaluate `react-diff-view` or `@git-diff-view/react` over `@pierre/diffs` to avoid niche dependency.
 
 ### 3. Per-tool approval with deferred/long-poll await
+
 Vibe Kanban: `ExecutorApprovalService` trait — `create_tool_approval` / `wait_tool_approval(id, cancel_token)`. OpenCode: `Permission.ask` creates a `Deferred`, publishes `permission.asked` bus event, parks the agent until reply (`once` / `always` / `reject`).
 
 **Action**: this is the canonical shape for Portarium's overnight approval-wait loop (already captured in `MEMORY.md` as a hard requirement). Adopt the deferred-with-cancel-token pattern; persist the request id durably so cockpit/proxy restart doesn't drop it. Replace any default `Noop` impl with a fail-closed `RequiredApprovalService`.
 
 ### 4. Live approval queue over WebSocket
+
 Vibe Kanban streams JSON-patch deltas of the live approval set on a dedicated WS endpoint. T3 Code has typed push channels (`orchestration.domainEvent`) on a single WebSocket; OpenCode has its `Bus` service publishing typed events the TUI subscribes to.
 
 **Action**: Cockpit's "Awaiting Approval" column subscribes to a `permission.asked` / `permission.replied` stream over WS — JSON-patch deltas (Vibe Kanban) or typed event envelopes (T3 Code). Both work; pick the one that aligns with our existing TanStack Query caching.
 
 ### 5. Tab-grouped workspace inside the task surface
+
 Vibe Kanban's workspace shell: chat / log stream / file tree / changes (diff) / preview browser / process list. T3 Code: chat + diff + terminal drawer. OpenCode (TUI): transcript + dialogs.
 
 **Action**: bead detail Sandbox Route has tabs per `ux-layout.md` already (Preview, Browser, Dev Server, Logs, Files, Diff, Evidence). Vibe Kanban's tab list is the closest practical reference; add **Evidence** as Portarium-specific.
 
 ### 6. Origin-isolated preview proxy
+
 Vibe Kanban runs `crates/preview-proxy` on a separate port and serves the iframe at `{port}.localhost:{proxy}/path` so the preview origin is distinct from the cockpit origin. Quoted: "isolates preview content from the main application for security."
 
 **Action**: Portarium's `PreviewPort` should follow this. Even before VM-backed sandboxes land, a distinct-origin iframe is a credible defense-in-depth boundary.
 
 ### 7. Pluggable provider/agent registry
+
 T3 Code: `ProviderAdapter` + `ProviderService`. Vibe Kanban: per-agent module under `crates/executors/`. OpenCode: `BUNDLED_PROVIDERS` (lazy-imported AI-SDK packages) + `provider` plugin hook.
 
 **Action**: `AgentRuntimePort` mirrors OpenCode's pattern most closely — consume `LanguageModelV3` from `@ai-sdk/provider`, lazy-load adapters, allow plugin extension.
 
 ### 8. Event-sourced orchestration with deterministic test drains
+
 T3 Code's `decider → projector → reactor` model with `DrainableWorker.drain()` for tests is the clearest. Vibe Kanban uses straight Axum routes + tokio tasks; OpenCode uses Effect runtime layers.
 
 **Action**: Portarium's application layer should adopt T3 Code's pattern — pure decider, projector for read model, queue-backed reactors for side effects, all with `drain()` for tests. This eliminates a class of CI flake.
 
 ### 9. ServerReadiness startup gate
+
 T3 Code refuses WS clients until startup barriers complete. OpenCode's `serve` warns but starts even with no password.
 
 **Action**: Portarium control plane refuses cockpit traffic until policy engine, evidence chain, and provider registry are healthy (T3 Code pattern). Make `OPENCODE_SERVER_PASSWORD`-equivalent **mandatory** at boot, never optional (correcting OpenCode's posture).
@@ -94,27 +103,30 @@ T3 Code refuses WS clients until startup barriers complete. OpenCode's `serve` w
 Concrete additions/refinements to `docs/internal/engineering-layer/ux-layout.md`. The base three-panel shell mapping is **validated** by the T3 Code review.
 
 ### Layout
-- **Topbar** (Mission Control compressed): workspace selector · global search · `[N pending]` approval badge · chain-verified indicator · bell. *None of the three reference products has this; it is Portarium-specific.*
+
+- **Topbar** (Mission Control compressed): workspace selector · global search · `[N pending]` approval badge · chain-verified indicator · bell. _None of the three reference products has this; it is Portarium-specific._
 - **Left panel**: bead list, filterable by status / policy tier / actor. (T3 Code Sidebar pattern + Portarium tier filter.)
 - **Center panel**: bead kanban with `Ready → Running → Awaiting Approval → Done` columns. (Vibe Kanban shape + Portarium-specific column.)
 - **Right panel**: selected bead detail — tool call feed + diff + approval gate + evidence entries. (T3 Code DiffPanel pattern + Portarium evidence.)
 - **Status bar**: `7 running · 3 awaiting approval · chain verified`.
 
 ### Bead detail tabs (Sandbox Route)
+
 Adopt Vibe Kanban's tab grouping, extend with Portarium-specific tabs:
 
-| Tab | Source pattern | Portarium addition |
-| --- | --- | --- |
-| Chat / Thread | T3 Code `ChatView` | Tool-call feed annotated with PolicyTier + BlastRadius |
-| Diff | T3 Code `DiffPanel` + `diffRouteSearch.ts` | URL-state deep-link for evidence |
-| Files | Vibe Kanban `FileTreeContainer` | Read-only outside sandbox |
-| Preview | Vibe Kanban `PreviewBrowserContainer` + origin isolation | `PreviewPort`-issued URL only |
-| Dev Server / Logs | Vibe Kanban `LogsContentContainer` | Streamed from inside sandbox |
-| Processes | Vibe Kanban `ProcessListContainer` | Sandbox-scoped only |
-| Terminal | T3 Code `ThreadTerminalDrawer` (PTY over WS) | PTY runs **inside** sandbox, never on host |
-| **Evidence** | *(Portarium-specific)* | Hash-chained bundle: prompts, tool calls, approvals, sandbox attestation, diff hash, PR URL, merge SHA |
+| Tab               | Source pattern                                           | Portarium addition                                                                                     |
+| ----------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Chat / Thread     | T3 Code `ChatView`                                       | Tool-call feed annotated with PolicyTier + BlastRadius                                                 |
+| Diff              | T3 Code `DiffPanel` + `diffRouteSearch.ts`               | URL-state deep-link for evidence                                                                       |
+| Files             | Vibe Kanban `FileTreeContainer`                          | Read-only outside sandbox                                                                              |
+| Preview           | Vibe Kanban `PreviewBrowserContainer` + origin isolation | `PreviewPort`-issued URL only                                                                          |
+| Dev Server / Logs | Vibe Kanban `LogsContentContainer`                       | Streamed from inside sandbox                                                                           |
+| Processes         | Vibe Kanban `ProcessListContainer`                       | Sandbox-scoped only                                                                                    |
+| Terminal          | T3 Code `ThreadTerminalDrawer` (PTY over WS)             | PTY runs **inside** sandbox, never on host                                                             |
+| **Evidence**      | _(Portarium-specific)_                                   | Hash-chained bundle: prompts, tool calls, approvals, sandbox attestation, diff hash, PR URL, merge SHA |
 
 ### Card schema
+
 Borrow Vibe Kanban's issue card baseline (short id, title, status, priority, assignees, tags, comments, sub-issues, relationships, attachments) and add **on every card**:
 
 - `PolicyTierBadge` (`AUTO` / `ASSISTED` / `HUMAN-APPROVE` / `BLOCKED`).
@@ -123,6 +135,7 @@ Borrow Vibe Kanban's issue card baseline (short id, title, status, priority, ass
 - Evidence completeness indicator (icon: provisioning / agent / preview / checks / approval / cleanup).
 
 ### Approval gate
+
 Recast T3 Code's `ComposerPendingApprovalPanel` (or Vibe Kanban's per-tool approval) as the Portarium policy gate, showing:
 
 - Policy ID + decision path.
@@ -134,36 +147,40 @@ Recast T3 Code's `ComposerPendingApprovalPanel` (or Vibe Kanban's per-tool appro
 - `Approve` / `Deny` / `Request changes`.
 
 ### Plan→build approval seam
+
 **Adopt OpenCode's `plan_exit` as the canonical mechanic.** The plan agent halts via a `plan_exit` tool that, in Portarium, triggers a `DiffApprovalSurface` with: plan diff, policy decision, who approved. The synthesized "execute the plan" message is stamped with the approval id and sent to the build agent only after evidence is recorded.
 
 ### Stacked actions
+
 T3 Code's `runStackedAction` (commit → push → publish → open PR) is the right affordance. Portarium's "approve → sign evidence → merge" should use the same staged-progress UI with per-stage rollback.
 
 ### Mobile scope
+
 Mobile = monitoring + snapshots + thread replies + approvals (per existing plan). Live development stays desktop-first. Adopt T3 Code's pairing-token + QR pattern (`pair.tsx`, `REMOTE.md`) as the model for mobile auth.
 
 ### Keybinds
+
 Adopt OpenCode's `config/keybinds.ts` schema (~150 named keybinds, `tui.json` per-keybind override). Notable for Cockpit: `agent_cycle = tab`, `agent_list = <leader>a`, `command_list = ctrl+p`, `session_interrupt = escape`, plus T3 Code's `Ctrl/Cmd-K` command palette.
 
 ---
 
 ## Architecture port decisions (feeds bead-1156, bead-1158)
 
-| Portarium port | Reference shape | Source | Portarium delta |
-| --- | --- | --- | --- |
-| `AgentRuntimePort` | `LanguageModelV3` from `@ai-sdk/provider`, lazy-loaded `BUNDLED_PROVIDERS` map, `provider` plugin hook | OpenCode `provider/provider.ts` | Pre-flight policy hook before model registration; auth scope verified before agent process start; ACP v1 wire protocol with permission surfacing fixed |
-| `SandboxProviderPort` | `experimental_workspace.register(type, adapter)` with `configure / create / remove / target` (`local{directory}` \| `remote{url, headers}`) | OpenCode `packages/plugin/src/index.ts` | **Widen `target` to include `vm` / `container` / `worktree`**; require `evidence` and `ttl` on result; default = `vm`, never silent downgrade |
-| `PreviewPort` | Origin-isolated proxy on distinct port (`{port}.localhost:{proxy}/path`) | Vibe Kanban `crates/preview-proxy` | URLs minted per-sandbox per-TTL, signed; revoked on sandbox destroy |
-| `MachineInvokerPort` | OpenCode's `Auth.Service` shape, but with sandbox-scoped TTL-bounded credentials | OpenCode `auth/` (rejected as-is; pattern only) | Issues credentials *into* the sandbox; expires before sandbox TTL; mandatory boot password |
-| Approval system | `ExecutorApprovalService` trait + WS JSON-patch stream | Vibe Kanban `executors/src/approvals.rs` + `routes/approvals.rs` | Replace `Noop` impl with fail-closed `RequiredApprovalService`; durable persistence so overnight waits survive restart |
-| Permission ruleset | `Action = allow\|deny\|ask`, wildcard rule eval | OpenCode `permission/index.ts` + `evaluate.ts` | Layer `EngineeringRuntimePolicyV1` *above* user config; may upgrade `allow → ask`, never silently downgrade |
-| Plan→build seam | `plan_exit` tool with `Question.Service.ask` halt + synthesized resumption message | OpenCode `tool/plan.ts` | Halt routes through `DiffApprovalSurface`; resumption message stamped with approval id |
-| Plugin hooks | `permission.ask`, `tool.execute.before/after`, `chat.params`, `shell.env`, `experimental_workspace.register` | OpenCode `packages/plugin/src/index.ts` | Mirror named hook surface; allow OpenCode plugins to port via thin adapter; `shell.env` allow-listed only |
-| Reactor framework | Decider → projector → reactor, `DrainableWorker.drain()` | T3 Code `apps/server/src/orchestration/` | Adopt verbatim shape; mint Portarium receipts on `RuntimeReceiptBus` (`sandbox.provisioned`, `agent.turn.quiesced`, `evidence.bundle.finalized`, `policy.decision.recorded`) |
-| Checkpoint/evidence | Hidden git refs per turn, baseline + result | T3 Code `CheckpointStore` | Adopt mechanism; **add hash-chained WORM evidence entry** alongside each ref so the verifier can prove the snapshot |
-| Server readiness gate | Refuse WS clients until startup barriers complete | T3 Code `wsServer/readiness.ts` | Gate on policy engine + evidence chain + provider registry health |
-| Worktree manager | Global creation lock, configurable root, periodic cleanup, kill-switch env | Vibe Kanban `WorktreeManager` | Adopt; `mark_worktree_deleted` rather than hard delete |
-| Cross-language types | Generated from a single contract | T3 Code `packages/contracts` (Effect/Schema), Vibe Kanban `ts-rs`, OpenCode OpenAPI + `@hey-api/openapi-ts` | Stay with Portarium's existing OpenAPI-driven SDK pipeline |
+| Portarium port        | Reference shape                                                                                                                             | Source                                                                                                      | Portarium delta                                                                                                                                                              |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AgentRuntimePort`    | `LanguageModelV3` from `@ai-sdk/provider`, lazy-loaded `BUNDLED_PROVIDERS` map, `provider` plugin hook                                      | OpenCode `provider/provider.ts`                                                                             | Pre-flight policy hook before model registration; auth scope verified before agent process start; ACP v1 wire protocol with permission surfacing fixed                       |
+| `SandboxProviderPort` | `experimental_workspace.register(type, adapter)` with `configure / create / remove / target` (`local{directory}` \| `remote{url, headers}`) | OpenCode `packages/plugin/src/index.ts`                                                                     | **Widen `target` to include `vm` / `container` / `worktree`**; require `evidence` and `ttl` on result; default = `vm`, never silent downgrade                                |
+| `PreviewPort`         | Origin-isolated proxy on distinct port (`{port}.localhost:{proxy}/path`)                                                                    | Vibe Kanban `crates/preview-proxy`                                                                          | URLs minted per-sandbox per-TTL, signed; revoked on sandbox destroy                                                                                                          |
+| `MachineInvokerPort`  | OpenCode's `Auth.Service` shape, but with sandbox-scoped TTL-bounded credentials                                                            | OpenCode `auth/` (rejected as-is; pattern only)                                                             | Issues credentials _into_ the sandbox; expires before sandbox TTL; mandatory boot password                                                                                   |
+| Approval system       | `ExecutorApprovalService` trait + WS JSON-patch stream                                                                                      | Vibe Kanban `executors/src/approvals.rs` + `routes/approvals.rs`                                            | Replace `Noop` impl with fail-closed `RequiredApprovalService`; durable persistence so overnight waits survive restart                                                       |
+| Permission ruleset    | `Action = allow\|deny\|ask`, wildcard rule eval                                                                                             | OpenCode `permission/index.ts` + `evaluate.ts`                                                              | Layer `EngineeringRuntimePolicyV1` _above_ user config; may upgrade `allow → ask`, never silently downgrade                                                                  |
+| Plan→build seam       | `plan_exit` tool with `Question.Service.ask` halt + synthesized resumption message                                                          | OpenCode `tool/plan.ts`                                                                                     | Halt routes through `DiffApprovalSurface`; resumption message stamped with approval id                                                                                       |
+| Plugin hooks          | `permission.ask`, `tool.execute.before/after`, `chat.params`, `shell.env`, `experimental_workspace.register`                                | OpenCode `packages/plugin/src/index.ts`                                                                     | Mirror named hook surface; allow OpenCode plugins to port via thin adapter; `shell.env` allow-listed only                                                                    |
+| Reactor framework     | Decider → projector → reactor, `DrainableWorker.drain()`                                                                                    | T3 Code `apps/server/src/orchestration/`                                                                    | Adopt verbatim shape; mint Portarium receipts on `RuntimeReceiptBus` (`sandbox.provisioned`, `agent.turn.quiesced`, `evidence.bundle.finalized`, `policy.decision.recorded`) |
+| Checkpoint/evidence   | Hidden git refs per turn, baseline + result                                                                                                 | T3 Code `CheckpointStore`                                                                                   | Adopt mechanism; **add hash-chained WORM evidence entry** alongside each ref so the verifier can prove the snapshot                                                          |
+| Server readiness gate | Refuse WS clients until startup barriers complete                                                                                           | T3 Code `wsServer/readiness.ts`                                                                             | Gate on policy engine + evidence chain + provider registry health                                                                                                            |
+| Worktree manager      | Global creation lock, configurable root, periodic cleanup, kill-switch env                                                                  | Vibe Kanban `WorktreeManager`                                                                               | Adopt; `mark_worktree_deleted` rather than hard delete                                                                                                                       |
+| Cross-language types  | Generated from a single contract                                                                                                            | T3 Code `packages/contracts` (Effect/Schema), Vibe Kanban `ts-rs`, OpenCode OpenAPI + `@hey-api/openapi-ts` | Stay with Portarium's existing OpenAPI-driven SDK pipeline                                                                                                                   |
 
 ---
 
@@ -175,14 +192,15 @@ Default rule: **concept reuse, not file vendoring.** Vendoring is a narrow excep
 
 These are small, self-contained, non-load-bearing. License-compatible. Vendoring saves more effort than re-derivation.
 
-| File | Source | License | LOC | Notes |
-| --- | --- | --- | --- | --- |
-| `permission/evaluate.ts` | OpenCode | MIT | ~15 | Wildcard rule evaluator; almost no Portarium-specific cost to re-derive, but stable enough to vendor |
-| `permission/index.ts` (schemas only) | OpenCode | MIT | ~50 | `Action` / `Rule` / `Ruleset` / `RejectedError` / `CorrectedError`. Rename to Portarium branded primitives. |
-| `config/keybinds.ts` (schema) | OpenCode | MIT | ~200 | Default keymap users carry across products; vendoring gives muscle-memory parity |
-| `worktreeCleanup.ts` + tests | T3 Code | MIT | ~46 + tests | **Borderline.** Trivial to re-derive; the tests are the value. Decide at implementation time. |
+| File                                 | Source   | License | LOC         | Notes                                                                                                       |
+| ------------------------------------ | -------- | ------- | ----------- | ----------------------------------------------------------------------------------------------------------- |
+| `permission/evaluate.ts`             | OpenCode | MIT     | ~15         | Wildcard rule evaluator; almost no Portarium-specific cost to re-derive, but stable enough to vendor        |
+| `permission/index.ts` (schemas only) | OpenCode | MIT     | ~50         | `Action` / `Rule` / `Ruleset` / `RejectedError` / `CorrectedError`. Rename to Portarium branded primitives. |
+| `config/keybinds.ts` (schema)        | OpenCode | MIT     | ~200        | Default keymap users carry across products; vendoring gives muscle-memory parity                            |
+| `worktreeCleanup.ts` + tests         | T3 Code  | MIT     | ~46 + tests | **Borderline.** Trivial to re-derive; the tests are the value. Decide at implementation time.               |
 
 **Vendoring rule for all of the above**:
+
 - Prepend `// Portions adapted from <repo>@<sha> (<license>, Copyright ...)` at the top of the vendored file.
 - Add the upstream LICENSE notice to a new `THIRD_PARTY_NOTICES.md` at the repo root.
 - Record the upstream SHA the snippet was taken from so we can re-pull updates.

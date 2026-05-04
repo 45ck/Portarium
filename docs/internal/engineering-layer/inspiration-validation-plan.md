@@ -21,11 +21,11 @@ style; it is the workflow primitive: work item -> isolated execution -> review
 
 ## Source roles
 
-| Source | Use as inspiration for | Do not copy |
-| --- | --- | --- |
-| T3 Code | Minimal project/session shell, quick agent launch, desktop-like flow, provider auth preflight | Branding, exact layout, release packaging assumptions |
-| Vibe Kanban | Board-first planning, branch/workspace per task, terminal/dev server/diff/browser review loop | Unsafe local execution defaults, hosted/commercial assumptions |
-| OpenCode | Agent runtime UX, plan/build agent modes, provider-agnostic configuration, client/server model | Agent implementation internals unless explicitly vendored and licensed |
+| Source      | Use as inspiration for                                                                         | Do not copy                                                            |
+| ----------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| T3 Code     | Minimal project/session shell, quick agent launch, desktop-like flow, provider auth preflight  | Branding, exact layout, release packaging assumptions                  |
+| Vibe Kanban | Board-first planning, branch/workspace per task, terminal/dev server/diff/browser review loop  | Unsafe local execution defaults, hosted/commercial assumptions         |
+| OpenCode    | Agent runtime UX, plan/build agent modes, provider-agnostic configuration, client/server model | Agent implementation internals unless explicitly vendored and licensed |
 
 If source code is imported from any repo, it must be treated as a dependency or
 vendored component with license review, attribution, update ownership, and a
@@ -131,11 +131,11 @@ This keeps the product testable before VM infrastructure is perfect.
 These beads must stay in planning/design mode until their acceptance criteria
 are satisfied. They are not implementation authorization by themselves.
 
-| Bead | Focus |
-| --- | --- |
+| Bead        | Focus                                                                   |
+| ----------- | ----------------------------------------------------------------------- |
 | `bead-1156` | Validate VM-first sandbox architecture and naming before implementation |
-| `bead-1157` | Refine Cockpit engineering sandbox UX from reference products |
-| `bead-1158` | Select provider rollout strategy across worktree/container/VM/remote |
-| `bead-1159` | Threat-model governed engineering sandbox modes |
-| `bead-1160` | Define the validation matrix and merge-blocking evidence gates |
-| `bead-1161` | Review reference products and reuse/license boundaries |
+| `bead-1157` | Refine Cockpit engineering sandbox UX from reference products           |
+| `bead-1158` | Select provider rollout strategy across worktree/container/VM/remote    |
+| `bead-1159` | Threat-model governed engineering sandbox modes                         |
+| `bead-1160` | Define the validation matrix and merge-blocking evidence gates          |
+| `bead-1161` | Review reference products and reuse/license boundaries                  |

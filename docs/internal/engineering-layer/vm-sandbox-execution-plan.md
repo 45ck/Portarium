@@ -30,12 +30,12 @@ Work item or bead selected
 
 ## Execution modes
 
-| Mode | Purpose | Isolation | Default use |
-| --- | --- | --- | --- |
-| `worktree` | Fast local edit loop | Git/index isolation only | Read-only exploration, docs, tiny trusted edits |
-| `container` | Repeatable dev environment | Shared host kernel | Normal low/medium risk tasks and CI-like checks |
-| `vm` | Governed agent development | Guest kernel boundary | Default for autonomous coding, browser automation, package installs, untrusted repos |
-| `remote` | Hosted sandbox provider | Provider boundary | Burst capacity, pilot demos, or machines without local virtualization |
+| Mode        | Purpose                    | Isolation                | Default use                                                                          |
+| ----------- | -------------------------- | ------------------------ | ------------------------------------------------------------------------------------ |
+| `worktree`  | Fast local edit loop       | Git/index isolation only | Read-only exploration, docs, tiny trusted edits                                      |
+| `container` | Repeatable dev environment | Shared host kernel       | Normal low/medium risk tasks and CI-like checks                                      |
+| `vm`        | Governed agent development | Guest kernel boundary    | Default for autonomous coding, browser automation, package installs, untrusted repos |
+| `remote`    | Hosted sandbox provider    | Provider boundary        | Burst capacity, pilot demos, or machines without local virtualization                |
 
 The UI should not present this as a casual toggle. It is an `Execution Mode`
 decision. Changing mode after provisioning requires `Rebuild Sandbox`, and the
@@ -111,13 +111,13 @@ interface PreviewPort {
 
 Use a provider registry, not hard-coded runtime decisions.
 
-| Provider | Local dev | Production | Notes |
-| --- | --- | --- | --- |
-| `local-worktree` | Yes | No by default | Baseline for existing build plan and fast docs work |
-| `docker-devcontainer` | Yes | Limited | Uses existing `.devcontainer` shape for repeatable builds |
-| `docker-sandbox` | Yes, if installed | Candidate | Strong next provider for VM-like local autonomy |
-| `atelier-kata` | No on Windows host | Yes | Self-hosted VM isolation on Linux/KVM/Kubernetes |
-| `remote-devbox` | Optional | Optional | E2B, Runloop, Codespaces, or other hosted backends |
+| Provider              | Local dev          | Production    | Notes                                                     |
+| --------------------- | ------------------ | ------------- | --------------------------------------------------------- |
+| `local-worktree`      | Yes                | No by default | Baseline for existing build plan and fast docs work       |
+| `docker-devcontainer` | Yes                | Limited       | Uses existing `.devcontainer` shape for repeatable builds |
+| `docker-sandbox`      | Yes, if installed  | Candidate     | Strong next provider for VM-like local autonomy           |
+| `atelier-kata`        | No on Windows host | Yes           | Self-hosted VM isolation on Linux/KVM/Kubernetes          |
+| `remote-devbox`       | Optional           | Optional      | E2B, Runloop, Codespaces, or other hosted backends        |
 
 Requested provider choice is policy input, not authority. A workspace can
 say: "all autonomous coding defaults to `vm`; docs-only may use `worktree`;

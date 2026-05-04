@@ -38,11 +38,11 @@ in the host?
 
 ## Options Considered
 
-| Option | Summary | Generic fit | Security fit | Delivery cost | Decision |
-| --- | --- | --- | --- | --- | --- |
-| A | Expose the existing map route as the extension surface | Low | Medium | Low | Rejected |
-| B | Add a generic `CockpitMapWorkbench` mounted by route components | High | High | Medium | Selected |
-| C | Make all map layers and panels manifest-driven now | Medium | Medium | High | Deferred |
+| Option | Summary                                                         | Generic fit | Security fit | Delivery cost | Decision |
+| ------ | --------------------------------------------------------------- | ----------- | ------------ | ------------- | -------- |
+| A      | Expose the existing map route as the extension surface          | Low         | Medium       | Low           | Rejected |
+| B      | Add a generic `CockpitMapWorkbench` mounted by route components | High        | High         | Medium        | Selected |
+| C      | Make all map layers and panels manifest-driven now              | Medium      | Medium       | High          | Deferred |
 
 ### Option A: Expose Existing Route
 
