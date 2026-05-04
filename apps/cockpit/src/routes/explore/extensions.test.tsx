@@ -194,6 +194,13 @@ describe('external extensions route', () => {
     expect(screen.getByText('/external/example-reference/details/$itemId')).toBeTruthy();
     expect(screen.getByText('Open extension reference')).toBeTruthy();
     expect(screen.getByText('G X')).toBeTruthy();
+    expect(screen.getAllByRole('link', { name: 'Open Reference Overview' }).length).toBe(2);
+    const detailLink = screen.getByRole('link', {
+      name: 'Open sample Reference Detail',
+    }) as HTMLAnchorElement;
+    expect(detailLink.getAttribute('href')).toBe(
+      '/external/example-reference/details/sample-itemId',
+    );
     expect(screen.getByText('Read reference extension overview data')).toBeTruthy();
     expect(screen.getByText('Inspect reference extension details')).toBeTruthy();
     expect(screen.getAllByText(/audit: enable, disable, upgrade/).length).toBeGreaterThan(0);

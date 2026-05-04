@@ -1,3 +1,4 @@
+// cspell:words nums
 import { createRoute } from '@tanstack/react-router';
 import {
   AlertTriangle,
@@ -11,6 +12,7 @@ import type { ReactNode } from 'react';
 import { Route as rootRoute } from '../__root';
 import { PageHeader } from '@/components/cockpit/page-header';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useCockpitExtensionContext } from '@/hooks/queries/use-cockpit-extension-context';
 import { resolveCockpitExtensionServerAccess } from '@/lib/extensions/access-context';
@@ -153,6 +155,8 @@ function ExtensionCard({ extension }: { extension: ResolvedCockpitExtension }) {
               key: route.id,
               label: route.title,
               meta: route.path,
+              href: getRouteLaunchHref(route.path),
+              actionLabel: route.path.includes('$') ? 'Open sample' : 'Open',
             }))}
           />
         ) : (
@@ -174,6 +178,8 @@ function ExtensionCard({ extension }: { extension: ResolvedCockpitExtension }) {
               key: item.id,
               label: item.title,
               meta: `${item.to} (${item.surfaces.join(', ')})`,
+              href: item.to,
+              actionLabel: 'Open',
             }))}
           />
         ) : (
@@ -280,7 +286,13 @@ function ExtensionSection({
 }: {
   title: string;
   icon: ReactNode;
-  items: readonly { key: string; label: string; meta?: string }[];
+  items: readonly {
+    key: string;
+    label: string;
+    meta?: string;
+    href?: string | null;
+    actionLabel?: string;
+  }[];
 }) {
   return (
     <section className="space-y-2">
@@ -291,8 +303,22 @@ function ExtensionSection({
       <div className="space-y-2">
         {items.map((item) => (
           <div key={item.key} className="rounded-md border border-border p-2">
-            <p className="text-sm font-medium">{item.label}</p>
-            {item.meta ? <p className="mt-0.5 text-xs text-muted-foreground">{item.meta}</p> : null}
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <p className="text-sm font-medium">{item.label}</p>
+                {item.meta ? (
+                  <p className="mt-0.5 break-words text-xs text-muted-foreground">{item.meta}</p>
+                ) : null}
+              </div>
+              {item.href ? (
+                <Button variant="outline" size="xs" asChild>
+                  <a href={item.href} aria-label={`${item.actionLabel ?? 'Open'} ${item.label}`}>
+                    <ExternalLink className="h-3 w-3" />
+                    {item.actionLabel ?? 'Open'}
+                  </a>
+                </Button>
+              ) : null}
+            </div>
           </div>
         ))}
       </div>
@@ -333,6 +359,19 @@ function getStatusBadgeVariant(status: ResolvedCockpitExtension['status']) {
     return 'destructive';
   }
   return 'secondary';
+}
+
+function getRouteLaunchHref(path: string): string | null {
+  const segments = path.split('/');
+  const launchSegments = segments.map((segment) => {
+    if (!segment.startsWith('$')) return segment;
+    const parameterName = segment.slice(1);
+    return parameterName ? `sample-${parameterName}` : null;
+  });
+
+  return launchSegments.every((segment): segment is string => typeof segment === 'string')
+    ? launchSegments.join('/')
+    : null;
 }
 
 export const Route = createRoute({

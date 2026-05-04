@@ -109,6 +109,7 @@ describe('projectCockpitShellNavigation', () => {
     expect(projection.sidebarSections[0]?.items?.map((item) => item.label)).toEqual([
       'Inbox',
       'Dashboard',
+      'Projects',
       'Work Items',
     ]);
   });
