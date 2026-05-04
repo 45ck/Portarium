@@ -19,6 +19,7 @@ Architecture Decision Records live in `docs/internal/adr/`.
 - Cockpit and Portarium plugin extensibility: `docs/internal/adr/ADR-0141-cockpit-portarium-plugin-extensibility.md`
 - Approval execution atomic claims: `docs/internal/adr/ADR-0142-approval-execution-atomic-claim-cas.md`
 - Beads sync compatibility wrapper: `docs/internal/adr/ADR-0144-beads-sync-compatibility-wrapper.md`
+- Generic Cockpit plugin host control plane: `docs/internal/adr/ADR-0145-generic-cockpit-plugin-host-control-plane.md`
 
 ## Working rule
 

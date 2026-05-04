@@ -4,6 +4,7 @@ import {
   COCKPIT_EXTENSION_PERSONAS,
   COCKPIT_EXTENSION_PRIVACY_CLASSES,
   COCKPIT_EXTENSION_SURFACES,
+  COCKPIT_EXTENSION_WIDGET_SURFACES,
   type CockpitExtensionGuard,
   type CockpitExtensionManifestV1,
   type CockpitExtensionPackageRef,
@@ -48,6 +49,7 @@ const allowedSurfaces = new Set<string>(COCKPIT_EXTENSION_SURFACES);
 const allowedPersonas = new Set<string>(COCKPIT_EXTENSION_PERSONAS);
 const allowedPrivacyClasses = new Set<string>(COCKPIT_EXTENSION_PRIVACY_CLASSES);
 const allowedIcons = new Set<string>(COCKPIT_EXTENSION_ICONS);
+const allowedWidgetSurfaces = new Set<string>(COCKPIT_EXTENSION_WIDGET_SURFACES);
 const forbiddenManifestKeys = new Set([
   'entry',
   'entrypoint',
@@ -134,6 +136,8 @@ function validateManifest(
   validateRoutes(manifest, routeModuleIds, problems);
   validateNavItems(manifest, problems);
   validateCommands(manifest, problems);
+  validateDataScopes(manifest, problems);
+  validateWidgets(manifest, problems);
 
   return problems;
 }
@@ -390,6 +394,111 @@ function validateCommands(
   }
 }
 
+function validateDataScopes(
+  manifest: CockpitExtensionManifestV1,
+  problems: CockpitExtensionRegistryProblem[],
+) {
+  const scopeIds = new Map<string, string>();
+
+  for (const scope of manifest.dataScopes ?? []) {
+    addDuplicateProblem(scopeIds, scope.id, manifest.id, 'data scope id', {
+      code: 'duplicate-data-scope-id',
+      extensionId: manifest.id,
+      itemId: scope.id,
+      problems,
+    });
+    if (scope.access !== 'read') {
+      problems.push({
+        code: 'invalid-data-scope-access',
+        message: `Data scope "${scope.id}" must declare read-only access.`,
+        extensionId: manifest.id,
+        itemId: scope.id,
+      });
+    }
+    if (!scope.guard || scope.guard.personas.length === 0) {
+      problems.push({
+        code: 'missing-route-guard',
+        message: `Data scope "${scope.id}" must declare host-owned guard metadata.`,
+        extensionId: manifest.id,
+        itemId: scope.id,
+      });
+      continue;
+    }
+    validateGuard(manifest.id, scope.id, scope.guard, problems);
+    validatePermissionGrantReferences(manifest, scope.id, scope.permissionGrantIds, problems);
+    validatePermissionGuardCoverage(
+      manifest,
+      scope.id,
+      scope.permissionGrantIds,
+      scope.guard,
+      problems,
+    );
+    validateReadOnlyPermissionGrants(manifest, scope.id, scope.permissionGrantIds, problems);
+  }
+}
+
+function validateWidgets(
+  manifest: CockpitExtensionManifestV1,
+  problems: CockpitExtensionRegistryProblem[],
+) {
+  const widgetIds = new Map<string, string>();
+  const localRoutes = new Set(manifest.routes.map((route) => route.id));
+  const dataScopeIds = new Set((manifest.dataScopes ?? []).map((scope) => scope.id));
+
+  for (const widget of manifest.widgets ?? []) {
+    addDuplicateProblem(widgetIds, widget.id, manifest.id, 'widget id', {
+      code: 'duplicate-widget-id',
+      extensionId: manifest.id,
+      itemId: widget.id,
+      problems,
+    });
+    if (!allowedWidgetSurfaces.has(widget.surface)) {
+      problems.push({
+        code: 'invalid-widget-surface',
+        message: `Widget "${widget.id}" uses unsupported surface "${widget.surface}".`,
+        extensionId: manifest.id,
+        itemId: widget.id,
+      });
+    }
+    if (widget.routeId && !localRoutes.has(widget.routeId)) {
+      problems.push({
+        code: 'missing-route',
+        message: `Widget "${widget.id}" references missing route "${widget.routeId}".`,
+        extensionId: manifest.id,
+        itemId: widget.id,
+      });
+    }
+    for (const dataScopeId of widget.dataScopeIds ?? []) {
+      if (!dataScopeIds.has(dataScopeId)) {
+        problems.push({
+          code: 'missing-data-scope',
+          message: `Widget "${widget.id}" references missing data scope "${dataScopeId}".`,
+          extensionId: manifest.id,
+          itemId: widget.id,
+        });
+      }
+    }
+    if (!widget.guard || widget.guard.personas.length === 0) {
+      problems.push({
+        code: 'missing-route-guard',
+        message: `Widget "${widget.id}" must declare host-owned guard metadata.`,
+        extensionId: manifest.id,
+        itemId: widget.id,
+      });
+      continue;
+    }
+    validateGuard(manifest.id, widget.id, widget.guard, problems);
+    validatePermissionGrantReferences(manifest, widget.id, widget.permissionGrantIds, problems);
+    validatePermissionGuardCoverage(
+      manifest,
+      widget.id,
+      widget.permissionGrantIds,
+      widget.guard,
+      problems,
+    );
+  }
+}
+
 function validateGovernanceControls(
   manifest: CockpitExtensionManifestV1,
   problems: CockpitExtensionRegistryProblem[],
@@ -450,6 +559,32 @@ function validateGovernanceControls(
       extensionId: manifest.id,
       itemId: grantId,
     });
+  }
+}
+
+function validateReadOnlyPermissionGrants(
+  manifest: CockpitExtensionManifestV1,
+  itemId: string,
+  permissionGrantIds: readonly string[] | undefined,
+  problems: CockpitExtensionRegistryProblem[],
+) {
+  if (!permissionGrantIds) return;
+  const grants = new Map(manifest.governance?.permissions.map((grant) => [grant.id, grant]) ?? []);
+  for (const grantId of permissionGrantIds) {
+    const grant = grants.get(grantId);
+    if (!grant) continue;
+    if (
+      grant.kind !== 'data-query' ||
+      grant.policySemantics !== 'authorization-required' ||
+      grant.evidenceSemantics !== 'read-audited-by-control-plane'
+    ) {
+      problems.push({
+        code: 'invalid-data-scope-permission',
+        message: `Data scope "${itemId}" must reference read-only data-query permission grants.`,
+        extensionId: manifest.id,
+        itemId,
+      });
+    }
   }
 }
 

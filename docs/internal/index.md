@@ -27,3 +27,4 @@ Use this index for maintainer-facing docs, architecture records, operational run
 - ADR archives: `docs/internal/ADRs-v0.md`
 - ADR amendments: `docs/internal/ADR-amendments-and-new-ADRs.md`
 - Developer portal plan: `docs/internal/developer-portal-plan.md`
+- Generic Cockpit plugin host plan: `docs/internal/ui/cockpit/generic-plugin-host-implementation-plan.md`

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   CockpitExtensionManifestConformanceError,
   assertCockpitExtensionManifestV1Conforms,
+  createCockpitExtensionRegistrationV1,
   createCockpitExtensionManifestV1ConformanceReport,
   type CockpitExtensionManifestV1,
 } from './index.js';
@@ -69,6 +70,37 @@ const manifest = {
       },
       permissionGrantIds: ['example.read'],
       shortcut: 'G E',
+    },
+  ],
+  widgets: [
+    {
+      id: 'example-summary-widget',
+      title: 'Example summary',
+      surface: 'dashboard',
+      routeId: 'example-overview',
+      guard: {
+        personas: ['Operator'],
+        requiredCapabilities: ['extension:read'],
+        requiredApiScopes: ['extensions.read'],
+        privacyClasses: ['internal'],
+      },
+      permissionGrantIds: ['example.read'],
+      dataScopeIds: ['example.summary'],
+    },
+  ],
+  dataScopes: [
+    {
+      id: 'example.summary',
+      title: 'Example summary',
+      resource: 'example.summary',
+      access: 'read',
+      guard: {
+        personas: ['Operator'],
+        requiredCapabilities: ['extension:read'],
+        requiredApiScopes: ['extensions.read'],
+        privacyClasses: ['internal'],
+      },
+      permissionGrantIds: ['example.read'],
     },
   ],
   governance: {
@@ -205,6 +237,91 @@ describe('cockpit extension SDK conformance', () => {
         },
       }),
     ).toThrow(CockpitExtensionManifestConformanceError);
+  });
+
+  it('registers a conforming external package and projects read-only permission metadata', () => {
+    const registration = createCockpitExtensionRegistrationV1({
+      manifest,
+      packageRef: {
+        packageName: '@example/cockpit-extension',
+        version: '0.1.0',
+      },
+      workspacePackRefs: [{ packId: 'example.extension' }],
+      routeModules: [
+        {
+          routeId: 'example-overview',
+          loadModule: () => Promise.resolve({}),
+        },
+        {
+          routeId: 'example-detail',
+          loadModule: () => Promise.resolve({}),
+        },
+      ],
+    });
+
+    expect(registration.conformance.conforms).toBe(true);
+    expect(registration.readOnlyPermissions).toEqual([
+      {
+        extensionId: 'example.extension',
+        dataScopeId: 'example.summary',
+        permissionGrantId: 'example.read',
+        title: 'Example summary',
+        resource: 'example.summary',
+        requiredCapabilities: ['extension:read'],
+        requiredApiScopes: ['extensions.read'],
+        privacyClasses: ['internal'],
+        auditEventTypes: ['cockpit.extension.data.read'],
+      },
+    ]);
+  });
+
+  it('reports widget and read-only data scope contract blockers', () => {
+    const report = createCockpitExtensionManifestV1ConformanceReport({
+      manifest: {
+        ...manifest,
+        widgets: [
+          {
+            ...manifest.widgets[0]!,
+            surface: 'unknown' as never,
+            routeId: 'missing-route',
+            dataScopeIds: ['missing-scope'],
+          },
+        ],
+        dataScopes: [
+          {
+            ...manifest.dataScopes[0]!,
+            access: 'write' as never,
+            permissionGrantIds: ['example.governed'],
+          },
+        ],
+        governance: {
+          ...manifest.governance,
+          permissions: [
+            ...manifest.governance.permissions,
+            {
+              id: 'example.governed',
+              kind: 'governed-action',
+              title: 'Propose governed action',
+              requiredCapabilities: ['extension:read'],
+              requiredApiScopes: ['extensions.read'],
+              policySemantics: 'policy-approval-evidence-required',
+              evidenceSemantics: 'evidence-required-before-response',
+              auditEventTypes: ['cockpit.extension.action.propose'],
+            },
+          ],
+        },
+      },
+    });
+
+    expect(report.problems.map((problem) => problem.code)).toEqual(
+      expect.arrayContaining([
+        'invalid-widget-surface',
+        'missing-route',
+        'missing-data-scope',
+        'invalid-data-scope-access',
+        'invalid-data-scope-permission',
+      ]),
+    );
   });
 
   it('rejects executable and browser egress manifest fields', () => {

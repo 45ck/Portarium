@@ -11,6 +11,7 @@ This folder contains a low-fidelity, clickable prototype for the Portarium Cockp
 - `agent-machine-runtime-design.md` covers agent and machine capability visibility.
 - `governance-policy-design.md` covers Policy and Execution Tier control surfaces.
 - `ia-baseline.md` covers the navigation and information architecture baseline.
+- `generic-plugin-host-implementation-plan.md` covers the reusable Cockpit plugin host/control-plane implementation plan.
 
 ## How To View
 
