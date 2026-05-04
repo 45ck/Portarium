@@ -14,6 +14,9 @@ export interface ExternalRouteComponentProps {
   route: CockpitExtensionRouteRef;
   extension: ResolvedCockpitExtension;
   params: Readonly<Record<string, string>>;
+  pathname?: string;
+  searchParams?: Readonly<Record<string, string | undefined>>;
+  hash?: string;
 }
 
 export type ExternalRouteComponent = ComponentType<ExternalRouteComponentProps>;

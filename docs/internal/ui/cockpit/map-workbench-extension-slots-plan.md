@@ -22,11 +22,11 @@ adapters over that contract.
 
 Selected option:
 
-| Option | Description | Outcome |
-| --- | --- | --- |
-| A | Expose the existing domain-specific map route as the extension surface | Rejected. It would freeze one domain's terminology and data shape into the platform contract. |
-| B | Add a generic `CockpitMapWorkbench` that domain routes mount and adapt | Selected. It reuses the existing layout patterns while keeping the host boundary generic. |
-| C | Make every layer and panel fully manifest-driven immediately | Deferred. The current extension runtime hosts routes, but panel/widget projection and map data scopes are not mature enough yet. |
+| Option | Description                                                            | Outcome                                                                                                                          |
+| ------ | ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| A      | Expose the existing domain-specific map route as the extension surface | Rejected. It would freeze one domain's terminology and data shape into the platform contract.                                    |
+| B      | Add a generic `CockpitMapWorkbench` that domain routes mount and adapt | Selected. It reuses the existing layout patterns while keeping the host boundary generic.                                        |
+| C      | Make every layer and panel fully manifest-driven immediately           | Deferred. The current extension runtime hosts routes, but panel/widget projection and map data scopes are not mature enough yet. |
 
 ## Design Drivers
 
@@ -77,49 +77,71 @@ daemons, or arbitrary browser origins.
 ## Proposed Contract Shape
 
 ```ts
-export interface CockpitMapWorkbenchProps<TEntity, TLayer> {
+export interface MapHostWorkbenchProps<TEntity, TLayer, TCommandPayload> {
   title: string;
-  description?: string;
-  layers: readonly CockpitMapLayerContribution<TLayer>[];
-  entities: readonly CockpitMapEntity<TEntity>[];
-  selection: CockpitMapSelectionState;
-  selectionCodec: CockpitMapSelectionCodec;
-  panels: CockpitMapPanelContributions<TEntity>;
-  commands?: readonly CockpitMapCommandContribution<TEntity>[];
-  dataState: CockpitMapDataState;
+  subtitle?: string;
+  dataState: MapHostDataState;
+  map: ReactNode;
+  tabs: readonly MapHostPanelTab[];
+  activeTab: string;
+  onTabChange: (tabId: string) => void;
+  panel: ReactNode;
+  layers?: readonly MapHostLayerContribution<TLayer>[];
+  entities?: readonly MapHostEntity<TEntity>[];
+  selection?: MapHostSelectionState;
+  panels?: readonly MapHostPanelContribution<TEntity, TCommandPayload>[];
+  commands?: readonly MapHostCommandContribution<TCommandPayload>[];
 }
 
-export interface CockpitMapEntity<TEntity> {
+export interface MapHostEntity<TEntity> {
   id: string;
   label: string;
   kind: string;
-  floorId?: string;
+  layerId?: string;
   geometryRef?: string;
-  status?: "normal" | "warning" | "critical" | "unknown";
-  privacyClass: "public" | "internal" | "restricted" | "sensitive";
+  locationRef?: string;
+  status?: 'normal' | 'warning' | 'critical' | 'unknown';
+  privacyClass: MapHostPrivacyClass;
+  freshness: MapHostFreshnessSummary;
   payload: TEntity;
 }
 
-export interface CockpitMapLayerContribution<TLayer> {
+export interface MapHostLayerContribution<TLayer> {
   id: string;
   label: string;
   kind: string;
-  defaultVisible: boolean;
-  freshness?: CockpitFreshnessSummary;
-  privacyClass: "public" | "internal" | "restricted" | "sensitive";
-  layer: TLayer;
+  enabled: boolean;
+  defaultEnabled?: boolean;
+  privacyClass: MapHostPrivacyClass;
+  freshness: MapHostFreshnessSummary;
+  payload: TLayer;
 }
 
-export interface CockpitMapPanelContributions<TEntity> {
-  listPanel: CockpitMapPanelRenderer<TEntity>;
-  detailPanel: CockpitMapPanelRenderer<TEntity>;
-  evidencePanel?: CockpitMapPanelRenderer<TEntity>;
-  systemsPanel?: CockpitMapPanelRenderer<TEntity>;
+export interface MapHostPanelContribution<TEntity, TCommandPayload> {
+  id: string;
+  label: string;
+  privacyClass: MapHostPrivacyClass;
+  freshness: MapHostFreshnessSummary;
+  render: (context: MapHostPanelRenderContext<TEntity, TCommandPayload>) => ReactNode;
+}
+
+export interface MapHostCommandContribution<TCommandPayload> {
+  id: string;
+  label: string;
+  scope: 'workbench' | 'selection';
+  privacyClass: MapHostPrivacyClass;
+  freshness: MapHostFreshnessSummary;
+  createProposal: (
+    context: MapHostCommandContext,
+  ) => MapHostGovernedActionProposal<TCommandPayload>;
 }
 ```
 
-The exact names can change during implementation. The important shape is that
-the host receives typed contributions and owns the workbench shell.
+The public implementation currently lives in
+`apps/cockpit/src/components/cockpit/map-host/types.ts`. Existing
+`MapWorkbenchShell` callers can continue to pass only the shell-oriented props;
+layer, entity, panel, and command contribution arrays are additive adapter
+metadata for extension-side routes.
 
 ## UX Model
 
@@ -144,6 +166,8 @@ Mobile:
 - Direct `fetch`, remote script loading, iframes, raw links to data origins, and
   browser storage of source payloads are outside the allowed model.
 - Every layer and panel contribution declares privacy class and freshness.
+- Entity and command contributions also declare privacy class and freshness so
+  adapter code cannot hide stale or restricted context behind panel rendering.
 - Missing privacy or freshness metadata degrades the contribution or fails the
   route closed.
 - Action controls create governed proposals only. Approval, execution, audit,

@@ -3,11 +3,17 @@ import { ExternalRouteHost } from '@/components/cockpit/extensions/external-rout
 import { Route as rootRoute } from '../__root';
 
 function ExternalRoutePage() {
-  const pathname = useRouterState({
-    select: (state) => state.location.pathname,
+  const location = useRouterState({
+    select: (state) => state.location,
   });
 
-  return <ExternalRouteHost pathname={pathname} />;
+  return (
+    <ExternalRouteHost
+      pathname={location.pathname}
+      searchParams={location.search}
+      hash={location.hash}
+    />
+  );
 }
 
 export const Route = createRoute({

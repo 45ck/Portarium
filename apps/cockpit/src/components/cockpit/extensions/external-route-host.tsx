@@ -16,7 +16,15 @@ import {
 import { resolveExternalRoute, type ExternalRouteResolution } from './external-route-adapter';
 import { HOSTED_EXTERNAL_ROUTE_COMPONENTS } from './external-route-components';
 
-export function ExternalRouteHost({ pathname }: { pathname: string }) {
+export function ExternalRouteHost({
+  pathname,
+  searchParams,
+  hash,
+}: {
+  pathname: string;
+  searchParams?: Readonly<Record<string, unknown>>;
+  hash?: string;
+}) {
   const activePersona = useUIStore((state) => state.activePersona);
   const activeWorkspaceId = useUIStore((state) => state.activeWorkspaceId);
   const principalId = useAuthStore((state) => state.claims?.sub);
@@ -59,12 +67,32 @@ export function ExternalRouteHost({ pathname }: { pathname: string }) {
           route={resolution.route}
           extension={resolution.extension}
           params={resolution.params}
+          pathname={pathname}
+          searchParams={normalizeExternalRouteSearchParams(searchParams)}
+          hash={hash}
         />
       </Suspense>
     );
   }
 
   return <ExternalRouteFallback resolution={resolution} />;
+}
+
+function normalizeExternalRouteSearchParams(
+  searchParams: Readonly<Record<string, unknown>> | undefined,
+): Readonly<Record<string, string | undefined>> | undefined {
+  if (!searchParams) return undefined;
+
+  return Object.fromEntries(
+    Object.entries(searchParams).flatMap(([key, value]) => {
+      if (value === undefined || value === null) return [];
+      if (Array.isArray(value)) {
+        const firstValue = value.find((item) => item !== undefined && item !== null);
+        return firstValue === undefined || firstValue === null ? [] : [[key, String(firstValue)]];
+      }
+      return [[key, String(value)]];
+    }),
+  );
 }
 
 function ExternalRouteLoading({ routeTitle }: { routeTitle: string }) {

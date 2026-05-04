@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { INSTALLED_COCKPIT_ROUTE_LOADERS } from '@/lib/extensions/installed';
 import { EXAMPLE_REFERENCE_EXTENSION } from '@/lib/extensions/example-reference/manifest';
@@ -72,5 +72,33 @@ describe('hosted external route components', () => {
     expect(screen.getByText('Rooms')).toBeTruthy();
     expect(screen.getByText('Open map')).toBeTruthy();
     expect(screen.getByText('rooms: 1')).toBeTruthy();
+  });
+
+  it('prefers a custom route renderer when the module also exports a data loader', async () => {
+    const loader = vi.fn();
+    const Component = createHostedExternalRouteComponent({
+      default: ({ params, searchParams }) => (
+        <div>
+          <h1>Custom Map Workbench</h1>
+          <p>{`room=${params.roomId ?? 'none'}`}</p>
+          <p>{`tab=${searchParams?.tab ?? 'summary'}`}</p>
+        </div>
+      ),
+      loader,
+    });
+
+    render(
+      <Component
+        route={route}
+        extension={resolvedExtension}
+        params={{ roomId: 'g6' }}
+        searchParams={{ tab: 'evidence' }}
+      />,
+    );
+
+    expect(screen.getByRole('heading', { name: 'Custom Map Workbench' })).toBeTruthy();
+    expect(screen.getByText('room=g6')).toBeTruthy();
+    expect(screen.getByText('tab=evidence')).toBeTruthy();
+    expect(loader).not.toHaveBeenCalled();
   });
 });

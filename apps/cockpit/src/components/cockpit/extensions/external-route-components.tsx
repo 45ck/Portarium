@@ -13,7 +13,7 @@ import {
 export const HOSTED_EXTERNAL_ROUTE_COMPONENTS = buildHostedExternalRouteComponents();
 
 export type HostedExternalRouteModule = {
-  default?: ComponentType;
+  default?: ComponentType<ExternalRouteComponentProps>;
   loader?: (context: CockpitExtensionRouteLoaderContext) => unknown | Promise<unknown>;
   routeModule?: {
     loader?: (context: CockpitExtensionRouteLoaderContext) => unknown | Promise<unknown>;
@@ -47,6 +47,13 @@ function buildHostedExternalRouteComponents(): Readonly<Record<string, ExternalR
 export function createHostedExternalRouteComponent(
   routeModule: HostedExternalRouteModule,
 ): ExternalRouteComponent {
+  const Component = routeModule.default;
+  if (Component) {
+    return function ExternalRouteComponentAdapter(props: ExternalRouteComponentProps) {
+      return <Component {...props} />;
+    };
+  }
+
   const routeDataLoader = routeModule.loader ?? routeModule.routeModule?.loader;
   if (routeDataLoader) {
     return function ExternalRouteDataAdapter(props: ExternalRouteComponentProps) {
@@ -60,13 +67,6 @@ export function createHostedExternalRouteComponent(
         );
 
       return <ExternalRouteDataRenderer {...props} loadData={loadData} />;
-    };
-  }
-
-  const Component = routeModule.default as ComponentType<ExternalRouteComponentProps> | undefined;
-  if (Component) {
-    return function ExternalRouteComponentAdapter(props: ExternalRouteComponentProps) {
-      return <Component {...props} />;
     };
   }
 

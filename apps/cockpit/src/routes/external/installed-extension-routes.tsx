@@ -4,11 +4,17 @@ import { INSTALLED_COCKPIT_ROUTE_HOST_DEFINITIONS } from '@/lib/extensions/insta
 import { Route as rootRoute } from '../__root';
 
 function InstalledExternalRoutePage() {
-  const pathname = useRouterState({
-    select: (state) => state.location.pathname,
+  const location = useRouterState({
+    select: (state) => state.location,
   });
 
-  return <ExternalRouteHost pathname={pathname} />;
+  return (
+    <ExternalRouteHost
+      pathname={location.pathname}
+      searchParams={location.search}
+      hash={location.hash}
+    />
+  );
 }
 
 export const installedExternalRouteHostRoutes = INSTALLED_COCKPIT_ROUTE_HOST_DEFINITIONS.map(
