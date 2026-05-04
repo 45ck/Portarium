@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-04T01:15:49.143Z",
+  "generatedAt": "2026-05-04T01:33:56.640Z",
   "files": {
     "scripts/ci/check-gate-baseline.mjs": "d0489776b30b5dd5365d238e65ab1086d4423fe5a371c656558634fbcbe099fd",
     "scripts/ci/check-cockpit-extension-egress.mjs": "6475b6c76f82bfc77c5ab00e86796ceb80a3b41a64d55ab332ee136ca8cc8dc1",
@@ -15,7 +15,7 @@
     "vitest.config.ts": "bc75f31ca8bb81a05915e3ee5a94a1591eabbcc93741edbc3d3dce626c39c6c3",
     "stryker.conf.json": "e8c6b2ea3e660c6c4a0443c0dd80897c6bdb39c1936320d9d097887fa7decefb",
     "knip.json": "67abc22830acf527ecda03c57e6df3e37f87a89e64fcdd1f15d239d4914b994f",
-    "cspell.json": "36d553d7fe67421c7049d1c175809856262e3ef9d325a9e37c1f46dcc13c7831",
+    "cspell.json": "3c19afa6af01bbfecffcc6ca00650d837a95e3988cfa0938de75d158d87f0d27",
     ".prettierrc.json": "4327187804b79827a218473e09d1482078b7b9d91ac9e2b4a814284f8727062f",
     ".github/workflows/ci.yml": "90db34347d26707dc546d362110f92756bc1e6aa80691841b9c574f2d3414099",
     ".github/workflows/nightly.yml": "58d0752235fdde08b08fe1772bd7b81cf8f1315db583f0439ddf9ac74c944af0",
