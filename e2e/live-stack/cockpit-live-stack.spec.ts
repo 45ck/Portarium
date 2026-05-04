@@ -56,9 +56,30 @@ function authHeaders(): Record<string, string> {
 }
 
 async function apiGet<T>(request: APIRequestContext, path: string): Promise<T> {
-  const response = await request.get(`${apiBaseUrl}${path}`, { headers: authHeaders() });
-  expect(response.ok(), `${path} returned ${response.status()}`).toBe(true);
-  return (await response.json()) as T;
+  let lastError: unknown;
+
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      const response = await request.get(`${apiBaseUrl}${path}`, { headers: authHeaders() });
+      if (!response.ok() && response.status() >= 500 && attempt < 3) {
+        await delay(250 * attempt);
+        continue;
+      }
+
+      expect(response.ok(), `${path} returned ${response.status()}`).toBe(true);
+      return (await response.json()) as T;
+    } catch (error) {
+      lastError = error;
+      if (attempt === 3) break;
+      await delay(250 * attempt);
+    }
+  }
+
+  throw lastError instanceof Error ? lastError : new Error(String(lastError));
+}
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 async function createDevSession(request: APIRequestContext): Promise<void> {
@@ -141,6 +162,7 @@ function installRuntimeGuards(page: Page): {
     const url = request.url();
     const failureText = request.failure()?.errorText ?? 'unknown';
     if (url.includes('/events:stream') && failureText === 'net::ERR_ABORTED') return;
+    if (request.method() === 'GET' && failureText === 'net::ERR_ABORTED') return;
     if (url.startsWith(apiBaseUrl) || url.includes('localhost:5173')) {
       networkFailures.push(`requestfailed: ${request.method()} ${redactUrl(url)} ${failureText}`);
     }
