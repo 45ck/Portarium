@@ -87,10 +87,10 @@ Ordered by dependency. Each phase must be complete before the next starts. Phase
 
 ## Phase 6 — Pipeline backend
 
-**bead-0980** — WorktreePort + BeadLifecycleWorkflow (Temporal)
+**bead-0980** — GitWorkspacePort + BeadLifecycleWorkflow (Temporal)
 
-- `WorktreePort` interface + contract test
-- Extends `workflows.ts`: worktreeStart / agentExecution (heartbeat 60s) / artifactCollect / waitForApprovalSignal / merge
+- `GitWorkspacePort` interface + contract test
+- Extends `workflows.ts`: gitWorkspaceCreate / agentExecution (heartbeat 60s) / artifactCollect / waitForApprovalSignal / merge
 - `bd issue finish` conditional on CI outcome — worktree preserved on failure
 
 **bead-0981** — BeadPlanner + domain types

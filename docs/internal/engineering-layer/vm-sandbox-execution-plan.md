@@ -14,6 +14,23 @@ governance story is isolated agent work that cannot casually touch the host.
 
 ## Product shape
 
+Canonical sandbox lifecycle states:
+
+```text
+Requested
+  -> ModeResolved
+  -> Provisioning
+  -> Ready
+  -> AgentRunning
+  -> ReviewPending
+  -> Approved | ChangesRequested | Denied
+  -> Merging
+  -> Completed
+  -> Archived | Destroyed
+```
+
+Operational flow:
+
 ```text
 Work item or bead selected
   -> policy resolves allowed execution modes
@@ -24,8 +41,8 @@ Work item or bead selected
   -> preview, browser, terminal, logs, and evidence stream into Cockpit
   -> ArtifactCollector creates diff and run artifact
   -> DiffApprovalSurface gates merge
-  -> MergeExecutor merges or preserves sandbox for changes
-  -> sandbox is destroyed, archived, or parked by retention policy
+  -> MergeExecutor merges or archives sandbox for changes
+  -> sandbox is destroyed or archived by retention policy
 ```
 
 ## Execution modes
@@ -46,13 +63,17 @@ the current diff and preview.
 
 ### `SandboxProviderPort`
 
-Creates and manages a bead-scoped execution environment.
+Creates and manages a bead-scoped execution environment. It owns provisioning,
+start/stop/destroy, provider status, provider events, workspace attachment, and
+cleanup evidence. It does not launch agents, collect previews, merge code, or
+make policy decisions.
 
 ```ts
 interface SandboxProviderPort {
   create(request: SandboxCreateRequest): Promise<SandboxHandle>;
   start(handle: SandboxHandle): Promise<SandboxRuntimeState>;
   stop(handle: SandboxHandle, reason: StopReason): Promise<void>;
+  archive(handle: SandboxHandle, reason: ArchiveReason): Promise<void>;
   destroy(handle: SandboxHandle, reason: DestroyReason): Promise<void>;
   getStatus(handle: SandboxHandle): Promise<SandboxRuntimeState>;
   streamEvents(handle: SandboxHandle): AsyncIterable<SandboxEvent>;
@@ -80,10 +101,10 @@ interface GitWorkspacePort {
 Starts the selected agent inside the sandbox and enforces that the Portarium
 plugin/hook is loaded before agent work begins.
 
-This is the bridge to agent execution, not sandbox lifecycle. Existing
-`MachineInvokerPort`-style machine/agent invocation remains responsible for
-agent requests and tool invocation; `SandboxProviderPort` only owns the
-environment boundary.
+This is the bridge to an interactive agent session inside a ready sandbox, not
+sandbox lifecycle. Existing `MachineInvokerPort`-style machine/agent invocation
+remains responsible for external machine actions, agent tasks, and tool
+invocation; `SandboxProviderPort` only owns the environment boundary.
 
 ```ts
 interface AgentRuntimePort {
@@ -107,6 +128,12 @@ interface PreviewPort {
 }
 ```
 
+### `MachineInvokerPort`
+
+Keeps the general machine/agent invocation boundary for tool calls, model
+requests, and machine actions. It is intentionally not a sandbox lifecycle,
+preview, git workspace, or merge port.
+
 ## Provider strategy
 
 Use a provider registry, not hard-coded runtime decisions.
@@ -125,7 +152,9 @@ external repos require `vm`; non-VM mode requires approval."
 
 Policy may raise isolation automatically. It must never silently lower
 isolation. Downgrade from `vm` to `container` or `worktree` requires explicit
-approval and a separate evidence entry.
+operator approval and a separate evidence entry. Replacing `vm` with `remote`
+requires workspace-level approval and provider allowlisting unless the remote
+provider has already been approved as an equivalent isolation class.
 
 ## Temporal workflow update
 
@@ -146,7 +175,10 @@ BeadLifecycleWorkflow
 
 Mode resolution happens before provisioning. If the requested mode is not
 allowed, the workflow creates an approval or fails closed with evidence,
-depending on policy.
+depending on policy. The workflow may preflight provider capabilities before
+creating the Git Workspace, but the `GitWorkspacePort` handle is created before
+`SandboxProviderPort.create()` so provider requests and evidence have a stable
+branch and base commit reference.
 
 ## Evidence obligations
 
@@ -228,15 +260,33 @@ Additional gates for VM sandboxes:
 - mode changes require rebuild and create new evidence
 - sandbox cleanup failure blocks bead closure until acknowledged
 
-## Open decisions
+## Resolved decisions
 
-1. Should `vm` be the default for all agent-authored code, or only for
-   autonomous/unattended sessions?
-2. Should hosted providers be allowed to receive source code by default, or only
-   after explicit workspace-level approval?
-3. Should previews be exposed through Portarium-controlled reverse proxy only,
-   or can providers expose their own URLs?
-4. Should failed sandboxes be archived by default for review, or destroyed after
-   evidence capture?
-5. Should branch creation happen before or after sandbox provisioning? Creating
-   first improves traceability; provisioning first can fail faster.
+1. `vm` is the default for autonomous coding and unattended agent-authored work,
+   and for any task needing package installs, browser automation, Docker,
+   external repositories, broad shell execution, or untrusted project code.
+   `worktree` remains available for docs-only, read-only exploration, and tiny
+   trusted edits when workspace policy explicitly allows it.
+2. Hosted providers must not receive source code by default. They require
+   explicit workspace-level approval, provider allowlisting, source/secrets
+   policy acknowledgement, and evidence recording.
+3. Preview URLs exposed to users must go through Portarium-controlled routing or
+   reverse proxy controls. Provider-native URLs may be used only as internal
+   upstream endpoints and must not become the review URL of record.
+4. Failed sandboxes are archived by default until required evidence is
+   captured and reviewed. Destruction after failure is allowed only by retention
+   policy or explicit operator acknowledgement, and cleanup evidence remains
+   mandatory.
+5. Branch/worktree creation happens before sandbox provisioning. Creating the
+   `GitWorkspacePort` handle first gives every provider request, evidence entry,
+   artifact, and approval a stable bead/branch/base-commit reference.
+
+Deferred detail is tracked outside this architecture reconciliation:
+
+- `bead-1158` covers provider rollout strategy, feature flags, host
+  prerequisites, and the first VM spike success criteria.
+- `bead-1159` covers threat modeling for host mounts, Docker sockets,
+  credentials, egress, provider compromise, evidence tampering, no-silent
+  downgrade validation, and cleanup/archive failure closure rules.
+- `bead-1160` covers the validation matrix for fixtures, port contract tests,
+  evidence completeness, E2E rehearsals, and reviewer questions.

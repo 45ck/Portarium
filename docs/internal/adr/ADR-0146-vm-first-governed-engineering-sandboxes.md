@@ -51,12 +51,30 @@ The engineering workflow will use explicit ports:
 `MachineInvokerPort` remains the machine/agent invocation boundary. It must not
 become the sandbox lifecycle interface.
 
+Sandbox lifecycle names are canonical across the architecture, plan, and spec:
+
+```text
+Requested
+  -> ModeResolved
+  -> Provisioning
+  -> Ready
+  -> AgentRunning
+  -> ReviewPending
+  -> Approved | ChangesRequested | Denied
+  -> Merging
+  -> Completed
+  -> Archived | Destroyed
+```
+
 Provider selection is a policy decision. It must be recorded as evidence and
 shown in Cockpit.
 
 The user-selected mode is advisory. Policy may raise isolation automatically and
 must never silently lower isolation. Any downgrade from `vm` to `container` or
-`worktree` requires explicit policy allowance, evidence, and usually approval.
+`worktree` requires explicit policy allowance, operator approval, and evidence.
+Replacing `vm` with a hosted `remote` provider is not a silent fallback path; it
+requires workspace-level approval and provider allowlisting unless the workspace
+has already approved that provider as an equivalent isolation class.
 
 ## Options considered
 
@@ -91,6 +109,8 @@ Negative:
   a VM-capable provider is installed.
 - Windows/WSL local providers are development-only unless backed by a dedicated
   Linux VM provider with production-equivalent controls.
+- Hosted or remote providers may receive source code only after explicit
+  workspace-level approval and provider allowlisting.
 
 ## Implementation notes
 

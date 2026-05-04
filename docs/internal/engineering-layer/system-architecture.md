@@ -16,7 +16,7 @@ Any actor (human / ops / agent)
   Enforces maxBeadsPerIntent: 20
   ↓
 [SandboxExecutor]       infrastructure/ ← Temporal workflow
-  bd issue start → .trees/<id>/ worktree
+  GitWorkspacePort.createWorkspace() -> branch/worktree handle
   Resolves execution mode and provisions sandbox
   VM is the default; container/worktree are policy-controlled alternatives
   portarium plugin loaded before agent work begins
@@ -31,7 +31,7 @@ Any actor (human / ops / agent)
   ↓
 [ArtifactCollector]     domain/ + infrastructure/
   git diff main..HEAD → DiffHunk[]
-  npm run ci:pr must pass (non-zero = ArtifactFailed, worktree preserved)
+  npm run ci:pr must pass (non-zero = ChecksFailed, workspace/sandbox archived)
   Produces markdown Run Artifact
   Attaches ArtifactV1 to evidence chain, signs provenance (ADR-0113)
   ↓
@@ -41,7 +41,7 @@ Any actor (human / ops / agent)
   Temporal workflow waits on signal (durable, survives restart)
   ↓
 [MergeExecutor]         application/
-  bd issue finish (conditional on CI — worktree preserved on failure)
+  GitWorkspacePort.merge() (conditional on CI; workspace preserved on failure)
   Emits BeadMerged CloudEvent
   Deploy = downstream consumer of that event
 ```
@@ -57,7 +57,7 @@ Any actor (human / ops / agent)
 | `BeadPlanner`                       | `src/application/`             | New — PlanV1 exists                                               |
 | `BeadProposal/v1` domain event      | `src/domain/`                  | New — versioned                                                   |
 | `SandboxExecutor` Temporal activity | `src/infrastructure/temporal/` | New — wraps worktree/container/VM providers                       |
-| `WorktreePort` interface            | `src/infrastructure/`          | New — thin adapter over `bd` CLI                                  |
+| `GitWorkspacePort` interface        | `src/application/ports/`       | New — branch, worktree, diff, PR, merge, and cleanup lifecycle    |
 | `SandboxProviderPort` interface     | `src/application/ports/`       | New — provider-neutral sandbox lifecycle                          |
 | `AgentRuntimePort` interface        | `src/application/ports/`       | New — launch Codex/OpenCode/etc with Portarium hook               |
 | `MachineInvokerPort`                | `src/application/ports/`       | Existing direction — agent/tool invocation, not sandbox lifecycle |
@@ -76,7 +76,7 @@ Any actor (human / ops / agent)
 BeadLifecycleWorkflow
   ├─ startRunActivity         (exists)
   ├─ resolveExecutionMode     (new — policy decides vm/container/worktree/remote)
-  ├─ worktreeStartActivity    (new — bd issue start via WorktreePort)
+  ├─ gitWorkspaceCreateActivity (new — GitWorkspacePort creates branch/worktree)
   ├─ sandboxProvisionActivity (new — SandboxProviderPort)
   ├─ agentExecutionActivity   (new — heartbeat 60s, loop detection)
   │    scheduleToCloseTimeout: per-bead config
@@ -84,7 +84,7 @@ BeadLifecycleWorkflow
   ├─ artifactCollectActivity  (new — runs ci:pr, builds ArtifactV1)
   ├─ waitForApprovalSignal    (existing pattern — durable, no timeout)
   │    signal: 'approvalDecided' { decision, rationale, decidedBy }
-  ├─ mergeActivity            (new — bd issue finish via WorktreePort)
+  ├─ mergeActivity            (new — GitWorkspacePort merge/finish adapter)
   ├─ sandboxCleanupActivity   (new — archive/destroy by retention policy)
   └─ completeRunActivity      (exists)
 ```
@@ -95,7 +95,10 @@ Temporal is NOT used for BeadPlanner (synchronous) or IntentRouter (HTTP handler
 
 ## portarium plugin placement
 
-Plugin lives inside the **agent execution sandbox** (the worktree). Not at the intent layer.
+Plugin lives inside the **agent execution sandbox**. In `local-worktree` mode the
+Git Workspace is also the execution environment; in `container`, `vm`, and
+`remote` modes the Git Workspace is attached to a separate sandbox provider
+environment. The plugin is not at the intent layer.
 
 ```
 SandboxExecutor spins up agent → loads portarium plugin
@@ -114,6 +117,21 @@ workflow. It must not make policy decisions itself. It receives a resolved
 execution mode and a scoped provisioning request from Portarium, then reports
 state and evidence back to the workflow.
 
+Canonical sandbox lifecycle states:
+
+```text
+Requested
+  -> ModeResolved
+  -> Provisioning
+  -> Ready
+  -> AgentRunning
+  -> ReviewPending
+  -> Approved | ChangesRequested | Denied
+  -> Merging
+  -> Completed
+  -> Archived | Destroyed
+```
+
 ```text
 BeadLifecycleWorkflow
   -> resolveExecutionMode(policy)
@@ -129,9 +147,14 @@ sandbox, self-hosted Kata/Atelier, or hosted devbox. The workflow contract stays
 the same across providers.
 
 Do not overload `MachineInvokerPort` with sandbox lifecycle behavior. It remains
-the invocation boundary for machine/agent tasks; sandbox creation, attestation,
-preview discovery, retention, and cleanup live behind `SandboxProviderPort` and
-the workflow activities above.
+the invocation boundary for external machine/agent tasks and tool calls;
+sandbox creation, attestation, archive, and destroy live behind
+`SandboxProviderPort` and the workflow activities above. Preview discovery and
+browser snapshots live behind `PreviewPort`.
+
+`GitWorkspacePort` remains separate from `SandboxProviderPort`: it owns branch,
+worktree, diff, PR, merge, and workspace cleanup operations. Providers attach to
+the resulting workspace handle but do not create PRs or merge code.
 
 ---
 
@@ -139,8 +162,8 @@ the workflow activities above.
 
 | Failure                       | Detection                                       | Response                                                                    |
 | ----------------------------- | ----------------------------------------------- | --------------------------------------------------------------------------- |
-| Agent execution loop          | `callLimits` in engine + Temporal heartbeat 60s | Workflow → `NeedsReview`, creates approval request                          |
-| Malformed artifact (CI fails) | `ArtifactCollector` non-zero exit               | `ArtifactFailed`, worktree preserved, bd finish does NOT run                |
+| Agent execution loop          | `callLimits` in engine + Temporal heartbeat 60s | Workflow → `ReviewPending`, creates approval request                        |
+| Malformed artifact (CI fails) | `ArtifactCollector` non-zero exit               | `ChecksFailed`, workspace/sandbox archived, merge does NOT run              |
 | Sandbox provisioning fails    | Provider state/error event                      | `ProvisionFailed`, bead preserved, evidence appended, retry/choose provider |
 | Silent mode downgrade         | Mode evidence does not match policy             | Block approval/merge; require explicit operator approval                    |
 | Cleanup fails                 | Provider cleanup result missing or failed       | `CleanupFailed`, bead cannot close until acknowledged or retried            |
@@ -171,7 +194,7 @@ the workflow activities above.
 | Concern                       | Use instead                                   |
 | ----------------------------- | --------------------------------------------- |
 | Durable lifecycle             | Temporal (already in stack)                   |
-| Git worktree lifecycle        | `bd` CLI via thin `WorktreePort` adapter      |
+| Git worktree lifecycle        | `bd` CLI via thin `GitWorkspacePort` adapter  |
 | Sandbox provider lock-in      | `SandboxProviderPort` registry                |
 | Diff rendering                | `git diff` output + `ScrollArea`              |
 | Fine-grained approval routing | OpenFGA (already in stack)                    |
