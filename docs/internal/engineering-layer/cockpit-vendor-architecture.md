@@ -48,7 +48,7 @@ This is the operational/architectural companion to [ADR-0148](../adr/ADR-0148-co
             │  - Implements Vibe Kanban's ExecutorApprovalService    │
             │  - Implements sandbox-spawn delegation                  │
             │  - Wired at Vibe Kanban startup, swaps default impls    │
-            │  - ~500 LOC; lives in src/infrastructure/               │
+            │  - target <1k LOC; lives in src/infrastructure/         │
             └─────────────────────────────────────────────────────────┘
 ```
 
@@ -191,7 +191,7 @@ The glue crate is what makes step 4–9 a single trait method call from VK's per
 
 ## Glue crate design
 
-`src/infrastructure/cockpit-backend-glue/` is a small Rust crate, ~500 LOC.
+`src/infrastructure/cockpit-backend-glue/` is a small Rust crate (target <1k LOC; final size confirmed post-spike).
 
 ```rust
 // src/infrastructure/cockpit-backend-glue/src/approval_service.rs

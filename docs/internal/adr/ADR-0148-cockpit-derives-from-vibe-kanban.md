@@ -25,7 +25,7 @@ Portarium's value proposition over Vibe Kanban is exactly the governance + sandb
 
 1. Vibe Kanban's Rust backend is **kept unmodified** (vendored at SHA `4deb7eca8f381f7cbc1f9d15515a9ab8f8009053`), runs as a sidecar service in Portarium's deployment topology.
 2. Vibe Kanban's React/TypeScript frontend (`packages/web-core`) is **transplanted** into `apps/cockpit/src/routes/engineering/`, restyled to Portarium's shadcn design tokens, modified to add governance overlays (PolicyTierBadge, BlastRadiusBadge, evidence panel, requested-vs-resolved sandbox mode).
-3. Governance is bolted onto the unmodified Vibe Kanban backend via small **Rust glue crates** (`src/infrastructure/cockpit-backend-glue/`, ~500 LOC total) that implement Vibe Kanban's existing `ExecutorApprovalService` and container-spawn traits, proxying every call to Portarium's Node control plane over HTTP.
+3. Governance is bolted onto the unmodified Vibe Kanban backend via small **Rust glue crates** (`src/infrastructure/cockpit-backend-glue/`, target <1k LOC; final size confirmed post-spike) that implement Vibe Kanban's existing `ExecutorApprovalService` and container-spawn traits, proxying every call to Portarium's Node control plane over HTTP.
 4. T3 Code's three-panel "deep task" UX is **inspiration only** — Portarium builds a Focus Mode view inside the Cockpit using T3 Code's layout shape, not vendored T3 Code code.
 
 The cloud-tier crates Vibe Kanban shipped for its commercial offering (`relay-*`, `host-relay`, `webrtc`, `embedded-ssh`, `trusted-key-auth`, `desktop-bridge`, `tauri-app`) are **deleted from the workspace**. PostHog/Sentry build args are removed. The `useUserOrganizations` / `useOrganizationStore` org concept is replaced with single-tenant stubs in the transplanted frontend.
@@ -44,19 +44,19 @@ Take the React frontend, rewrite the backend in Node. ~6–9 weeks. Pure Node st
 
 **Rejected because**: rewriting the backend means re-deriving 18 months of executor edge-case handling, approval timing fixes, PTY plumbing quirks, preview proxy origin tricks. That re-derivation is where bugs come from. Hybrid skips it.
 
-### D — Cherry-pick components into from-scratch shell
+### C — Cherry-pick components into from-scratch shell
 
 Build the Cockpit engineering shell ourselves in our existing app. Drop in individual Vibe Kanban components (KanbanContainer, ChangesPanel, PreviewBrowser, etc.) one at a time. ~8–9 weeks.
 
-**Rejected because**: each cherry-picked component requires writing matching backend routes from scratch. We'd be rewriting the backend incrementally instead of in one chunk — same cost, more integration friction. Hybrid wins by treating the backend as a black box.
+**Rejected because**: each cherry-picked component requires writing matching backend routes from scratch. We'd be rewriting the backend incrementally instead of in one chunk — same cost, more integration friction. Hybrid wins by treating the backend as a black box. **Note**: this is the spike fall-back. Earlier discussion notes referred to it as "Alternative D"; it is now formally Alternative C in this ADR.
 
-### E — Build entire Cockpit engineering surface from scratch
+### D — Build entire Cockpit engineering surface from scratch
 
 No vendoring. Pure Portarium code. ~6 months.
 
 **Rejected because**: 4-month delay vs hybrid for outcomes that are not architecturally superior. The from-scratch path's only real benefit is avoiding vendor commitment, which the hybrid mitigates by keeping the vendor at filesystem boundary (`vendor/vibe-kanban/`) and bridging via HTTP only.
 
-### F — Iframe-embed Vibe Kanban
+### E — Iframe-embed Vibe Kanban
 
 Run Vibe Kanban as a separate process; embed via `<iframe>`.
 
@@ -113,8 +113,8 @@ If these tests fail, the integration is broken regardless of UI appearance.
 
 The Cockpit being usable by autonomous agents (filing beads, claiming work, executing under policy) is part of Portarium's longer-term thesis (see `docs/internal/engineering-layer/agent-driven-backlog-vision.md`). v1 must not foreclose on it. Five shape decisions to bake into the v1 hybrid:
 
-### D1. Beads API is the source of truth, not the bead CLI
-The HTTP route to create/update beads is canonical. CLI is a thin client over the API. Agents and humans hit the same surface — no special-casing.
+### D1. Beads API is canonical, CLI is a thin client
+The HTTP route to create/update beads is the source of truth. The `bd` CLI becomes a thin client over the API. Agents and humans hit the same surface — no special-casing.
 
 ### D2. Actor identity is a first-class field on every bead/approval/evidence entry
 Not strings. Cryptographic identity: `human:ajax@aquinus.net` or `agent:triage-v1@portarium`. Without this, separation-of-duties enforcement in phase 3 is impossible.
@@ -126,7 +126,7 @@ Same action, different tier depending on whether the actor is human or agent. Th
 v1 stub impls return unlimited / 100% reputation. Real impls plug in for phase 3 without restructuring policy. The interface surface must be there from day one.
 
 ### D5. Evidence schema includes `triggeringObservation` field
-When an agent files a bead, what did it observe? Stack trace, log pattern, customer ticket. Empty for human-filed beads. This is what makes agent-filed beads reviewable rather than mysterious.
+When an agent files a bead, what did it observe? Canonical shape: `triggeringObservation: { kind: 'log' | 'ticket' | 'metric' | 'human' | 'other'; ref: string; summary: string } | null`. Empty/null for human-filed beads. This is what makes agent-filed beads reviewable rather than mysterious.
 
 These cost almost nothing in v1 if known up-front. They cost a rewrite to add later. The integration build plan (`integration-build-plan.md`) sequences them into the relevant weeks.
 
@@ -171,16 +171,22 @@ This exit door means the hybrid is not a one-way trap. We can always reverse cou
 
 ## Open questions
 
-1. **Git submodule vs snapshot directory** for the vendor: submodule has cleaner update semantics (when needed) but adds a clone-time step. Decide in spike week.
+1. **Git submodule vs snapshot directory** for the vendor: submodule has cleaner update semantics (when needed) but adds a clone-time step. Decide in spike week (`bead-1168`).
 2. **SQLite vs Postgres** for Vibe Kanban backend: keep their SQLite for local-only state, use Portarium's Postgres for evidence; or migrate all to Postgres. Default: keep SQLite to minimize patches; revisit if it complicates backup/HA.
-3. **PR creation flow**: keep their AI-generated descriptions, or replace with policy-aware Portarium descriptions? Recommend: keep theirs as a starting point, append policy summary block. ADR follow-up.
-4. **Tauri desktop wrapper**: delete (default) or keep optional? Default: delete; revisit only if a customer asks.
-5. **Vibe Kanban SHA mirror to Portarium-controlled remote**: yes (file as a small bead in week 1). Cost is negligible; insurance against upstream disappearing.
+3. **PR creation flow**: keep their AI-generated descriptions, or replace with policy-aware Portarium descriptions? Resolved by `bead-1188` (`bead-pr-policy`): keep theirs as a starting point, append policy summary block.
+
+## Resolved decisions (previously open questions)
+
+- **Tauri desktop wrapper** — RESOLVED: delete. Per `bead-1173` (`bead-cloud-rip`), `crates/tauri-app` is in the deletion list. Vendor architecture doc repo layout marks it `(DELETED)`. Revisit only if a customer asks.
+- **Vibe Kanban SHA mirror to Portarium-controlled remote** — RESOLVED: yes. Filed as `bead-1169` (`bead-vk-sha-mirror`, P2, parallel to spike). Cost is negligible; insurance against upstream disappearing.
 
 ## Validation gate
 
-This ADR is **Proposed**, not **Accepted**, until the spike (`bead-spike-vk-marriage`) passes. The spike's exit criterion is:
+This ADR is **Proposed**, not **Accepted**, until the spike (`bead-spike-vk-marriage` / `bead-1168`) passes. The spike's exit criterion has four conjuncts (all required):
 
-> Vibe Kanban backend running locally, frontend transplanted to `apps/cockpit/src/routes/engineering/`, single-tenant rip-out complete, kanban page renders against the Rust backend inside our Cockpit shell.
+1. Vibe Kanban backend builds and runs locally.
+2. Vibe Kanban frontend transplanted to `apps/cockpit/src/routes/engineering/`.
+3. Single-tenant rip-out (`useUserOrganizations` / `useOrganizationStore` removed at minimum for the kanban page) complete.
+4. Kanban page renders against the Rust backend inside our Cockpit shell.
 
-If the spike completes within 5 working days with the exit criterion met, this ADR moves to **Accepted** and the rest of the build plan executes. If the spike reveals deeper coupling than expected (org concept threads through workspace shell, contracts don't fit cleanly, etc.), this ADR moves to **Rejected** and we drop to Alternative D (cherry-pick components).
+If the spike completes within 5 working days with all four conjuncts met, this ADR moves to **Accepted** (`bead-1171` finalizes) and the rest of the build plan executes. If the spike reveals deeper coupling than expected (org concept threads through workspace shell, contracts don't fit cleanly, etc.), this ADR moves to **Rejected** and we drop to Alternative C (cherry-pick components — see alternatives section).

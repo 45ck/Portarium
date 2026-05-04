@@ -143,7 +143,7 @@ These are not features. They are *shape decisions* that cost almost nothing in v
 
 **Why for phase 3**: agent-filed beads must be auditable. "Why did you file this?" is the question the schema answers.
 
-**v1 implementation**: add `triggeringObservation: { kind: 'log' | 'ticket' | 'metric' | 'human' | ...; ref: string; summary: string }` to evidence entries. Optional in v1 (humans don't always have one); required for agent-filed beads in phase 3.
+**v1 implementation**: canonical schema shape — `triggeringObservation: { kind: 'log' | 'ticket' | 'metric' | 'human' | 'other'; ref: string; summary: string } | null`. Optional/null in v1 (humans don't always have one); required for agent-filed beads in phase 3. This shape is referenced (not restated) from ADR-0148 and bead-1187.
 
 ## What is explicitly NOT in v1
 

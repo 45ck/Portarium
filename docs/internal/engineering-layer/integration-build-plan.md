@@ -3,7 +3,38 @@
 This is the sequenced execution plan for delivering the v1 hybrid integration described in [ADR-0148](../adr/ADR-0148-cockpit-derives-from-vibe-kanban.md) and [cockpit-vendor-architecture.md](./cockpit-vendor-architecture.md).
 
 **Total estimated duration**: 8 weeks.
-**Total bead count**: 14 implementation beads + 1 spike + 1 ADR drafting + 5 door-open beads + 1 phase-3 vision tracker = 22 beads.
+**Total bead count**: 24 (see breakdown at end of doc and the alias→ID mapping below).
+
+## Bead alias → ID mapping
+
+The plan uses readable text aliases (e.g. `bead-spike-vk-marriage`) for clarity. The actually-filed beads have numeric IDs. Use this table to find the bead to claim.
+
+| Alias | ID | Priority | Phase |
+| --- | --- | --- | --- |
+| `bead-spike-vk-marriage` | `bead-1168` | P0 | governance |
+| `bead-vk-sha-mirror` | `bead-1169` | P2 | governance |
+| `bead-third-party-notices` | `bead-1170` | P1 | governance |
+| `bead-adr-148-finalize` | `bead-1171` | P0 | governance |
+| `bead-vendor-setup` | `bead-1172` | P0 | infrastructure |
+| `bead-cloud-rip` | `bead-1173` | P0 | infrastructure |
+| `bead-glue-scaffolding` | `bead-1174` | P0 | infrastructure |
+| `bead-glue-approval` (incl. contract tests) | `bead-1175` | P0 | infrastructure |
+| `bead-glue-sandbox` | `bead-1176` | P0 | infrastructure |
+| `bead-frontend-transplant` | `bead-1177` | P0 | presentation |
+| `bead-auth-stub` | `bead-1178` | P0 | presentation |
+| `bead-restyle` | `bead-1179` | P1 | presentation |
+| `bead-governance-overlays` | `bead-1180` | P0 | presentation |
+| `bead-beads-api-harden` (D1) | `bead-1181` | P0 | application |
+| `bead-actor-identity` (D2) | `bead-1182` | P0 | domain |
+| `bead-approval-live` | `bead-1183` | P0 | presentation |
+| `bead-policy-actor-aware` (D3) | `bead-1184` | P0 | application |
+| `bead-rate-reputation-stubs` (D4) | `bead-1185` | P0 | application |
+| `bead-evidence-bus-bridge` | `bead-1186` | P0 | infrastructure |
+| `bead-evidence-trigger-field` (D5) | `bead-1187` | P0 | domain |
+| `bead-pr-policy` | `bead-1188` | P1 | presentation |
+| `bead-focus-mode` | `bead-1189` | P1 | presentation |
+| `bead-integration-cleanup` | `bead-1190` | P1 | cross-cutting |
+| `bead-phase-3-vision-tracker` (DO NOT START in v1) | `bead-1191` | P3 | governance |
 
 ## Sequencing principles
 
@@ -15,48 +46,49 @@ This is the sequenced execution plan for delivering the v1 hybrid integration de
 
 ## Bead dependency graph
 
+This matches the actually-filed `BlockedBy` chain on beads 1168–1191.
+
 ```
-spike ─→ adr-finalize
-   │       │
-   │       ▼
-   │   vendor-setup ──→ cloud-rip ──→ glue-scaffolding
-   │                                       │
-   │                                       ├──→ glue-approval ──┐
-   │                                       │                     │
-   │                                       └──→ glue-sandbox ────┤
-   │                                                              │
-   ▼                                                              ▼
-frontend-transplant ──→ auth-stub ──→ restyle ──→ governance-overlays
-                                                          │
-                                                          ▼
-                                                  evidence-bus-bridge
-                                                          │
-                                                          ▼
-                                                  beads-api-harden (D1)
-                                                          │
-                                                          ▼
-                                                  actor-identity (D2)
-                                                          │
-                                                          ▼
-                                                  policy-actor-aware (D3)
-                                                          │
-                                                          ├──→ rate-reputation-stubs (D4)
-                                                          │
-                                                          ▼
-                                                  evidence-trigger-field (D5)
-                                                          │
-                                                          ▼
-                                                  focus-mode (T3-Code-style)
-                                                          │
-                                                          ▼
-                                                  phase-3-vision-tracker (placeholder, never started)
-                                                          │
-                                                          ▼
-                                                  vk-sha-mirror (any time, parallel)
-                                                          │
-                                                          ▼
-                                                  third-party-notices (any time, parallel)
+[parallel, no deps — can start immediately]
+  spike (1168, P0) ─────────────────────────────────────────┐
+  vk-sha-mirror (1169, P2) [parallel]                       │
+  third-party-notices (1170, P1) [parallel]                 │
+                                                             │
+[blocked on spike (1168)]                                    │
+  ├─→ adr-148-finalize (1171, P0)                           │
+  └─→ vendor-setup (1172, P0)                               │
+        └─→ cloud-rip (1173, P0)                            │
+              ├─→ glue-scaffolding (1174, P0)               │
+              │     └─→ glue-approval (1175, P0)            │
+              │           └─→ glue-sandbox (1176, P0)       │
+              │                                              │
+              └─→ frontend-transplant (1177, P0)            │
+                    └─→ auth-stub (1178, P0)                │
+                          └─→ restyle (1179, P1)            │
+                                └─→ governance-overlays (1180, P0)
+                                      ├─→ beads-api-harden (1181, P0, D1)
+                                      │     └─→ actor-identity (1182, P0, D2)
+                                      │           └─→ policy-actor-aware (1184, P0, D3)
+                                      │                 └─→ rate-reputation-stubs (1185, P0, D4)
+                                      │
+                                      └─→ approval-live (1183, P0) ◄── also blocked by glue-approval (1175)
+                                            └─→ evidence-bus-bridge (1186, P0)
+                                                  ├─→ evidence-trigger-field (1187, P0, D5)
+                                                  ├─→ pr-policy (1188, P1)
+                                                  └─→ focus-mode (1189, P1)
+                                                        │
+                                                        ▼
+                                            integration-cleanup (1190, P1)  ◄── blocked by 1185, 1187, 1188, 1189
+                                                        │
+                                                        ▼
+                                            phase-3-vision-tracker (1191, P3, DO NOT START in v1)
 ```
+
+Key shape callouts:
+- The five **door-open decisions** (D1 → D2 → D3 → D4) form a chain after `governance-overlays`, then D5 (`evidence-trigger-field`) lands after `evidence-bus-bridge`. All five complete before `integration-cleanup` (1190).
+- `approval-live` (1183) has TWO blockers: `governance-overlays` (1180) and `glue-approval` (1175). It is the "marriage point" where frontend governance overlays meet backend trait interception.
+- `integration-cleanup` (1190) has FOUR blockers: focus-mode, pr-policy, rate-reputation-stubs, evidence-trigger-field. It cannot start until all 8-week scope completes.
+
 
 ## Week-by-week
 
@@ -68,9 +100,15 @@ frontend-transplant ──→ auth-stub ──→ restyle ──→ governance-o
 - `bead-third-party-notices` (~half day, P1, parallel): create `THIRD_PARTY_NOTICES.md` at repo root with Apache-2.0 NOTICE preservation block for Vibe Kanban. Templated for additions per transplanted component.
 - `bead-vk-sha-mirror` (~half day, P2, parallel): mirror BloopAI/vibe-kanban@`4deb7eca` to `portarium/cockpit-vendor-mirror` private remote. Insurance against upstream disappearing.
 
-**Exit criterion**: spike passes (kanban page renders single-tenant against VK Rust backend, inside Cockpit shell). ADR-0148 moves to Accepted. NOTICES file exists. SHA mirrored.
+**Exit criterion** (all four conjuncts required, matching ADR-0148):
+1. Vibe Kanban backend builds and runs locally.
+2. Vibe Kanban frontend transplanted to `apps/cockpit/src/routes/engineering/`.
+3. Single-tenant rip-out (`useUserOrganizations` / `useOrganizationStore` removed at minimum for the kanban page) complete.
+4. Kanban page renders against the Rust backend inside our Cockpit shell.
 
-**If exit fails**: drop to Alternative D (cherry-pick components). Re-plan from there.
+ADR-0148 moves to Accepted. NOTICES file exists. SHA mirrored.
+
+**If exit fails**: drop to Alternative C (cherry-pick components — see ADR-0148 alternatives section). Re-plan from there.
 
 ### Week 1 — Vendor setup + cloud rip
 
@@ -84,8 +122,7 @@ frontend-transplant ──→ auth-stub ──→ restyle ──→ governance-o
 
 **Beads**:
 - `bead-glue-scaffolding` (~1 day, P0, depends on cloud-rip): create `src/infrastructure/cockpit-backend-glue/` Rust crate. `Cargo.toml` workspace member. Empty trait impls + HTTP client skeleton.
-- `bead-glue-approval` (~3 days, P0, depends on glue-scaffolding): implement `PortariumApprovalService` per [cockpit-vendor-architecture.md § Glue crate design](./cockpit-vendor-architecture.md#glue-crate-design). Long-poll `wait_approval`. Survives VK backend restart. Patches `vendor/vibe-kanban/crates/server/src/main.rs` to inject the glue (5 LOC patch, documented in `VENDOR.md`).
-- `bead-glue-approval-tests` (~1 day, P0, depends on glue-approval): contract tests at the trait boundary. Mock VK trait input → verify correct HTTP call to Portarium → verify trait completion.
+- `bead-glue-approval` (~3 days, P0, depends on glue-scaffolding): implement `PortariumApprovalService` per [cockpit-vendor-architecture.md § Glue crate design](./cockpit-vendor-architecture.md#glue-crate-design). Long-poll `wait_approval`. Survives VK backend restart. Patches `vendor/vibe-kanban/crates/server/src/main.rs` to inject the glue (5 LOC patch, documented in `VENDOR.md`). **Acceptance includes contract tests at the trait boundary** (mock VK trait input → verify correct HTTP call to Portarium → verify trait completion); not split into a separate bead.
 
 **Exit criterion**: an integration test fires a tool call inside VK, the glue intercepts, calls Portarium, blocks until approval is recorded in Portarium's durable approval store, then resumes.
 
@@ -137,7 +174,7 @@ frontend-transplant ──→ auth-stub ──→ restyle ──→ governance-o
 **Beads**:
 - `bead-focus-mode` (~3 days, P1, depends on evidence-bus-bridge): implement T3-Code-style three-panel deep-task view at `/engineering/workspace/:id?mode=focus`. Left = bead context, center = chat/transcript, right = diff + approval gate + evidence. Reuses VK's existing components (LogsContent, ChangesPanel, etc.) inside the new layout. Pure additive — VK's tab-grouped workspace shell stays as the default; focus mode is a toggle.
 - `bead-integration-cleanup` (~2 days, P1, all earlier beads complete): final cleanup pass. Delete unused code paths from VK frontend (e.g. anything still referencing the cloud tier). Verify CI gates pass end-to-end. Update `apps/cockpit/README.md` and `docs/internal/index.md` to point to the new engineering surface.
-- `bead-phase-3-vision-tracker` (planning-only, NEVER started in v1): placeholder bead that points to [agent-driven-backlog-vision.md](./agent-driven-backlog-vision.md). Tracks the phase-3 work as future scope. Contains the five door-open decisions for verification — confirms they all landed in v1.
+- `bead-phase-3-vision-tracker` (`bead-1191`, P3, **DO NOT START in v1** — title is prefixed `[DO-NOT-CLAIM v1]`): placeholder bead that points to [agent-driven-backlog-vision.md](./agent-driven-backlog-vision.md). Tracks the phase-3 work as future scope. Contains the five door-open decisions for verification — confirms they all landed in v1. The P3 priority means `bd issue next` will only return it when no P0/P1/P2 work remains; the title prefix is the secondary guard for autonomous loops.
 
 **Exit criterion**: full engineering Cockpit ships. Kanban + workspace shell + focus mode + governance overlays + evidence chain + approval-wait-loop + sandbox-isolated execution. PR gets created with policy summary. v1 is in production.
 
@@ -150,7 +187,7 @@ Each bead is filed with:
 - **Out of scope**: explicit list of what this bead does *not* do.
 - **Blocked by**: predecessors in the dependency graph.
 
-The 22 beads will be filed by the next bead-filing pass (see `bead-file-integration-plan` task). All start in **planning state** — none are claimed for implementation until the spike passes and ADR-0148 moves to Accepted.
+The 24 beads were filed as `bead-1168` through `bead-1191` (see alias→ID mapping at top of doc). All are in **open/planning state** — none should be claimed for implementation until the spike (`bead-1168`) passes and ADR-0148 moves from Proposed to Accepted via `bead-1171`.
 
 ## Risk tracking
 
@@ -158,7 +195,7 @@ Each weekly exit criterion is a checkpoint. Risks to watch:
 
 | Week | Risk | Signal | Response |
 | --- | --- | --- | --- |
-| 0 (spike) | VK frontend cloud-coupling deeper than expected | spike not done in 5 days | drop to Alternative D |
+| 0 (spike) | VK frontend cloud-coupling deeper than expected | spike not done in 5 days | drop to Alternative C (cherry-pick — see ADR-0148 alternatives) |
 | 1 | Cloud crate deletion breaks core build | `cargo build` fails in `crates/server` | partial deletion + ADR amendment |
 | 2 | VK trait shapes don't fit Portarium boundaries | glue impl needs to call back into VK internals | ADR amendment widening trait OR fork |
 | 3 | Sandbox spawn delegation breaks PTY | terminal pane shows nothing | implement PTY forwarding through SandboxProviderPort |
@@ -172,11 +209,11 @@ Each weekly exit criterion is a checkpoint. Risks to watch:
 
 If we land week 0 (spike) successfully and proceed:
 - **Calendar weeks**: 8.
-- **Implementation beads filed**: 14 (numbered above).
-- **Door-open decision beads filed**: 5 (D1–D5, woven into weeks 5–7).
-- **Spike + ADR + parallel infra beads**: 4 (week 0).
-- **Vision tracker bead**: 1 (week 8, never started).
-- **Total beads**: 24.
+- **Implementation beads filed**: 14 (vendor-setup, cloud-rip, glue-scaffolding, glue-approval, glue-sandbox, frontend-transplant, auth-stub, restyle, governance-overlays, approval-live, evidence-bus-bridge, pr-policy, focus-mode, integration-cleanup).
+- **Door-open decision beads filed**: 5 (D1 beads-api-harden, D2 actor-identity, D3 policy-actor-aware, D4 rate-reputation-stubs, D5 evidence-trigger-field).
+- **Spike + ADR-finalize + parallel infra beads**: 4 (spike, adr-148-finalize, vk-sha-mirror, third-party-notices).
+- **Vision tracker bead**: 1 (phase-3-vision-tracker, never started).
+- **Total beads**: 14 + 5 + 4 + 1 = 24.
 
 Spike is the only bead that is committed to a specific calendar period (this week if approved). The rest are sequenced but flexible — pick up after spike based on capacity.
 
