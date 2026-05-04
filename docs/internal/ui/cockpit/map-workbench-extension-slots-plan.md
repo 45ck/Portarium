@@ -2,7 +2,7 @@
 
 > **Date:** 2026-05-04
 > **Status:** Proposed
-> **Related:** `generic-plugin-host-implementation-plan.md`, `local-extension-readiness-plan.md`
+> **Related:** `generic-plugin-host-implementation-plan.md`, `local-extension-readiness-plan.md`, `../../adr/ADR-0147-cockpit-map-workbench-extension-slots.md`
 
 ## Purpose
 
