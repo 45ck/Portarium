@@ -134,6 +134,22 @@ function ExternalRouteFallback({
         </FallbackShell>
       );
     case 'not-found':
+      if (resolution.audit.reason === 'missing-renderer') {
+        return (
+          <FallbackShell
+            title="External Route Renderer Missing"
+            description="The extension route matched, but Cockpit has no host-owned renderer for it."
+            icon={<AlertCircle className="h-5 w-5" />}
+            badges={[resolution.pathname, resolution.audit.reason]}
+          >
+            <p className="text-sm text-muted-foreground">
+              External route executable code must be bound through the host import map before
+              Cockpit will render it.
+            </p>
+          </FallbackShell>
+        );
+      }
+
       return (
         <FallbackShell
           title="External Route Not Found"

@@ -20,10 +20,11 @@ import {
   Users,
 } from 'lucide-react';
 import { EntityIcon } from '@/components/domain/entity-icon';
-import { selectExtensionCommands, selectExtensionNavItems } from '@/lib/extensions/registry';
+import { canAccessExtensionNavItem, selectExtensionCommands } from '@/lib/extensions/registry';
 import type {
   CockpitExtensionAccessContext,
   CockpitExtensionIcon,
+  CockpitExtensionNavItem,
   ResolvedCockpitExtensionRegistry,
 } from '@/lib/extensions/types';
 import type { PersonaId } from '@/stores/ui-store';
@@ -373,33 +374,25 @@ export function projectCockpitShellNavigation({
   const coreSections = roboticsEnabled
     ? CORE_SHELL_SECTIONS
     : CORE_SHELL_SECTIONS.filter((section) => section.id !== 'robotics');
-  const extensionSidebarItems = selectExtensionNavItems(registry, 'sidebar', persona, accessContext)
-    .filter(isConcretePathItem)
-    .map(
-      (item): CockpitShellNavigationItem => ({
-        id: `extension-nav:${item.id}`,
-        label: item.title,
-        to: item.to,
-        icon: extensionIcon(item.icon),
-        matchPath: item.to,
-      }),
-    );
-  const extensionMobileMoreItems = selectExtensionNavItems(
+  const extensionSidebarSections = projectExtensionNavigationSections(
     registry,
-    'mobile-more',
+    'sidebar',
+    'extension-nav',
     persona,
     accessContext,
-  )
-    .filter(isConcretePathItem)
-    .map(
-      (item): CockpitShellNavigationItem => ({
-        id: `extension-mobile:${item.id}`,
-        label: item.title,
-        to: item.to,
-        icon: extensionIcon(item.icon),
-        matchPath: item.to,
-      }),
-    );
+  );
+  const extensionMobileMoreSections = projectExtensionNavigationSections(
+    registry,
+    'mobile-more',
+    'extension-mobile',
+    persona,
+    accessContext,
+  );
+  const extensionMobilePrimaryItems = projectExtensionMobilePrimaryItems(
+    registry,
+    persona,
+    accessContext,
+  );
   const extensionCommandTargets = selectExtensionCommands(registry, persona, accessContext).reduce<
     CockpitShellCommandTarget[]
   >((targets, command) => {
@@ -419,20 +412,23 @@ export function projectCockpitShellNavigation({
   }, []);
 
   const sidebarSections =
-    extensionSidebarItems.length > 0
-      ? [...coreSections, extensionSection(extensionSidebarItems)]
+    extensionSidebarSections.length > 0
+      ? [...coreSections, ...extensionSidebarSections]
       : coreSections;
   const mobileMoreBaseSections = coreSections.filter((section) =>
     MOBILE_MORE_SECTION_IDS.has(section.id),
   );
   const mobileMoreSections =
-    extensionMobileMoreItems.length > 0
-      ? [...mobileMoreBaseSections, extensionSection(extensionMobileMoreItems)]
+    extensionMobileMoreSections.length > 0
+      ? [...mobileMoreBaseSections, ...extensionMobileMoreSections]
       : mobileMoreBaseSections;
 
   return {
     sidebarSections,
-    mobilePrimaryItems: projectMobilePrimaryItems(coreSections),
+    mobilePrimaryItems: [
+      ...projectMobilePrimaryItems(coreSections),
+      ...extensionMobilePrimaryItems,
+    ],
     mobileMoreSections,
     commandTargets: [
       ...flattenItems(coreSections)
@@ -470,13 +466,64 @@ function isConcretePathItem(item: { to: string }): boolean {
   return !item.to.includes('$');
 }
 
-function extensionSection(
-  items: readonly CockpitShellNavigationItem[],
-): CockpitShellNavigationSection {
+function projectExtensionNavigationSections(
+  registry: ResolvedCockpitExtensionRegistry,
+  surface: 'sidebar' | 'mobile-more',
+  idPrefix: string,
+  persona: PersonaId,
+  accessContext: CockpitExtensionAccessContext,
+): readonly CockpitShellNavigationSection[] {
+  return registry.extensions.flatMap((extension) => {
+    if (extension.status !== 'enabled') return [];
+
+    const items = extension.manifest.navItems
+      .filter((item) => item.surfaces.includes(surface))
+      .filter(isConcretePathItem)
+      .filter(
+        (item) => canAccessExtensionNavItem(item, registry, { ...accessContext, persona }).allowed,
+      )
+      .map((item) => projectExtensionNavigationItem(item, idPrefix));
+
+    return items.length > 0
+      ? [
+          {
+            id: `extension:${extension.manifest.id}:${surface}`,
+            label: extension.manifest.displayName,
+            items,
+          },
+        ]
+      : [];
+  });
+}
+
+function projectExtensionMobilePrimaryItems(
+  registry: ResolvedCockpitExtensionRegistry,
+  persona: PersonaId,
+  accessContext: CockpitExtensionAccessContext,
+): readonly CockpitShellNavigationItem[] {
+  return registry.extensions.flatMap((extension) => {
+    if (extension.status !== 'enabled') return [];
+
+    return extension.manifest.navItems
+      .filter((item) => item.mobilePrimary)
+      .filter(isConcretePathItem)
+      .filter(
+        (item) => canAccessExtensionNavItem(item, registry, { ...accessContext, persona }).allowed,
+      )
+      .map((item) => projectExtensionNavigationItem(item, 'extension-primary'));
+  });
+}
+
+function projectExtensionNavigationItem(
+  item: CockpitExtensionNavItem,
+  idPrefix: string,
+): CockpitShellNavigationItem {
   return {
-    id: 'extensions',
-    label: 'Extensions',
-    items,
+    id: `${idPrefix}:${item.id}`,
+    label: item.title,
+    to: item.to,
+    icon: extensionIcon(item.icon),
+    matchPath: item.to,
   };
 }
 

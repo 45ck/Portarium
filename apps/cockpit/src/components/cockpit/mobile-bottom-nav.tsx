@@ -79,7 +79,7 @@ export function MobileBottomNav({
               <TypedLink
                 key={item.id}
                 to={item.to}
-                className="relative flex flex-col items-center justify-center gap-0.5 flex-1 h-full"
+                className="relative flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 h-full px-0.5"
                 aria-label={item.label}
               >
                 {isActive && (
@@ -105,7 +105,7 @@ export function MobileBottomNav({
                 </motion.div>
                 <span
                   className={cn(
-                    'text-[11px] leading-none',
+                    'max-w-full truncate text-[10px] leading-none sm:text-[11px]',
                     isActive ? 'text-primary font-medium' : 'text-muted-foreground',
                   )}
                 >
@@ -118,7 +118,7 @@ export function MobileBottomNav({
           {/* More button */}
           <button
             type="button"
-            className="relative flex flex-col items-center justify-center gap-0.5 flex-1 h-full"
+            className="relative flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 h-full px-0.5"
             onClick={() => setMoreOpen(true)}
             aria-label="Open more navigation"
             aria-haspopup="dialog"
@@ -126,7 +126,9 @@ export function MobileBottomNav({
             <motion.div whileTap={{ scale: 0.85 }} className="text-muted-foreground">
               <Menu className="h-5 w-5" />
             </motion.div>
-            <span className="text-[11px] text-muted-foreground leading-none">More</span>
+            <span className="max-w-full truncate text-[10px] text-muted-foreground leading-none sm:text-[11px]">
+              More
+            </span>
           </button>
         </div>
       </nav>

@@ -59,8 +59,8 @@ runtime. Route loading remains a host decision.
 
 Do not add separate shell navigation or command-palette entries. Declare nav
 items, commands, surfaces, shortcuts, and guards in the manifest; Cockpit
-projects eligible sidebar, mobile-more, command palette, and shortcut surfaces
-from the resolved registry after activation and guard checks.
+projects eligible sidebar, mobile-more, mobile-primary, command palette, and
+shortcut surfaces from the resolved registry after activation and guard checks.
 
 ## Host-Owned Import Map
 

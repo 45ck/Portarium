@@ -140,7 +140,7 @@ These cost almost nothing in v1 if known up-front. They cost a rewrite to add la
 
 ### Positive
 
-- **~4× speed-up** vs from-scratch (8 weeks vs 6 months) for a fully governed engineering Cockpit.
+- **~4× speed improvement** vs from-scratch (8 weeks vs 6 months) for a fully governed engineering Cockpit.
 - **18 months of someone else's edge-case fixes** are inherited, not re-derived.
 - **Their data model and trait architecture** are proven by thousands of daily users.
 - **Governance bolts cleanly** because Vibe Kanban's boundaries are at the right places (executor traits, container service traits).

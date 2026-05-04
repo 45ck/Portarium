@@ -56,13 +56,14 @@ describe('projectCockpitShellNavigation', () => {
       'Workforce',
       'Config',
       'Explore',
-      'Extensions',
+      'Reference Extension',
     ]);
     expect(projection.mobilePrimaryItems.map((item) => item.label)).toEqual([
       'Inbox',
       'Approvals',
       'Runs',
       'Dashboard',
+      'Reference Overview',
     ]);
     expect(projection.mobileMoreSections.map((section) => section.label)).toEqual([
       'Workspace',
@@ -71,7 +72,7 @@ describe('projectCockpitShellNavigation', () => {
       'Workforce',
       'Config',
       'Explore',
-      'Extensions',
+      'Reference Extension',
     ]);
     expect(projection.commandTargets.map((target) => target.label)).toEqual(
       expect.arrayContaining(['Inbox', 'Dashboard', 'Extensions', 'Open extension reference']),
@@ -99,9 +100,11 @@ describe('projectCockpitShellNavigation', () => {
   it('hides extension projections while keeping core shell entries when activation is absent', () => {
     const projection = projectWith({ activePackIds: [] });
 
-    expect(projection.sidebarSections.map((section) => section.label)).not.toContain('Extensions');
+    expect(projection.sidebarSections.map((section) => section.label)).not.toContain(
+      'Reference Extension',
+    );
     expect(projection.mobileMoreSections.map((section) => section.label)).not.toContain(
-      'Extensions',
+      'Reference Extension',
     );
     expect(projection.commandTargets.map((target) => target.label)).not.toContain(
       'Open extension reference',
@@ -117,9 +120,13 @@ describe('projectCockpitShellNavigation', () => {
   it('projects neutral extension navigation with stable shell ids and match paths', () => {
     const projection = projectWith();
     const sidebarExtensionItems =
-      projection.sidebarSections.find((section) => section.id === 'extensions')?.items ?? [];
+      projection.sidebarSections.find(
+        (section) => section.id === 'extension:example.reference:sidebar',
+      )?.items ?? [];
     const mobileExtensionItems =
-      projection.mobileMoreSections.find((section) => section.id === 'extensions')?.items ?? [];
+      projection.mobileMoreSections.find(
+        (section) => section.id === 'extension:example.reference:mobile-more',
+      )?.items ?? [];
 
     expect(sidebarExtensionItems).toMatchObject([
       {
@@ -137,6 +144,13 @@ describe('projectCockpitShellNavigation', () => {
         matchPath: '/external/example-reference/overview',
       },
     ]);
+    expect(projection.mobilePrimaryItems).toContainEqual(
+      expect.objectContaining({
+        id: 'extension-primary:example-reference-overview-nav',
+        label: 'Reference Overview',
+        to: '/external/example-reference/overview',
+      }),
+    );
   });
 
   it('hides extension items from every projected surface when the route guard denies access', () => {
@@ -147,9 +161,11 @@ describe('projectCockpitShellNavigation', () => {
       },
     });
 
-    expect(projection.sidebarSections.map((section) => section.label)).not.toContain('Extensions');
+    expect(projection.sidebarSections.map((section) => section.label)).not.toContain(
+      'Reference Extension',
+    );
     expect(projection.mobileMoreSections.map((section) => section.label)).not.toContain(
-      'Extensions',
+      'Reference Extension',
     );
     expect(projection.commandTargets.map((target) => target.label)).not.toContain(
       'Open extension reference',

@@ -35,6 +35,9 @@ Use a compile-time Cockpit extension host for v1.
   imports route code only after host-owned activation and guard checks pass.
 - The same resolved registry feeds routes, sidebar items, mobile navigation,
   command palette entries, and shortcuts.
+- Sidebar and mobile-more navigation group contributed links by enabled
+  extension identity so one extension with multiple pages appears as its own
+  coherent Cockpit area rather than as an undifferentiated extension bucket.
 - Runtime remote JavaScript/plugin bundles are out of scope for v1.
 
 ## Guard Model

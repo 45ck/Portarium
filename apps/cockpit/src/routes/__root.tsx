@@ -313,7 +313,7 @@ function RootShell() {
               {/* Nav */}
               <nav aria-label="Primary navigation" className="flex-1 overflow-y-auto p-2 space-y-3">
                 {navSections.map((section) => (
-                  <div key={section.label} className="space-y-0.5">
+                  <div key={section.id} className="space-y-0.5">
                     {!sidebarCollapsed && (
                       <p className="px-2 py-1 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
                         {section.label}

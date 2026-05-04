@@ -174,7 +174,11 @@ describe('external extensions route', () => {
     await renderRoute('/explore/extensions');
 
     expect(await screen.findByRole('heading', { name: 'External Extensions' })).toBeTruthy();
-    expect(screen.getByText('Reference Extension')).toBeTruthy();
+    expect(
+      within(screen.getByLabelText('Installed extension Reference Extension')).getByText(
+        'Reference Extension',
+      ),
+    ).toBeTruthy();
     expect(screen.getByText('Host Rules')).toBeTruthy();
     expect(screen.getByText('Activation Context')).toBeTruthy();
     expect(screen.getByText('activation ready')).toBeTruthy();
@@ -189,7 +193,9 @@ describe('external extensions route', () => {
     expect(screen.getByText('Navigation')).toBeTruthy();
     expect(screen.getByText('/external/example-reference/overview')).toBeTruthy();
     expect(
-      screen.getByText('/external/example-reference/overview (sidebar, mobile-more, command)'),
+      screen.getByText(
+        '/external/example-reference/overview (sidebar, mobile-more, command, mobile-primary)',
+      ),
     ).toBeTruthy();
     expect(screen.getByText('/external/example-reference/details/$itemId')).toBeTruthy();
     expect(screen.getByText('Open extension reference')).toBeTruthy();

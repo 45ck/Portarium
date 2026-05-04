@@ -18,6 +18,7 @@ import { useCockpitExtensionContext } from '@/hooks/queries/use-cockpit-extensio
 import { resolveCockpitExtensionServerAccess } from '@/lib/extensions/access-context';
 import { resolveInstalledCockpitExtensionRegistry } from '@/lib/extensions/installed';
 import type {
+  CockpitExtensionNavItem,
   CockpitExtensionRegistryProblem,
   ResolvedCockpitExtension,
 } from '@/lib/extensions/types';
@@ -125,7 +126,7 @@ function ExtensionCard({ extension }: { extension: ResolvedCockpitExtension }) {
   ];
 
   return (
-    <Card className="shadow-none">
+    <Card aria-label={`Installed extension ${manifest.displayName}`} className="shadow-none">
       <CardHeader className="space-y-3">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
@@ -177,7 +178,7 @@ function ExtensionCard({ extension }: { extension: ResolvedCockpitExtension }) {
             items={manifest.navItems.map((item) => ({
               key: item.id,
               label: item.title,
-              meta: `${item.to} (${item.surfaces.join(', ')})`,
+              meta: formatNavItemProjectionMeta(item),
               href: item.to,
               actionLabel: 'Open',
             }))}
@@ -231,6 +232,13 @@ function ExtensionCard({ extension }: { extension: ResolvedCockpitExtension }) {
       </CardContent>
     </Card>
   );
+}
+
+function formatNavItemProjectionMeta(item: CockpitExtensionNavItem): string {
+  const projectedSurfaces = item.mobilePrimary
+    ? [...item.surfaces, 'mobile-primary']
+    : item.surfaces;
+  return `${item.to} (${projectedSurfaces.join(', ')})`;
 }
 
 function ActivationContextCard({

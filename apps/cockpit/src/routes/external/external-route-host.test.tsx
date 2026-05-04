@@ -305,17 +305,23 @@ describe('external route host', () => {
     expect(externalRouteHostTestState.detailRouteLoader).not.toHaveBeenCalled();
   });
 
-  it('fails closed without route metadata when an active external route has no host-owned renderer', async () => {
+  it('fails closed without route content when an active external route has no host-owned renderer', async () => {
     externalRouteHostTestState.omitHostedComponents = true;
 
     await renderRoute('/external/example-reference/details/item-123');
 
-    expect(await screen.findByRole('heading', { name: 'External Route Not Found' })).toBeTruthy();
-    expect(screen.getByText('No enabled extension route matches this external path.')).toBeTruthy();
+    expect(
+      await screen.findByRole('heading', { name: 'External Route Renderer Missing' }),
+    ).toBeTruthy();
+    expect(
+      screen.getByText(
+        'The extension route matched, but Cockpit has no host-owned renderer for it.',
+      ),
+    ).toBeTruthy();
     expect(screen.getByText('Host Fallback')).toBeTruthy();
     expect(screen.getByText('/external/example-reference/details/item-123')).toBeTruthy();
+    expect(screen.getByText('missing-renderer')).toBeTruthy();
     expect(screen.queryByText('Reference Detail')).toBeNull();
-    expect(screen.queryByText('Reference Extension')).toBeNull();
     expect(screen.queryByText('example-reference-detail')).toBeNull();
     expect(screen.queryByText('itemId=item-123')).toBeNull();
     expect(screen.queryByText('Detail Contract')).toBeNull();
