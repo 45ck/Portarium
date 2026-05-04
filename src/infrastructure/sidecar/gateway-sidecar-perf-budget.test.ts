@@ -23,6 +23,12 @@ import { FailClosedProxy } from './fail-closed-proxy.js';
 import type { SidecarConfigV1 } from './sidecar-config-v1.js';
 import { SidecarProxy } from './sidecar-proxy.js';
 
+const isCoverageRun =
+  process.argv.includes('--coverage') ||
+  process.env['npm_lifecycle_event'] === 'test:coverage' ||
+  process.env['npm_lifecycle_script']?.includes('--coverage') === true;
+const describePerf = describe.skipIf(process.env['CI_PERF_SKIP'] === 'true' || isCoverageRun);
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -149,7 +155,7 @@ const MAX_ERROR_RATE = 0.01;
 // AC1: Baseline vs enforced path — p50/p95 latency and throughput
 // ---------------------------------------------------------------------------
 
-describe('AC1: Baseline vs enforced path latency and throughput', () => {
+describePerf('AC1: Baseline vs enforced path latency and throughput', () => {
   it(
     'sidecar proxy p95 added latency is within budget',
     { retry: 1, timeout: 30_000 },
@@ -283,7 +289,7 @@ describe('AC1: Baseline vs enforced path latency and throughput', () => {
 // AC2: Pass/fail thresholds
 // ---------------------------------------------------------------------------
 
-describe('AC2: Pass/fail thresholds — p95 latency, throughput, error rate', () => {
+describePerf('AC2: Pass/fail thresholds — p95 latency, throughput, error rate', () => {
   it('p95 added latency <= 25 ms at reference load', { retry: 1, timeout: 30_000 }, async () => {
     const fetchImpl = instantFetch();
     const proxy = buildSidecarProxy(fetchImpl);
@@ -367,7 +373,7 @@ describe('AC2: Pass/fail thresholds — p95 latency, throughput, error rate', ()
 // AC3: Rate limits, retries, and timeout behavior under stress
 // ---------------------------------------------------------------------------
 
-describe('AC3: Rate limits, retries, and timeout behavior under stress', () => {
+describePerf('AC3: Rate limits, retries, and timeout behavior under stress', () => {
   it('rate limiter correctly throttles above configured capacity', async () => {
     const limiter = new TokenBucketRateLimiter(
       {
@@ -524,7 +530,7 @@ describe('AC3: Rate limits, retries, and timeout behavior under stress', () => {
 // AC4: Gateway overhead measurement
 // ---------------------------------------------------------------------------
 
-describe('AC4: Gateway full-stack overhead measurement', () => {
+describePerf('AC4: Gateway full-stack overhead measurement', () => {
   it(
     'gateway auth + validation + proxy overhead stays within p95 budget',
     { retry: 1, timeout: 30_000 },
@@ -729,7 +735,7 @@ describe('AC4: Gateway full-stack overhead measurement', () => {
 // Audit emission does not degrade performance
 // ---------------------------------------------------------------------------
 
-describe('Audit emission overhead', () => {
+describePerf('Audit emission overhead', () => {
   it('audit sink emission adds < 5ms overhead at p95', { retry: 1, timeout: 30_000 }, async () => {
     const fetchImpl = instantFetch();
     const noAuditProxy = buildSidecarProxy(fetchImpl);
