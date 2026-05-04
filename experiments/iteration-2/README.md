@@ -70,8 +70,13 @@ experiments/iteration-2/results/
 `20260429T113000Z-live-wait`. Do not overwrite a previous attempt. If a run must
 be repeated, create a new attempt directory and compare it with the earlier one.
 
-## What Remains
+## Closure Notes
 
 The suite scaffold and telemetry helper close the planning and shared metrics
-work. The concrete live experiments and reports remain in `bead-1042` through
-`bead-1045`.
+work. The concrete deterministic experiments and reports are owned by their
+scenario Beads, and the original Growth Studio showcase epic is closed by
+`docs/internal/review/bead-0999-growth-studio-epic-closure.md`.
+
+Live provider-backed reruns remain opt-in evidence. They must use the explicit
+live OpenClaw and live model gates, preserve prior attempt directories, and
+write redacted provider metadata into a new attempt bundle.

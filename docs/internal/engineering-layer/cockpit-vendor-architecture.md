@@ -1,6 +1,6 @@
 # Cockpit Vendor Architecture — How the Hybrid Integration Works
 
-This is the operational/architectural companion to [ADR-0148](../adr/ADR-0148-cockpit-derives-from-vibe-kanban.md). The ADR is the *what* and the *why*. This doc is the *how*.
+This is the operational/architectural companion to [ADR-0148](../adr/ADR-0148-cockpit-derives-from-vibe-kanban.md). The ADR is the _what_ and the _why_. This doc is the _how_.
 
 ## High-level topology
 
@@ -146,14 +146,14 @@ portarium/
 
 ### What runs where
 
-| Service | Stack | Port (default) | Owner | Purpose |
-| --- | --- | --- | --- | --- |
-| Cockpit Vite dev | Node | 1355 | Portarium | UI |
-| Portarium control plane | Node + Hono | 3000 | Portarium | Policy, evidence, beads, sandbox provider, AgentRuntimePort |
-| Vibe Kanban backend | Rust + Axum | 8080 | Vendored | Workspace manager, executors, approval system, PTY, preview proxy |
-| Vibe Kanban preview proxy | Rust | 8081 | Vendored | Origin-isolated preview iframes |
-| Postgres | — | 5432 | Portarium | Evidence chain, policy, durable approvals |
-| SQLite (VK local state) | — | (file) | Vendored | Workspace state, scratch, PTY logs |
+| Service                   | Stack       | Port (default) | Owner     | Purpose                                                           |
+| ------------------------- | ----------- | -------------- | --------- | ----------------------------------------------------------------- |
+| Cockpit Vite dev          | Node        | 1355           | Portarium | UI                                                                |
+| Portarium control plane   | Node + Hono | 3000           | Portarium | Policy, evidence, beads, sandbox provider, AgentRuntimePort       |
+| Vibe Kanban backend       | Rust + Axum | 8080           | Vendored  | Workspace manager, executors, approval system, PTY, preview proxy |
+| Vibe Kanban preview proxy | Rust        | 8081           | Vendored  | Origin-isolated preview iframes                                   |
+| Postgres                  | —           | 5432           | Portarium | Evidence chain, policy, durable approvals                         |
+| SQLite (VK local state)   | —           | (file)         | Vendored  | Workspace state, scratch, PTY logs                                |
 
 ### Direction of HTTP calls
 
@@ -187,7 +187,7 @@ This direction discipline is critical: it means VK doesn't need to know Portariu
 16. Glue completes the trait call back to VK; VK lets the agent execute.
 ```
 
-The glue crate is what makes step 4–9 a single trait method call from VK's perspective. From the *agent's* perspective inside the sandbox, nothing about how it requests permission has changed.
+The glue crate is what makes step 4–9 a single trait method call from VK's perspective. From the _agent's_ perspective inside the sandbox, nothing about how it requests permission has changed.
 
 ## Glue crate design
 
@@ -252,12 +252,14 @@ The patch in `main.rs` is roughly 5 lines and is the only file we modify in the 
 ### What we copy
 
 From `vendor/vibe-kanban/packages/web-core/src/`:
+
 - `pages/kanban/` → `apps/cockpit/src/routes/engineering/board.tsx`
 - `pages/workspaces/` → `apps/cockpit/src/routes/engineering/workspace.$id.tsx`
 - `features/kanban/`, `features/workspace/`, `features/workspace-chat/` → `apps/cockpit/src/components/engineering/`
 - `features/create-mode/`, `features/onboarding/`, `features/export/` → selectively, as needed
 
 From `vendor/vibe-kanban/packages/ui/src/`:
+
 - Components that don't duplicate our shadcn primitives → merge
 - Components that duplicate our shadcn → discard, use ours
 
@@ -277,6 +279,7 @@ From `vendor/vibe-kanban/packages/ui/src/`:
 ### How we restyle
 
 shadcn primitives substitute their UI primitives 1:1 in most cases (both use Tailwind, both follow similar component shapes). The main work:
+
 - Tailwind class swaps to our color tokens (`bg-card`, `text-foreground`, etc.)
 - Icon swaps from their icons to ours (lucide-react in both)
 - Spacing/sizing alignment to our design system
@@ -299,6 +302,7 @@ Every transplanted file gets a header comment:
 ### Local dev
 
 `npm run dev` orchestrates (via concurrently or similar):
+
 1. Portarium control plane on :3000 (`tsx src/index.ts`)
 2. Cockpit Vite dev on :1355 (`vite`)
 3. Vibe Kanban backend on :8080 (`cargo run -p server` in `vendor/vibe-kanban/`)
@@ -323,6 +327,7 @@ Postgres + Redis assumed running (existing setup).
 The hardest debugging case: "approval flow doesn't complete." Symptom: human clicks Approve, nothing happens.
 
 Diagnosis steps:
+
 1. Cockpit Network tab: did `POST /api/portarium/approvals/:id/reply` succeed?
 2. Portarium logs: did the approval get persisted? Did the wake-up signal fire?
 3. Glue crate logs: did the long-poll on `wait_approval` see the resolution?
@@ -340,7 +345,7 @@ To make this tractable, every approval flows with a `correlation_id` set at requ
 ## What this architecture explicitly does NOT do
 
 - It does not run Vibe Kanban's hosted/cloud features. Those crates are deleted; their absence is a pre-build assertion.
-- It does not allow Vibe Kanban backend to call the Portarium control plane *except* through the glue crate's well-defined interface.
+- It does not allow Vibe Kanban backend to call the Portarium control plane _except_ through the glue crate's well-defined interface.
 - It does not let Portarium domain or application code know that Vibe Kanban exists.
 - It does not promise upstream patch parity. We are the maintained continuation.
 
