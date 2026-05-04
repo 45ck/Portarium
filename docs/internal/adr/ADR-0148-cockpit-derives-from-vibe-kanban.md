@@ -36,7 +36,7 @@ The cloud-tier crates Vibe Kanban shipped for its commercial offering (`relay-*`
 
 Take the entire Vibe Kanban repo, modify in place, ship as Portarium Cockpit. Adopts Rust as the Cockpit stack end-to-end. ~7 weeks.
 
-**Rejected because**: forking the source means our diff against upstream grows unboundedly; pulling future patches (if any community fork emerges) becomes a merge-conflict exercise. The hybrid achieves the same speed without forking — we delete leaf crates and add new crates, but we don't modify the crates we keep. Vendor SHA stays clean and auditable.
+**Rejected because**: forking the source means our diff against upstream grows without bound; pulling future patches (if any community fork emerges) becomes a merge-conflict exercise. The hybrid achieves the same speed without forking — we delete leaf crates and add new crates, but we don't modify the crates we keep. Vendor SHA stays clean and auditable.
 
 ### B — Whole-frontend transplant + Node backend rewrite
 
@@ -90,6 +90,7 @@ These rules are what keep the hybrid clean over time. Violating any of them is g
 Default rule: **never patch vendored crates.** If you need behavior change, write a glue crate that wraps or implements their trait. The trait-based architecture in Vibe Kanban is precisely what enables this.
 
 Two ADR-required exceptions:
+
 - **Security CVE in a vendored dep that upstream isn't fixing.** Apply the minimal patch. Document in `VENDOR.md` with source CVE.
 - **Trait shape needs widening to plug in our governance.** Submit upstream first (even into the void); apply locally with `VENDOR.md` note.
 
@@ -105,7 +106,7 @@ Two ADR-required exceptions:
 The glue boundary is the highest-leverage failure surface. Two test categories run in CI:
 
 - **Glue crate tests** (Rust, in `cockpit-backend-glue`): given a mock trait input, the glue crate makes the right HTTP call and resolves the trait correctly.
-- **End-to-end governance contract tests** (Playwright + real services): a workflow with a `HUMAN-APPROVE` policy decision is *actually* blocked at the Cockpit until approved. This catches regressions in the integration that unit tests miss.
+- **End-to-end governance contract tests** (Playwright + real services): a workflow with a `HUMAN-APPROVE` policy decision is _actually_ blocked at the Cockpit until approved. This catches regressions in the integration that unit tests miss.
 
 If these tests fail, the integration is broken regardless of UI appearance.
 
@@ -114,18 +115,23 @@ If these tests fail, the integration is broken regardless of UI appearance.
 The Cockpit being usable by autonomous agents (filing beads, claiming work, executing under policy) is part of Portarium's longer-term thesis (see `docs/internal/engineering-layer/agent-driven-backlog-vision.md`). v1 must not foreclose on it. Five shape decisions to bake into the v1 hybrid:
 
 ### D1. Beads API is canonical, CLI is a thin client
+
 The HTTP route to create/update beads is the source of truth. The `bd` CLI becomes a thin client over the API. Agents and humans hit the same surface — no special-casing.
 
 ### D2. Actor identity is a first-class field on every bead/approval/evidence entry
+
 Not strings. Cryptographic identity: `human:ajax@aquinus.net` or `agent:triage-v1@portarium`. Without this, separation-of-duties enforcement in phase 3 is impossible.
 
 ### D3. Policy tier resolution accepts actor type as input
+
 Same action, different tier depending on whether the actor is human or agent. The policy engine signature accepts actor type from day one. Retrofitting later means re-running every historical decision.
 
 ### D4. RateLimitPort and ReputationPort interfaces exist (with stub impls)
+
 v1 stub impls return unlimited / 100% reputation. Real impls plug in for phase 3 without restructuring policy. The interface surface must be there from day one.
 
 ### D5. Evidence schema includes `triggeringObservation` field
+
 When an agent files a bead, what did it observe? Canonical shape: `triggeringObservation: { kind: 'log' | 'ticket' | 'metric' | 'human' | 'other'; ref: string; summary: string } | null`. Empty/null for human-filed beads. This is what makes agent-filed beads reviewable rather than mysterious.
 
 These cost almost nothing in v1 if known up-front. They cost a rewrite to add later. The integration build plan (`integration-build-plan.md`) sequences them into the relevant weeks.
@@ -134,7 +140,7 @@ These cost almost nothing in v1 if known up-front. They cost a rewrite to add la
 
 ### Positive
 
-- **~4× speedup** vs from-scratch (8 weeks vs 6 months) for a fully governed engineering Cockpit.
+- **~4× speed-up** vs from-scratch (8 weeks vs 6 months) for a fully governed engineering Cockpit.
 - **18 months of someone else's edge-case fixes** are inherited, not re-derived.
 - **Their data model and trait architecture** are proven by thousands of daily users.
 - **Governance bolts cleanly** because Vibe Kanban's boundaries are at the right places (executor traits, container service traits).
@@ -165,7 +171,7 @@ If at any future point we want to retire the Vibe Kanban backend and bring every
 4. Retire the Vibe Kanban service from deployment.
 5. Delete `vendor/vibe-kanban/` and `src/infrastructure/cockpit-backend-glue/`.
 
-Time estimate for full migration: ~3 months. The frontend transplant work is *not* lost — it is the bulk of the engineering Cockpit and stays usable throughout.
+Time estimate for full migration: ~3 months. The frontend transplant work is _not_ lost — it is the bulk of the engineering Cockpit and stays usable throughout.
 
 This exit door means the hybrid is not a one-way trap. We can always reverse course if the polyglot tax becomes intolerable, the vendor backend develops unfixable issues, or business conditions change.
 
