@@ -55,10 +55,88 @@ const READ_ONLY_PATTERNS: readonly RegExp[] = [
   /(^|[:._-])(classify|summarize|extract|analyze)([:._-]|$)/i,
 ];
 
+const EXACT_TOOL_POLICIES: Readonly<
+  Record<string, Omit<OpenClawToolBlastRadiusPolicyV1, 'toolName'>>
+> = {
+  'web-search': {
+    category: 'ReadOnly',
+    minimumTier: 'Auto',
+    rationale: 'Growth Studio web search only reads public prospect information.',
+  },
+  'scrape-website': {
+    category: 'ReadOnly',
+    minimumTier: 'Auto',
+    rationale: 'Growth Studio website scraping only extracts text from public URLs.',
+  },
+  'read-crm-contact': {
+    category: 'ReadOnly',
+    minimumTier: 'Auto',
+    rationale: 'Growth Studio CRM contact reads do not mutate CRM state.',
+  },
+  'read-analytics': {
+    category: 'ReadOnly',
+    minimumTier: 'Auto',
+    rationale: 'Growth Studio analytics reads only fetch campaign metrics.',
+  },
+  'draft-email': {
+    category: 'Mutation',
+    minimumTier: 'HumanApprove',
+    rationale: 'Growth Studio email drafting creates a saved draft and requires approval.',
+  },
+  'draft-linkedin-post': {
+    category: 'Mutation',
+    minimumTier: 'HumanApprove',
+    rationale: 'Growth Studio LinkedIn drafting creates a saved draft and requires approval.',
+  },
+  'draft-blog-article': {
+    category: 'Mutation',
+    minimumTier: 'HumanApprove',
+    rationale: 'Growth Studio blog drafting creates a saved draft and requires approval.',
+  },
+  'update-crm-contact': {
+    category: 'Mutation',
+    minimumTier: 'HumanApprove',
+    rationale: 'Growth Studio CRM updates change contact fields or notes.',
+  },
+  'schedule-content': {
+    category: 'Mutation',
+    minimumTier: 'HumanApprove',
+    rationale: 'Growth Studio scheduling mutates a publishing queue.',
+  },
+  'send-email': {
+    category: 'Dangerous',
+    minimumTier: 'ManualOnly',
+    rationale: 'Growth Studio email sending contacts an external recipient.',
+  },
+  'publish-linkedin-post': {
+    category: 'Dangerous',
+    minimumTier: 'ManualOnly',
+    rationale: 'Growth Studio LinkedIn publishing makes content externally visible.',
+  },
+  'publish-blog-article': {
+    category: 'Dangerous',
+    minimumTier: 'ManualOnly',
+    rationale: 'Growth Studio blog publishing makes content externally visible.',
+  },
+  'delete-crm-contact': {
+    category: 'Dangerous',
+    minimumTier: 'ManualOnly',
+    rationale: 'Growth Studio contact deletion removes a CRM record.',
+  },
+};
+
 export function classifyOpenClawToolBlastRadiusV1(
   toolName: string,
 ): OpenClawToolBlastRadiusPolicyV1 {
   const normalized = toolName.trim();
+  const exactPolicy = EXACT_TOOL_POLICIES[normalized];
+
+  if (exactPolicy) {
+    return {
+      toolName: normalized,
+      ...exactPolicy,
+    };
+  }
 
   if (matchesAny(normalized, DANGEROUS_PATTERNS)) {
     return {

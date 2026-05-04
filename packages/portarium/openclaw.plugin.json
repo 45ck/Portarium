@@ -2,6 +2,33 @@
   "id": "portarium",
   "name": "Portarium Governance",
   "description": "Routes all tool calls through Portarium policy, approvals, and evidence before execution. Blocks, approves, or queues human approval for every tool call.",
+  "toolClassifications": {
+    "growthStudio": {
+      "ReadOnly": {
+        "minimumTier": "Auto",
+        "toolNames": ["web-search", "scrape-website", "read-crm-contact", "read-analytics"]
+      },
+      "Mutation": {
+        "minimumTier": "HumanApprove",
+        "toolNames": [
+          "draft-email",
+          "draft-linkedin-post",
+          "draft-blog-article",
+          "update-crm-contact",
+          "schedule-content"
+        ]
+      },
+      "Dangerous": {
+        "minimumTier": "ManualOnly",
+        "toolNames": [
+          "send-email",
+          "publish-linkedin-post",
+          "publish-blog-article",
+          "delete-crm-contact"
+        ]
+      }
+    }
+  },
   "configSchema": {
     "type": "object",
     "required": ["portariumUrl", "workspaceId", "bearerToken"],

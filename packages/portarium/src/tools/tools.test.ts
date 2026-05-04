@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { createGetRunTool } from './get-run.js';
 import { createListApprovalsTool } from './list-approvals.js';
 import { createCapabilityLookupTool } from './capability-lookup.js';
+import { GROWTH_STUDIO_TOOL_REGISTRY } from './growth-studio-registry.js';
 import type {
   PortariumClient,
   RunStatus,
@@ -156,5 +157,76 @@ describe('portarium_capability_lookup', () => {
     const client = { lookupCapability: vi.fn() } as unknown as PortariumClient;
     const tool = createCapabilityLookupTool(client);
     expect(tool.name).toBe('portarium_capability_lookup');
+  });
+});
+
+// ──────────────────────────────────────────────
+// Growth Studio tool registry
+// ──────────────────────────────────────────────
+
+describe('growth studio tool registry', () => {
+  it('defines every Growth Studio tool with a TypeBox input schema and tier', () => {
+    expect(GROWTH_STUDIO_TOOL_REGISTRY).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          name: 'web-search',
+          classification: { category: 'ReadOnly', minimumTier: 'Auto' },
+        }),
+        expect.objectContaining({
+          name: 'scrape-website',
+          classification: { category: 'ReadOnly', minimumTier: 'Auto' },
+        }),
+        expect.objectContaining({
+          name: 'read-crm-contact',
+          classification: { category: 'ReadOnly', minimumTier: 'Auto' },
+        }),
+        expect.objectContaining({
+          name: 'read-analytics',
+          classification: { category: 'ReadOnly', minimumTier: 'Auto' },
+        }),
+        expect.objectContaining({
+          name: 'draft-email',
+          classification: { category: 'Mutation', minimumTier: 'HumanApprove' },
+        }),
+        expect.objectContaining({
+          name: 'draft-linkedin-post',
+          classification: { category: 'Mutation', minimumTier: 'HumanApprove' },
+        }),
+        expect.objectContaining({
+          name: 'draft-blog-article',
+          classification: { category: 'Mutation', minimumTier: 'HumanApprove' },
+        }),
+        expect.objectContaining({
+          name: 'update-crm-contact',
+          classification: { category: 'Mutation', minimumTier: 'HumanApprove' },
+        }),
+        expect.objectContaining({
+          name: 'schedule-content',
+          classification: { category: 'Mutation', minimumTier: 'HumanApprove' },
+        }),
+        expect.objectContaining({
+          name: 'send-email',
+          classification: { category: 'Dangerous', minimumTier: 'ManualOnly' },
+        }),
+        expect.objectContaining({
+          name: 'publish-linkedin-post',
+          classification: { category: 'Dangerous', minimumTier: 'ManualOnly' },
+        }),
+        expect.objectContaining({
+          name: 'publish-blog-article',
+          classification: { category: 'Dangerous', minimumTier: 'ManualOnly' },
+        }),
+        expect.objectContaining({
+          name: 'delete-crm-contact',
+          classification: { category: 'Dangerous', minimumTier: 'ManualOnly' },
+        }),
+      ]),
+    );
+
+    expect(GROWTH_STUDIO_TOOL_REGISTRY).toHaveLength(13);
+    for (const tool of GROWTH_STUDIO_TOOL_REGISTRY) {
+      expect(tool.description.length).toBeGreaterThan(10);
+      expect(tool.inputSchema.type).toBe('object');
+    }
   });
 });
