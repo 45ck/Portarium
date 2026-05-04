@@ -128,6 +128,41 @@ decisions, tool classifications, policy decisions, and outputs.
 | `execute`  | OutreachExecutor | Approval packet, approved Artifacts, approved schedule, channel credentials. | Delivery receipts, publication URLs, CRM state updates, failure records.           | `Mutation` send, publish, update Actions permitted by policy. | Required when delivery target, content hash, schedule, or policy result differs from the approval packet. |
 | `measure`  | OutreachExecutor | Execution results, channel metrics, replies, publication analytics.          | Measurement snapshot, lessons, next-loop recommendation.                           | `ReadOnly` metric reads and analysis.                         | Required before iterating if the recommendation expands audience, budget, channel, or autonomy tier.      |
 
+## Approval Policy
+
+The Growth Studio approval policy uses the existing inline policy condition DSL
+and existing SoD constraint types.
+
+Tool approval tiers:
+
+- `web-search`, `scrape-website`, `read-crm-contact`, and `read-analytics`
+  require `Auto`.
+- `draft-email`, `draft-linkedin-post`, `draft-blog-article`,
+  `update-crm-contact`, and `schedule-content` require `HumanApprove`.
+- `send-email`, `publish-linkedin-post`, `publish-blog-article`, and
+  `delete-crm-contact` require `ManualOnly`.
+
+Guard rules:
+
+- Any operation over more than 5 contacts requires `ManualOnly`.
+- Any operation with estimated cost greater than 50 USD requires `ManualOnly`.
+- Publish Actions require draft approval before publish approval can proceed.
+
+SoD requirements:
+
+- `MakerChecker`: the proposer cannot self-approve.
+- `DistinctApprovers`: publish or send approval requires a different approver
+  set than the draft approval.
+- `IncompatibleDuties`: the same operator cannot perform both
+  `growth-studio:draft-approval` and `growth-studio:publish-approval` duties.
+
+Timeouts:
+
+- `HumanApprove` waits 15 minutes, then denies the request and notifies the
+  operator.
+- `ManualOnly` waits 60 minutes, then denies the request and escalates to an
+  admin.
+
 ## Contracts
 
 ### `GrowthStudioRunInputV1`

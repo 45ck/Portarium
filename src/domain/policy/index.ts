@@ -13,3 +13,4 @@ export * from './execution-tier-policy-v1.js';
 export * from './policy-evaluation-pipeline-v1.js';
 export * from './outbound-communication-compliance-v1.js';
 export * from './autonomy-budget-policy-v1.js';
+export * from './growth-studio-approval-policy-v1.js';
