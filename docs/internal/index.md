@@ -30,3 +30,4 @@ Use this index for maintainer-facing docs, architecture records, operational run
 - Generic Cockpit plugin host plan: `docs/internal/ui/cockpit/generic-plugin-host-implementation-plan.md`
 - Cockpit local extension install bridge: `docs/internal/ui/cockpit/local-extension-install-bridge.md`
 - Cockpit local extension readiness plan: `docs/internal/ui/cockpit/local-extension-readiness-plan.md`
+- Cockpit map workbench extension slots plan: `docs/internal/ui/cockpit/map-workbench-extension-slots-plan.md`

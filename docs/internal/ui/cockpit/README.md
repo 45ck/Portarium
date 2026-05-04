@@ -14,6 +14,7 @@ This folder contains a low-fidelity, clickable prototype for the Portarium Cockp
 - `generic-plugin-host-implementation-plan.md` covers the reusable Cockpit plugin host/control-plane implementation plan.
 - `local-extension-install-bridge.md` covers the ignored local install bridge for development-only extension wiring.
 - `local-extension-readiness-plan.md` captures the acceptance checklist for proving a local extension is runnable in Cockpit.
+- `map-workbench-extension-slots-plan.md` defines the proposed generic map workbench and extension side-panel boundary.
 
 ## How To View
 
