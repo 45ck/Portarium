@@ -1,0 +1,51 @@
+# bead-1166 map workbench host skeleton test matrix
+
+## Scope
+
+This matrix covers the planned Cockpit map workbench host skeleton. It is intentionally tenant-neutral and does not assume a specific customer, workspace name, site, port, or geography.
+
+No app test files were added in this pass because `apps/cockpit/src/components/cockpit/map-host/` is present as untracked in this checkout and appears to be in-flight implementation work owned by another worker. When that skeleton is committed or otherwise handed off, add focused tests in the locations below without moving or rewriting the host implementation.
+
+## Expected future test locations
+
+| Concern | Expected file |
+| --- | --- |
+| Host guard and degraded rendering | `apps/cockpit/src/components/cockpit/map-host/map-workbench-host.test.tsx` |
+| Selection state and event normalization | `apps/cockpit/src/components/cockpit/map-host/map-workbench-selection.test.ts` |
+| Payload redaction and public props contract | `apps/cockpit/src/components/cockpit/map-host/map-workbench-payload.test.ts` |
+| Optional integration with existing operations map shell | `apps/cockpit/src/components/cockpit/map-host/map-workbench-host.integration.test.tsx` |
+
+## Test matrix
+
+| ID | Area | Scenario | Setup | Expected assertion | Future test file |
+| --- | --- | --- | --- | --- | --- |
+| MWB-001 | Guard | Allowed operator context renders the host skeleton | Provide a server-issued guard context with the required map workbench capability and a tenant-neutral workspace identifier such as `workspace-alpha` | The host renders the map workbench landmark, toolbar entry points, and an empty or loading canvas without exposing guard internals | `map-workbench-host.test.tsx` |
+| MWB-002 | Guard | Missing capability fails closed | Provide an authenticated context without the map workbench capability | The host does not render map controls or layer content and shows the shared unauthorized or unavailable fallback | `map-workbench-host.test.tsx` |
+| MWB-003 | Guard | Privacy class above allowed scope is denied | Provide a route or host model requiring a higher privacy class than the guard context permits | The host blocks the workbench body and does not leak map layer names, selected entity labels, or raw denied metadata in fallback text | `map-workbench-host.test.tsx` |
+| MWB-004 | Guard | Workspace mismatch is rejected before rendering | Provide a requested workspace id that differs from the guard context workspace id | The host renders the denied fallback and no selection, layer, or payload callbacks fire | `map-workbench-host.test.tsx` |
+| MWB-005 | Selection | No selection starts in a stable empty state | Render with no selected map entity and no pending selection event | Details panel, actions, and outbound selection callback remain disabled or absent while the canvas remains mounted | `map-workbench-selection.test.ts` |
+| MWB-006 | Selection | Selecting a permitted entity emits a normalized selection | Trigger selection for a permitted tenant-neutral entity id such as `asset-001` with minimal display metadata | Selection state stores only the normalized entity reference, type, display label, and allowed summary fields | `map-workbench-selection.test.ts` |
+| MWB-007 | Selection | Selecting denied or unknown entity clears privileged details | Trigger selection for an entity outside guard scope or absent from the allowed layer model | The previous privileged selection is cleared or replaced with a denied placeholder; no stale detail panel remains visible | `map-workbench-selection.test.ts` |
+| MWB-008 | Selection | Re-selecting the same entity is idempotent | Trigger the same normalized selection twice | State and callbacks do not duplicate actions, events, toasts, or history entries | `map-workbench-selection.test.ts` |
+| MWB-009 | Selection | Layer toggle change does not preserve invalid selection | Select an entity, then remove or disable the layer that contains it | The selection is cleared or marked unavailable and entity-specific actions are disabled | `map-workbench-selection.test.ts` |
+| MWB-010 | Degraded | Data source unavailable renders degraded workbench state | Provide a degraded data source status for maps, layers, or entity search | The host shows a degraded state, keeps safe navigation controls available where possible, and disables actions requiring fresh data | `map-workbench-host.test.tsx` |
+| MWB-011 | Degraded | Partial layer failure does not blank the whole host | Provide one healthy base layer and one failed optional overlay | The base workbench remains usable, the failed overlay is identified generically, and retry affordance is scoped to the failed overlay | `map-workbench-host.test.tsx` |
+| MWB-012 | Degraded | Stale data is labelled and action-limited | Provide stale map data with an explicit freshness status | The host displays stale or degraded freshness status and blocks irreversible or policy-sensitive actions from stale selection data | `map-workbench-host.test.tsx` |
+| MWB-013 | Degraded | Host handles renderer initialization failure | Simulate map renderer construction throwing before first paint | Error boundary or degraded fallback appears, no unhandled exception escapes the render, and no raw initialization payload is displayed | `map-workbench-host.test.tsx` |
+| MWB-014 | No raw payload | Host props exclude raw API payloads | Render with a fixture containing extra raw transport fields, nested provider response bodies, and diagnostics | Public child props and visible UI include only the normalized view model; raw payload fields are absent | `map-workbench-payload.test.ts` |
+| MWB-015 | No raw payload | Selection callback redacts raw entity details | Trigger selection from a fixture that includes raw provider geometry, diagnostics, and source attributes | Callback receives a normalized selection event without raw provider payload, secret-like fields, or unapproved diagnostics | `map-workbench-payload.test.ts` |
+| MWB-016 | No raw payload | Fallback and error states redact transport details | Simulate a failed layer request carrying status text, request id, and raw error body | UI may show safe status and correlation id if allowed, but not raw response bodies, tokens, URLs with sensitive query strings, or provider payloads | `map-workbench-payload.test.ts` |
+| MWB-017 | No raw payload | Debug hooks remain disabled by default | Render in the default test environment with debug payload fixtures available | No raw payload debug panel, console output, data attribute, or DOM text is emitted unless an explicit approved debug mode exists | `map-workbench-payload.test.ts` |
+| MWB-018 | Integration | Existing operations map shell can host the skeleton without tenant-specific fixtures | Mount the workbench through the future host entry point with generic assets, generic locations, and capability-scoped layers | Route-level rendering succeeds, tenant-neutral labels are used, and existing operations-map tests remain isolated | `map-workbench-host.integration.test.tsx` |
+
+## Fixture guidance
+
+- Use generic identifiers such as `workspace-alpha`, `asset-001`, `location-001`, and `layer-operations`.
+- Avoid real tenant names, customer names, addresses, coordinates tied to private sites, operational incidents, or production payload fragments.
+- Build fixtures from normalized host view models first. Add raw payload fields only in negative tests that prove they are stripped before UI, child props, callbacks, logs, or test snapshots.
+- Keep snapshots narrow. Prefer explicit queries and object assertions for guard outcomes, selection transitions, degraded states, and redaction.
+
+## Blockers
+
+- `apps/cockpit/src/components/cockpit/map-host/` exists only as untracked in this checkout, so executable tests were not added to avoid conflicting with in-flight implementation ownership.
+- The exact exported host component, guard context type, normalized map entity model, and degraded status contract are not yet available as committed code for test imports.
