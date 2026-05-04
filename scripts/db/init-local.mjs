@@ -21,20 +21,29 @@
 
 import { spawnSync } from 'node:child_process';
 import process from 'node:process';
+import { fileURLToPath } from 'node:url';
+import pg from 'pg';
 
 const LOCAL_DB_URL =
   process.env['DATABASE_URL'] ?? 'postgresql://portarium:portarium@localhost:5432/portarium';
+const TSX_CLI = fileURLToPath(new URL('../../node_modules/tsx/dist/cli.mjs', import.meta.url));
 
 const tenantsArg = process.argv.includes('--tenants')
   ? process.argv.slice(process.argv.indexOf('--tenants'))
   : ['--tenants', 'workspace-default'];
+const tenantIds = tenantsArg.includes('--tenants')
+  ? (tenantsArg[tenantsArg.indexOf('--tenants') + 1]
+      ?.split(',')
+      .map((tenant) => tenant.trim())
+      .filter((tenant) => tenant.length > 0) ?? [])
+  : [];
 
 process.stdout.write(`[db:init-local] DATABASE_URL=${LOCAL_DB_URL}\n`);
 process.stdout.write(`[db:init-local] Applying Expand-phase migrations...\n`);
 
 const result = spawnSync(
-  'tsx',
-  ['src/infrastructure/migrations/cli.ts', 'bootstrap', ...tenantsArg],
+  process.execPath,
+  [TSX_CLI, 'src/infrastructure/migrations/cli.ts', 'bootstrap', ...tenantsArg],
   {
     stdio: 'inherit',
     env: { ...process.env, DATABASE_URL: LOCAL_DB_URL },
@@ -50,6 +59,19 @@ if (result.status !== 0) {
       '  npm run dev:all\n',
   );
   process.exit(result.status ?? 1);
+}
+
+const client = new pg.Client({ connectionString: LOCAL_DB_URL });
+await client.connect();
+try {
+  for (const tenantId of tenantIds) {
+    await client.query(
+      'INSERT INTO workspace_registry (tenant_id) VALUES ($1) ON CONFLICT DO NOTHING;',
+      [tenantId],
+    );
+  }
+} finally {
+  await client.end();
 }
 
 process.stdout.write('[db:init-local] Schema bootstrap complete.\n');

@@ -15,6 +15,8 @@
 
 const BASE_URL = process.env['OPENFGA_BASE_URL'] ?? 'http://openfga:8080';
 const STORE_NAME = 'portarium';
+const READY_TIMEOUT_MS = 30_000;
+const READY_POLL_MS = 1_000;
 
 /** Workspace authorization model — supports approver / operator / auditor roles */
 const AUTH_MODEL = {
@@ -74,6 +76,27 @@ async function findOrCreateStore() {
   return id;
 }
 
+async function waitForOpenFga() {
+  const deadline = Date.now() + READY_TIMEOUT_MS;
+  let lastError;
+
+  while (Date.now() < deadline) {
+    try {
+      const res = await fetch(`${BASE_URL}/stores`);
+      if (res.ok) return;
+      lastError = new Error(`GET /stores -> ${res.status}`);
+    } catch (err) {
+      lastError = err;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, READY_POLL_MS));
+  }
+
+  throw new Error(
+    `OpenFGA did not become ready within ${READY_TIMEOUT_MS}ms: ${lastError?.message ?? 'unknown error'}`,
+  );
+}
+
 async function writeAuthorizationModel(storeId) {
   const res = await fetch(`${BASE_URL}/stores/${storeId}/authorization-models`, {
     method: 'POST',
@@ -90,6 +113,7 @@ async function writeAuthorizationModel(storeId) {
 
 async function main() {
   process.stdout.write(`[openfga-init] Connecting to ${BASE_URL}...\n`);
+  await waitForOpenFga();
   const storeId = await findOrCreateStore();
   await writeAuthorizationModel(storeId);
   process.stdout.write('[openfga-init] Initialization complete.\n');

@@ -3,7 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { resolve } from 'node:path';
 
 const repoRoot = resolve(import.meta.dirname, '../..');
-const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+const npmCommand = 'npm';
 const nodeCommand = process.execPath;
 const args = new Set(process.argv.slice(2));
 const apiBaseUrl =
@@ -24,9 +24,14 @@ const skipSeed =
   );
 
 function run(command, commandArgs, env = process.env) {
-  const result = spawnSync(command, commandArgs, {
+  const [spawnCommand, spawnArgs] =
+    process.platform === 'win32' && command === npmCommand
+      ? [process.env.ComSpec ?? 'cmd.exe', ['/d', '/s', '/c', [command, ...commandArgs].join(' ')]]
+      : [command, commandArgs];
+  const result = spawnSync(spawnCommand, spawnArgs, {
     cwd: repoRoot,
     env,
+    shell: false,
     stdio: 'inherit',
   });
   if (result.status !== 0) {

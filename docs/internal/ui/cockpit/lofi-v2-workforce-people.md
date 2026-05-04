@@ -33,5 +33,5 @@ Scope: Workforce/People directory as first-class resource surface under Configur
 
 ## Reviewer Sign-Off
 
-- Reviewer: Principal Engineer (MQCKENC)
+- Reviewer: Principal Engineer
 - Status: Approved for implementation (`bead-0545`)

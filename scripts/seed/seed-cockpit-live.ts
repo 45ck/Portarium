@@ -34,6 +34,7 @@ const COLLECTION_WORKFLOWS = 'workflows';
 const COLLECTION_ADAPTERS = 'adapter-registrations';
 const COLLECTION_PLANS = 'plans';
 const COLLECTION_EVIDENCE = 'evidence-log';
+const COLLECTION_IDEMPOTENCY = 'idempotency';
 
 export type CockpitLiveSeedMode = 'seed' | 'validate' | 'dry-run';
 
@@ -167,6 +168,7 @@ export async function seedCockpitLiveBundle(
     }
 
     await deleteSeedEvidence(tx, bundle);
+    await deleteSeedIdempotency(tx, bundle);
     for (const entry of bundle.evidence) {
       await evidenceLog.appendEntry(bundle.tenantId, entry);
     }
@@ -315,6 +317,13 @@ export async function validatePersistedCockpitLiveSeed(
       ['WaitingForApproval', 'Running', 'Succeeded', 'Failed'],
       runs.items.map((run) => run.status),
     ),
+    checkPresent(
+      'waiting run smoke target',
+      runs.items.some(
+        (run) => String(run.runId) === 'run-live-001' && run.status === 'WaitingForApproval',
+      ),
+      'run-live-001 WaitingForApproval',
+    ),
     checkIds(
       'evidence category coverage',
       ['Plan', 'Approval', 'Action', 'System'],
@@ -348,11 +357,39 @@ async function deleteSeedEvidence(client: SqlClient, bundle: CockpitLiveSeedBund
     `DELETE FROM domain_documents
       WHERE tenant_id = $1
         AND collection = $2
-        AND document_id = ANY($3::text[])`,
+        AND workspace_id = $3
+        AND (
+          document_id = ANY($4::text[])
+          OR payload->'links'->>'approvalId' = ANY($5::text[])
+          OR payload->'links'->>'runId' = ANY($6::text[])
+        )`,
     [
       String(bundle.tenantId),
       COLLECTION_EVIDENCE,
+      String(bundle.workspaceId),
       bundle.evidence.map((entry) => String(entry.evidenceId)),
+      bundle.approvals.map((approval) => String(approval.approvalId)),
+      bundle.runs.map((run) => String(run.runId)),
+    ],
+  );
+}
+
+async function deleteSeedIdempotency(
+  client: SqlClient,
+  bundle: CockpitLiveSeedBundle,
+): Promise<void> {
+  await client.query(
+    `DELETE FROM domain_documents
+      WHERE tenant_id = $1
+        AND collection = $2
+        AND document_id LIKE ANY($3::text[])`,
+    [
+      String(bundle.tenantId),
+      COLLECTION_IDEMPOTENCY,
+      bundle.approvals.map(
+        (approval) =>
+          `SubmitApproval:${String(bundle.workspaceId)}:${String(approval.approvalId)}:%`,
+      ),
     ],
   );
 }

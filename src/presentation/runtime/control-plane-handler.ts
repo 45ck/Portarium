@@ -18,7 +18,7 @@ import { checkRateLimit } from '../../application/services/rate-limit-guard.js';
 import type { TraceContext } from '../../application/common/trace-context.js';
 import type { RateLimitScope } from '../../domain/rate-limiting/index.js';
 import type { RunStatus } from '../../domain/runs/index.js';
-import { PlanId, TenantId, WorkspaceId } from '../../domain/primitives/index.js';
+import { PlanId, TenantId, WorkflowId, WorkspaceId } from '../../domain/primitives/index.js';
 import type { RequestHandler } from './health-server.js';
 import {
   defaultRegistry,
@@ -132,7 +132,7 @@ import {
   claimsFromContext,
   createDevelopmentWebSession,
   exchangeOidcCodeForWebSession,
-  isUnsafeSessionRequestAllowed,
+  isUnsafeSessionRequestAllowedWithConfig,
   readSessionIdFromCookie,
   type OidcCallbackBody,
 } from './cockpit-web-session.js';
@@ -164,6 +164,7 @@ interface RequestContext {
 type WorkspaceHandlerArgs = RequestContext & Readonly<{ workspaceId: string }>;
 type RunHandlerArgs = WorkspaceHandlerArgs & Readonly<{ runId: string }>;
 type PlanHandlerArgs = WorkspaceHandlerArgs & Readonly<{ planId: string }>;
+type WorkflowHandlerArgs = WorkspaceHandlerArgs & Readonly<{ workflowId: string }>;
 
 interface HonoEnv {
   Bindings: HonoBindings;
@@ -359,6 +360,67 @@ async function handleGetRun(args: RunHandlerArgs): Promise<void> {
   }
 
   respondJson(res, { statusCode: 200, correlationId, traceContext, body: result.value });
+}
+
+async function handleGetWorkflow(args: WorkflowHandlerArgs): Promise<void> {
+  const { deps, req, res, correlationId, pathname, traceContext, workspaceId, workflowId } = args;
+  const auth = await authenticate(deps, {
+    req,
+    correlationId,
+    traceContext,
+    expectedWorkspaceId: workspaceId,
+  });
+  if (!auth.ok) {
+    respondProblem(res, problemFromError(auth.error, pathname), correlationId, traceContext);
+    return;
+  }
+
+  if (!deps.workflowStore) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/not-found',
+        title: 'Not Found',
+        status: 404,
+        detail: 'Workflow store is not configured.',
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  const workflow = await deps.workflowStore.getWorkflowById(
+    auth.ctx.tenantId,
+    WorkspaceId(workspaceId),
+    WorkflowId(workflowId),
+  );
+  if (!workflow) {
+    respondProblem(
+      res,
+      {
+        type: 'https://portarium.dev/problems/not-found',
+        title: 'Not Found',
+        status: 404,
+        detail: `Workflow ${workflowId} not found.`,
+        instance: pathname,
+      },
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
+  const etag = computeETag(workflow);
+  res.setHeader('ETag', etag);
+  if (checkIfNoneMatch(req, etag)) {
+    res.statusCode = 304;
+    res.setHeader('x-correlation-id', correlationId);
+    res.end();
+    return;
+  }
+  respondJson(res, { statusCode: 200, correlationId, traceContext, body: workflow });
 }
 
 async function handleGetPlan(args: PlanHandlerArgs): Promise<void> {
@@ -1111,7 +1173,7 @@ function setAuthNoStoreHeaders(res: ServerResponse): void {
 
 function rejectUnsafeAuthMutation(ctx: RequestContext): boolean {
   const { req, res, correlationId, traceContext, pathname } = ctx;
-  if (isUnsafeSessionRequestAllowed(req)) return false;
+  if (isUnsafeSessionRequestAllowedWithConfig(req, ctx.deps.cockpitWebSessionConfig)) return false;
   setAuthNoStoreHeaders(res);
   respondProblem(
     res,
@@ -1308,7 +1370,7 @@ const rootLog = createLogger('control-plane');
 
 const CORS_ALLOWED_METHODS = 'GET, POST, PUT, PATCH, DELETE, OPTIONS';
 const CORS_ALLOWED_HEADERS =
-  'authorization, content-type, x-correlation-id, x-portarium-request, traceparent, tracestate, if-match, if-none-match';
+  'authorization, content-type, idempotency-key, x-correlation-id, x-portarium-request, traceparent, tracestate, if-match, if-none-match';
 
 function appendVaryOrigin(res: ServerResponse): void {
   const existing = res.getHeader('vary');
@@ -1632,6 +1694,17 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
       ...ctx,
       workspaceId: c.req.param('workspaceId'),
       runId: c.req.param('runId'),
+    });
+    return c.body(null);
+  });
+
+  // GET /v1/workspaces/:workspaceId/workflows/:workflowId
+  app.get('/v1/workspaces/:workspaceId/workflows/:workflowId', async (c) => {
+    const ctx = c.get('ctx');
+    await handleGetWorkflow({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+      workflowId: c.req.param('workflowId'),
     });
     return c.body(null);
   });

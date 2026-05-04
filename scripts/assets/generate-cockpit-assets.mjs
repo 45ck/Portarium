@@ -22,7 +22,6 @@ const promptCatalogPath = path.join(
 )
 
 const fallbackEnvFiles = [
-  'C:/Projects/MacquarieCollege/.env',
   'C:/Projects/content-machine/.env',
 ]
 

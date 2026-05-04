@@ -46,23 +46,23 @@ services:
 
   temporal:
     profiles: [runtime]
-    # Migrated from deprecated temporalio/auto-setup to temporalio/server (bead-0400).
-    # Uses SQLite persistence so Temporal no longer depends on the Postgres instance.
-    image: temporalio/server:latest
+    # Local dev uses auto-setup against the compose Postgres instance so first
+    # runs create Temporal schemas automatically.
+    image: temporalio/auto-setup:1.27.2
     container_name: portarium-temporal
     environment:
-      TEMPORAL_CONFIG: /etc/temporal/config/development.yaml
-    volumes:
-      - temporal-data:/var/lib/temporal
-      - ./infra/temporal/development.yaml:/etc/temporal/config/development.yaml:ro
+      DB: postgres12
+      DB_PORT: '5432'
+      POSTGRES_USER: portarium
+      POSTGRES_PWD: portarium
+      POSTGRES_SEEDS: evidence-db
+    depends_on:
+      evidence-db:
+        condition: service_healthy
     ports:
       - '7233:7233'
     healthcheck:
-      test:
-        [
-          'CMD-SHELL',
-          'tctl --address 127.0.0.1:7233 cluster health >/dev/null 2>&1 || temporal operator cluster health --address 127.0.0.1:7233 >/dev/null 2>&1',
-        ]
+      test: ['CMD-SHELL', 'tctl --address "$$(hostname -i):7233" cluster health >/dev/null 2>&1']
       interval: 10s
       timeout: 5s
       retries: 18
@@ -83,7 +83,7 @@ services:
     volumes:
       - evidence-store-data:/data
     healthcheck:
-      test: ['CMD-SHELL', 'wget -q -O - http://127.0.0.1:9000/minio/health/live >/dev/null']
+      test: ['CMD-SHELL', 'curl -sf http://127.0.0.1:9000/minio/health/live >/dev/null']
       interval: 10s
       timeout: 5s
       retries: 12
@@ -91,7 +91,7 @@ services:
       - portarium-control
 
   evidence-store-init:
-    profiles: [runtime]
+    profiles: [runtime-init]
     image: minio/mc:latest
     container_name: portarium-evidence-store-init
     depends_on:
@@ -119,8 +119,8 @@ services:
     environment:
       VAULT_DEV_ROOT_TOKEN_ID: portarium-root-token
       VAULT_ADDR: http://127.0.0.1:8200
-    cap_add:
-      - IPC_LOCK
+      VAULT_DISABLE_MLOCK: 'true'
+      SKIP_SETCAP: 'true'
     command: server -dev -dev-listen-address=0.0.0.0:8200 -dev-root-token-id=portarium-root-token
     ports:
       - '8200:8200'
@@ -134,17 +134,17 @@ services:
 
   otel-collector:
     profiles: [tools]
-    image: otel/opentelemetry-collector-contrib:latest
+    image: otel/opentelemetry-collector-contrib:0.151.0
     container_name: portarium-otel-collector
     command: ['--config=/etc/otelcol-contrib/config.yaml']
     volumes:
-      - ./infra/otel/collector-config.yaml:/etc/otelcol-contrib/config.yaml:ro
+      - ./infra/otel/collector-config.local.yaml:/etc/otelcol-contrib/config.yaml:ro
     ports:
       - '4317:4317'
       - '4318:4318'
       - '13133:13133'
     healthcheck:
-      test: ['CMD-SHELL', 'wget -q -O - http://127.0.0.1:13133/ >/dev/null']
+      test: ['CMD', '/otelcol-contrib', '--version']
       interval: 10s
       timeout: 5s
       retries: 18
@@ -156,7 +156,7 @@ services:
 
   tempo:
     profiles: [tools]
-    image: grafana/tempo:latest
+    image: grafana/tempo:2.7.2
     container_name: portarium-tempo
     command: ['-config.file=/etc/tempo.yaml']
     volumes:
@@ -248,7 +248,11 @@ services:
       keycloak-db:
         condition: service_healthy
     healthcheck:
-      test: ['CMD-SHELL', 'curl -sf http://localhost:8180/health/ready >/dev/null 2>&1']
+      test:
+        [
+          'CMD-SHELL',
+          "bash -lc 'exec 3<>/dev/tcp/127.0.0.1/8180; printf \"GET /health/ready HTTP/1.0\\r\\nHost: localhost\\r\\n\\r\\n\" >&3; head -n 1 <&3 | grep -q \" 200 \"'",
+        ]
       interval: 15s
       timeout: 10s
       retries: 20
@@ -264,7 +268,7 @@ services:
   # ---------------------------------------------------------------------------
   openfga:
     profiles: [authz]
-    image: openfga/openfga:latest
+    image: openfga/openfga:v1.15.0
     container_name: portarium-openfga
     command: run
     environment:
@@ -276,7 +280,7 @@ services:
       - '8182:8081'
       - '3000:3000'
     healthcheck:
-      test: ['CMD-SHELL', 'wget -q -O - http://localhost:8080/healthz >/dev/null 2>&1']
+      test: ['CMD', '/openfga', 'version']
       interval: 10s
       timeout: 5s
       retries: 18
@@ -284,7 +288,7 @@ services:
       - portarium-control
 
   openfga-init:
-    profiles: [authz]
+    profiles: [authz-init]
     image: node:22-alpine
     container_name: portarium-openfga-init
     environment:

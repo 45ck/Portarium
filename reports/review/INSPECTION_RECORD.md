@@ -4,7 +4,7 @@
 |-------|-------|
 | **Commit** | unstaged (pre-commit) |
 | **Title** | feat(cockpit): OpenClaw showcase — policy editor, blast radius dashboard, mobile notification, live event bridge |
-| **Author** | MQCKENC + Claude Opus 4.6 (multi-agent build) |
+| **Author** | Portarium maintainers + Claude Opus 4.6 (multi-agent build) |
 | **Date** | 2026-03-25 |
 | **Reviewer** | Claude Opus 4.6 (automated Fagan gate) |
 | **Verdict** | **PASS** (1 defect fixed during inspection) |

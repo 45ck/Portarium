@@ -1,14 +1,14 @@
-FROM node:24-alpine AS build
+FROM node:24-slim AS build
 
 WORKDIR /app
 
 COPY package.json package-lock.json tsconfig.json tsconfig.build.json ./
 COPY src ./src
 
-RUN npm ci
+RUN npm ci --legacy-peer-deps
 RUN npm run build
 
-FROM node:24-alpine AS runtime
+FROM node:24-slim AS runtime
 
 WORKDIR /app
 
@@ -22,7 +22,7 @@ ENV NODE_ENV=production \
   PORTARIUM_TEMPORAL_TASK_QUEUE=portarium-runs
 
 COPY package.json package-lock.json ./
-RUN npm ci --omit=dev --ignore-scripts
+RUN npm ci --omit=dev --ignore-scripts --legacy-peer-deps
 
 COPY --from=build /app/dist ./dist
 

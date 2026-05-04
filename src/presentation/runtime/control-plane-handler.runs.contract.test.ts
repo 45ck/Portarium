@@ -192,6 +192,10 @@ function runsUrl(): string {
   return url('/v1/workspaces/ws-runs-1/runs');
 }
 
+function workflowUrl(workflowId = 'workflow-1'): string {
+  return url(`/v1/workspaces/ws-runs-1/workflows/${workflowId}`);
+}
+
 function cancelUrl(runId = 'run-1'): string {
   return url(`/v1/workspaces/ws-runs-1/runs/${runId}/cancel`);
 }
@@ -267,6 +271,19 @@ describe('GET /runs — status query parameter validation', () => {
     await startWith();
     const res = await fetch(url('/v1/workspaces/ws-runs-1/runs'));
     expect(res.status).toBe(200);
+  });
+});
+
+describe('GET /workflows/:workflowId', () => {
+  it('returns persisted workflow details', async () => {
+    await startWith();
+
+    const res = await fetch(workflowUrl());
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { workflowId: string; workspaceId: string };
+    expect(body.workflowId).toBe('workflow-1');
+    expect(body.workspaceId).toBe('ws-runs-1');
   });
 });
 

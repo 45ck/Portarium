@@ -386,6 +386,7 @@ function buildCockpitWebSessionConfig(): CockpitWebSessionConfig {
   );
   const oidcClientId = process.env['PORTARIUM_COCKPIT_OIDC_CLIENT_ID']?.trim();
   const oidcRedirectUri = process.env['PORTARIUM_COCKPIT_OIDC_REDIRECT_URI']?.trim();
+  const trustedOrigins = parseCorsAllowedOrigins(process.env['PORTARIUM_CORS_ALLOWED_ORIGINS']);
 
   return {
     ...(Number.isFinite(ttlSeconds) && ttlSeconds ? { ttlSeconds } : {}),
@@ -395,6 +396,7 @@ function buildCockpitWebSessionConfig(): CockpitWebSessionConfig {
     ...(oidcRedirectUri ? { oidcRedirectUri } : {}),
     allowDevelopmentSession: devAuthEnabled && Boolean(devToken),
     ...(devAuthEnabled && devToken ? { developmentBearerToken: devToken } : {}),
+    ...(trustedOrigins.length > 0 ? { trustedOrigins } : {}),
   };
 }
 

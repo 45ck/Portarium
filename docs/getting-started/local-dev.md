@@ -17,7 +17,13 @@ npm run dev:seed
 npm run seed:cockpit-live:validate
 ```
 
-This brings up Postgres, Temporal, MinIO, Vault, Keycloak, OpenFGA, Odoo, the control-plane API (port 8080), and the worker, then seeds live Cockpit workspace data for `ws-local-dev`. The validation command checks the same Postgres data from the host and should report all checks as `ok: true`.
+`npm run dev:all` starts the hardcoded local compose profile set `baseline`,
+`runtime`, `auth`, `idp`, `authz`, `erp`, `tools`, and `cockpit`. It first
+brings up infrastructure, runs `dev:evidence-store:init`, `dev:openfga:init`,
+and `dev:db:init -- --tenants ws-local-dev`, then starts the API, worker, and
+Cockpit-profile services. `npm run dev:seed` seeds live Cockpit workspace data
+for `ws-local-dev`; the validation command checks that seeded Postgres data and
+should report all checks as `ok: true`.
 
 Verify the stack is healthy:
 
@@ -129,8 +135,8 @@ npm run cockpit:demo:openclaw:clips
 
 ## Local integration stack
 
-`npm run dev:all` starts all infrastructure profiles in one command. The full
-service map is:
+`npm run dev:all` uses the script-defined profile set; it is not controlled by
+`COMPOSE_PROFILES`. The current local stack includes:
 
 | Service      | Profile     | URL / Port                             | Purpose                           |
 | ------------ | ----------- | -------------------------------------- | --------------------------------- |
@@ -164,10 +170,11 @@ Pre-seeded demo users:
 - **HTTP API**: `http://localhost:8181` — used by the Portarium API for policy checks
 - **Playground**: `http://localhost:3000` — visual model explorer
 - **gRPC**: `localhost:8182`
-- Store name: `portarium` (auto-created by `openfga-init` on first start)
+- Store name: `portarium` (auto-created by `dev:openfga:init`)
 - Authorization model: workspace roles (`approver`, `operator`, `auditor`, `member`)
 
-Seed workspace role tuples for demo users:
+`npm run dev:all` runs `dev:openfga:init`, which creates the store and
+authorization model. To re-seed demo workspace role tuples manually:
 
 ```bash
 npm run dev:seed:openfga
@@ -186,18 +193,9 @@ Install required modules (run once after first `dev:all`):
 npm run dev:seed:odoo
 ```
 
-To start only the integration stack (no API/worker build), override `COMPOSE_PROFILES` before `npm run dev:all`:
-
-```bash
-# Bash
-COMPOSE_PROFILES=baseline,runtime,auth,idp,authz,erp npm run dev:all
-```
-
-```powershell
-# PowerShell
-$env:COMPOSE_PROFILES = "baseline,runtime,auth,idp,authz,erp"
-npm run dev:all
-```
+To start a narrower compose subset, call `docker compose` directly with the
+profiles you want. `npm run dev:all` intentionally uses its own hardcoded
+profile list and will not honor `COMPOSE_PROFILES` as a stack selector.
 
 ---
 

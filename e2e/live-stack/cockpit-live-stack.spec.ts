@@ -182,7 +182,7 @@ test.describe('Cockpit live-stack smoke', () => {
 
     await page.goto(`/approvals?focus=${approvalId}&from=notification`);
     await expect(page.getByRole('heading', { name: 'Approval Review' })).toBeVisible();
-    await expect(page.getByText(approvalId, { exact: false })).toBeVisible();
+    await expect(page.getByText(approvalId, { exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Approve' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Request changes' })).toBeVisible();
     await page.getByTitle('Request changes (R)').click();
@@ -212,6 +212,7 @@ test.describe('Cockpit live-stack smoke', () => {
     ).toBe(true);
 
     await page.goto(`/approvals?focus=${approvalId}&from=notification`);
+    await page.reload({ waitUntil: 'domcontentloaded' });
     await expect(page.getByText('Approval already decided')).toBeVisible();
 
     const resumeResponse = page.waitForResponse(

@@ -17,7 +17,6 @@ const publicRoot = path.join(repoRoot, 'apps', 'cockpit', 'public')
 const brandRoot = path.join(publicRoot, 'brand')
 
 const fallbackEnvFiles = [
-  'C:/Projects/MacquarieCollege/.env',
   'C:/Projects/content-machine/.env',
 ]
 

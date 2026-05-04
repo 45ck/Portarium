@@ -35,5 +35,5 @@ Scope: Human-task queue as first-class Inbox surface.
 
 ## Reviewer Sign-Off
 
-- Reviewer: Principal Engineer (MQCKENC)
+- Reviewer: Principal Engineer
 - Status: Approved for implementation (`bead-0546`)

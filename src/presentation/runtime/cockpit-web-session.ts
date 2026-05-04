@@ -42,6 +42,7 @@ export type CockpitWebSessionConfig = Readonly<{
   oidcRedirectUri?: string;
   allowDevelopmentSession?: boolean;
   developmentBearerToken?: string;
+  trustedOrigins?: readonly string[];
   fetchImpl?: typeof fetch;
 }>;
 
@@ -190,6 +191,13 @@ export function buildClearSessionCookie(
 }
 
 export function isUnsafeSessionRequestAllowed(req: IncomingMessage): boolean {
+  return isUnsafeSessionRequestAllowedWithConfig(req, undefined);
+}
+
+export function isUnsafeSessionRequestAllowedWithConfig(
+  req: IncomingMessage,
+  config: CockpitWebSessionConfig | undefined,
+): boolean {
   const method = (req.method ?? 'GET').toUpperCase();
   if (method === 'GET' || method === 'HEAD' || method === 'OPTIONS') return true;
   const marker = req.headers[WEB_SESSION_REQUEST_HEADER];
@@ -199,7 +207,7 @@ export function isUnsafeSessionRequestAllowed(req: IncomingMessage): boolean {
       : Array.isArray(marker)
         ? marker.some((value) => value === '1' || value === 'true')
         : false;
-  return hasMarker && isTrustedUnsafeRequestContext(req);
+  return hasMarker && isTrustedUnsafeRequestContext(req, config);
 }
 
 export async function authenticateCockpitWebSession(
@@ -217,7 +225,7 @@ export async function authenticateCockpitWebSession(
   if (!args.store) return null;
   const sessionId = readSessionIdFromCookie(args.req, args.config?.cookieName);
   if (!sessionId) return null;
-  if (!isUnsafeSessionRequestAllowed(args.req)) {
+  if (!isUnsafeSessionRequestAllowedWithConfig(args.req, args.config)) {
     return err({
       kind: 'Unauthorized',
       message: 'Cookie-authenticated mutations require X-Portarium-Request.',
@@ -400,7 +408,10 @@ async function fetchWithTimeout(
   return fetchImpl(input, init);
 }
 
-function isTrustedUnsafeRequestContext(req: IncomingMessage): boolean {
+function isTrustedUnsafeRequestContext(
+  req: IncomingMessage,
+  config: CockpitWebSessionConfig | undefined,
+): boolean {
   const fetchSite = firstHeader(req.headers['sec-fetch-site'])?.toLowerCase();
   if (
     fetchSite &&
@@ -419,6 +430,7 @@ function isTrustedUnsafeRequestContext(req: IncomingMessage): boolean {
 
   try {
     const parsed = new URL(origin);
+    if (config?.trustedOrigins?.includes(parsed.origin)) return true;
     if (parsed.host !== host) return false;
     const forwardedProto = firstHeader(req.headers['x-forwarded-proto']);
     if (!forwardedProto) return true;

@@ -11,13 +11,13 @@ than stub fixtures.
 
 ## Prerequisites
 
-| Requirement                     | Version                      | Check                               |
-| ------------------------------- | ---------------------------- | ----------------------------------- |
-| Docker Desktop or Docker Engine | ≥ 24                         | `docker --version`                  |
-| Docker Compose                  | ≥ 2.20                       | `docker compose version`            |
-| Node.js                         | ≥ 22                         | `node --version`                    |
-| `npm`                           | ≥ 9                          | `npm --version`                     |
-| Free ports                      | 5432, 7233, 8080, 8888, 4000 | `lsof -i :5432,7233,8080,8888,4000` |
+| Requirement                     | Version                                                                | Check                                                                  |
+| ------------------------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Docker Desktop or Docker Engine | ≥ 24                                                                   | `docker --version`                                                     |
+| Docker Compose                  | ≥ 2.20                                                                 | `docker compose version`                                               |
+| Node.js                         | ≥ 22                                                                   | `node --version`                                                       |
+| `npm`                           | ≥ 9                                                                    | `npm --version`                                                        |
+| Free ports                      | 3000, 4000, 5432, 7233, 8080, 8081, 8180, 8181, 8182, 8200, 9000, 9001 | `lsof -i :3000,4000,5432,7233,8080,8081,8180,8181,8182,8200,9000,9001` |
 
 Clone the repo and install dependencies before continuing:
 
@@ -39,20 +39,26 @@ from source) — combined with service profiles.
 npm run dev:all
 ```
 
-This is equivalent to:
+`npm run dev:all` is a scripted startup sequence, not a single compose command.
+It starts the hardcoded profile set `baseline`, `runtime`, `auth`, `idp`,
+`authz`, `erp`, and `tools`, then runs:
 
 ```bash
-docker compose \
-  --profile baseline --profile runtime --profile auth --profile cockpit \
-  -f docker-compose.yml -f docker-compose.local.yml up --wait
+npm run dev:evidence-store:init
+npm run dev:openfga:init
+npm run dev:db:init -- --tenants ws-local-dev
 ```
+
+After those init steps complete, it starts the same profile set plus `cockpit`
+with `--build`.
 
 Wait for all containers to report **healthy** (usually ~60 s on first run, ~10 s
 subsequently). You can watch progress with:
 
 ```bash
 docker compose \
-  --profile baseline --profile runtime --profile auth --profile cockpit \
+  --profile baseline --profile runtime --profile auth --profile idp \
+  --profile authz --profile erp --profile tools --profile cockpit \
   -f docker-compose.yml -f docker-compose.local.yml ps
 ```
 
@@ -61,7 +67,7 @@ Expected output once healthy (core infra):
 ```
 NAME                      STATUS              PORTS
 portarium-evidence-db     running (healthy)   0.0.0.0:5432->5432/tcp
-portarium-temporal        running             0.0.0.0:7233->7233/tcp
+portarium-temporal        running (healthy)   0.0.0.0:7233->7233/tcp
 portarium-evidence-store  running (healthy)   0.0.0.0:9000->9000/tcp
 portarium-vault           running             0.0.0.0:8200->8200/tcp
 portarium-api             running (healthy)   0.0.0.0:8080->8080/tcp
@@ -82,9 +88,9 @@ Seed canonical demo data into the running stack:
 npm run dev:seed
 ```
 
-> **Integration services (Keycloak, OpenFGA, Odoo, OpenClaw):** Sections 2–5 describe
-> these optional services. They are not part of the base `dev:all` command. Bring them
-> up separately when doing real-data integration testing.
+Keycloak, OpenFGA, and Odoo are part of the default `dev:all` local stack.
+OpenFGA store/model initialization and local DB initialization are also part of
+`dev:all`; `npm run dev:seed` only seeds canonical demo and Cockpit data.
 
 ---
 
@@ -93,32 +99,18 @@ npm run dev:seed
 **URL:** `http://localhost:8180`
 **Admin console:** `http://localhost:8180/admin` (admin / admin)
 
-### What the seed configures
+### What the realm import configures
 
 - Realm: `portarium`
-- Client: `portarium-api` (confidential, PKCE enabled)
 - Client: `portarium-cockpit` (public, PKCE enabled)
-- Roles: `approver`, `operator`, `auditor`, `admin`
-- Demo users (password = `password` for all):
+- Roles: `approver`, `operator`, `auditor`
+- Demo users:
 
-| Username                 | Roles                  |
-| ------------------------ | ---------------------- |
-| `alice@acme.example.com` | `approver`, `operator` |
-| `bob@acme.example.com`   | `operator`             |
-| `carol@acme.example.com` | `auditor`              |
-| `admin@acme.example.com` | `admin`                |
-
-### Verify
-
-```bash
-curl -s -X POST http://localhost:8180/realms/portarium/protocol/openid-connect/token \
-  -d 'grant_type=password' \
-  -d 'client_id=portarium-api' \
-  -d 'username=alice@acme.example.com' \
-  -d 'password=password' | jq .access_token
-```
-
-A non-null JWT string confirms Keycloak is up and the realm is seeded.
+| Username | Email                 | Password | Role       |
+| -------- | --------------------- | -------- | ---------- |
+| `alice`  | `alice@portarium.dev` | `alice`  | `approver` |
+| `bob`    | `bob@portarium.dev`   | `bob`    | `operator` |
+| `carol`  | `carol@portarium.dev` | `carol`  | `auditor`  |
 
 ### Troubleshooting
 
@@ -129,38 +121,22 @@ A non-null JWT string confirms Keycloak is up and the realm is seeded.
 
 ## 3. OpenFGA — Fine-Grained Authorisation
 
-**URL:** `http://localhost:8888`
-**Playground:** `http://localhost:8888/playground`
+**HTTP API:** `http://localhost:8181`
+**Playground:** `http://localhost:3000`
+**gRPC:** `localhost:8182`
 
-### What the seed configures
-
-- Store: `portarium-local`
-- Authorization model: Portarium RBAC (workspace → run → approval chains)
-- Initial tuples:
-  - `alice@acme.example.com` is `approver` in `workspace:ws-demo`
-  - `bob@acme.example.com` is `operator` in `workspace:ws-demo`
-
-### Verify
+`npm run dev:all` runs `dev:openfga:init`, which creates the `portarium` store
+and loads the workspace-role authorization model. Demo role tuples are separate:
 
 ```bash
-curl -s http://localhost:8888/stores | jq '.[0].name'
-# Expected: "portarium-local"
+npm run dev:seed:openfga
 ```
 
-```bash
-curl -s -X POST http://localhost:8888/stores/<STORE_ID>/check \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "tuple_key": {
-      "user": "user:alice@acme.example.com",
-      "relation": "approver",
-      "object": "workspace:ws-demo"
-    }
-  }' | jq .allowed
-# Expected: true
-```
+The tuple seed defaults to workspace `ws-demo` and writes:
 
-Replace `<STORE_ID>` with the value from the `/stores` response.
+- `user:alice` as `approver`
+- `user:bob` as `operator`
+- `user:carol` as `auditor`
 
 ### Troubleshooting
 
@@ -255,7 +231,7 @@ cp .env.local.example .env.local
 | `PORTARIUM_DEV_WORKSPACE_ID` | `ws-local-dev`          | Workspace ID injected by dev token |
 | `KEYCLOAK_URL`               | `http://localhost:8180` | Keycloak base URL                  |
 | `KEYCLOAK_REALM`             | `portarium`             | Realm name                         |
-| `OPENFGA_URL`                | `http://localhost:8888` | OpenFGA base URL                   |
+| `OPENFGA_URL`                | `http://localhost:8181` | OpenFGA HTTP API base URL          |
 | `ODOO_URL`                   | `http://localhost:4000` | Odoo base URL                      |
 | `GOVERNED_RUN_INTEGRATION`   | `false`                 | Set `true` for integration smoke   |
 
@@ -267,7 +243,8 @@ cp .env.local.example .env.local
 
 ```bash
 docker compose \
-  --profile baseline --profile runtime --profile auth --profile cockpit \
+  --profile baseline --profile runtime --profile auth --profile idp \
+  --profile authz --profile erp --profile tools --profile cockpit \
   -f docker-compose.yml -f docker-compose.local.yml stop
 ```
 
@@ -275,7 +252,8 @@ docker compose \
 
 ```bash
 docker compose \
-  --profile baseline --profile runtime --profile auth --profile cockpit \
+  --profile baseline --profile runtime --profile auth --profile idp \
+  --profile authz --profile erp --profile tools --profile cockpit \
   -f docker-compose.yml -f docker-compose.local.yml down -v
 ```
 
@@ -290,6 +268,6 @@ npm run dev:seed
 ## 8. Next steps
 
 - **Run a governed workflow end-to-end:** See [Start-to-Finish Execution Order](./start-to-finish-execution-order.md).
-- **Explore the Cockpit UI:** Open `http://localhost:8080` in a browser and log in as `alice@acme.example.com`.
+- **Explore the Cockpit UI:** Open `http://cockpit.localhost:1355` in a browser and log in as `alice`.
 - **Write an integration adapter:** See [Generate Integration Scaffolds](./generate-integration-scaffolds.md).
 - **Run the full CI gate suite:** `npm run ci:pr`

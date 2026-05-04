@@ -175,12 +175,15 @@ describe('control-plane CORS policy', () => {
       headers: {
         origin: 'https://cockpit.example.com',
         'access-control-request-method': 'POST',
+        'access-control-request-headers': 'authorization, x-portarium-request, idempotency-key',
       },
     });
 
     expect(res.status).toBe(204);
     expect(res.headers.get('access-control-allow-origin')).toBe('https://cockpit.example.com');
     expect(res.headers.get('access-control-allow-methods')).toContain('POST');
+    expect(res.headers.get('access-control-allow-headers')).toContain('idempotency-key');
+    expect(res.headers.get('access-control-allow-headers')).toContain('x-portarium-request');
   });
 
   it('rejects disallowed preflight requests without allow headers', async () => {

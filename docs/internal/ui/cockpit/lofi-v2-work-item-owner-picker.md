@@ -38,5 +38,5 @@ Scope: Work Item owner assignment UX using workforce picker.
 
 ## Reviewer Sign-Off
 
-- Reviewer: Principal Engineer (MQCKENC)
+- Reviewer: Principal Engineer
 - Status: Approved for implementation

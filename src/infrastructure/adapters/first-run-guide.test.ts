@@ -115,13 +115,15 @@ describe('first-run guide — service coverage', () => {
 // Port numbers
 // ---------------------------------------------------------------------------
 
-describe('first-run guide — port references', () => {
-  it('references Keycloak on port 8080', () => {
-    expect(readGuide()).toContain('8080');
+describe('first-run guide - port references', () => {
+  it('references Keycloak on port 8180', () => {
+    expect(readGuide()).toContain('8180');
   });
 
-  it('references OpenFGA on port 8888', () => {
-    expect(readGuide()).toContain('8888');
+  it('references OpenFGA on ports 8181 and 8182', () => {
+    const guide = readGuide();
+    expect(guide).toContain('8181');
+    expect(guide).toContain('8182');
   });
 
   it('references Odoo on port 4000', () => {
@@ -143,12 +145,14 @@ describe('first-run guide — verify steps', () => {
     expect(readGuide()).toContain('/health');
   });
 
-  it('includes Keycloak token endpoint verification', () => {
-    expect(readGuide()).toContain('openid-connect/token');
+  it('documents the imported Keycloak client', () => {
+    expect(readGuide()).toContain('portarium-cockpit');
   });
 
-  it('includes OpenFGA store check', () => {
-    expect(readGuide()).toContain('/stores');
+  it('includes OpenFGA initialization and health references', () => {
+    const guide = readGuide();
+    expect(guide).toContain('dev:openfga:init');
+    expect(guide).toContain('dev:seed:openfga');
   });
 
   it('includes integration smoke test command', () => {

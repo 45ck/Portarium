@@ -211,9 +211,39 @@ export const DEFAULT_SCHEMA_MIGRATIONS: readonly SchemaMigration[] = [
     scope: 'Global',
     compatibility: 'BackwardCompatible',
     upSql: [
-      'ALTER TABLE workflow_runs ADD CONSTRAINT fk_workflow_runs_tenant FOREIGN KEY (tenant_id) REFERENCES workspace_registry (tenant_id) ON DELETE CASCADE NOT VALID;',
-      'ALTER TABLE workspace_summary ADD CONSTRAINT fk_workspace_summary_tenant FOREIGN KEY (tenant_id) REFERENCES workspace_registry (tenant_id) ON DELETE CASCADE NOT VALID;',
-      'ALTER TABLE domain_documents ADD CONSTRAINT fk_domain_documents_tenant FOREIGN KEY (tenant_id) REFERENCES workspace_registry (tenant_id) ON DELETE CASCADE NOT VALID;',
+      `DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'fk_workflow_runs_tenant'
+      AND conrelid = 'workflow_runs'::regclass
+  ) THEN
+    ALTER TABLE workflow_runs ADD CONSTRAINT fk_workflow_runs_tenant FOREIGN KEY (tenant_id) REFERENCES workspace_registry (tenant_id) ON DELETE CASCADE NOT VALID;
+  END IF;
+END $$;`,
+      `DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'fk_workspace_summary_tenant'
+      AND conrelid = 'workspace_summary'::regclass
+  ) THEN
+    ALTER TABLE workspace_summary ADD CONSTRAINT fk_workspace_summary_tenant FOREIGN KEY (tenant_id) REFERENCES workspace_registry (tenant_id) ON DELETE CASCADE NOT VALID;
+  END IF;
+END $$;`,
+      `DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'fk_domain_documents_tenant'
+      AND conrelid = 'domain_documents'::regclass
+  ) THEN
+    ALTER TABLE domain_documents ADD CONSTRAINT fk_domain_documents_tenant FOREIGN KEY (tenant_id) REFERENCES workspace_registry (tenant_id) ON DELETE CASCADE NOT VALID;
+  END IF;
+END $$;`,
     ],
     downSql: [
       'ALTER TABLE domain_documents DROP CONSTRAINT IF EXISTS fk_domain_documents_tenant;',

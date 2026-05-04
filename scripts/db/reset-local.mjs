@@ -17,19 +17,25 @@
 
 import { spawnSync } from 'node:child_process';
 import process from 'node:process';
+import { fileURLToPath } from 'node:url';
 
 const LOCAL_DB_URL =
   process.env['DATABASE_URL'] ?? 'postgresql://portarium:portarium@localhost:5432/portarium';
+const TSX_CLI = fileURLToPath(new URL('../../node_modules/tsx/dist/cli.mjs', import.meta.url));
 
 process.stderr.write('[db:reset-local] WARNING: This will drop all Portarium tables and data.\n');
 process.stdout.write(`[db:reset-local] DATABASE_URL=${LOCAL_DB_URL}\n`);
 
 // Step 1: reset (drop tables)
-const reset = spawnSync('tsx', ['src/infrastructure/migrations/cli.ts', 'reset', '--confirm'], {
-  stdio: 'inherit',
-  env: { ...process.env, DATABASE_URL: LOCAL_DB_URL },
-  shell: false,
-});
+const reset = spawnSync(
+  process.execPath,
+  [TSX_CLI, 'src/infrastructure/migrations/cli.ts', 'reset', '--confirm'],
+  {
+    stdio: 'inherit',
+    env: { ...process.env, DATABASE_URL: LOCAL_DB_URL },
+    shell: false,
+  },
+);
 
 if (reset.status !== 0) {
   process.stderr.write(`[db:reset-local] Reset failed (exit ${reset.status ?? 'null'}).\n`);
@@ -40,8 +46,8 @@ if (reset.status !== 0) {
 process.stdout.write('[db:reset-local] Re-applying schema...\n');
 
 const bootstrap = spawnSync(
-  'tsx',
-  ['src/infrastructure/migrations/cli.ts', 'bootstrap', '--tenants', 'workspace-default'],
+  process.execPath,
+  [TSX_CLI, 'src/infrastructure/migrations/cli.ts', 'bootstrap', '--tenants', 'workspace-default'],
   {
     stdio: 'inherit',
     env: { ...process.env, DATABASE_URL: LOCAL_DB_URL },

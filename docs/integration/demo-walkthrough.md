@@ -16,7 +16,12 @@ npm run dev:seed
 npm run seed:cockpit-live:validate
 ```
 
-This starts Postgres, Temporal, MinIO, Vault, the API (port 8080), and the worker. It also seeds `ws-local-dev` with live Cockpit data: runs, approvals, work items, evidence, config, and workforce records. The API is available at `http://localhost:8080`.
+This starts the hardcoded local stack profiles, including Postgres, Temporal,
+MinIO, Vault, Keycloak, OpenFGA, Odoo, tools services, the API on port 8080,
+and the worker. `dev:all` also runs evidence-store, OpenFGA, and DB init
+scripts. `npm run dev:seed` seeds `ws-local-dev` with live Cockpit data: runs,
+approvals, work items, evidence, config, and workforce records. The API is
+available at `http://localhost:8080`.
 
 > **Dev-auth bypass:** `PORTARIUM_DEV_TOKEN=portarium-dev-token` is accepted as a static bearer
 > token only when `ENABLE_DEV_AUTH=true` and `NODE_ENV` is `development` or `test`.

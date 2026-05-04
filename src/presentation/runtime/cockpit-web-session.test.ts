@@ -46,6 +46,39 @@ describe('cockpit web session helpers', () => {
     expect(isUnsafeSessionRequestAllowed(req)).toBe(true);
   });
 
+  it('accepts configured cross-origin Cockpit mutations after the request marker', async () => {
+    const store = new InMemoryCockpitWebSessionStore();
+    const record = store.create({
+      ctx: makeContext(),
+      ttlMs: 60_000,
+      nowMs: 1_000,
+    });
+
+    const result = await authenticateCockpitWebSession({
+      req: makeRequest(
+        {
+          cookie: `${DEFAULT_COCKPIT_SESSION_COOKIE}=${encodeURIComponent(record.sessionId)}`,
+          host: 'localhost:8080',
+          origin: 'http://localhost:5173',
+          'sec-fetch-site': 'same-site',
+          [WEB_SESSION_REQUEST_HEADER]: '1',
+        },
+        'POST',
+      ),
+      store,
+      config: { trustedOrigins: ['http://localhost:5173'] },
+      nowMs: 2_000,
+      correlationId: 'corr-2',
+      traceContext: {
+        traceparent: '00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01',
+      },
+      expectedWorkspaceId: 'workspace-1',
+      requireExpectedWorkspaceId: true,
+    });
+
+    expect(result?.ok).toBe(true);
+  });
+
   it('requires the request marker for cookie-authenticated mutations', async () => {
     const store = new InMemoryCockpitWebSessionStore();
     const record = store.create({
