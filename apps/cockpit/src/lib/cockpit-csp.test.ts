@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   buildCockpitContentSecurityPolicy,
+  hasCockpitContentSecurityPolicy,
   localHttpApiOriginFromUrl,
   normalizeCockpitCspConnectMode,
   replaceCockpitContentSecurityPolicy,
@@ -77,5 +78,14 @@ describe('Cockpit CSP', () => {
         buildCockpitContentSecurityPolicy({ apiBaseUrl: 'http://localhost:8080' }),
       ),
     ).toContain('http://localhost:8080');
+  });
+
+  it('detects whether an HTML shell carries the cockpit CSP meta tag', () => {
+    expect(
+      hasCockpitContentSecurityPolicy(
+        `<meta http-equiv="Content-Security-Policy" content="${DEFAULT_CSP}" />`,
+      ),
+    ).toBe(true);
+    expect(hasCockpitContentSecurityPolicy('<div id="storybook-root"></div>')).toBe(false);
   });
 });

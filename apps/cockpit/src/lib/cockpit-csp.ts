@@ -18,6 +18,10 @@ const CSP_DIRECTIVES = {
 
 const CSP_META_PATTERN = /(<meta\s+http-equiv="Content-Security-Policy"\s+content=")[^"]*(")/;
 
+export function hasCockpitContentSecurityPolicy(html: string): boolean {
+  return CSP_META_PATTERN.test(html);
+}
+
 export function normalizeCockpitCspConnectMode(rawMode?: string): CockpitCspConnectMode {
   const mode = rawMode?.trim();
   if (!mode) return 'production-defaults';

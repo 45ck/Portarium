@@ -5,6 +5,7 @@ import { resolve } from 'path';
 import { fileURLToPath } from 'url';
 import {
   buildCockpitContentSecurityPolicy,
+  hasCockpitContentSecurityPolicy,
   normalizeCockpitCspConnectMode,
   replaceCockpitContentSecurityPolicy,
   type CockpitCspConnectMode,
@@ -24,6 +25,8 @@ function cockpitContentSecurityPolicyPlugin(
   return {
     name: 'cockpit-content-security-policy',
     transformIndexHtml(html) {
+      if (!hasCockpitContentSecurityPolicy(html)) return html;
+
       return replaceCockpitContentSecurityPolicy(
         html,
         buildCockpitContentSecurityPolicy({ apiBaseUrl, connectMode }),
