@@ -26,6 +26,10 @@
 export type { PortariumPluginConfig } from './config.js';
 export { resolveConfig } from './config.js';
 export { PortariumClient } from './client/portarium-client.js';
+export {
+  GROWTH_STUDIO_TOOL_REGISTRY,
+  type GrowthStudioToolDefinition,
+} from './tools/growth-studio-registry.js';
 
 import type { TSchema } from '@sinclair/typebox';
 import { resolveConfig } from './config.js';
@@ -35,6 +39,7 @@ import { registerBeforeToolCallHook } from './hooks/before-tool-call.js';
 import { createGetRunTool } from './tools/get-run.js';
 import { createListApprovalsTool } from './tools/list-approvals.js';
 import { createCapabilityLookupTool } from './tools/capability-lookup.js';
+import { GROWTH_STUDIO_TOOL_REGISTRY } from './tools/growth-studio-registry.js';
 
 /**
  * Minimal slice of the OpenClaw plugin API used by this plugin.
@@ -101,6 +106,11 @@ export const portariumPlugin = {
     // Operator visibility: Gateway RPC health check (uses client.ping() so tests can mock it)
     api.registerGatewayMethod('portarium.status', async () => {
       return client.ping();
+    });
+    api.registerGatewayMethod('portarium.growthStudioTools', async () => {
+      return {
+        tools: GROWTH_STUDIO_TOOL_REGISTRY,
+      };
     });
 
     api.logger.info(

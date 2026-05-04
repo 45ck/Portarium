@@ -37,6 +37,26 @@ describe('classifyOpenClawToolBlastRadiusV1', () => {
     expect(policy.category).toBe('Unknown');
     expect(policy.minimumTier).toBe('HumanApprove');
   });
+
+  it.each([
+    ['web-search', 'ReadOnly', 'Auto'],
+    ['scrape-website', 'ReadOnly', 'Auto'],
+    ['read-crm-contact', 'ReadOnly', 'Auto'],
+    ['read-analytics', 'ReadOnly', 'Auto'],
+    ['draft-email', 'Mutation', 'HumanApprove'],
+    ['draft-linkedin-post', 'Mutation', 'HumanApprove'],
+    ['draft-blog-article', 'Mutation', 'HumanApprove'],
+    ['update-crm-contact', 'Mutation', 'HumanApprove'],
+    ['schedule-content', 'Mutation', 'HumanApprove'],
+    ['send-email', 'Dangerous', 'ManualOnly'],
+    ['publish-linkedin-post', 'Dangerous', 'ManualOnly'],
+    ['publish-blog-article', 'Dangerous', 'ManualOnly'],
+    ['delete-crm-contact', 'Dangerous', 'ManualOnly'],
+  ] as const)('classifies Growth Studio tool %s as %s/%s', (toolName, category, minimumTier) => {
+    const policy = classifyOpenClawToolBlastRadiusV1(toolName);
+    expect(policy.category).toBe(category);
+    expect(policy.minimumTier).toBe(minimumTier);
+  });
 });
 
 describe('isOpenClawToolAllowedAtTierV1', () => {
