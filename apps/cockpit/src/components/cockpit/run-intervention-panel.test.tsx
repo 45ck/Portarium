@@ -22,9 +22,9 @@ afterEach(() => {
   cleanup();
 });
 
-async function selectAction(label: RegExp) {
-  await userEvent.click(screen.getByRole('combobox', { name: /action/i }));
-  await userEvent.click(screen.getByRole('option', { name: label }));
+function selectAction(label: RegExp) {
+  fireEvent.click(screen.getByRole('combobox', { name: /action/i }));
+  fireEvent.click(screen.getByRole('option', { name: label }));
 }
 
 function setRationale(value: string) {
@@ -98,7 +98,7 @@ describe('RunInterventionPanel', () => {
       />,
     );
 
-    await selectAction(/request more evidence/i);
+    selectAction(/request more evidence/i);
 
     expect(screen.getByText('Approval')).toBeTruthy();
     expect(screen.getByText('Approval Gate')).toBeTruthy();
@@ -141,15 +141,15 @@ describe('RunInterventionPanel', () => {
       />,
     );
 
-    await selectAction(/handoff/i);
+    selectAction(/handoff/i);
     setRationale('Finance operator should own this.');
 
     const submit = screen.getByRole('button', { name: /record handoff/i });
     expect(submit.hasAttribute('disabled')).toBe(true);
 
-    await userEvent.click(screen.getByRole('combobox', { name: /target/i }));
-    await userEvent.click(screen.getByRole('option', { name: /person: asha patel/i }));
-    await userEvent.click(submit);
+    fireEvent.click(screen.getByRole('combobox', { name: /target/i }));
+    fireEvent.click(screen.getByRole('option', { name: /person: asha patel/i }));
+    fireEvent.click(submit);
 
     expect(onSubmit).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -173,7 +173,7 @@ describe('RunInterventionPanel', () => {
       />,
     );
 
-    await selectAction(/emergency disable/i);
+    selectAction(/emergency disable/i);
     setRationale('Potential credential compromise across active automation.');
 
     const submit = screen.getByRole('button', { name: /record emergency disable/i });
@@ -205,7 +205,7 @@ describe('RunInterventionPanel', () => {
       />,
     );
 
-    await selectAction(/freeze/i);
+    selectAction(/freeze/i);
 
     const panel = screen.getByTestId('run-intervention-panel');
     expect(within(panel).getByText(/unavailable for a succeeded run/i)).toBeTruthy();

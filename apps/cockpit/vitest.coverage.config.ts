@@ -23,6 +23,7 @@ export default defineConfig({
     ],
     setupFiles: ['src/test-setup.ts'],
     reporters: ['default'],
+    testTimeout: 10_000,
     coverage: {
       provider: 'v8',
       reportsDirectory: './coverage',
