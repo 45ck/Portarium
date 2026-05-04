@@ -101,6 +101,49 @@ Ordered by dependency. Each phase must be complete before the next starts. Phase
 
 ---
 
+## Phase 6A — Sandbox provider execution plane
+
+**bead-0982** — SandboxProviderPort + execution mode policy
+
+- Add `ExecutionMode`: `worktree`, `container`, `vm`, `remote`
+- Add `EngineeringRuntimePolicyV1` and `EngineeringSandboxV1`
+- Add `SandboxProviderPort` capability and lifecycle contract
+- Add mode resolution before worktree/sandbox creation
+- Record `SandboxModeResolved` evidence with requested, selected, and rationale fields
+- Reject silent downgrade from `vm` to weaker modes
+
+**bead-0983** — local-worktree provider compatibility baseline
+
+- Implement existing worktree execution behind `SandboxProviderPort`
+- Preserve current `bd issue start`/`bd issue finish` behavior through `GitWorkspacePort`
+- Emit sandbox lifecycle evidence even for worktree mode
+- Add contract tests for create/start/status/destroy
+
+**bead-0984** — docker-devcontainer provider spike
+
+- Use `.devcontainer/devcontainer.json` as the project environment contract
+- Start agent with Portarium plugin loaded before work begins
+- Discover dev server/preview endpoints and attach them as evidence
+- Preserve sandbox on failed checks for operator review
+
+**bead-0985** — VM provider spike
+
+- Feature flag a VM-backed provider
+- Candidate local provider: Docker Sandboxes where installed
+- Candidate self-hosted provider: Atelier/Kata on Linux/KVM/Kubernetes
+- Require provider capability reporting before launch
+- Require cleanup/archive evidence before bead closure
+
+**bead-0986** — Cockpit sandbox state and mode controls
+
+- Add mode chip to bead cards and bead detail
+- Add sandbox route with Preview, Browser, Dev Server, Logs, Files, and Diff tabs
+- Add `Rebuild Sandbox` flow for mode changes
+- Add Mission Control table for provider health, quota, sleepers, and stuck sandboxes
+- Disable unavailable modes with visible policy reasons
+
+---
+
 ## Phase 7 — Intent trigger (full loop)
 
 **bead-0969** — IntentRouter + cockpit trigger surface
@@ -135,3 +178,6 @@ Ordered by dependency. Each phase must be complete before the next starts. Phase
 | workspaceId session-bound               | bead-0973 | Phase 1 ships       |
 | Fail-closed hooks                       | bead-0973 | Phase 1 ships       |
 | Dependency manifest scan at PR gate     | bead-0976 | Phase 4 ships       |
+| Sandbox credential grants are TTL-bound | bead-0982 | Phase 6A ships      |
+| Mode downgrade requires approval        | bead-0982 | Phase 6A ships      |
+| Cleanup evidence before bead closure    | bead-0985 | Phase 6A ships      |

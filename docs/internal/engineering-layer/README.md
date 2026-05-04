@@ -1,6 +1,6 @@
 # Governed Engineering Layer
 
-Portarium governs what agents do in production. This layer extends that to **what agents build** — letting any actor (human, ops, another agent) trigger software work, have agents execute it autonomously in isolated worktrees, and route every consequential action through Portarium's existing policy engine before it lands anywhere permanent.
+Portarium governs what agents do in production. This layer extends that to **what agents build** — letting any actor (human, ops, another agent) trigger software work, have agents execute it autonomously in isolated engineering sandboxes, and route every consequential action through Portarium's existing policy engine before it lands anywhere permanent.
 
 This is not a new product. It is Portarium eating its own dog food: the same approval loop, policy tiers, and WORM evidence trail that govern a "send email" action now govern a "merge this branch" action.
 
@@ -12,7 +12,8 @@ This is not a new product. It is Portarium eating its own dog food: the same app
 Any actor
   → describes intent ("add webhook endpoint for payments")
   → Portarium decomposes into beads
-  → agent executes each bead in an isolated git worktree
+  → policy selects an execution mode (VM by default, container/worktree by exception)
+  → agent executes each bead in an isolated sandbox
   → every tool call routes through @portarium/engine
   → consequential actions (git push, deploy, migration) block for human approval
   → human reviews the diff — approves or denies
@@ -41,7 +42,9 @@ Portarium's wedge: **policy evaluation at the action boundary, not the commit bo
 | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
 | [ux-layout.md](./ux-layout.md)                     | The cockpit UI — T3 Code base layout + Mission Control operational awareness                                                        |
 | [cockpit-integration.md](./cockpit-integration.md) | Exact routes, new components, what to reuse from existing cockpit                                                                   |
-| [system-architecture.md](./system-architecture.md) | Full pipeline: IntentRouter → BeadPlanner → WorktreeExecutor → ArtifactCollector → DiffApprovalSurface → MergeExecutor              |
+| [system-architecture.md](./system-architecture.md) | Full pipeline: IntentRouter → BeadPlanner → SandboxExecutor → ArtifactCollector → DiffApprovalSurface → MergeExecutor              |
+| [vm-sandbox-execution-plan.md](./vm-sandbox-execution-plan.md) | VM-first sandbox execution plane, provider ports, execution modes, and rollout path |
+| [inspiration-validation-plan.md](./inspiration-validation-plan.md) | How Portarium takes inspiration from T3 Code, Vibe Kanban, and OpenCode, plus validation gates |
 | [hci-principles.md](./hci-principles.md)           | HCI/HAI grounding — levels of automation, trust calibration, operator state machine, "I can sleep" checklist, ironies of automation |
 | [artifacts.md](./artifacts.md)                     | Artifact system — Run/Plan/Approval/Demo/Digest artifacts, demo-machine integration, markdown-first with embedded mp4/gif           |
 | [build-plan.md](./build-plan.md)                   | What to build in what order, with bead assignments                                                                                  |
