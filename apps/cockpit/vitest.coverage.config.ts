@@ -12,6 +12,10 @@ import { fileURLToPath } from 'url';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const capacitorStub = resolve(__dirname, 'src/lib/capacitor-stubs.ts');
+const cockpitExtensionSdkSource = resolve(
+  __dirname,
+  '../../packages/cockpit-extension-sdk/src/index.ts',
+);
 
 export default defineConfig({
   test: {
@@ -58,6 +62,7 @@ export default defineConfig({
     extensions: ['.mts', '.ts', '.tsx', '.mjs', '.js', '.jsx', '.json'],
     alias: {
       '@': resolve(__dirname, 'src'),
+      '@portarium/cockpit-extension-sdk': cockpitExtensionSdkSource,
       '@portarium/cockpit-types': resolve(__dirname, '../../src/presentation/ops-cockpit/types.ts'),
       '@capacitor/app': capacitorStub,
       '@capacitor/browser': capacitorStub,
