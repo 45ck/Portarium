@@ -1,12 +1,23 @@
 import { lazy, type ComponentType } from 'react';
 import { INSTALLED_COCKPIT_ROUTE_LOADERS } from '@/lib/extensions/installed';
-import type { CockpitExtensionRouteModuleLoader } from '@/lib/extensions/types';
+import type {
+  CockpitExtensionRouteLoaderContext,
+  CockpitExtensionRouteModuleLoader,
+} from '@/lib/extensions/types';
 import type { ExternalRouteComponent, ExternalRouteComponentProps } from './external-route-adapter';
+import {
+  ExternalRouteDataRenderer,
+  type ExternalRouteDataLoader,
+} from './external-route-data-renderer';
 
 export const HOSTED_EXTERNAL_ROUTE_COMPONENTS = buildHostedExternalRouteComponents();
 
-type HostedExternalRouteModule = {
-  default: ComponentType;
+export type HostedExternalRouteModule = {
+  default?: ComponentType;
+  loader?: (context: CockpitExtensionRouteLoaderContext) => unknown | Promise<unknown>;
+  routeModule?: {
+    loader?: (context: CockpitExtensionRouteLoaderContext) => unknown | Promise<unknown>;
+  };
 };
 
 function buildHostedExternalRouteComponents(): Readonly<Record<string, ExternalRouteComponent>> {
@@ -21,7 +32,7 @@ function buildHostedExternalRouteComponents(): Readonly<Record<string, ExternalR
     const LoadedRoute = lazy(async () => {
       const routeModule = await loadModule();
       return {
-        default: adaptRouteComponent(routeModule.default as ComponentType),
+        default: createHostedExternalRouteComponent(routeModule),
       };
     });
 
@@ -33,8 +44,40 @@ function buildHostedExternalRouteComponents(): Readonly<Record<string, ExternalR
   return components;
 }
 
-function adaptRouteComponent(Component: ComponentType): ExternalRouteComponent {
-  return function ExternalRouteComponentAdapter(_props: ExternalRouteComponentProps) {
-    return <Component />;
+export function createHostedExternalRouteComponent(
+  routeModule: HostedExternalRouteModule,
+): ExternalRouteComponent {
+  const routeDataLoader = routeModule.loader ?? routeModule.routeModule?.loader;
+  if (routeDataLoader) {
+    return function ExternalRouteDataAdapter(props: ExternalRouteComponentProps) {
+      const loadData: ExternalRouteDataLoader = () =>
+        Promise.resolve(
+          routeDataLoader({
+            manifest: props.extension.manifest,
+            route: props.route,
+            workspacePackRefs: props.extension.workspacePackRefs ?? [],
+          }),
+        );
+
+      return <ExternalRouteDataRenderer {...props} loadData={loadData} />;
+    };
+  }
+
+  const Component = routeModule.default as ComponentType<ExternalRouteComponentProps> | undefined;
+  if (Component) {
+    return function ExternalRouteComponentAdapter(props: ExternalRouteComponentProps) {
+      return <Component {...props} />;
+    };
+  }
+
+  return function MissingExternalRouteModule(props: ExternalRouteComponentProps) {
+    return (
+      <ExternalRouteDataRenderer
+        {...props}
+        loadData={() =>
+          Promise.reject(new Error(`Route module "${props.route.id}" did not export a renderer.`))
+        }
+      />
+    );
   };
 }

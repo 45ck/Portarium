@@ -3,16 +3,19 @@ import {
   COCKPIT_EXTENSION_PERSONAS,
   COCKPIT_EXTENSION_PRIVACY_CLASSES,
   COCKPIT_EXTENSION_SURFACES,
+  COCKPIT_EXTENSION_WIDGET_SURFACES,
   type CockpitExtensionAccessContext,
   type CockpitExtensionAccessDecision,
   type CockpitExtensionAccessDenial,
   type CockpitExtensionCommand,
+  type CockpitExtensionDataScopeRef,
   type CockpitExtensionDisableReason,
   type CockpitExtensionManifest,
   type CockpitExtensionNavItem,
   type CockpitExtensionRegistryProblem,
   type CockpitExtensionRouteRef,
   type CockpitExtensionRouteModuleLoader,
+  type CockpitExtensionWidgetRef,
   type ResolvedCockpitExtension,
   type ResolvedCockpitExtensionRegistry,
 } from './types';
@@ -21,12 +24,14 @@ const allowedSurfaces = new Set<string>(COCKPIT_EXTENSION_SURFACES);
 const allowedPersonas = new Set<string>(COCKPIT_EXTENSION_PERSONAS);
 const allowedPrivacyClasses = new Set<string>(COCKPIT_EXTENSION_PRIVACY_CLASSES);
 const allowedIcons = new Set<string>(COCKPIT_EXTENSION_ICONS);
+const allowedWidgetSurfaces = new Set<string>(COCKPIT_EXTENSION_WIDGET_SURFACES);
 
 export interface ResolveCockpitExtensionRegistryInput {
   installedExtensions: readonly CockpitExtensionManifest[];
   activePackIds: readonly string[];
   quarantinedExtensionIds?: readonly string[];
   emergencyDisabledExtensionIds?: readonly string[];
+  availablePersonas?: readonly string[];
   availableCapabilities?: readonly string[];
   availableApiScopes?: readonly string[];
   availablePrivacyClasses?: readonly string[];
@@ -38,6 +43,7 @@ export function resolveCockpitExtensionRegistry({
   activePackIds,
   quarantinedExtensionIds = [],
   emergencyDisabledExtensionIds = [],
+  availablePersonas,
   availableCapabilities,
   availableApiScopes,
   availablePrivacyClasses,
@@ -46,7 +52,12 @@ export function resolveCockpitExtensionRegistry({
   const activePacks = new Set(activePackIds);
   const quarantinedExtensions = new Set(quarantinedExtensionIds);
   const emergencyDisabledExtensions = new Set(emergencyDisabledExtensionIds);
-  const accessContext = { availableCapabilities, availableApiScopes, availablePrivacyClasses };
+  const accessContext = {
+    availablePersonas,
+    availableCapabilities,
+    availableApiScopes,
+    availablePrivacyClasses,
+  };
   const extensionProblems = new Map<string, CockpitExtensionRegistryProblem[]>();
   const extensionDisableReasons = new Map<string, CockpitExtensionDisableReason[]>();
   const globalProblems: CockpitExtensionRegistryProblem[] = [];
@@ -55,6 +66,8 @@ export function resolveCockpitExtensionRegistry({
   const navIds = new Map<string, string>();
   const commandIds = new Map<string, string>();
   const shortcutIds = new Map<string, string>();
+  const widgetIds = new Map<string, string>();
+  const dataScopeIds = new Map<string, string>();
   const extensionIds = new Set<string>();
   const declaredPackIds = new Set(installedExtensions.flatMap((extension) => extension.packIds));
   const declaredRouteIds = new Set(
@@ -141,6 +154,8 @@ export function resolveCockpitExtensionRegistry({
     validateRoutes(extension, routeIds, routePaths, routeLoaders, addProblem);
     validateNavItems(extension, localRoutes, navIds, addProblem);
     validateCommands(extension, localRoutes, commandIds, shortcutIds, addProblem);
+    validateDataScopes(extension, dataScopeIds, addProblem);
+    validateWidgets(extension, localRoutes, widgetIds, addProblem);
   }
 
   const resolvedExtensions: ResolvedCockpitExtension[] = installedExtensions.map((manifest) => {
@@ -175,6 +190,8 @@ export function resolveCockpitExtensionRegistry({
     routes: enabledExtensions.flatMap((extension) => extension.manifest.routes),
     navItems: enabledExtensions.flatMap((extension) => extension.manifest.navItems),
     commands: enabledExtensions.flatMap((extension) => extension.manifest.commands),
+    widgets: enabledExtensions.flatMap((extension) => extension.manifest.widgets ?? []),
+    dataScopes: enabledExtensions.flatMap((extension) => extension.manifest.dataScopes ?? []),
     problems: globalProblems,
   };
 }
@@ -614,6 +631,118 @@ function validateCommands(
         addProblem,
       });
     }
+  }
+}
+
+function validateDataScopes(
+  extension: CockpitExtensionManifest,
+  dataScopeIds: Map<string, string>,
+  addProblem: (problem: CockpitExtensionRegistryProblem) => void,
+) {
+  const permissionGrants = getPermissionGrantIds(extension);
+  for (const scope of extension.dataScopes ?? []) {
+    addDuplicateProblem(dataScopeIds, scope.id, extension.id, 'data scope id', {
+      code: 'duplicate-data-scope-id',
+      extensionId: extension.id,
+      itemId: scope.id,
+      addProblem,
+    });
+
+    if (scope.access !== 'read') {
+      addProblem({
+        code: 'invalid-data-scope-access',
+        message: `Data scope "${scope.id}" must be read-only.`,
+        extensionId: extension.id,
+        itemId: scope.id,
+      });
+    }
+
+    validateGuard(extension.id, scope.id, scope.guard, addProblem);
+    validatePermissionGrantReferences(extension, scope.id, scope.permissionGrantIds, addProblem);
+    validatePermissionGuardCoverage(
+      extension,
+      scope.id,
+      scope.permissionGrantIds,
+      scope.guard,
+      permissionGrants,
+      addProblem,
+    );
+
+    for (const grantId of scope.permissionGrantIds) {
+      const grant = permissionGrants.get(grantId);
+      if (
+        grant &&
+        (grant.kind !== 'data-query' ||
+          grant.policySemantics !== 'authorization-required' ||
+          grant.evidenceSemantics !== 'read-audited-by-control-plane')
+      ) {
+        addProblem({
+          code: 'invalid-data-scope-permission',
+          message: `Data scope "${scope.id}" must reference read-only data-query permission grants.`,
+          extensionId: extension.id,
+          itemId: scope.id,
+        });
+      }
+    }
+  }
+}
+
+function validateWidgets(
+  extension: CockpitExtensionManifest,
+  localRoutes: ReadonlyMap<string, CockpitExtensionRouteRef>,
+  widgetIds: Map<string, string>,
+  addProblem: (problem: CockpitExtensionRegistryProblem) => void,
+) {
+  const permissionGrants = getPermissionGrantIds(extension);
+  const dataScopeIds = new Set((extension.dataScopes ?? []).map((scope) => scope.id));
+
+  for (const widget of extension.widgets ?? []) {
+    addDuplicateProblem(widgetIds, widget.id, extension.id, 'widget id', {
+      code: 'duplicate-widget-id',
+      extensionId: extension.id,
+      itemId: widget.id,
+      addProblem,
+    });
+
+    if (!allowedWidgetSurfaces.has(widget.surface)) {
+      addProblem({
+        code: 'invalid-widget-surface',
+        message: `Widget "${widget.id}" uses unsupported surface "${widget.surface}".`,
+        extensionId: extension.id,
+        itemId: widget.id,
+      });
+    }
+
+    if (widget.routeId && !localRoutes.has(widget.routeId)) {
+      addProblem({
+        code: 'missing-route',
+        message: `Widget "${widget.id}" references missing route "${widget.routeId}".`,
+        extensionId: extension.id,
+        itemId: widget.id,
+      });
+    }
+
+    for (const dataScopeId of widget.dataScopeIds ?? []) {
+      if (!dataScopeIds.has(dataScopeId)) {
+        addProblem({
+          code: 'missing-data-scope',
+          message: `Widget "${widget.id}" references missing data scope "${dataScopeId}".`,
+          extensionId: extension.id,
+          itemId: widget.id,
+        });
+      }
+    }
+
+    validateGuard(extension.id, widget.id, widget.guard, addProblem);
+    validatePermissionGrantReferences(extension, widget.id, widget.permissionGrantIds, addProblem);
+    validatePermissionGuardCoverage(
+      extension,
+      widget.id,
+      widget.permissionGrantIds,
+      widget.guard,
+      permissionGrants,
+      addProblem,
+    );
   }
 }
 

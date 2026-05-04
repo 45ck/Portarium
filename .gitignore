@@ -95,6 +95,7 @@ scratch/
 *.local.js
 *.local.mjs
 *.local.cjs
+apps/cockpit/src/lib/extensions/local-installed/
 test-results/
 playwright-report/
 playwright-results.json

@@ -12,6 +12,7 @@ This folder contains a low-fidelity, clickable prototype for the Portarium Cockp
 - `governance-policy-design.md` covers Policy and Execution Tier control surfaces.
 - `ia-baseline.md` covers the navigation and information architecture baseline.
 - `generic-plugin-host-implementation-plan.md` covers the reusable Cockpit plugin host/control-plane implementation plan.
+- `local-extension-install-bridge.md` covers the ignored local install bridge for development-only extension wiring.
 
 ## How To View
 

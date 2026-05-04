@@ -201,6 +201,35 @@ export interface CockpitExtensionCommand {
   shortcut?: string;
 }
 
+export const COCKPIT_EXTENSION_WIDGET_SURFACES = [
+  'dashboard',
+  'route-panel',
+  'detail-panel',
+] as const;
+
+export type CockpitExtensionWidgetSurface = (typeof COCKPIT_EXTENSION_WIDGET_SURFACES)[number];
+
+export interface CockpitExtensionDataScopeRef {
+  id: string;
+  title: string;
+  description?: string;
+  resource: string;
+  access: 'read';
+  guard: CockpitExtensionGuard;
+  permissionGrantIds: readonly string[];
+}
+
+export interface CockpitExtensionWidgetRef {
+  id: string;
+  title: string;
+  description?: string;
+  surface: CockpitExtensionWidgetSurface;
+  routeId?: string;
+  guard: CockpitExtensionGuard;
+  permissionGrantIds: readonly string[];
+  dataScopeIds?: readonly string[];
+}
+
 export interface CockpitExtensionManifest {
   manifestVersion: 1;
   id: string;
@@ -215,6 +244,8 @@ export interface CockpitExtensionManifest {
   routes: readonly CockpitExtensionRouteRef[];
   navItems: readonly CockpitExtensionNavItem[];
   commands: readonly CockpitExtensionCommand[];
+  widgets?: readonly CockpitExtensionWidgetRef[];
+  dataScopes?: readonly CockpitExtensionDataScopeRef[];
   governance: CockpitExtensionGovernance;
 }
 
@@ -271,11 +302,17 @@ export interface CockpitExtensionRegistryProblem {
     | 'duplicate-nav-id'
     | 'duplicate-command-id'
     | 'duplicate-shortcut'
+    | 'duplicate-widget-id'
+    | 'duplicate-data-scope-id'
     | 'missing-route'
+    | 'missing-data-scope'
     | 'invalid-surface'
+    | 'invalid-widget-surface'
     | 'invalid-persona'
     | 'invalid-privacy-class'
     | 'invalid-icon'
+    | 'invalid-data-scope-access'
+    | 'invalid-data-scope-permission'
     | 'invalid-external-path'
     | 'invalid-direct-nav-target'
     | 'unknown-pack-activation'
@@ -292,7 +329,10 @@ export interface CockpitExtensionRegistryProblem {
     | 'invalid-governance-control'
     | 'missing-route-guard'
     | 'missing-command-guard'
-    | 'missing-pack-activation';
+    | 'missing-pack-activation'
+    | 'invalid-manifest'
+    | 'invalid-manifest-version'
+    | 'forbidden-manifest-key';
   message: string;
   extensionId?: string;
   itemId?: string;
@@ -312,5 +352,7 @@ export interface ResolvedCockpitExtensionRegistry {
   routes: readonly CockpitExtensionRouteRef[];
   navItems: readonly CockpitExtensionNavItem[];
   commands: readonly CockpitExtensionCommand[];
+  widgets: readonly CockpitExtensionWidgetRef[];
+  dataScopes: readonly CockpitExtensionDataScopeRef[];
   problems: readonly CockpitExtensionRegistryProblem[];
 }

@@ -20,6 +20,7 @@ Architecture Decision Records live in `docs/internal/adr/`.
 - Approval execution atomic claims: `docs/internal/adr/ADR-0142-approval-execution-atomic-claim-cas.md`
 - Beads sync compatibility wrapper: `docs/internal/adr/ADR-0144-beads-sync-compatibility-wrapper.md`
 - Generic Cockpit plugin host control plane: `docs/internal/adr/ADR-0145-generic-cockpit-plugin-host-control-plane.md`
+- Cockpit local extension install bridge: `docs/internal/adr/ADR-0146-cockpit-local-extension-install-bridge.md`
 
 ## Working rule
 

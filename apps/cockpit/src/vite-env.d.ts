@@ -6,6 +6,10 @@ interface ImportMetaEnv {
   readonly VITE_PORTARIUM_MOCK_DATASET?: string;
   readonly VITE_PORTARIUM_ENABLE_LIVE_OFFLINE_CACHE?: string;
   readonly VITE_DEMO_MODE?: string;
+  readonly VITE_COCKPIT_LOCAL_EXTENSION_ALLOW_DIRS?: string;
+  readonly VITE_COCKPIT_LOCAL_EXTENSION_ALIASES?: string;
+  readonly VITE_COCKPIT_ENABLE_LOCAL_EXTENSIONS?: string;
+  readonly VITE_COCKPIT_ENABLE_LOCAL_EXTENSIONS_IN_TESTS?: string;
 }
 
 interface ImportMeta {

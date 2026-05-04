@@ -1,5 +1,10 @@
 import { EXAMPLE_REFERENCE_EXTENSION } from './example-reference/manifest';
 import { EXAMPLE_REFERENCE_ROUTE_LOADERS } from './example-reference/route-loaders';
+import { createCockpitExtensionManifestV1ConformanceReport } from '@portarium/cockpit-extension-sdk';
+import {
+  LOCAL_COCKPIT_EXTENSION_INSTALL_PROBLEMS,
+  LOCAL_COCKPIT_EXTENSION_MODULES,
+} from './local-install';
 import {
   resolveCockpitExtensionRegistry,
   type ResolveCockpitExtensionRegistryInput,
@@ -8,6 +13,7 @@ import { resolveCockpitExtensionRouteHostDefinitions } from './route-host';
 import type {
   CockpitExtensionAccessContext,
   CockpitInstalledExtension,
+  CockpitExtensionManifest,
   CockpitExtensionRegistryProblem,
   CockpitExtensionRouteModuleLoader,
   ResolvedCockpitExtensionRegistry,
@@ -18,7 +24,7 @@ export type ResolveInstalledCockpitExtensionRegistryInput = Omit<
   'installedExtensions' | 'routeLoaders'
 >;
 
-export const INSTALLED_COCKPIT_EXTENSION_MODULES = [
+const BUILT_IN_COCKPIT_EXTENSION_MODULES = [
   {
     manifest: EXAMPLE_REFERENCE_EXTENSION,
     packageRef: {
@@ -34,12 +40,18 @@ export const INSTALLED_COCKPIT_EXTENSION_MODULES = [
   },
 ] as const satisfies readonly CockpitInstalledExtension[];
 
-export const INSTALLED_COCKPIT_EXTENSION_CATALOG_PROBLEMS =
-  validateInstalledCockpitExtensionModules(INSTALLED_COCKPIT_EXTENSION_MODULES);
+export const INSTALLED_COCKPIT_EXTENSION_MODULES = [
+  ...BUILT_IN_COCKPIT_EXTENSION_MODULES,
+  ...LOCAL_COCKPIT_EXTENSION_MODULES,
+] as const satisfies readonly CockpitInstalledExtension[];
 
-export const INSTALLED_COCKPIT_EXTENSIONS = INSTALLED_COCKPIT_EXTENSION_MODULES.map(
-  (extension) => extension.manifest,
-);
+export const INSTALLED_COCKPIT_EXTENSION_CATALOG_PROBLEMS = [
+  ...LOCAL_COCKPIT_EXTENSION_INSTALL_PROBLEMS,
+  ...validateInstalledCockpitExtensionModules(INSTALLED_COCKPIT_EXTENSION_MODULES),
+] as const;
+
+export const INSTALLED_COCKPIT_EXTENSIONS: readonly CockpitExtensionManifest[] =
+  INSTALLED_COCKPIT_EXTENSION_MODULES.map((extension) => extension.manifest);
 
 export const INSTALLED_COCKPIT_ROUTE_LOADERS = buildInstalledCockpitRouteLoaders(
   INSTALLED_COCKPIT_EXTENSION_MODULES,
@@ -104,8 +116,9 @@ export const INSTALLED_COCKPIT_ROUTE_HOST_PROBLEMS = installedRouteHostResolutio
 export function resolveInstalledCockpitExtensionRegistry(
   input: ResolveInstalledCockpitExtensionRegistryInput,
 ): ResolvedCockpitExtensionRegistry {
+  const effectiveInput = withLocalCockpitExtensionActivation(input);
   const registry = resolveCockpitExtensionRegistry({
-    ...input,
+    ...effectiveInput,
     installedExtensions: INSTALLED_COCKPIT_EXTENSIONS,
     routeLoaders: INSTALLED_COCKPIT_ROUTE_LOADERS,
   });
@@ -141,6 +154,8 @@ function appendInstalledCatalogProblems(
     routes: [],
     navItems: [],
     commands: [],
+    widgets: [],
+    dataScopes: [],
     problems: [...registry.problems, ...INSTALLED_COCKPIT_EXTENSION_CATALOG_PROBLEMS],
   };
 }
@@ -169,94 +184,14 @@ export function buildInstalledCockpitRouteLoaders(
 function validateInstalledCockpitExtensionModule(
   extension: CockpitInstalledExtension,
 ): CockpitExtensionRegistryProblem[] {
-  const problems: CockpitExtensionRegistryProblem[] = [];
-  const extensionId = extension.manifest.id;
-  const packageName = extension.packageRef?.packageName?.trim();
-  const manifestPackIds = extension.manifest.packIds;
-  const workspacePackIds = extension.workspacePackRefs?.map((ref) => ref.packId) ?? [];
-  const manifestRouteIds = extension.manifest.routes.map((route) => route.id);
-  const routeModuleIds = extension.routeModules.map((routeModule) => routeModule.routeId);
-
-  if (!packageName) {
-    problems.push({
-      code: 'missing-package-ref',
-      message: `Installed extension "${extensionId}" must declare a host-reviewed package reference.`,
-      extensionId,
-    });
-  }
-  if (
-    extension.manifest.governance.versionPin.packageName !== extension.packageRef.packageName ||
-    extension.manifest.governance.versionPin.version !== extension.packageRef.version
-  ) {
-    problems.push({
-      code: 'governance-package-ref-mismatch',
-      message: `Installed extension "${extensionId}" governance version pin must match its host-reviewed package reference.`,
-      extensionId,
-      itemId: extension.manifest.governance.versionPin.packageName,
-    });
-  }
-
-  for (const packId of symmetricDifference(manifestPackIds, workspacePackIds)) {
-    problems.push({
-      code: 'install-pack-ref-mismatch',
-      message: `Installed extension "${extensionId}" workspace pack ref "${packId}" must match its manifest pack IDs.`,
-      extensionId,
-      itemId: packId,
-    });
-  }
-
-  for (const routeId of duplicateValues(routeModuleIds)) {
-    problems.push({
-      code: 'duplicate-route-module',
-      message: `Installed extension "${extensionId}" declares duplicate route module "${routeId}".`,
-      extensionId,
-      itemId: routeId,
-    });
-  }
-
-  for (const routeId of manifestRouteIds.filter((routeId) => !routeModuleIds.includes(routeId))) {
-    problems.push({
-      code: 'missing-route-module',
-      message: `Installed extension "${extensionId}" route "${routeId}" must have a host-owned route module ref.`,
-      extensionId,
-      itemId: routeId,
-    });
-  }
-
-  for (const routeId of routeModuleIds.filter((routeId) => !manifestRouteIds.includes(routeId))) {
-    problems.push({
-      code: 'undeclared-route-module',
-      message: `Installed extension "${extensionId}" route module "${routeId}" is not declared by its manifest.`,
-      extensionId,
-      itemId: routeId,
-    });
-  }
-
-  return problems;
-}
-
-function symmetricDifference(left: readonly string[], right: readonly string[]): string[] {
-  const leftSet = new Set(left);
-  const rightSet = new Set(right);
   return [
-    ...left.filter((value) => !rightSet.has(value)),
-    ...right.filter((value) => !leftSet.has(value)),
+    ...createCockpitExtensionManifestV1ConformanceReport({
+      manifest: extension.manifest,
+      packageRef: extension.packageRef,
+      workspacePackRefs: extension.workspacePackRefs,
+      routeModuleIds: extension.routeModules.map((routeModule) => routeModule.routeId),
+    }).problems,
   ];
-}
-
-function duplicateValues(values: readonly string[]): string[] {
-  const seen = new Set<string>();
-  const duplicates = new Set<string>();
-
-  for (const value of values) {
-    if (seen.has(value)) {
-      duplicates.add(value);
-      continue;
-    }
-    seen.add(value);
-  }
-
-  return [...duplicates];
 }
 
 function collectInstalledRequirements(
@@ -280,9 +215,46 @@ function collectInstalledPrivacyClasses(activePackIds: readonly string[]): reado
           ? [
               ...extension.routes.flatMap((route) => route.guard.privacyClasses ?? []),
               ...extension.commands.flatMap((command) => command.guard.privacyClasses ?? []),
+              ...(extension.dataScopes ?? []).flatMap((scope) => scope.guard.privacyClasses ?? []),
+              ...(extension.widgets ?? []).flatMap((widget) => widget.guard.privacyClasses ?? []),
             ]
           : [],
       ),
     ),
   ];
+}
+
+export function withLocalCockpitExtensionActivation(
+  input: ResolveInstalledCockpitExtensionRegistryInput,
+): ResolveInstalledCockpitExtensionRegistryInput {
+  if (LOCAL_COCKPIT_EXTENSION_MODULES.length === 0) return input;
+
+  const localPackIds = [
+    ...new Set(LOCAL_COCKPIT_EXTENSION_MODULES.flatMap((extension) => extension.manifest.packIds)),
+  ];
+
+  return {
+    ...input,
+    activePackIds: uniqueStrings([...input.activePackIds, ...localPackIds]),
+    availablePersonas: uniqueStrings([
+      ...(input.availablePersonas ?? []),
+      ...LOCAL_COCKPIT_EXTENSION_MODULES.flatMap((extension) => extension.manifest.personas),
+    ]),
+    availableCapabilities: uniqueStrings([
+      ...(input.availableCapabilities ?? []),
+      ...collectInstalledRequirements('requiredCapabilities', localPackIds),
+    ]),
+    availableApiScopes: uniqueStrings([
+      ...(input.availableApiScopes ?? []),
+      ...collectInstalledRequirements('requiredApiScopes', localPackIds),
+    ]),
+    availablePrivacyClasses: uniqueStrings([
+      ...(input.availablePrivacyClasses ?? []),
+      ...collectInstalledPrivacyClasses(localPackIds),
+    ]),
+  };
+}
+
+function uniqueStrings(values: readonly string[]): readonly string[] {
+  return [...new Set(values)];
 }
