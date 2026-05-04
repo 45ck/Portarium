@@ -15,6 +15,16 @@ This README turns those three reports into concrete recommendations that feed th
 - `bead-1156` — VM-first sandbox architecture (architectural cross-checks).
 - `bead-1158` — Provider rollout strategy (cross-references to OpenCode's workspace adapter).
 
+> **⚠ Strategic shift (2026-05-04, supersedes parts of this doc).**
+> A deeper analysis after this synthesis pushed the recommendation past "concept reuse" toward a **hybrid integration of Vibe Kanban** (vendored Rust backend + transplanted React frontend, governance bolted on via small Rust glue crates). The original menu-of-options below is still useful comparative material, but the load-bearing decision now lives in:
+>
+> - **[ADR-0148 — Cockpit Engineering Surface derives from Vibe Kanban](../../adr/ADR-0148-cockpit-derives-from-vibe-kanban.md)** — the decision and architectural rules.
+> - **[Cockpit vendor architecture](../cockpit-vendor-architecture.md)** — how the integration works.
+> - **[Integration build plan](../integration-build-plan.md)** — 8-week sequenced execution.
+> - **[Agent-driven backlog vision](../agent-driven-backlog-vision.md)** — phase 3+ trajectory.
+>
+> The Tier 1/2/3 reuse framework below is **partially superseded**: under the hybrid plan, Vibe Kanban moves from "Tier 2 concept reuse" to "vendored backend + transplanted frontend" — i.e. a much deeper integration than this README originally contemplated. T3 Code and OpenCode remain Tier 2/3 (concept reuse, no code).
+
 ---
 
 ## TL;DR
