@@ -327,7 +327,8 @@ function NativeDataExplorerSurfaceRenderer({
             <div>
               <h2 className="text-base font-semibold">Read-Only Data Sources</h2>
               <p className="text-xs text-muted-foreground">
-                Static source projections, connector posture, and useful questions for operator review.
+                Static source projections, connector posture, and useful questions for operator
+                review.
               </p>
             </div>
             <Badge variant="outline">Host-rendered data explorer</Badge>
@@ -350,7 +351,9 @@ function NativeDataExplorerSurfaceRenderer({
                 <CardHeader className="space-y-2">
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <CardTitle className="text-sm">{insight.title}</CardTitle>
-                    {insight.tone ? <Badge variant={badgeVariant(insight.tone)}>{insight.tone}</Badge> : null}
+                    {insight.tone ? (
+                      <Badge variant={badgeVariant(insight.tone)}>{insight.tone}</Badge>
+                    ) : null}
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm text-muted-foreground">
@@ -433,13 +436,7 @@ function DataSourceCard({ source }: { source: NativeDataExplorerSource }) {
   );
 }
 
-function DataSourceStat({
-  label,
-  value,
-}: {
-  label: string;
-  value: string | number | undefined;
-}) {
+function DataSourceStat({ label, value }: { label: string; value: string | number | undefined }) {
   return (
     <div className="rounded-md border px-2 py-1.5">
       <p className="text-[11px] text-muted-foreground">{label}</p>
