@@ -86,6 +86,23 @@ owner of:
 The initial implementation should be component-level. It should not require a
 fully manifest-driven map slot system before proving the API.
 
+## 2026-05-06 Amendment
+
+ADR-0149 adds host-native extension surfaces. Map routes can now opt into a
+data-descriptor path instead of mounting custom route components. The map
+workbench contract should support both base-map families through the same
+Cockpit shell:
+
+- provider-backed base maps for outdoor/geospatial context, Earth, Google Maps,
+  Leaflet, or compatible adapters,
+- custom indoor/vector maps for floor plans, rooms, campus geometry, and
+  operational overlays.
+
+Extensions contribute base-map choices, layer metadata, selectable entities,
+read-only context groups, and governed command descriptors. Cockpit owns the
+provider adapter, map chrome, side-panel frame, desktop/mobile layout, privacy
+and freshness affordances, and write/proposal boundary.
+
 ## Workbench Contract
 
 The first host contract should include:

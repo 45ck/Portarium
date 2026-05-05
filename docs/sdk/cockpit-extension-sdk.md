@@ -14,6 +14,31 @@ The manifest is data only. Extension authors can declare:
 
 The manifest cannot declare remote executable code, browser egress origins, credentials, provider endpoints, webhooks, or direct side-effect authority. Extension UI must use Portarium Control Plane APIs through the Cockpit Extension Host.
 
+## Host-Native Surfaces
+
+Extensions should prefer host-native surfaces over custom route components.
+When a route module exports:
+
+```ts
+export const hostRendering = { mode: 'host-native' } as const;
+```
+
+Cockpit ignores the module's custom `default` component, calls the route loader,
+and renders the returned `nativeSurface` with Portarium/Cockpit design-system
+components.
+
+The first supported surface kinds are:
+
+- `portarium.native.ticketInbox.v1` for inbox/list/detail workflows.
+- `portarium.native.mapWorkbench.v1` for provider-backed and custom map
+  workbenches.
+
+Use provider-backed map options for Earth, Google Maps, Leaflet, or compatible
+geospatial context. Use custom map options for indoor/vector maps, floor plans,
+room geometry, and domain overlays. Both modes run inside the same Cockpit map
+workbench shell; extensions contribute data, layers, refs, and read-only
+context, not map chrome or write authority.
+
 ## Conformance
 
 External packages can run the conformance helper in their own test suite:

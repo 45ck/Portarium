@@ -21,6 +21,7 @@ Architecture Decision Records live in `docs/internal/adr/`.
 - Beads sync compatibility wrapper: `docs/internal/adr/ADR-0144-beads-sync-compatibility-wrapper.md`
 - Generic Cockpit plugin host control plane: `docs/internal/adr/ADR-0145-generic-cockpit-plugin-host-control-plane.md`
 - Cockpit local extension install bridge: `docs/internal/adr/ADR-0146-cockpit-local-extension-install-bridge.md`
+- Host-native Cockpit extension surfaces: `docs/internal/adr/ADR-0149-host-native-extension-surfaces.md`
 
 ## Working rule
 
