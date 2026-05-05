@@ -35,6 +35,12 @@ The first supported surface kinds are:
 - `portarium.native.mapWorkbench.v1` for provider-backed and custom map
   workbenches.
 
+For `portarium.native.dataExplorer.v1`, each source descriptor should include
+counts, freshness/privacy labels, source refs, useful questions, visualisation
+targets, connector IDs, and capability IDs where available. Cockpit renders
+those as evidence metadata only; extensions should not include raw records,
+credentials, tokens, or provider payloads in the descriptor.
+
 Use provider-backed map options for Earth, Google Maps, Leaflet, or compatible
 geospatial context. Use custom map options for indoor/vector maps, floor plans,
 room geometry, and domain overlays. Both modes run inside the same Cockpit map

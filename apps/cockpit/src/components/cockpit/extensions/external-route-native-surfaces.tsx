@@ -192,6 +192,9 @@ interface NativeDataExplorerSource {
   recordCount?: number;
   summary: string;
   href?: string;
+  sourceRefs?: readonly string[];
+  capabilityIds?: readonly string[];
+  connectorIds?: readonly string[];
   visualisations?: readonly string[];
   answerableQuestions?: readonly string[];
   portariumSurfaces?: readonly string[];
@@ -417,6 +420,9 @@ function DataSourceCard({ source }: { source: NativeDataExplorerSource }) {
         <TagList title="Visualise" items={source.visualisations ?? []} />
         <TagList title="Can answer" items={source.answerableQuestions ?? []} />
         <TagList title="Surfaces" items={source.portariumSurfaces ?? []} />
+        <TagList title="Capabilities" items={source.capabilityIds ?? []} />
+        <TagList title="Connectors" items={source.connectorIds ?? []} />
+        <SourceRefList refs={source.sourceRefs ?? []} />
         {source.href ? (
           <Button asChild size="xs" variant="outline">
             <a href={source.href}>Open surface</a>
@@ -454,6 +460,29 @@ function TagList({ title, items }: { title: string; items: readonly string[] }) 
             {item}
           </Badge>
         ))}
+      </div>
+    </div>
+  );
+}
+
+function SourceRefList({ refs }: { refs: readonly string[] }) {
+  if (refs.length === 0) return null;
+
+  return (
+    <div className="space-y-1">
+      <p className="text-[11px] font-medium text-muted-foreground">Source refs</p>
+      <div className="grid gap-1">
+        {refs.slice(0, 5).map((ref) => (
+          <code
+            key={ref}
+            className="rounded-md border bg-muted/30 px-2 py-1 text-[11px] break-all text-muted-foreground"
+          >
+            {ref}
+          </code>
+        ))}
+        {refs.length > 5 ? (
+          <p className="text-[11px] text-muted-foreground">+{refs.length - 5} more refs</p>
+        ) : null}
       </div>
     </div>
   );

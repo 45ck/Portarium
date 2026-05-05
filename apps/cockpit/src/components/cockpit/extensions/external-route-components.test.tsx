@@ -213,6 +213,9 @@ describe('hosted external route components', () => {
                 itemCount: 25,
                 recordCount: 743,
                 summary: 'Redacted ticket rows are available as operator context.',
+                sourceRefs: ['fixtures/freshservice-tickets.redacted.json'],
+                capabilityIds: ['freshservice.ticket.snapshot.read'],
+                connectorIds: ['mc.freshservice.snapshot'],
                 visualisations: ['ticket queue', 'room heatmap'],
                 answerableQuestions: ['Which rooms have ticket clusters?'],
                 portariumSurfaces: ['Data', 'Ticket Queue'],
@@ -246,6 +249,9 @@ describe('hosted external route components', () => {
     expect(screen.getByText('Read-Only Data Sources')).toBeTruthy();
     expect(screen.getByText('Freshservice snapshot')).toBeTruthy();
     expect(screen.getByText('743')).toBeTruthy();
+    expect(screen.getByText('fixtures/freshservice-tickets.redacted.json')).toBeTruthy();
+    expect(screen.getByText('freshservice.ticket.snapshot.read')).toBeTruthy();
+    expect(screen.getByText('mc.freshservice.snapshot')).toBeTruthy();
     expect(screen.getByText('Room ticket clusters')).toBeTruthy();
     expect(screen.getByText('Portarium Integration Boundary')).toBeTruthy();
   });

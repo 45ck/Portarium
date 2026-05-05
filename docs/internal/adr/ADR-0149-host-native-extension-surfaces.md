@@ -36,9 +36,11 @@ The first native surface kinds are:
 
 Use the data explorer surface for read-only source landscapes where an
 extension contributes source descriptors, counts, freshness/privacy labels,
-useful questions, and integration notes. This keeps tenant-specific data
-discovery inside the extension while Cockpit owns the reusable source-catalogue
-UI.
+source refs, connector/capability IDs, useful questions, and integration
+notes. This keeps tenant-specific data discovery inside the extension while
+Cockpit owns the reusable source-catalogue UI. Source refs must be references
+to static read models or governed source artifacts, not raw private records or
+credentials.
 
 Extension packages may still keep fallback route components for local contract
 tests or older hosts, but the Cockpit runtime should prefer host-native
