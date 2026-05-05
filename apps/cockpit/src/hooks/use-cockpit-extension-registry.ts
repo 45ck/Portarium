@@ -1,7 +1,10 @@
 import { useAuthStore } from '@/stores/auth-store';
 import { useCockpitExtensionContext } from '@/hooks/queries/use-cockpit-extension-context';
 import { resolveCockpitExtensionServerAccess } from '@/lib/extensions/access-context';
-import { resolveInstalledCockpitExtensionRegistry } from '@/lib/extensions/installed';
+import {
+  resolveInstalledCockpitExtensionRegistry,
+  resolveInstalledCockpitExtensionServerAccess,
+} from '@/lib/extensions/installed';
 import type { ResolvedCockpitExtensionRegistry } from '@/lib/extensions/types';
 import type { ResolvedCockpitExtensionServerAccess } from '@/lib/extensions/access-context';
 import type { PersonaId } from '@/stores/ui-store';
@@ -33,14 +36,16 @@ export function useCockpitExtensionRegistry({
         ? extensionContextQuery.data
         : null,
   });
+  const effectiveServerAccess = resolveInstalledCockpitExtensionServerAccess(serverAccess);
   const registry = resolveInstalledCockpitExtensionRegistry({
-    activePackIds: serverAccess.activePackIds,
-    quarantinedExtensionIds: serverAccess.quarantinedExtensionIds,
-    emergencyDisabledExtensionIds: serverAccess.emergencyDisabledExtensionIds,
-    availableCapabilities: serverAccess.accessContext.availableCapabilities,
-    availableApiScopes: serverAccess.accessContext.availableApiScopes,
-    availablePrivacyClasses: serverAccess.accessContext.availablePrivacyClasses,
+    activePackIds: effectiveServerAccess.activePackIds,
+    quarantinedExtensionIds: effectiveServerAccess.quarantinedExtensionIds,
+    emergencyDisabledExtensionIds: effectiveServerAccess.emergencyDisabledExtensionIds,
+    availablePersonas: effectiveServerAccess.accessContext.availablePersonas,
+    availableCapabilities: effectiveServerAccess.accessContext.availableCapabilities,
+    availableApiScopes: effectiveServerAccess.accessContext.availableApiScopes,
+    availablePrivacyClasses: effectiveServerAccess.accessContext.availablePrivacyClasses,
   });
 
-  return { registry, serverAccess };
+  return { registry, serverAccess: effectiveServerAccess };
 }

@@ -18,6 +18,7 @@ import type {
   CockpitExtensionRouteModuleLoader,
   ResolvedCockpitExtensionRegistry,
 } from './types';
+import type { ResolvedCockpitExtensionServerAccess } from './access-context';
 
 export type ResolveInstalledCockpitExtensionRegistryInput = Omit<
   ResolveCockpitExtensionRegistryInput,
@@ -124,6 +125,34 @@ export function resolveInstalledCockpitExtensionRegistry(
   });
 
   return appendInstalledCatalogProblems(registry);
+}
+
+export function resolveInstalledCockpitExtensionServerAccess(
+  serverAccess: ResolvedCockpitExtensionServerAccess,
+): ResolvedCockpitExtensionServerAccess {
+  const effectiveInput = withLocalCockpitExtensionActivation({
+    activePackIds: serverAccess.activePackIds,
+    quarantinedExtensionIds: serverAccess.quarantinedExtensionIds,
+    emergencyDisabledExtensionIds: serverAccess.emergencyDisabledExtensionIds,
+    availablePersonas: serverAccess.accessContext.availablePersonas,
+    availableCapabilities: serverAccess.accessContext.availableCapabilities,
+    availableApiScopes: serverAccess.accessContext.availableApiScopes,
+    availablePrivacyClasses: serverAccess.accessContext.availablePrivacyClasses,
+  });
+
+  return {
+    ...serverAccess,
+    activePackIds: effectiveInput.activePackIds,
+    quarantinedExtensionIds: effectiveInput.quarantinedExtensionIds ?? [],
+    emergencyDisabledExtensionIds: effectiveInput.emergencyDisabledExtensionIds ?? [],
+    accessContext: {
+      ...serverAccess.accessContext,
+      availablePersonas: effectiveInput.availablePersonas,
+      availableCapabilities: effectiveInput.availableCapabilities,
+      availableApiScopes: effectiveInput.availableApiScopes,
+      availablePrivacyClasses: effectiveInput.availablePrivacyClasses,
+    },
+  };
 }
 
 function appendInstalledCatalogProblems(

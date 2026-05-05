@@ -134,14 +134,14 @@ describe('hosted external route components', () => {
               lifecycle: 'open',
               priorityLabel: 'Low',
               updatedAtLabel: 'Updated today',
-              sourceRef: 'freshservice-snapshot/1',
+              sourceRef: 'service-desk-snapshot/1',
             },
           ],
           pagination: [],
         },
         selectedTicket: {
           label: 'FS 1',
-          sourceRef: 'freshservice-snapshot/1',
+          sourceRef: 'service-desk-snapshot/1',
           summary: 'Incident snapshot',
           badges: [{ label: 'open', tone: 'info' }],
           conversation: {
@@ -202,9 +202,9 @@ describe('hosted external route components', () => {
             ],
             sources: [
               {
-                id: 'freshservice',
-                label: 'Freshservice snapshot',
-                sourceSystem: 'freshservice',
+                id: 'service-desk',
+                label: 'Service desk snapshot',
+                sourceSystem: 'service_desk',
                 sourceMode: 'unofficial_csv_snapshot',
                 category: 'Tickets',
                 readiness: 'static snapshot',
@@ -213,9 +213,9 @@ describe('hosted external route components', () => {
                 itemCount: 25,
                 recordCount: 743,
                 summary: 'Redacted ticket rows are available as operator context.',
-                sourceRefs: ['fixtures/freshservice-tickets.redacted.json'],
-                capabilityIds: ['freshservice.ticket.snapshot.read'],
-                connectorIds: ['mc.freshservice.snapshot'],
+                sourceRefs: ['fixtures/service-desk-tickets.redacted.json'],
+                capabilityIds: ['service-desk.ticket.snapshot.read'],
+                connectorIds: ['example.service-desk.snapshot'],
                 visualisations: ['ticket queue', 'room heatmap'],
                 answerableQuestions: ['Which rooms have ticket clusters?'],
                 portariumSurfaces: ['Data', 'Ticket Queue'],
@@ -227,7 +227,7 @@ describe('hosted external route components', () => {
                 title: 'Room ticket clusters',
                 summary: 'Join room hints to map features to find noisy spaces.',
                 tone: 'warning',
-                sourceIds: ['freshservice'],
+                sourceIds: ['service-desk'],
               },
             ],
             integrationNotes: ['The host renders the UI; the extension supplies descriptors only.'],
@@ -247,11 +247,12 @@ describe('hosted external route components', () => {
 
     expect(await screen.findByRole('heading', { name: 'Native Data Explorer' })).toBeTruthy();
     expect(screen.getByText('Read-Only Data Sources')).toBeTruthy();
-    expect(screen.getByText('Freshservice snapshot')).toBeTruthy();
+    expect(screen.getByText('Available Static Data')).toBeTruthy();
+    expect(screen.getByText('Service desk snapshot')).toBeTruthy();
     expect(screen.getByText('743')).toBeTruthy();
-    expect(screen.getByText('fixtures/freshservice-tickets.redacted.json')).toBeTruthy();
-    expect(screen.getByText('freshservice.ticket.snapshot.read')).toBeTruthy();
-    expect(screen.getByText('mc.freshservice.snapshot')).toBeTruthy();
+    expect(screen.getByText('fixtures/service-desk-tickets.redacted.json')).toBeTruthy();
+    expect(screen.getByText('service-desk.ticket.snapshot.read')).toBeTruthy();
+    expect(screen.getByText('example.service-desk.snapshot')).toBeTruthy();
     expect(screen.getByText('Room ticket clusters')).toBeTruthy();
     expect(screen.getByText('Portarium Integration Boundary')).toBeTruthy();
   });

@@ -296,6 +296,8 @@ function NativeDataExplorerSurfaceRenderer({
   extension: ResolvedCockpitExtension;
   routeId: string;
 }) {
+  const sourceGroups = groupDataExplorerSources(surface.explorer.sources);
+
   return (
     <NativeSurfaceShell surface={surface} extension={extension} routeId={routeId}>
       <div className="space-y-5">
@@ -333,9 +335,19 @@ function NativeDataExplorerSurfaceRenderer({
             </div>
             <Badge variant="outline">Host-rendered data explorer</Badge>
           </div>
-          <div className="grid gap-3 xl:grid-cols-2">
-            {surface.explorer.sources.map((source) => (
-              <DataSourceCard key={source.id} source={source} />
+          <div className="space-y-4">
+            {sourceGroups.map((group) => (
+              <div key={group.id} className="space-y-2">
+                <div>
+                  <h3 className="text-sm font-semibold">{group.title}</h3>
+                  <p className="text-xs text-muted-foreground">{group.description}</p>
+                </div>
+                <div className="grid gap-3 xl:grid-cols-2">
+                  {group.sources.map((source) => (
+                    <DataSourceCard key={source.id} source={source} />
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         </section>
@@ -390,6 +402,52 @@ function NativeDataExplorerSurfaceRenderer({
       </div>
     </NativeSurfaceShell>
   );
+}
+
+function groupDataExplorerSources(sources: readonly NativeDataExplorerSource[]) {
+  const groups = [
+    {
+      id: 'available',
+      title: 'Available Static Data',
+      description: 'Local snapshots and exports that have concrete static records now.',
+      predicate: (source: NativeDataExplorerSource) =>
+        normalizedDescriptor(source.readiness).includes('static snapshot') ||
+        normalizedDescriptor(source.readiness).includes('local static export') ||
+        normalizedDescriptor(source.readiness).includes('local export'),
+      sources: [] as NativeDataExplorerSource[],
+    },
+    {
+      id: 'reference',
+      title: 'Reference And Documentation Context',
+      description: 'Docs, ticket indexes, and reference corpora useful for read-only explanation.',
+      predicate: (source: NativeDataExplorerSource) =>
+        normalizedDescriptor(source.sourceMode).includes('documentation') ||
+        normalizedDescriptor(source.category).includes('learning') ||
+        normalizedDescriptor(source.category).includes('security'),
+      sources: [] as NativeDataExplorerSource[],
+    },
+    {
+      id: 'capability',
+      title: 'Capabilities And Candidates',
+      description: 'Package capabilities or future adapters that should not be read as live data.',
+      predicate: (source: NativeDataExplorerSource) =>
+        normalizedDescriptor(source.readiness).includes('capability') ||
+        normalizedDescriptor(source.readiness).includes('candidate') ||
+        normalizedDescriptor(source.readiness).includes('reference fixture'),
+      sources: [] as NativeDataExplorerSource[],
+    },
+  ];
+
+  for (const source of sources) {
+    const group = groups.find((candidate) => candidate.predicate(source)) ?? groups[0]!;
+    group.sources.push(source);
+  }
+
+  return groups.filter((group) => group.sources.length > 0);
+}
+
+function normalizedDescriptor(value: string | undefined): string {
+  return value?.replaceAll('_', ' ').toLowerCase() ?? '';
 }
 
 function DataSourceCard({ source }: { source: NativeDataExplorerSource }) {

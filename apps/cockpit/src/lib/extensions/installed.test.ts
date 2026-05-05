@@ -12,6 +12,7 @@ import {
   validateInstalledCockpitExtensionModules,
   resolveInstalledCockpitExtensionRegistry,
 } from './installed';
+import { EXAMPLE_REFERENCE_EXTENSION } from './example-reference/manifest';
 import type { CockpitInstalledExtension } from './types';
 
 describe('installed cockpit extension catalog', () => {
@@ -45,6 +46,51 @@ describe('installed cockpit extension catalog', () => {
       'example-reference-overview',
       'example-reference-detail',
     ]);
+  });
+
+  it('returns effective local activation grants for shell projections', async () => {
+    vi.resetModules();
+
+    const localExtension = buildLocalReferenceExtension();
+    const localInstalledExtension = buildInstalledExtension(localExtension);
+
+    vi.doMock('./local-install', () => ({
+      LOCAL_COCKPIT_EXTENSION_MODULES: [localInstalledExtension],
+      LOCAL_COCKPIT_EXTENSION_INSTALL_PROBLEMS: [],
+    }));
+
+    const installed = await import('./installed');
+    const serverAccess = installed.resolveInstalledCockpitExtensionServerAccess({
+      activePackIds: [],
+      quarantinedExtensionIds: [],
+      emergencyDisabledExtensionIds: [],
+      accessContext: {
+        persona: 'Operator',
+        availablePersonas: ['Operator'],
+        availableCapabilities: [],
+        availableApiScopes: [],
+        availablePrivacyClasses: [],
+      },
+      usable: false,
+    });
+
+    expect(serverAccess.activePackIds).toContain('local.reference');
+    expect(serverAccess.accessContext.availableCapabilities).toContain('local:read');
+    expect(serverAccess.accessContext.availableApiScopes).toContain('local.read');
+    expect(serverAccess.accessContext.availablePrivacyClasses).toContain('internal');
+
+    const registry = installed.resolveInstalledCockpitExtensionRegistry({
+      activePackIds: serverAccess.activePackIds,
+      availablePersonas: serverAccess.accessContext.availablePersonas,
+      availableCapabilities: serverAccess.accessContext.availableCapabilities,
+      availableApiScopes: serverAccess.accessContext.availableApiScopes,
+      availablePrivacyClasses: serverAccess.accessContext.availablePrivacyClasses,
+    });
+
+    expect(registry.navItems.map((item) => item.id)).toContain('local-reference-overview-nav');
+
+    vi.doUnmock('./local-install');
+    vi.resetModules();
   });
 
   it('keeps installed route paths aligned with installed manifest routes', () => {
@@ -194,6 +240,96 @@ describe('installed cockpit extension catalog', () => {
     ]);
   });
 });
+
+function buildLocalReferenceExtension() {
+  return {
+    ...EXAMPLE_REFERENCE_EXTENSION,
+    id: 'local.reference',
+    displayName: 'Local Reference Extension',
+    packIds: ['local.reference'],
+    requiredCapabilities: ['local:read'],
+    requiredApiScopes: ['local.read'],
+    routes: [
+      {
+        id: 'local-reference-overview',
+        path: '/external/local-reference/overview',
+        title: 'Local Reference Overview',
+        description: 'Reference route for local extension activation.',
+        guard: {
+          personas: ['Operator'],
+          requiredCapabilities: ['local:read'],
+          requiredApiScopes: ['local.read'],
+          privacyClasses: ['internal'],
+        },
+        permissionGrantIds: ['local.reference.read'],
+      },
+    ],
+    navItems: [
+      {
+        id: 'local-reference-overview-nav',
+        title: 'Local Reference Overview',
+        routeId: 'local-reference-overview',
+        to: '/external/local-reference/overview',
+        icon: 'plug',
+        surfaces: ['sidebar', 'mobile-more', 'command'],
+        personas: ['Operator'],
+        mobilePrimary: true,
+      },
+    ],
+    commands: [
+      {
+        id: 'local-reference-open-overview',
+        title: 'Open local reference',
+        routeId: 'local-reference-overview',
+        guard: {
+          personas: ['Operator'],
+          requiredCapabilities: ['local:read'],
+          requiredApiScopes: ['local.read'],
+          privacyClasses: ['internal'],
+        },
+        permissionGrantIds: ['local.reference.read'],
+        shortcut: 'G L',
+      },
+    ],
+    governance: {
+      ...EXAMPLE_REFERENCE_EXTENSION.governance,
+      versionPin: {
+        packageName: '@portarium/cockpit-local-reference-extension',
+        version: '0.1.0',
+      },
+      permissions: [
+        {
+          id: 'local.reference.read',
+          kind: 'data-query',
+          title: 'Read local reference extension overview data',
+          requiredCapabilities: ['local:read'],
+          requiredApiScopes: ['local.read'],
+          policySemantics: 'authorization-required',
+          evidenceSemantics: 'read-audited-by-control-plane',
+          auditEventTypes: ['enable', 'disable', 'upgrade'],
+        },
+      ],
+    },
+  } as const;
+}
+
+function buildInstalledExtension(
+  manifest: ReturnType<typeof buildLocalReferenceExtension>,
+): CockpitInstalledExtension {
+  return {
+    manifest,
+    packageRef: {
+      packageName: '@portarium/cockpit-local-reference-extension',
+      version: '0.1.0',
+      workspacePath: 'apps/cockpit/src/lib/extensions/local-reference',
+    },
+    workspacePackRefs: [{ packId: 'local.reference' }],
+    routeModules: manifest.routes.map((route) => ({
+      routeId: route.id,
+      loadModule: () => Promise.resolve({}),
+    })),
+  };
+}
 
 function findForbiddenManifestKeys(
   value: unknown,
