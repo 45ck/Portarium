@@ -60,6 +60,9 @@ const TOOL_NAME_MAP: Record<string, string> = {
   run_shell_command: 'shell.exec',
   web_search: 'web-search',
   scrape_website: 'scrape-website',
+  draft_email: 'draft-email',
+  draft_linkedin_post: 'draft-linkedin-post',
+  draft_blog_article: 'draft-blog-article',
 };
 
 // ---------------------------------------------------------------------------
@@ -521,6 +524,54 @@ export async function createOpenRouterAdapter(): Promise<LLMAdapter | null> {
             url: { type: 'string', description: 'Public source URL' },
           },
           required: ['url'],
+        },
+      },
+    },
+    {
+      type: 'function' as const,
+      function: {
+        name: 'draft_email',
+        description: 'Create a cited Growth Studio outreach email draft for approval.',
+        parameters: {
+          type: 'object',
+          properties: {
+            draft: { type: 'object', description: 'Draft email payload and citation map' },
+            prospectContext: { type: 'object', description: 'Approved prospect context' },
+            contentBrief: { type: 'object', description: 'Content brief and channel constraints' },
+          },
+          required: ['draft', 'prospectContext', 'contentBrief'],
+        },
+      },
+    },
+    {
+      type: 'function' as const,
+      function: {
+        name: 'draft_linkedin_post',
+        description: 'Create a cited Growth Studio LinkedIn post draft for approval.',
+        parameters: {
+          type: 'object',
+          properties: {
+            draft: { type: 'object', description: 'Draft LinkedIn payload and citation map' },
+            prospectContext: { type: 'object', description: 'Approved prospect context' },
+            contentBrief: { type: 'object', description: 'Content brief and channel constraints' },
+          },
+          required: ['draft', 'prospectContext', 'contentBrief'],
+        },
+      },
+    },
+    {
+      type: 'function' as const,
+      function: {
+        name: 'draft_blog_article',
+        description: 'Create a cited Growth Studio blog article draft for approval.',
+        parameters: {
+          type: 'object',
+          properties: {
+            draft: { type: 'object', description: 'Draft article payload and citation map' },
+            prospectContext: { type: 'object', description: 'Approved prospect context' },
+            contentBrief: { type: 'object', description: 'Content brief and channel constraints' },
+          },
+          required: ['draft', 'prospectContext', 'contentBrief'],
         },
       },
     },
