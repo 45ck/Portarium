@@ -63,6 +63,10 @@ const TOOL_NAME_MAP: Record<string, string> = {
   draft_email: 'draft-email',
   draft_linkedin_post: 'draft-linkedin-post',
   draft_blog_article: 'draft-blog-article',
+  send_email: 'send-email',
+  publish_linkedin_post: 'publish-linkedin-post',
+  publish_blog_article: 'publish-blog-article',
+  update_crm_contact: 'update-crm-contact',
 };
 
 // ---------------------------------------------------------------------------
@@ -572,6 +576,76 @@ export async function createOpenRouterAdapter(): Promise<LLMAdapter | null> {
             contentBrief: { type: 'object', description: 'Content brief and channel constraints' },
           },
           required: ['draft', 'prospectContext', 'contentBrief'],
+        },
+      },
+    },
+    {
+      type: 'function' as const,
+      function: {
+        name: 'send_email',
+        description: 'Send a pre-approved Growth Studio outreach email after ManualOnly approval.',
+        parameters: {
+          type: 'object',
+          properties: {
+            approvedDraft: { type: 'object', description: 'Approved email content' },
+            draftApproval: { type: 'object', description: 'Prior draft approval evidence' },
+            target: { type: 'string', description: 'Approved recipient' },
+            contentHash: { type: 'string', description: 'Approved content hash' },
+          },
+          required: ['approvedDraft', 'draftApproval', 'target', 'contentHash'],
+        },
+      },
+    },
+    {
+      type: 'function' as const,
+      function: {
+        name: 'publish_linkedin_post',
+        description:
+          'Publish a pre-approved Growth Studio LinkedIn post after ManualOnly approval.',
+        parameters: {
+          type: 'object',
+          properties: {
+            approvedDraft: { type: 'object', description: 'Approved LinkedIn content' },
+            draftApproval: { type: 'object', description: 'Prior draft approval evidence' },
+            target: { type: 'string', description: 'Approved LinkedIn target' },
+            contentHash: { type: 'string', description: 'Approved content hash' },
+          },
+          required: ['approvedDraft', 'draftApproval', 'target', 'contentHash'],
+        },
+      },
+    },
+    {
+      type: 'function' as const,
+      function: {
+        name: 'publish_blog_article',
+        description: 'Publish a pre-approved Growth Studio blog article after ManualOnly approval.',
+        parameters: {
+          type: 'object',
+          properties: {
+            approvedDraft: { type: 'object', description: 'Approved article content' },
+            draftApproval: { type: 'object', description: 'Prior draft approval evidence' },
+            target: { type: 'string', description: 'Approved blog target' },
+            contentHash: { type: 'string', description: 'Approved content hash' },
+          },
+          required: ['approvedDraft', 'draftApproval', 'target', 'contentHash'],
+        },
+      },
+    },
+    {
+      type: 'function' as const,
+      function: {
+        name: 'update_crm_contact',
+        description: 'Record a Growth Studio execution activity note on the CRM contact.',
+        parameters: {
+          type: 'object',
+          properties: {
+            contactRef: { type: 'string', description: 'CRM contact reference' },
+            activityNote: { type: 'string', description: 'Activity note to persist' },
+            executionId: { type: 'string', description: 'Execution result id' },
+            receiptUrl: { type: 'string', description: 'Send or publish receipt URL' },
+            approvedContentHash: { type: 'string', description: 'Approved content hash' },
+          },
+          required: ['contactRef', 'activityNote', 'executionId', 'approvedContentHash'],
         },
       },
     },
