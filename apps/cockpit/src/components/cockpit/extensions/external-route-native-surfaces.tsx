@@ -1,5 +1,5 @@
 import { useMemo, useState, type ReactNode } from 'react';
-import { Database, Lightbulb, Map, Network } from 'lucide-react';
+import { ArrowRight, Database, FileText, Lightbulb, Map, Network, ShieldCheck } from 'lucide-react';
 import { MapWorkbenchShell } from '@/components/cockpit/map-host/map-workbench-shell';
 import { PageHeader } from '@/components/cockpit/page-header';
 import { Badge } from '@/components/ui/badge';
@@ -269,7 +269,13 @@ export function ExternalRouteNativeSurfaceRenderer({
   if (!isNativeRouteSurface(surface)) return null;
 
   if (surface.kind === 'portarium.native.mapWorkbench.v1') {
-    return <NativeMapWorkbenchSurfaceRenderer surface={surface} extension={extension} />;
+    return (
+      <NativeMapWorkbenchSurfaceRenderer
+        surface={surface}
+        extension={extension}
+        routeId={route.id}
+      />
+    );
   }
 
   if (surface.kind === 'portarium.native.dataExplorer.v1') {
@@ -297,6 +303,7 @@ function NativeDataExplorerSurfaceRenderer({
   routeId: string;
 }) {
   const sourceGroups = groupDataExplorerSources(surface.explorer.sources);
+  const sourceStats = summarizeDataExplorerSources(surface.explorer.sources);
 
   return (
     <NativeSurfaceShell surface={surface} extension={extension} routeId={routeId}>
@@ -324,43 +331,42 @@ function NativeDataExplorerSurfaceRenderer({
           ))}
         </section>
 
-        <section className="space-y-3" aria-label="Data sources">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h2 className="text-base font-semibold">Read-Only Data Sources</h2>
-              <p className="text-xs text-muted-foreground">
-                Static source projections, connector posture, and useful questions for operator
-                review.
-              </p>
-            </div>
-            <Badge variant="outline">Host-rendered data explorer</Badge>
-          </div>
-          <div className="space-y-4">
-            {sourceGroups.map((group) => (
-              <div key={group.id} className="space-y-2">
-                <div>
-                  <h3 className="text-sm font-semibold">{group.title}</h3>
-                  <p className="text-xs text-muted-foreground">{group.description}</p>
-                </div>
-                <div className="grid gap-3 xl:grid-cols-2">
-                  {group.sources.map((source) => (
-                    <DataSourceCard key={source.id} source={source} />
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
+        <section aria-label="Operational snapshot" className="grid gap-3 lg:grid-cols-4">
+          <OperationalSnapshotItem
+            icon={<Database className="h-4 w-4" />}
+            label="Usable now"
+            value={sourceStats.available}
+            detail="Static snapshots and local exports"
+          />
+          <OperationalSnapshotItem
+            icon={<FileText className="h-4 w-4" />}
+            label="Reference context"
+            value={sourceStats.reference}
+            detail="Docs, tickets, and runbooks"
+          />
+          <OperationalSnapshotItem
+            icon={<ShieldCheck className="h-4 w-4" />}
+            label="Restricted data"
+            value={sourceStats.restricted}
+            detail="Needs careful read-only handling"
+          />
+          <OperationalSnapshotItem
+            icon={<Network className="h-4 w-4" />}
+            label="Projected records"
+            value={sourceStats.records}
+            detail="Approximate static inventory size"
+          />
         </section>
 
         <section className="space-y-3" aria-label="Data insights">
           <div className="flex items-center gap-2">
             <Lightbulb className="h-4 w-4 text-primary" />
-            <h2 className="text-base font-semibold">Useful Things To Look For</h2>
+            <h2 className="text-base font-semibold">Recommended Checks</h2>
           </div>
           <div className="grid gap-3 lg:grid-cols-3">
             {surface.explorer.insights.map((insight) => (
               <Card key={insight.id} className="shadow-none">
-                <CardHeader className="space-y-2">
+                <CardHeader className="space-y-2 pb-3">
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <CardTitle className="text-sm">{insight.title}</CardTitle>
                     {insight.tone ? (
@@ -375,11 +381,41 @@ function NativeDataExplorerSurfaceRenderer({
                   ) : null}
                   {insight.href ? (
                     <Button asChild size="xs" variant="outline">
-                      <a href={insight.href}>Open context</a>
+                      <a href={insight.href}>
+                        Open context
+                        <ArrowRight className="h-3 w-3" />
+                      </a>
                     </Button>
                   ) : null}
                 </CardContent>
               </Card>
+            ))}
+          </div>
+        </section>
+
+        <section className="space-y-3" aria-label="Data sources">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-base font-semibold">Read-Only Data Sources</h2>
+              <p className="text-xs text-muted-foreground">
+                Operator-facing source status first; technical refs are available when needed.
+              </p>
+            </div>
+            <Badge variant="outline">Host-rendered</Badge>
+          </div>
+          <div className="space-y-4">
+            {sourceGroups.map((group) => (
+              <div key={group.id} className="space-y-2">
+                <div>
+                  <h3 className="text-sm font-semibold">{group.title}</h3>
+                  <p className="text-xs text-muted-foreground">{group.description}</p>
+                </div>
+                <div className="grid gap-3 xl:grid-cols-2">
+                  {group.sources.map((source) => (
+                    <DataSourceCard key={source.id} source={source} />
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         </section>
@@ -446,49 +482,112 @@ function groupDataExplorerSources(sources: readonly NativeDataExplorerSource[]) 
   return groups.filter((group) => group.sources.length > 0);
 }
 
+function summarizeDataExplorerSources(sources: readonly NativeDataExplorerSource[]) {
+  const records = sources.reduce((total, source) => total + (source.recordCount ?? 0), 0);
+
+  return {
+    available: sources.filter((source) =>
+      ['static snapshot', 'local static export', 'local export'].some((label) =>
+        normalizedDescriptor(source.readiness).includes(label),
+      ),
+    ).length,
+    reference: sources.filter(
+      (source) =>
+        normalizedDescriptor(source.sourceMode).includes('documentation') ||
+        ['docs', 'learning', 'security'].some((category) =>
+          normalizedDescriptor(source.category).includes(category),
+        ),
+    ).length,
+    restricted: sources.filter((source) =>
+      ['restricted', 'sensitive', 'highly restricted'].includes(
+        normalizedDescriptor(source.privacyClass),
+      ),
+    ).length,
+    records: records > 0 ? records.toLocaleString() : 'n/a',
+  };
+}
+
 function normalizedDescriptor(value: string | undefined): string {
   return value?.replaceAll('_', ' ').toLowerCase() ?? '';
+}
+
+function OperationalSnapshotItem({
+  icon,
+  label,
+  value,
+  detail,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: string | number;
+  detail: string;
+}) {
+  return (
+    <div className="rounded-md border bg-card p-3">
+      <div className="flex items-center justify-between gap-3">
+        <span className="text-muted-foreground">{icon}</span>
+        <strong className="text-lg tabular-nums">{value}</strong>
+      </div>
+      <p className="mt-2 text-xs font-medium">{label}</p>
+      <p className="text-[11px] text-muted-foreground">{detail}</p>
+    </div>
+  );
 }
 
 function DataSourceCard({ source }: { source: NativeDataExplorerSource }) {
   return (
     <Card className="shadow-none">
-      <CardHeader className="space-y-3">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <CardTitle className="flex items-center gap-2 text-sm">
+      <CardContent className="p-3">
+        <div className="grid gap-3 lg:grid-cols-[minmax(220px,0.55fr)_minmax(0,1fr)_auto]">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
               <Database className="h-4 w-4 text-primary" />
-              {source.label}
-            </CardTitle>
+              <h4 className="truncate text-sm font-semibold">{source.label}</h4>
+            </div>
             <p className="mt-1 text-xs text-muted-foreground">
               {source.sourceSystem} · {source.sourceMode}
             </p>
+            <div className="mt-2 flex flex-wrap gap-1.5">
+              {source.category ? <Badge variant="secondary">{source.category}</Badge> : null}
+              {source.readiness ? <Badge variant="outline">{source.readiness}</Badge> : null}
+              {source.freshness ? <Badge variant="outline">{source.freshness}</Badge> : null}
+            </div>
           </div>
-          <div className="flex flex-wrap justify-end gap-2">
-            {source.category ? <Badge variant="secondary">{source.category}</Badge> : null}
-            {source.readiness ? <Badge variant="outline">{source.readiness}</Badge> : null}
+
+          <div className="min-w-0 space-y-2">
+            <p className="text-sm text-muted-foreground">{source.summary}</p>
+            <div className="grid gap-2 text-xs sm:grid-cols-3">
+              <DataSourceStat label="Items" value={source.itemCount} />
+              <DataSourceStat label="Records" value={source.recordCount} />
+              <DataSourceStat label="Privacy" value={source.privacyClass} />
+            </div>
+            <TagList title="Use for" items={source.visualisations ?? []} />
+          </div>
+
+          <div className="flex items-start justify-end">
+            {source.href ? (
+              <Button asChild size="xs" variant="outline">
+                <a href={source.href}>
+                  Open
+                  <ArrowRight className="h-3 w-3" />
+                </a>
+              </Button>
+            ) : null}
           </div>
         </div>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <p className="text-sm text-muted-foreground">{source.summary}</p>
-        <div className="grid gap-2 text-xs sm:grid-cols-2 lg:grid-cols-4">
-          <DataSourceStat label="Items" value={source.itemCount} />
-          <DataSourceStat label="Records" value={source.recordCount} />
-          <DataSourceStat label="Freshness" value={source.freshness} />
-          <DataSourceStat label="Privacy" value={source.privacyClass} />
-        </div>
-        <TagList title="Visualise" items={source.visualisations ?? []} />
-        <TagList title="Can answer" items={source.answerableQuestions ?? []} />
-        <TagList title="Surfaces" items={source.portariumSurfaces ?? []} />
-        <TagList title="Capabilities" items={source.capabilityIds ?? []} />
-        <TagList title="Connectors" items={source.connectorIds ?? []} />
-        <SourceRefList refs={source.sourceRefs ?? []} />
-        {source.href ? (
-          <Button asChild size="xs" variant="outline">
-            <a href={source.href}>Open surface</a>
-          </Button>
-        ) : null}
+
+        <details className="mt-3 border-t pt-3">
+          <summary className="cursor-pointer text-xs font-medium text-muted-foreground">
+            Technical evidence and routing
+          </summary>
+          <div className="mt-3 grid gap-3 md:grid-cols-2">
+            <TagList title="Can answer" items={source.answerableQuestions ?? []} />
+            <TagList title="Surfaces" items={source.portariumSurfaces ?? []} />
+            <TagList title="Capabilities" items={source.capabilityIds ?? []} />
+            <TagList title="Connectors" items={source.connectorIds ?? []} />
+            <SourceRefList refs={source.sourceRefs ?? []} />
+          </div>
+        </details>
       </CardContent>
     </Card>
   );
@@ -677,24 +776,27 @@ function NativeSelect({
 
 function TicketFilters({ filters }: { filters: readonly NativeTicketFilterGroup[] }) {
   return (
-    <section aria-label="Ticket filters" className="space-y-2 rounded-md border p-3">
-      {filters.map((group) => (
-        <div key={group.label} className="flex flex-wrap items-center gap-2">
-          <span className="w-20 text-xs font-medium">{group.label}</span>
-          {group.options.map((option) => (
-            <Badge
-              key={`${group.label}-${option.label}`}
-              asChild
-              variant={option.active ? 'default' : 'outline'}
-            >
-              <a href={option.href} aria-current={option.active ? 'true' : undefined}>
-                {option.label}
-              </a>
-            </Badge>
-          ))}
-        </div>
-      ))}
-    </section>
+    <details className="rounded-md border bg-muted/10 p-3">
+      <summary className="cursor-pointer text-xs font-medium">Filters</summary>
+      <section aria-label="Ticket filters" className="mt-3 space-y-2">
+        {filters.map((group) => (
+          <div key={group.label} className="flex flex-wrap items-center gap-2">
+            <span className="w-20 text-xs font-medium text-muted-foreground">{group.label}</span>
+            {group.options.map((option) => (
+              <Badge
+                key={`${group.label}-${option.label}`}
+                asChild
+                variant={option.active ? 'default' : 'outline'}
+              >
+                <a href={option.href} aria-current={option.active ? 'true' : undefined}>
+                  {option.label}
+                </a>
+              </Badge>
+            ))}
+          </div>
+        ))}
+      </section>
+    </details>
   );
 }
 
@@ -714,7 +816,9 @@ function TicketQueueList({ tickets }: { tickets: readonly NativeTicketRecord[] }
     <section aria-label="Queue list" className="overflow-hidden rounded-md border">
       <header className="flex items-center justify-between gap-3 border-b px-3 py-2">
         <h2 className="text-sm font-semibold">Queue List</h2>
-        <span className="text-xs text-muted-foreground">Select a row to load the reader.</span>
+        <span className="text-xs text-muted-foreground">
+          First ticket preloaded; select any row to inspect it.
+        </span>
       </header>
       <div className="max-h-[min(70vh,760px)] overflow-y-auto divide-y">
         {tickets.map((ticket) => (
@@ -789,17 +893,6 @@ function TicketDetail({ detail }: { detail?: NativeTicketDetail }) {
         <StatusBadges badges={detail.badges} />
       </header>
 
-      <section className="space-y-2">
-        <h3 className="text-sm font-semibold">Conversation</h3>
-        <div className="rounded-md border bg-muted/20 p-3">
-          <p className="text-sm font-medium">{detail.conversation.title}</p>
-          <p className="mt-1 text-xs text-muted-foreground">{detail.conversation.message}</p>
-          {detail.conversation.summary ? (
-            <p className="mt-2 text-sm">{detail.conversation.summary}</p>
-          ) : null}
-        </div>
-      </section>
-
       <KeyValueSection title="Properties" items={detail.properties} />
 
       <section className="space-y-2">
@@ -818,6 +911,11 @@ function TicketDetail({ detail }: { detail?: NativeTicketDetail }) {
           emptyText="No extra redacted context item matched this ticket."
         />
       </section>
+
+      <div className="rounded-md border bg-muted/20 p-3 text-xs text-muted-foreground">
+        <p className="font-medium text-foreground">{detail.conversation.title}</p>
+        <p className="mt-1">{detail.conversation.message}</p>
+      </div>
 
       <details className="rounded-md border bg-muted/20 p-3">
         <summary className="cursor-pointer text-sm font-semibold">Diagnostics</summary>
@@ -850,9 +948,11 @@ function TicketPagination({ actions }: { actions: readonly NativeLinkAction[] })
 function NativeMapWorkbenchSurfaceRenderer({
   surface,
   extension,
+  routeId,
 }: {
   surface: NativeMapWorkbenchSurface;
   extension: ResolvedCockpitExtension;
+  routeId: string;
 }) {
   const [activeTab, setActiveTab] = useState(surface.map.activeTab);
   const [activeBaseMapId, setActiveBaseMapId] = useState(surface.map.activeBaseMapId);
@@ -862,74 +962,78 @@ function NativeMapWorkbenchSurfaceRenderer({
   );
 
   return (
-    <div className="h-[calc(100vh-7rem)] p-6">
-      <MapWorkbenchShell
-        title={surface.title}
-        subtitle={surface.description ?? extension.manifest.description}
-        dataState="ready"
-        tabs={surface.map.tabs}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        selectionLabel={surface.map.selectionLabel}
-        status={<Badge variant="outline">{surface.map.mode}</Badge>}
-        toolbar={
-          <div className="flex flex-wrap gap-2 rounded-md border bg-background/95 p-2 shadow-sm">
-            {surface.map.baseMaps.map((baseMap) => (
-              <Button
-                key={baseMap.id}
-                type="button"
-                size="xs"
-                variant={baseMap.id === activeBaseMapId ? 'default' : 'outline'}
-                onClick={() => setActiveBaseMapId(baseMap.id)}
-              >
-                {baseMap.label}
-              </Button>
-            ))}
-          </div>
-        }
-        map={
-          <NativeMapCanvas
-            activeBaseMap={activeBaseMap}
-            layers={surface.map.layers}
-            entities={surface.map.entities}
-          />
-        }
-        readOnlyItemGroups={surface.map.readOnlyGroups.map((group) => ({
-          id: group.id,
-          label: group.label,
-          description: group.description,
-          privacyClass: 'internal' as const,
-          freshness: { state: 'cached' as const, label: 'Local read model' },
-          items: group.items.map((item) => ({
-            id: item.id,
-            label: item.label,
-            kind: 'external-context',
-            summary: item.summary,
+    <NativeSurfaceShell surface={surface} extension={extension} routeId={routeId}>
+      <div className="h-[calc(100vh-13rem)] min-h-[560px] overflow-hidden rounded-md border">
+        <MapWorkbenchShell
+          title={surface.title}
+          subtitle={surface.description ?? extension.manifest.description}
+          dataState="ready"
+          tabs={surface.map.tabs}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          selectionLabel={surface.map.selectionLabel}
+          status={<Badge variant="outline">{surface.map.mode}</Badge>}
+          toolbar={
+            <div className="flex flex-wrap gap-2 rounded-md border bg-background/95 p-2 shadow-sm">
+              {surface.map.baseMaps.map((baseMap) => (
+                <Button
+                  key={baseMap.id}
+                  type="button"
+                  size="xs"
+                  variant={baseMap.id === activeBaseMapId ? 'default' : 'outline'}
+                  onClick={() => setActiveBaseMapId(baseMap.id)}
+                >
+                  {baseMap.label}
+                </Button>
+              ))}
+            </div>
+          }
+          map={
+            <NativeMapCanvas
+              activeBaseMap={activeBaseMap}
+              layers={surface.map.layers}
+              entities={surface.map.entities}
+            />
+          }
+          readOnlyItemGroups={surface.map.readOnlyGroups.map((group) => ({
+            id: group.id,
+            label: group.label,
+            description: group.description,
             privacyClass: 'internal' as const,
-            freshness: { state: 'cached' as const, label: item.metadata ?? 'Snapshot' },
-          })),
-        }))}
-        layers={surface.map.layers.map((layer) => ({
-          id: layer.id,
-          label: layer.label,
-          enabled: layer.enabled,
-          kind: layer.kind,
-          privacyClass: 'internal' as const,
-          freshness: { state: 'cached' as const, label: layer.freshnessLabel ?? 'Snapshot' },
-          payload: layer,
-        }))}
-        entities={surface.map.entities.map((entity) => ({
-          id: entity.id,
-          kind: entity.kind,
-          label: entity.label,
-          status:
-            entity.status === 'critical' || entity.status === 'warning' ? entity.status : 'normal',
-          privacyClass: 'internal' as const,
-          freshness: { state: 'cached' as const, label: 'Snapshot' },
-          payload: entity,
-        }))}
-      />
-    </div>
+            freshness: { state: 'cached' as const, label: 'Local read model' },
+            items: group.items.map((item) => ({
+              id: item.id,
+              label: item.label,
+              kind: 'external-context',
+              summary: item.summary,
+              privacyClass: 'internal' as const,
+              freshness: { state: 'cached' as const, label: item.metadata ?? 'Snapshot' },
+            })),
+          }))}
+          layers={surface.map.layers.map((layer) => ({
+            id: layer.id,
+            label: layer.label,
+            enabled: layer.enabled,
+            kind: layer.kind,
+            privacyClass: 'internal' as const,
+            freshness: { state: 'cached' as const, label: layer.freshnessLabel ?? 'Snapshot' },
+            payload: layer,
+          }))}
+          entities={surface.map.entities.map((entity) => ({
+            id: entity.id,
+            kind: entity.kind,
+            label: entity.label,
+            status:
+              entity.status === 'critical' || entity.status === 'warning'
+                ? entity.status
+                : 'normal',
+            privacyClass: 'internal' as const,
+            freshness: { state: 'cached' as const, label: 'Snapshot' },
+            payload: entity,
+          }))}
+        />
+      </div>
+    </NativeSurfaceShell>
   );
 }
 

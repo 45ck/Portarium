@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
-import { describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, render, screen } from '@testing-library/react';
 import { INSTALLED_COCKPIT_ROUTE_LOADERS } from '@/lib/extensions/installed';
 import { EXAMPLE_REFERENCE_EXTENSION } from '@/lib/extensions/example-reference/manifest';
 import type { ResolvedCockpitExtension } from '@/lib/extensions/types';
@@ -18,6 +18,8 @@ const resolvedExtension = {
   problems: [],
   workspacePackRefs: [{ packId: 'example.reference' }],
 } satisfies ResolvedCockpitExtension;
+
+afterEach(() => cleanup());
 
 describe('hosted external route components', () => {
   it('builds hosted route components only from the compile-time installed module catalog', () => {
@@ -246,14 +248,103 @@ describe('hosted external route components', () => {
     );
 
     expect(await screen.findByRole('heading', { name: 'Native Data Explorer' })).toBeTruthy();
+    expect(screen.getByLabelText('Operational snapshot')).toBeTruthy();
+    expect(screen.getByText('Recommended Checks')).toBeTruthy();
     expect(screen.getByText('Read-Only Data Sources')).toBeTruthy();
     expect(screen.getByText('Available Static Data')).toBeTruthy();
     expect(screen.getByText('Service desk snapshot')).toBeTruthy();
-    expect(screen.getByText('743')).toBeTruthy();
+    expect(screen.getAllByText('743')).not.toHaveLength(0);
+    expect(screen.getByText('Technical evidence and routing')).toBeTruthy();
     expect(screen.getByText('fixtures/service-desk-tickets.redacted.json')).toBeTruthy();
     expect(screen.getByText('service-desk.ticket.snapshot.read')).toBeTruthy();
     expect(screen.getByText('example.service-desk.snapshot')).toBeTruthy();
     expect(screen.getByText('Room ticket clusters')).toBeTruthy();
     expect(screen.getByText('Portarium Integration Boundary')).toBeTruthy();
+  });
+
+  it('renders host-native map workbench surfaces inside shared extension chrome', async () => {
+    const Component = createHostedExternalRouteComponent({
+      hostRendering: { mode: 'host-native' },
+      loader: async () => ({
+        nativeSurface: {
+          kind: 'portarium.native.mapWorkbench.v1',
+          title: 'Campus Map',
+          description: 'Read-only provider and custom map context.',
+          badges: [{ label: 'Read only' }, { label: 'Map host' }],
+          area: {
+            label: 'Example Workspace',
+            title: 'Operations',
+            navItems: [
+              { id: 'queue', label: 'Ticket Queue', href: '/external/native/tickets' },
+              { id: 'map', label: 'Campus Map', href: '/external/native/map', active: true },
+            ],
+            boundary: ['Read-only snapshot'],
+          },
+          map: {
+            mode: 'hybrid',
+            activeBaseMapId: 'custom',
+            baseMaps: [
+              {
+                id: 'provider',
+                label: 'Provider map',
+                kind: 'provider',
+                provider: 'leaflet-compatible',
+              },
+              { id: 'custom', label: 'Indoor map', kind: 'custom' },
+            ],
+            layers: [
+              {
+                id: 'rooms',
+                label: 'Rooms',
+                enabled: true,
+                kind: 'room',
+                freshnessLabel: 'Snapshot',
+              },
+            ],
+            entities: [
+              {
+                id: 'room-1',
+                label: 'Room 1',
+                kind: 'room',
+                status: 'normal',
+                locationLabel: 'L1',
+                sourceRef: 'map/room-1',
+              },
+            ],
+            selectionLabel: 'Room 1',
+            tabs: [
+              { id: 'summary', label: 'Summary', count: 1 },
+              { id: 'evidence', label: 'Evidence', count: 1 },
+            ],
+            activeTab: 'summary',
+            readOnlyGroups: [
+              {
+                id: 'context',
+                label: 'Read-only context',
+                description: 'Evidence for selected room.',
+                items: [{ id: 'item-1', label: 'Ticket ref', summary: 'Redacted ticket ref.' }],
+              },
+            ],
+          },
+        },
+      }),
+    });
+
+    render(
+      <Component
+        route={route}
+        extension={resolvedExtension}
+        params={{}}
+        pathname="/external/native/map"
+      />,
+    );
+
+    expect(await screen.findAllByText('Campus Map')).not.toHaveLength(0);
+    expect(screen.getByText('Operations')).toBeTruthy();
+    expect(screen.getAllByText('Ticket Queue')).not.toHaveLength(0);
+    expect(screen.getAllByText('Provider map')).not.toHaveLength(0);
+    expect(screen.getAllByText('Indoor map')).not.toHaveLength(0);
+    expect(screen.getAllByText('Read-only context')).not.toHaveLength(0);
+    expect(screen.getAllByText('Room 1')).not.toHaveLength(0);
   });
 });
