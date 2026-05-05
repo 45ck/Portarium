@@ -68,7 +68,7 @@ Positive:
 - Tenant packages avoid importing Cockpit UI internals directly.
 - Map workflows can mix Earth/provider context and custom indoor maps through
   one host shell.
-- Source-system access, egress, writeback, and governed proposals stay
+- Source-system access, egress, write-back, and governed proposals stay
   Portarium-owned.
 
 Negative:

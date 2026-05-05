@@ -110,7 +110,9 @@ describe('hosted external route components', () => {
         description: 'Rendered by Cockpit primitives.',
         badges: [{ label: 'Read only' }],
         queue: {
-          views: [{ id: 'open', label: 'Open', count: 1, href: '/external/native/tickets', active: true }],
+          views: [
+            { id: 'open', label: 'Open', count: 1, href: '/external/native/tickets', active: true },
+          ],
           filters: [],
           search: {
             action: '/external/native/tickets',

@@ -279,7 +279,9 @@ export function ExternalRouteNativeSurfaceRenderer({
     );
   }
 
-  return <NativeTicketInboxSurfaceRenderer surface={surface} extension={extension} routeId={route.id} />;
+  return (
+    <NativeTicketInboxSurfaceRenderer surface={surface} extension={extension} routeId={route.id} />
+  );
 }
 
 function NativeDataExplorerSurfaceRenderer({
@@ -615,7 +617,10 @@ function TicketFilters({ filters }: { filters: readonly NativeTicketFilterGroup[
 function TicketQueueList({ tickets }: { tickets: readonly NativeTicketRecord[] }) {
   if (tickets.length === 0) {
     return (
-      <section aria-label="Queue list" className="rounded-md border p-4 text-sm text-muted-foreground">
+      <section
+        aria-label="Queue list"
+        className="rounded-md border p-4 text-sm text-muted-foreground"
+      >
         No matching tickets.
       </section>
     );
@@ -634,7 +639,9 @@ function TicketQueueList({ tickets }: { tickets: readonly NativeTicketRecord[] }
             href={ticket.href}
             aria-current={ticket.selected ? 'true' : undefined}
             aria-controls="ticket-reader"
-            aria-label={ticket.selected ? `Selected ticket ${ticket.label}` : `Select ticket ${ticket.label}`}
+            aria-label={
+              ticket.selected ? `Selected ticket ${ticket.label}` : `Select ticket ${ticket.label}`
+            }
             className={cn(
               'grid gap-2 border-l-2 px-3 py-3 text-sm transition-colors hover:bg-accent/60',
               ticket.selected
@@ -681,7 +688,11 @@ function TicketDetail({ detail }: { detail?: NativeTicketDetail }) {
   }
 
   return (
-    <section id="ticket-reader" aria-label="Ticket reader" className="space-y-4 rounded-md border p-4">
+    <section
+      id="ticket-reader"
+      aria-label="Ticket reader"
+      className="space-y-4 rounded-md border p-4"
+    >
       <header className="space-y-2 border-b pb-3">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
@@ -718,7 +729,10 @@ function TicketDetail({ detail }: { detail?: NativeTicketDetail }) {
             ))}
           </div>
         ) : null}
-        <RelatedItems items={detail.relatedContext.items} emptyText="No extra redacted context item matched this ticket." />
+        <RelatedItems
+          items={detail.relatedContext.items}
+          emptyText="No extra redacted context item matched this ticket."
+        />
       </section>
 
       <details className="rounded-md border bg-muted/20 p-3">
@@ -824,7 +838,8 @@ function NativeMapWorkbenchSurfaceRenderer({
           id: entity.id,
           kind: entity.kind,
           label: entity.label,
-          status: entity.status === 'critical' || entity.status === 'warning' ? entity.status : 'normal',
+          status:
+            entity.status === 'critical' || entity.status === 'warning' ? entity.status : 'normal',
           privacyClass: 'internal' as const,
           freshness: { state: 'cached' as const, label: 'Snapshot' },
           payload: entity,
@@ -925,7 +940,9 @@ function NativeSurfaceShell({
   return (
     <div className="flex flex-wrap items-start gap-4 p-6">
       <aside className="w-full shrink-0 rounded-md border bg-card p-3 sm:w-56">
-        <p className="text-xs font-semibold uppercase text-muted-foreground">{surface.area.label}</p>
+        <p className="text-xs font-semibold uppercase text-muted-foreground">
+          {surface.area.label}
+        </p>
         <h2 className="mt-1 text-base font-semibold">{surface.area.title}</h2>
         <nav aria-label={`${surface.area.label} areas`} className="mt-4 grid gap-1">
           {surface.area.navItems.map((item) => (
@@ -984,7 +1001,10 @@ function KeyValueList({ items }: { items: readonly NativeKeyValue[] }) {
   return (
     <dl className="divide-y rounded-md border">
       {items.map((item) => (
-        <div key={item.label} className="grid grid-cols-[minmax(96px,0.42fr)_minmax(0,1fr)] gap-3 px-3 py-2 text-xs">
+        <div
+          key={item.label}
+          className="grid grid-cols-[minmax(96px,0.42fr)_minmax(0,1fr)] gap-3 px-3 py-2 text-xs"
+        >
           <dt className="text-muted-foreground">{item.label}</dt>
           <dd className="font-medium break-words">{item.value}</dd>
         </div>
@@ -1009,8 +1029,12 @@ function RelatedItems({
       {items.map((item) => (
         <article key={item.id} className="rounded-md border p-3">
           <p className="text-sm font-medium">{item.label}</p>
-          {item.summary ? <p className="mt-1 text-xs text-muted-foreground">{item.summary}</p> : null}
-          {item.metadata ? <p className="mt-1 text-[11px] text-muted-foreground">{item.metadata}</p> : null}
+          {item.summary ? (
+            <p className="mt-1 text-xs text-muted-foreground">{item.summary}</p>
+          ) : null}
+          {item.metadata ? (
+            <p className="mt-1 text-[11px] text-muted-foreground">{item.metadata}</p>
+          ) : null}
         </article>
       ))}
     </div>
@@ -1033,7 +1057,9 @@ function readRecord(value: unknown): Record<string, unknown> | undefined {
     : undefined;
 }
 
-function badgeVariant(tone: NativeStatusBadge['tone']): React.ComponentProps<typeof Badge>['variant'] {
+function badgeVariant(
+  tone: NativeStatusBadge['tone'],
+): React.ComponentProps<typeof Badge>['variant'] {
   if (tone === 'success') return 'success';
   if (tone === 'warning') return 'warning';
   if (tone === 'info') return 'info';

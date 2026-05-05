@@ -26,7 +26,7 @@ export interface AgentTurnResult {
 }
 
 export interface LLMAdapter {
-  readonly provider: 'claude' | 'openai' | 'gemini';
+  readonly provider: 'claude' | 'openai' | 'gemini' | 'openrouter';
   readonly envKey: string;
   isAvailable(): Promise<boolean>;
   startConversation(systemPrompt: string, userPrompt: string): Promise<AgentTurnResult>;
@@ -58,6 +58,8 @@ const TOOL_NAME_MAP: Record<string, string> = {
   search_documents: 'search:documents',
   write_file: 'write:file',
   run_shell_command: 'shell.exec',
+  web_search: 'web-search',
+  scrape_website: 'scrape-website',
 };
 
 // ---------------------------------------------------------------------------
@@ -458,6 +460,107 @@ export async function createOpenAIAdapter(): Promise<LLMAdapter | null> {
 
       const response = await client.chat.completions.create({
         model: 'gpt-4o',
+        tools,
+        tool_choice: 'auto',
+        messages,
+      });
+
+      const choice = response.choices[0];
+      if (choice) messages.push(choice.message);
+      return parseOpenAIResponse(choice);
+    },
+  };
+
+  return adapter;
+}
+
+// ---------------------------------------------------------------------------
+// OpenRouter adapter
+// ---------------------------------------------------------------------------
+
+export async function createOpenRouterAdapter(): Promise<LLMAdapter | null> {
+  if (!process.env['OPENROUTER_API_KEY']) return null;
+
+  let OpenAI: any;
+  try {
+    const mod = await import('openai');
+    OpenAI = mod.default;
+  } catch {
+    return null;
+  }
+
+  const client = new OpenAI({
+    apiKey: process.env['OPENROUTER_API_KEY'],
+    baseURL: process.env['OPENROUTER_BASE_URL'] ?? 'https://openrouter.ai/api/v1',
+  });
+
+  const tools = [
+    {
+      type: 'function' as const,
+      function: {
+        name: 'web_search',
+        description: 'Search the public web for Growth Studio prospect research.',
+        parameters: {
+          type: 'object',
+          properties: {
+            query: { type: 'string', description: 'Search query' },
+            maxResults: { type: 'number', description: 'Maximum search results' },
+          },
+          required: ['query'],
+        },
+      },
+    },
+    {
+      type: 'function' as const,
+      function: {
+        name: 'scrape_website',
+        description: 'Extract citation text from a public prospect website.',
+        parameters: {
+          type: 'object',
+          properties: {
+            url: { type: 'string', description: 'Public source URL' },
+          },
+          required: ['url'],
+        },
+      },
+    },
+  ];
+
+  const messages: any[] = [];
+  const model = process.env['OPENROUTER_MODEL'] ?? 'openai/gpt-4o';
+
+  const adapter: LLMAdapter = {
+    provider: 'openrouter',
+    envKey: 'OPENROUTER_API_KEY',
+
+    async isAvailable() {
+      return !!process.env['OPENROUTER_API_KEY'];
+    },
+
+    async startConversation(system: string, user: string) {
+      messages.length = 0;
+      messages.push({ role: 'system', content: system });
+      messages.push({ role: 'user', content: user });
+
+      const response = await client.chat.completions.create({
+        model,
+        tools,
+        tool_choice: 'auto',
+        messages,
+      });
+
+      const choice = response.choices[0];
+      if (choice) messages.push(choice.message);
+      return parseOpenAIResponse(choice);
+    },
+
+    async sendToolResults(results: AgentToolResult[]) {
+      for (const r of results) {
+        messages.push({ role: 'tool', tool_call_id: r.toolCallId, content: r.content });
+      }
+
+      const response = await client.chat.completions.create({
+        model,
         tools,
         tool_choice: 'auto',
         messages,

@@ -14,6 +14,7 @@ import {
 import {
   createClaudeAdapter,
   createOpenAIAdapter,
+  createOpenRouterAdapter,
   createGeminiAdapter,
   runAgentLoop,
   type LLMAdapter,
@@ -45,12 +46,14 @@ const LIVE_APPROVAL_PROVIDER_ENV = 'PORTARIUM_LIVE_APPROVAL_PROVIDER';
 const PROVIDER_CREDENTIAL_ENV: Record<LiveApprovalProvider, string> = {
   claude: 'ANTHROPIC_API_KEY',
   openai: 'OPENAI_API_KEY',
+  openrouter: 'OPENROUTER_API_KEY',
   gemini: 'GOOGLE_VERTEX_API_KEY',
 };
 
 const PROVIDER_MODEL: Record<LiveApprovalProvider, string> = {
   claude: 'claude-sonnet-4-6',
   openai: 'gpt-4o',
+  openrouter: 'openai/gpt-4o',
   gemini: 'gemini-2.0-flash',
 };
 
@@ -60,6 +63,7 @@ const PROVIDER_PREFLIGHT_PROBE: Record<
 > = {
   claude: 'claude-messages',
   openai: 'chat-completions',
+  openrouter: 'chat-completions',
   gemini: 'gemini-generate-content',
 };
 
@@ -87,7 +91,7 @@ function resolveLiveApprovalConfig(
   if (!isLiveApprovalProvider(selectedProvider)) {
     return {
       status: 'skipped',
-      reason: `Set ${LIVE_APPROVAL_PROVIDER_ENV} to one of: claude, openai, gemini.`,
+      reason: `Set ${LIVE_APPROVAL_PROVIDER_ENV} to one of: claude, openai, openrouter, gemini.`,
     };
   }
 
@@ -115,7 +119,7 @@ function hasValue(value: string | undefined): value is string {
 }
 
 function isLiveApprovalProvider(value: string | undefined): value is LiveApprovalProvider {
-  return value === 'claude' || value === 'openai' || value === 'gemini';
+  return value === 'claude' || value === 'openai' || value === 'openrouter' || value === 'gemini';
 }
 
 async function runLiveApprovalPreflight(
@@ -183,6 +187,7 @@ async function pollApproval(approvalId: string) {
 async function createSelectedAdapter(provider: LiveApprovalProvider): Promise<LLMAdapter | null> {
   if (provider === 'claude') return createClaudeAdapter();
   if (provider === 'openai') return createOpenAIAdapter();
+  if (provider === 'openrouter') return createOpenRouterAdapter();
   return createGeminiAdapter();
 }
 
