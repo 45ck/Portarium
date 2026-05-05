@@ -178,4 +178,73 @@ describe('hosted external route components', () => {
       }),
     );
   });
+
+  it('renders host-native data explorer surfaces from route loader descriptors', async () => {
+    const Component = createHostedExternalRouteComponent({
+      hostRendering: { mode: 'host-native' },
+      loader: async () => ({
+        nativeSurface: {
+          kind: 'portarium.native.dataExplorer.v1',
+          title: 'Native Data Explorer',
+          description: 'Read-only data source landscape.',
+          badges: [{ label: 'Read only' }, { label: 'Snapshot data' }],
+          explorer: {
+            metrics: [
+              {
+                id: 'sources',
+                label: 'Sources',
+                value: '2',
+                detail: 'Static source projections',
+                tone: 'info',
+              },
+            ],
+            sources: [
+              {
+                id: 'freshservice',
+                label: 'Freshservice snapshot',
+                sourceSystem: 'freshservice',
+                sourceMode: 'unofficial_csv_snapshot',
+                category: 'Tickets',
+                readiness: 'static snapshot',
+                freshness: 'fresh',
+                privacyClass: 'restricted',
+                itemCount: 25,
+                recordCount: 743,
+                summary: 'Redacted ticket rows are available as operator context.',
+                visualisations: ['ticket queue', 'room heatmap'],
+                answerableQuestions: ['Which rooms have ticket clusters?'],
+                portariumSurfaces: ['Data', 'Ticket Queue'],
+              },
+            ],
+            insights: [
+              {
+                id: 'room-clusters',
+                title: 'Room ticket clusters',
+                summary: 'Join room hints to map features to find noisy spaces.',
+                tone: 'warning',
+                sourceIds: ['freshservice'],
+              },
+            ],
+            integrationNotes: ['The host renders the UI; the extension supplies descriptors only.'],
+          },
+        },
+      }),
+    });
+
+    render(
+      <Component
+        route={route}
+        extension={resolvedExtension}
+        params={{}}
+        pathname="/external/native/data"
+      />,
+    );
+
+    expect(await screen.findByRole('heading', { name: 'Native Data Explorer' })).toBeTruthy();
+    expect(screen.getByText('Read-Only Data Sources')).toBeTruthy();
+    expect(screen.getByText('Freshservice snapshot')).toBeTruthy();
+    expect(screen.getByText('743')).toBeTruthy();
+    expect(screen.getByText('Room ticket clusters')).toBeTruthy();
+    expect(screen.getByText('Portarium Integration Boundary')).toBeTruthy();
+  });
 });

@@ -1,5 +1,5 @@
 import { useMemo, useState, type ReactNode } from 'react';
-import { Database, Map, ShieldCheck } from 'lucide-react';
+import { Database, Lightbulb, Map, Network } from 'lucide-react';
 import { MapWorkbenchShell } from '@/components/cockpit/map-host/map-workbench-shell';
 import { PageHeader } from '@/components/cockpit/page-header';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +19,7 @@ import type { ResolvedCockpitExtension } from '@/lib/extensions/types';
 import type { ExternalRouteComponentProps } from './external-route-adapter';
 
 type NativeSurfaceKind =
+  | 'portarium.native.dataExplorer.v1'
   | 'portarium.native.ticketInbox.v1'
   | 'portarium.native.mapWorkbench.v1';
 
@@ -170,6 +171,51 @@ interface NativeMapWorkbenchSurface extends NativeRouteSurfaceBase {
   };
 }
 
+interface NativeDataExplorerMetric {
+  id: string;
+  label: string;
+  value: string;
+  detail?: string;
+  tone?: NativeStatusBadge['tone'];
+}
+
+interface NativeDataExplorerSource {
+  id: string;
+  label: string;
+  sourceSystem: string;
+  sourceMode: string;
+  category?: string;
+  readiness?: string;
+  freshness?: string;
+  privacyClass?: string;
+  itemCount?: number;
+  recordCount?: number;
+  summary: string;
+  href?: string;
+  visualisations?: readonly string[];
+  answerableQuestions?: readonly string[];
+  portariumSurfaces?: readonly string[];
+}
+
+interface NativeDataExplorerInsight {
+  id: string;
+  title: string;
+  summary: string;
+  tone?: NativeStatusBadge['tone'];
+  sourceIds?: readonly string[];
+  href?: string;
+}
+
+interface NativeDataExplorerSurface extends NativeRouteSurfaceBase {
+  kind: 'portarium.native.dataExplorer.v1';
+  explorer: {
+    metrics: readonly NativeDataExplorerMetric[];
+    sources: readonly NativeDataExplorerSource[];
+    insights: readonly NativeDataExplorerInsight[];
+    integrationNotes?: readonly string[];
+  };
+}
+
 interface NativeReadOnlyGroup {
   id: string;
   label: string;
@@ -201,7 +247,10 @@ interface NativeSelectOption {
   label: string;
 }
 
-type NativeRouteSurface = NativeTicketInboxSurface | NativeMapWorkbenchSurface;
+type NativeRouteSurface =
+  | NativeDataExplorerSurface
+  | NativeTicketInboxSurface
+  | NativeMapWorkbenchSurface;
 
 export function hasNativeRouteSurface(value: unknown): value is NativeRouteSurfaceData {
   const nativeSurface = readRecord(value)?.nativeSurface;
@@ -220,7 +269,192 @@ export function ExternalRouteNativeSurfaceRenderer({
     return <NativeMapWorkbenchSurfaceRenderer surface={surface} extension={extension} />;
   }
 
+  if (surface.kind === 'portarium.native.dataExplorer.v1') {
+    return (
+      <NativeDataExplorerSurfaceRenderer
+        surface={surface}
+        extension={extension}
+        routeId={route.id}
+      />
+    );
+  }
+
   return <NativeTicketInboxSurfaceRenderer surface={surface} extension={extension} routeId={route.id} />;
+}
+
+function NativeDataExplorerSurfaceRenderer({
+  surface,
+  extension,
+  routeId,
+}: {
+  surface: NativeDataExplorerSurface;
+  extension: ResolvedCockpitExtension;
+  routeId: string;
+}) {
+  return (
+    <NativeSurfaceShell surface={surface} extension={extension} routeId={routeId}>
+      <div className="space-y-5">
+        <section aria-label="Data metrics" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {surface.explorer.metrics.map((metric) => (
+            <Card key={metric.id} className="shadow-none">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xs font-medium text-muted-foreground">
+                  {metric.label}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-end justify-between gap-3">
+                  <strong className="text-2xl tabular-nums">{metric.value}</strong>
+                  {metric.tone ? (
+                    <Badge variant={badgeVariant(metric.tone)}>{metric.tone}</Badge>
+                  ) : null}
+                </div>
+                {metric.detail ? (
+                  <p className="mt-2 text-xs text-muted-foreground">{metric.detail}</p>
+                ) : null}
+              </CardContent>
+            </Card>
+          ))}
+        </section>
+
+        <section className="space-y-3" aria-label="Data sources">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-base font-semibold">Read-Only Data Sources</h2>
+              <p className="text-xs text-muted-foreground">
+                Static source projections, connector posture, and useful questions for operator review.
+              </p>
+            </div>
+            <Badge variant="outline">Host-rendered data explorer</Badge>
+          </div>
+          <div className="grid gap-3 xl:grid-cols-2">
+            {surface.explorer.sources.map((source) => (
+              <DataSourceCard key={source.id} source={source} />
+            ))}
+          </div>
+        </section>
+
+        <section className="space-y-3" aria-label="Data insights">
+          <div className="flex items-center gap-2">
+            <Lightbulb className="h-4 w-4 text-primary" />
+            <h2 className="text-base font-semibold">Useful Things To Look For</h2>
+          </div>
+          <div className="grid gap-3 lg:grid-cols-3">
+            {surface.explorer.insights.map((insight) => (
+              <Card key={insight.id} className="shadow-none">
+                <CardHeader className="space-y-2">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <CardTitle className="text-sm">{insight.title}</CardTitle>
+                    {insight.tone ? <Badge variant={badgeVariant(insight.tone)}>{insight.tone}</Badge> : null}
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3 text-sm text-muted-foreground">
+                  <p>{insight.summary}</p>
+                  {insight.sourceIds && insight.sourceIds.length > 0 ? (
+                    <p className="text-[11px]">Sources: {insight.sourceIds.join(', ')}</p>
+                  ) : null}
+                  {insight.href ? (
+                    <Button asChild size="xs" variant="outline">
+                      <a href={insight.href}>Open context</a>
+                    </Button>
+                  ) : null}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+
+        {surface.explorer.integrationNotes && surface.explorer.integrationNotes.length > 0 ? (
+          <Card className="shadow-none">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Network className="h-4 w-4" />
+                Portarium Integration Boundary
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-2 text-sm text-muted-foreground">
+              {surface.explorer.integrationNotes.map((note) => (
+                <p key={note}>{note}</p>
+              ))}
+            </CardContent>
+          </Card>
+        ) : null}
+      </div>
+    </NativeSurfaceShell>
+  );
+}
+
+function DataSourceCard({ source }: { source: NativeDataExplorerSource }) {
+  return (
+    <Card className="shadow-none">
+      <CardHeader className="space-y-3">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <CardTitle className="flex items-center gap-2 text-sm">
+              <Database className="h-4 w-4 text-primary" />
+              {source.label}
+            </CardTitle>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {source.sourceSystem} · {source.sourceMode}
+            </p>
+          </div>
+          <div className="flex flex-wrap justify-end gap-2">
+            {source.category ? <Badge variant="secondary">{source.category}</Badge> : null}
+            {source.readiness ? <Badge variant="outline">{source.readiness}</Badge> : null}
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <p className="text-sm text-muted-foreground">{source.summary}</p>
+        <div className="grid gap-2 text-xs sm:grid-cols-2 lg:grid-cols-4">
+          <DataSourceStat label="Items" value={source.itemCount} />
+          <DataSourceStat label="Records" value={source.recordCount} />
+          <DataSourceStat label="Freshness" value={source.freshness} />
+          <DataSourceStat label="Privacy" value={source.privacyClass} />
+        </div>
+        <TagList title="Visualise" items={source.visualisations ?? []} />
+        <TagList title="Can answer" items={source.answerableQuestions ?? []} />
+        <TagList title="Surfaces" items={source.portariumSurfaces ?? []} />
+        {source.href ? (
+          <Button asChild size="xs" variant="outline">
+            <a href={source.href}>Open surface</a>
+          </Button>
+        ) : null}
+      </CardContent>
+    </Card>
+  );
+}
+
+function DataSourceStat({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | number | undefined;
+}) {
+  return (
+    <div className="rounded-md border px-2 py-1.5">
+      <p className="text-[11px] text-muted-foreground">{label}</p>
+      <p className="font-medium">{value ?? 'n/a'}</p>
+    </div>
+  );
+}
+
+function TagList({ title, items }: { title: string; items: readonly string[] }) {
+  if (items.length === 0) return null;
+
+  return (
+    <div className="space-y-1">
+      <p className="text-[11px] font-medium text-muted-foreground">{title}</p>
+      <div className="flex flex-wrap gap-1.5">
+        {items.slice(0, 6).map((item) => (
+          <Badge key={item} variant="outline">
+            {item}
+          </Badge>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function NativeTicketInboxSurfaceRenderer({
@@ -786,7 +1020,11 @@ function RelatedItems({
 function isNativeRouteSurface(value: unknown): value is NativeRouteSurface {
   const record = readRecord(value);
   const kind = record?.kind;
-  return kind === 'portarium.native.ticketInbox.v1' || kind === 'portarium.native.mapWorkbench.v1';
+  return (
+    kind === 'portarium.native.dataExplorer.v1' ||
+    kind === 'portarium.native.ticketInbox.v1' ||
+    kind === 'portarium.native.mapWorkbench.v1'
+  );
 }
 
 function readRecord(value: unknown): Record<string, unknown> | undefined {

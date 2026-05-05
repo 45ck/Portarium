@@ -29,6 +29,8 @@ components.
 
 The first supported surface kinds are:
 
+- `portarium.native.dataExplorer.v1` for read-only source catalogues,
+  metrics, insight cards, and integration-boundary summaries.
 - `portarium.native.ticketInbox.v1` for inbox/list/detail workflows.
 - `portarium.native.mapWorkbench.v1` for provider-backed and custom map
   workbenches.

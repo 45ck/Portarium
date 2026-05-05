@@ -30,8 +30,15 @@ Add a host-native rendering path for route modules:
 
 The first native surface kinds are:
 
+- `portarium.native.dataExplorer.v1`
 - `portarium.native.ticketInbox.v1`
 - `portarium.native.mapWorkbench.v1`
+
+Use the data explorer surface for read-only source landscapes where an
+extension contributes source descriptors, counts, freshness/privacy labels,
+useful questions, and integration notes. This keeps tenant-specific data
+discovery inside the extension while Cockpit owns the reusable source-catalogue
+UI.
 
 Extension packages may still keep fallback route components for local contract
 tests or older hosts, but the Cockpit runtime should prefer host-native
