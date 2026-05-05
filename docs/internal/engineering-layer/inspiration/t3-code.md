@@ -18,6 +18,7 @@ Top three takeaways for Portarium:
 - Last commit date: 2026-05-03 (`feat(web): collapse mobile composer by default (#1263)`)
 - Stars: not fetched (cloned via `git clone --depth 1` only — no GitHub UI scrape).
 - Primary languages: TypeScript (React/Vite frontend, Node.js/Effect backend), with Electron desktop shell. Build/runtime stack: Bun + Turborepo, oxlint/oxfmt, Vitest, Effect 4 beta + `@effect/atom-react`, TanStack Router/Query, shadcn-style `ui/` primitives over base-ui/react, Tailwind, Lucide icons, dnd-kit, `@pierre/diffs` for diff rendering.
+- Current public verification: 2026-05-06 GitHub page still shows the repository as public, MIT-licensed, with 1,408 commits, Codex/Claude/OpenCode support in the README, and latest release `T3 Code v0.0.21` dated 2026-04-23.
 
 ## Architecture
 

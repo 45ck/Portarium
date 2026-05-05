@@ -37,6 +37,10 @@ build-agent message), which is exactly the seam Portarium wants to govern.
   (Hono + experimental Effect HttpApi backend); the TUI, ACP bridge, and
   desktop shells are clients over HTTP/WebSocket. The same server backs the
   generated SDKs in `packages/sdk/js`.
+- Current public verification: 2026-05-06 GitHub page for `sst/opencode` redirects
+  under the `anomalyco/opencode` identity, remains MIT-licensed, describes build
+  and plan agents, provider-agnostic operation, client/server architecture, and a
+  desktop app, and shows latest release `v1.4.11` dated 2026-04-18.
 
 ## Architecture
 
