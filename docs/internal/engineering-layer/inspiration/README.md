@@ -268,3 +268,29 @@ After review of this synthesis, update:
 - **bead-1158** — cross-reference the architecture port decisions for `AgentRuntimePort` (Vercel AI SDK) and the ACP server timeline open question.
 
 None of these bead updates authorize implementation. They convert "we should look at the references" into "we know what to copy/inspire/avoid" so design and acceptance criteria can be tightened.
+
+---
+
+## bead-1161 current-source verification
+
+Verified on 2026-05-06 against the public GitHub repository pages:
+
+| Product     | Current source check                                                                                                                                                                                                                                                  | Reuse boundary decision                                                                                                                                                                                                                                                                                    |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| T3 Code     | `pingdotgg/t3code` remains public under the MIT license. The public page shows 1,408 commits, README support for Codex, Claude, and OpenCode, and a latest release of `T3 Code v0.0.21` dated 2026-04-23.                                                             | Inspiration only by default. The only direct reuse candidate remains the small worktree cleanup logic/tests, and even that is borderline because Portarium can re-derive it. Do not copy the React shell or brand.                                                                                         |
+| Vibe Kanban | `BloopAI/vibe-kanban` remains public under Apache-2.0. The README banner still says the project is sunsetting; the page shows 2,070 commits and describes the board/workspace/diff/preview/agent-switching surface.                                                   | ADR-0148 supersedes the earlier "no vendoring" default for this product only: the approved path is vendored backend plus transplanted frontend, with Apache-2.0 NOTICE preservation, cloud-tier deletion, telemetry stripping, and Rust glue crates for Portarium governance.                              |
+| OpenCode    | `sst/opencode` redirects under the `anomalyco/opencode` GitHub identity and remains MIT-licensed. The public page describes build/plan agents, provider-agnostic operation, client/server architecture, desktop app, and a latest release `v1.4.11` dated 2026-04-18. | Concept reuse for runtime profile, plan/build handoff, hooks, and provider abstraction. Direct code reuse is limited to tiny MIT artifacts only after attribution and `THIRD_PARTY_NOTICES.md` update. Do not copy host-filesystem execution, optional auth, runtime npm plugin installs, or paid-tier UI. |
+
+Source links:
+
+- T3 Code: https://github.com/pingdotgg/t3code
+- Vibe Kanban: https://github.com/BloopAI/vibe-kanban
+- OpenCode: https://github.com/sst/opencode
+
+Final boundary for implementation reviewers:
+
+- **Allowed without vendoring**: workflow patterns, surface layouts, event names rephrased into Portarium ubiquitous language, and ADR/design-doc credit with repo + file path.
+- **Allowed with vendoring gate**: small MIT snippets from OpenCode or T3 Code; Vibe Kanban files only under the ADR-0148 vendored-subtree/transplanted-frontend plan. All vendored code must carry source repo, source SHA, license, copyright notice, and `THIRD_PARTY_NOTICES.md` coverage.
+- **Rejected**: trademark reuse; host child-process execution as a security boundary; optional agent-server auth; global auto-approval/noop approval services; telemetry endpoints baked into build artifacts; cloud relay/tunnel code; runtime plugin installation from npm; untrusted-header workspace switching.
+
+This closes `bead-1161`: the reference products have dated license/activity checks, architecture and UI pattern reviews, allowed-inspiration boundaries, direct-reuse gates, attribution requirements, update ownership, and security review requirements.

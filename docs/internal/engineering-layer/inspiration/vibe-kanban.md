@@ -34,6 +34,11 @@ coupling.
   the approval response endpoint; many backend crates exist solely for the cloud
   path (`relay-*`, `remote`, `host-relay`, `webrtc`, `embedded-ssh`,
   `trusted-key-auth`, `desktop-bridge`, `tauri-app`).
+- Current public verification: 2026-05-06 GitHub page still shows the repository as
+  public, Apache-2.0 licensed, sunsetting, and carrying the board/workspace/diff/
+  preview/agent-switching feature set. The same page shows 2,070 commits and the
+  README runtime/build environment variables that need stripping or policy review
+  before any Portarium shipment.
 
 ## Architecture
 
