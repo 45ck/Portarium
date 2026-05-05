@@ -4,6 +4,10 @@ import { PageHeader } from '@/components/cockpit/page-header';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { ExternalRouteComponentProps } from './external-route-adapter';
+import {
+  ExternalRouteNativeSurfaceRenderer,
+  hasNativeRouteSurface,
+} from './external-route-native-surfaces';
 
 export type ExternalRouteDataLoader = (props: ExternalRouteComponentProps) => Promise<unknown>;
 
@@ -41,12 +45,10 @@ interface RouteStubData {
   data?: unknown;
 }
 
-export function ExternalRouteDataRenderer({
-  route,
-  extension,
-  params,
-  loadData,
-}: ExternalRouteComponentProps & { loadData: ExternalRouteDataLoader }) {
+export function ExternalRouteDataRenderer(
+  props: ExternalRouteComponentProps & { loadData: ExternalRouteDataLoader },
+) {
+  const { route, extension, params, pathname, searchParams, hash, loadData } = props;
   const [state, setState] = useState<LoadState>({ status: 'loading' });
   const routeParams = useMemo(
     () => Object.entries(params).map(([key, value]) => `${key}=${value}`),
@@ -56,7 +58,7 @@ export function ExternalRouteDataRenderer({
   useEffect(() => {
     let mounted = true;
     setState({ status: 'loading' });
-    loadData({ route, extension, params })
+    loadData({ route, extension, params, pathname, searchParams, hash })
       .then((data) => {
         if (mounted) setState({ status: 'loaded', data });
       })
@@ -72,7 +74,7 @@ export function ExternalRouteDataRenderer({
     return () => {
       mounted = false;
     };
-  }, [extension, loadData, params, route]);
+  }, [extension, hash, loadData, params, pathname, route, searchParams]);
 
   if (state.status === 'loading') {
     return (
@@ -112,6 +114,10 @@ export function ExternalRouteDataRenderer({
     );
   }
 
+  if (hasNativeRouteSurface(state.data)) {
+    return <ExternalRouteNativeSurfaceRenderer {...propsForNative(props)} data={state.data} />;
+  }
+
   const stub = toRouteStubData(state.data);
   const facts = createDataFacts(stub.data ?? state.data);
 
@@ -130,6 +136,19 @@ export function ExternalRouteDataRenderer({
       <FactsPanel facts={facts} />
     </RouteShell>
   );
+}
+
+function propsForNative(
+  props: ExternalRouteComponentProps & { loadData: ExternalRouteDataLoader },
+): ExternalRouteComponentProps {
+  return {
+    route: props.route,
+    extension: props.extension,
+    params: props.params,
+    pathname: props.pathname,
+    searchParams: props.searchParams,
+    hash: props.hash,
+  };
 }
 
 function RouteShell({

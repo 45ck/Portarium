@@ -18,6 +18,9 @@ export type HostedExternalRouteModule = {
   routeModule?: {
     loader?: (context: CockpitExtensionRouteLoaderContext) => unknown | Promise<unknown>;
   };
+  hostRendering?: {
+    mode: 'host-native';
+  };
 };
 
 function buildHostedExternalRouteComponents(): Readonly<Record<string, ExternalRouteComponent>> {
@@ -48,13 +51,13 @@ export function createHostedExternalRouteComponent(
   routeModule: HostedExternalRouteModule,
 ): ExternalRouteComponent {
   const Component = routeModule.default;
-  if (Component) {
+  const routeDataLoader = routeModule.loader ?? routeModule.routeModule?.loader;
+  if (Component && routeModule.hostRendering?.mode !== 'host-native') {
     return function ExternalRouteComponentAdapter(props: ExternalRouteComponentProps) {
       return <Component {...props} />;
     };
   }
 
-  const routeDataLoader = routeModule.loader ?? routeModule.routeModule?.loader;
   if (routeDataLoader) {
     return function ExternalRouteDataAdapter(props: ExternalRouteComponentProps) {
       const loadData: ExternalRouteDataLoader = () =>
@@ -63,6 +66,10 @@ export function createHostedExternalRouteComponent(
             manifest: props.extension.manifest,
             route: props.route,
             workspacePackRefs: props.extension.workspacePackRefs ?? [],
+            params: props.params,
+            pathname: props.pathname,
+            searchParams: props.searchParams,
+            hash: props.hash,
           }),
         );
 

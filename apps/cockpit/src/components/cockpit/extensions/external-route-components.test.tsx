@@ -101,4 +101,81 @@ describe('hosted external route components', () => {
     expect(screen.getByText('tab=evidence')).toBeTruthy();
     expect(loader).not.toHaveBeenCalled();
   });
+
+  it('uses the host-native data renderer when a module opts out of custom route UI', async () => {
+    const loader = vi.fn(async () => ({
+      nativeSurface: {
+        kind: 'portarium.native.ticketInbox.v1',
+        title: 'Native Ticket Queue',
+        description: 'Rendered by Cockpit primitives.',
+        badges: [{ label: 'Read only' }],
+        queue: {
+          views: [{ id: 'open', label: 'Open', count: 1, href: '/external/native/tickets', active: true }],
+          filters: [],
+          search: {
+            action: '/external/native/tickets',
+            sort: 'queue',
+            pageSize: 25,
+            sortOptions: [{ value: 'queue', label: 'Queue order' }],
+            pageSizeOptions: [25],
+          },
+          statusText: '1 ticket in this view from 1 row.',
+          pageText: 'Page 1 of 1',
+          tickets: [
+            {
+              id: 'fs-1',
+              label: 'FS 1',
+              summary: 'Incident snapshot',
+              href: '/external/native/tickets?ticket=1#ticket-reader',
+              selected: true,
+              statusLabel: 'Open',
+              lifecycle: 'open',
+              priorityLabel: 'Low',
+              updatedAtLabel: 'Updated today',
+              sourceRef: 'freshservice-snapshot/1',
+            },
+          ],
+          pagination: [],
+        },
+        selectedTicket: {
+          label: 'FS 1',
+          sourceRef: 'freshservice-snapshot/1',
+          summary: 'Incident snapshot',
+          badges: [{ label: 'open', tone: 'info' }],
+          conversation: {
+            title: 'Conversation unavailable',
+            message: 'Redacted snapshot only.',
+          },
+          properties: [{ label: 'Status', value: 'Open' }],
+          relatedContext: { items: [] },
+          diagnostics: [{ label: 'Source mode', value: 'unofficial_csv_snapshot' }],
+        },
+      },
+    }));
+    const Component = createHostedExternalRouteComponent({
+      hostRendering: { mode: 'host-native' },
+      default: () => <h1>Custom renderer should not show</h1>,
+      loader,
+    });
+
+    render(
+      <Component
+        route={route}
+        extension={resolvedExtension}
+        params={{}}
+        pathname="/external/native/tickets"
+        searchParams={{ ticket: '1' }}
+      />,
+    );
+
+    expect(await screen.findByRole('heading', { name: 'Native Ticket Queue' })).toBeTruthy();
+    expect(screen.queryByRole('heading', { name: 'Custom renderer should not show' })).toBeNull();
+    expect(screen.getByText('Selected Ticket')).toBeTruthy();
+    expect(loader).toHaveBeenCalledWith(
+      expect.objectContaining({
+        pathname: '/external/native/tickets',
+        searchParams: { ticket: '1' },
+      }),
+    );
+  });
 });

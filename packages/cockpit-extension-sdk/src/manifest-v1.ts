@@ -259,6 +259,10 @@ export interface CockpitExtensionRouteLoaderContext<
   manifest: TManifest;
   route: CockpitExtensionRouteRef;
   workspacePackRefs: readonly CockpitWorkspacePackActivationRef[];
+  params?: Readonly<Record<string, string>>;
+  pathname?: string;
+  searchParams?: Readonly<Record<string, string | undefined>>;
+  hash?: string;
 }
 
 export type CockpitExtensionRouteLoader<
