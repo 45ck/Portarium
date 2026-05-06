@@ -23,6 +23,7 @@ Architecture Decision Records live in `docs/internal/adr/`.
 - Cockpit local extension install bridge: `docs/internal/adr/ADR-0146-cockpit-local-extension-install-bridge.md`
 - Host-native Cockpit extension surfaces: `docs/internal/adr/ADR-0149-host-native-extension-surfaces.md`
 - Host-native extension suggestions and governed proposals: `docs/internal/adr/ADR-0150-host-native-extension-suggestions-and-governed-proposals.md`
+- Observation-only extension mode: `docs/internal/adr/ADR-0151-observation-only-extension-mode.md`
 
 ## Working rule
 
