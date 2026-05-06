@@ -13,7 +13,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { useUIStore } from '@/stores/ui-store';
 import { router } from '@/router';
 import { useCockpitExtensionRegistry } from '@/hooks/use-cockpit-extension-registry';
-import { projectCockpitShellNavigation } from '@/lib/shell/navigation';
+import { projectCockpitShellNavigation, resolveCockpitShellProfile } from '@/lib/shell/navigation';
 import { shouldEnableRoboticsDemo } from '@/lib/robotics-runtime';
 import { Play, UserPlus, Palette, PanelLeft, Database, GitBranchPlus } from 'lucide-react';
 
@@ -39,6 +39,10 @@ function CommandPalette() {
     persona: activePersona,
     accessContext: extensionServerAccess.accessContext,
     roboticsEnabled: shouldEnableRoboticsDemo(),
+    shellProfile: resolveCockpitShellProfile(
+      extensionRegistry,
+      import.meta.env.VITE_COCKPIT_SHELL_MODE,
+    ),
   });
 
   function nav(to: string) {

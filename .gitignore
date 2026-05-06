@@ -96,6 +96,8 @@ scratch/
 *.local.mjs
 *.local.cjs
 apps/cockpit/src/lib/extensions/local-installed/
+apps/cockpit/public/assets/local-extensions/*
+!apps/cockpit/public/assets/local-extensions/.gitkeep
 packages/cockpit-extension-sdk/src/*.js
 test-results/
 playwright-report/

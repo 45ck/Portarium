@@ -154,6 +154,7 @@ export function resolveCockpitExtensionRegistry({
     validateRoutes(extension, routeIds, routePaths, routeLoaders, addProblem);
     validateNavItems(extension, localRoutes, navIds, addProblem);
     validateCommands(extension, localRoutes, commandIds, shortcutIds, addProblem);
+    validateShellContributions(extension, localRoutes, addProblem);
     validateDataScopes(extension, dataScopeIds, addProblem);
     validateWidgets(extension, localRoutes, widgetIds, addProblem);
   }
@@ -646,6 +647,99 @@ function validateCommands(
       });
     }
   }
+}
+
+function validateShellContributions(
+  extension: CockpitExtensionManifest,
+  localRoutes: ReadonlyMap<string, CockpitExtensionRouteRef>,
+  addProblem: (problem: CockpitExtensionRegistryProblem) => void,
+) {
+  const modeIds = new Map<string, string>();
+  const localNavItems = new Set(extension.navItems.map((item) => item.id));
+  const validVisibility = new Set(['visible', 'advanced', 'hidden']);
+
+  for (const mode of extension.shellContributions?.modes ?? []) {
+    if (mode.modeId.trim().length === 0) {
+      addProblem({
+        code: 'invalid-shell-contribution',
+        message: `Extension "${extension.id}" shell mode must declare a non-empty mode id.`,
+        extensionId: extension.id,
+      });
+      continue;
+    }
+
+    addDuplicateProblem(modeIds, mode.modeId, extension.id, 'shell mode id', {
+      code: 'duplicate-shell-mode',
+      extensionId: extension.id,
+      itemId: mode.modeId,
+      addProblem,
+    });
+
+    if (mode.defaultRoute && !localRoutes.has(mode.defaultRoute.routeId)) {
+      addProblem({
+        code: 'invalid-shell-contribution',
+        message: `Shell mode "${mode.modeId}" default route references missing route "${mode.defaultRoute.routeId}".`,
+        extensionId: extension.id,
+        itemId: mode.modeId,
+      });
+    }
+
+    for (const navItem of mode.extensionNav ?? []) {
+      if (!localNavItems.has(navItem.navItemId)) {
+        addProblem({
+          code: 'invalid-shell-contribution',
+          message: `Shell mode "${mode.modeId}" references missing nav item "${navItem.navItemId}".`,
+          extensionId: extension.id,
+          itemId: mode.modeId,
+        });
+      }
+      validateOptionalOrder(extension.id, mode.modeId, navItem.order, addProblem);
+    }
+
+    for (const section of mode.coreSections ?? []) {
+      if (section.visibility && !validVisibility.has(section.visibility)) {
+        addProblem({
+          code: 'invalid-shell-contribution',
+          message: `Shell mode "${mode.modeId}" uses unsupported core section visibility "${section.visibility}".`,
+          extensionId: extension.id,
+          itemId: mode.modeId,
+        });
+      }
+      validateOptionalOrder(extension.id, mode.modeId, section.order, addProblem);
+    }
+
+    for (const item of mode.coreItems ?? []) {
+      if (item.visibility && !validVisibility.has(item.visibility)) {
+        addProblem({
+          code: 'invalid-shell-contribution',
+          message: `Shell mode "${mode.modeId}" uses unsupported core item visibility "${item.visibility}".`,
+          extensionId: extension.id,
+          itemId: mode.modeId,
+        });
+      }
+      validateOptionalOrder(extension.id, mode.modeId, item.order, addProblem);
+    }
+
+    validateOptionalOrder(extension.id, mode.modeId, mode.priority, addProblem);
+  }
+}
+
+function validateOptionalOrder(
+  extensionId: string,
+  itemId: string,
+  value: number | undefined,
+  addProblem: (problem: CockpitExtensionRegistryProblem) => void,
+) {
+  if (value === undefined || Number.isFinite(value)) {
+    return;
+  }
+
+  addProblem({
+    code: 'invalid-shell-contribution',
+    message: `Shell mode "${itemId}" order and priority values must be finite numbers.`,
+    extensionId,
+    itemId,
+  });
 }
 
 function validateDataScopes(

@@ -10,6 +10,7 @@ interface ImportMetaEnv {
   readonly VITE_COCKPIT_LOCAL_EXTENSION_ALIASES?: string;
   readonly VITE_COCKPIT_ENABLE_LOCAL_EXTENSIONS?: string;
   readonly VITE_COCKPIT_ENABLE_LOCAL_EXTENSIONS_IN_TESTS?: string;
+  readonly VITE_COCKPIT_SHELL_MODE?: string;
 }
 
 interface ImportMeta {

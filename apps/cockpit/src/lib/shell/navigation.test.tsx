@@ -6,7 +6,13 @@ import type {
   CockpitExtensionManifest,
   CockpitExtensionRouteModuleLoader,
 } from '@/lib/extensions/types';
-import { projectCockpitGChordMap, projectCockpitShellNavigation } from '@/lib/shell/navigation';
+import {
+  PORTARIUM_COCKPIT_SHELL_PROFILE,
+  projectCockpitGChordMap,
+  projectCockpitShellNavigation,
+  resolveCockpitShellProfile,
+  type CockpitShellProfile,
+} from '@/lib/shell/navigation';
 
 function createRouteLoaders(
   manifest: CockpitExtensionManifest,
@@ -28,7 +34,7 @@ const schoolOpsCapabilities = [
   'school-ops.source.read',
 ] as const;
 const schoolOpsApiScopes = ['school-ops.read'] as const;
-const mcLikeSchoolOpsExtension = {
+const schoolOpsReferenceExtension = {
   manifestVersion: 1,
   id: 'reference.school-ops',
   owner: 'school-ops-provider',
@@ -120,7 +126,7 @@ const mcLikeSchoolOpsExtension = {
   commands: [
     {
       id: 'school-ops-reference-open-tickets',
-      title: 'Open MC Queue',
+      title: 'Open school ops queue',
       routeId: 'school-ops-reference-tickets',
       guard: {
         personas: allPersonas,
@@ -194,9 +200,9 @@ const mcLikeSchoolOpsExtension = {
   },
 } as const satisfies CockpitExtensionManifest;
 
-const mcLikeSchoolOpsRouteLoaders = createRouteLoaders(mcLikeSchoolOpsExtension);
+const schoolOpsReferenceRouteLoaders = createRouteLoaders(schoolOpsReferenceExtension);
 
-const mcLikeSchoolOpsAccessContext = {
+const schoolOpsReferenceAccessContext = {
   availableCapabilities: schoolOpsCapabilities,
   availableApiScopes: schoolOpsApiScopes,
   availablePrivacyClasses: ['internal', 'restricted'],
@@ -236,16 +242,16 @@ function projectWith({
 
 function projectSchoolOpsWith() {
   const registry = resolveCockpitExtensionRegistry({
-    installedExtensions: [mcLikeSchoolOpsExtension],
+    installedExtensions: [schoolOpsReferenceExtension],
     activePackIds: ['reference.school-ops'],
-    ...mcLikeSchoolOpsAccessContext,
-    routeLoaders: mcLikeSchoolOpsRouteLoaders,
+    ...schoolOpsReferenceAccessContext,
+    routeLoaders: schoolOpsReferenceRouteLoaders,
   });
 
   return projectCockpitShellNavigation({
     registry,
     persona: 'Operator',
-    accessContext: mcLikeSchoolOpsAccessContext,
+    accessContext: schoolOpsReferenceAccessContext,
     roboticsEnabled: false,
   });
 }
@@ -326,6 +332,179 @@ describe('projectCockpitShellNavigation', () => {
     });
   });
 
+  it('honors custom shell profile core sections, mobile order, command exclusions, and extension anchor', () => {
+    const customProfile = {
+      coreSections: [
+        {
+          id: 'alpha',
+          label: 'Alpha',
+          items: [
+            {
+              id: 'alpha-one',
+              label: 'Alpha One',
+              to: '/alpha/one',
+              icon: 'alpha-one',
+              shortcut: 'G A',
+            },
+            {
+              id: 'alpha-two',
+              label: 'Alpha Two',
+              to: '/alpha/two',
+              icon: 'alpha-two',
+              shortcut: 'G T',
+            },
+          ],
+        },
+        {
+          id: 'beta',
+          label: 'Beta',
+          items: [
+            {
+              id: 'beta-one',
+              label: 'Beta One',
+              to: '/beta/one',
+              icon: 'beta-one',
+              shortcut: 'G B',
+            },
+          ],
+        },
+        {
+          id: 'gamma',
+          label: 'Gamma',
+          items: [
+            {
+              id: 'gamma-one',
+              label: 'Gamma One',
+              to: '/gamma/one',
+              icon: 'gamma-one',
+              shortcut: 'G G',
+            },
+          ],
+        },
+      ],
+      mobilePrimaryItemIds: ['beta-one', 'alpha-one'],
+      mobileMoreSectionIds: new Set(['gamma', 'alpha']),
+      commandExcludedItemIds: new Set(['alpha-two']),
+      sidebarExtensionInsertAfterSectionId: 'beta',
+    } satisfies CockpitShellProfile;
+    const registry = resolveCockpitExtensionRegistry({
+      installedExtensions: [NEUTRAL_REFERENCE_EXTENSION],
+      activePackIds: ['example.reference'],
+      ...neutralAccessContext,
+      routeLoaders: neutralRouteLoaders,
+    });
+
+    const projection = projectCockpitShellNavigation({
+      registry,
+      persona: 'Operator',
+      accessContext: neutralAccessContext,
+      roboticsEnabled: false,
+      shellProfile: customProfile,
+    });
+
+    expect(projection.sidebarSections.map((section) => section.label)).toEqual([
+      'Alpha',
+      'Beta',
+      'Reference Extension',
+      'Gamma',
+    ]);
+    expect(projection.mobilePrimaryItems.map((item) => item.label)).toEqual([
+      'Beta One',
+      'Alpha One',
+      'Reference Overview',
+    ]);
+    expect(projection.mobileMoreSections.map((section) => section.label)).toEqual([
+      'Alpha',
+      'Gamma',
+      'Reference Extension',
+    ]);
+    expect(projection.commandTargets.map((target) => target.label)).toEqual(
+      expect.arrayContaining(['Alpha One', 'Beta One', 'Gamma One', 'Open extension reference']),
+    );
+    expect(projection.commandTargets.map((target) => target.label)).not.toContain('Alpha Two');
+  });
+
+  it('resolves generic extension shell contributions without changing the default profile', () => {
+    const profiledReferenceExtension = {
+      ...NEUTRAL_REFERENCE_EXTENSION,
+      shellContributions: {
+        modes: [
+          {
+            modeId: 'operator',
+            priority: 10,
+            defaultRoute: { routeId: NEUTRAL_REFERENCE_EXTENSION.routes[0]!.id },
+            coreSections: [
+              { sectionId: 'explore', order: 0 },
+              { sectionId: 'workspace', order: 1 },
+              { sectionId: 'engineering', visibility: 'hidden' },
+            ],
+            coreItems: [{ itemId: 'inbox', visibility: 'hidden' }],
+            extensionNav: [
+              {
+                navItemId: NEUTRAL_REFERENCE_EXTENSION.navItems[0]!.id,
+                order: 0,
+                mobilePrimary: true,
+              },
+            ],
+            sidebarExtensionInsertAfterSectionId: 'workspace',
+          },
+        ],
+      },
+    } satisfies CockpitExtensionManifest;
+    const registry = resolveCockpitExtensionRegistry({
+      installedExtensions: [profiledReferenceExtension],
+      activePackIds: ['example.reference'],
+      ...neutralAccessContext,
+      routeLoaders: createRouteLoaders(profiledReferenceExtension),
+    });
+    const shellProfile = resolveCockpitShellProfile(registry, 'operator');
+    const projection = projectCockpitShellNavigation({
+      registry,
+      persona: 'Operator',
+      accessContext: neutralAccessContext,
+      roboticsEnabled: false,
+      shellProfile,
+    });
+
+    expect(shellProfile.defaultRoutePath).toBe('/external/example-reference/overview');
+    expect(projection.sidebarSections.map((section) => section.label)).toEqual([
+      'Explore',
+      'Workspace',
+      'Reference Extension',
+      'Work',
+      'Workforce',
+      'Config',
+    ]);
+    expect(projection.sidebarSections.flatMap((section) => section.items ?? [])).not.toContainEqual(
+      expect.objectContaining({ id: 'inbox' }),
+    );
+    expect(projection.mobilePrimaryItems.map((item) => item.label)).toContain(
+      'Reference Overview',
+    );
+  });
+
+  it('falls back to the default shell profile when a contribution references unknown core ids', () => {
+    const invalidReferenceExtension = {
+      ...NEUTRAL_REFERENCE_EXTENSION,
+      shellContributions: {
+        modes: [
+          {
+            modeId: 'operator',
+            coreSections: [{ sectionId: 'not-a-core-section', order: 0 }],
+          },
+        ],
+      },
+    } satisfies CockpitExtensionManifest;
+    const registry = resolveCockpitExtensionRegistry({
+      installedExtensions: [invalidReferenceExtension],
+      activePackIds: ['example.reference'],
+      ...neutralAccessContext,
+      routeLoaders: createRouteLoaders(invalidReferenceExtension),
+    });
+
+    expect(resolveCockpitShellProfile(registry, 'operator')).toBe(PORTARIUM_COCKPIT_SHELL_PROFILE);
+  });
+
   it('hides extension projections while keeping core shell entries when activation is absent', () => {
     const projection = projectWith({ activePackIds: [] });
 
@@ -346,7 +525,7 @@ describe('projectCockpitShellNavigation', () => {
     ]);
   });
 
-  it('places an MC-like school ops extension near work with a discoverable section label', () => {
+  it('places a school ops extension near work with a discoverable section label', () => {
     const projection = projectSchoolOpsWith();
     const sidebarLabels = projection.sidebarSections.map((section) => section.label);
 
@@ -371,7 +550,9 @@ describe('projectCockpitShellNavigation', () => {
       ['Campus Map', '/external/school-ops-reference/map'],
       ['Data Sources', '/external/school-ops-reference'],
     ]);
-    expect(projection.commandTargets.map((target) => target.label)).toContain('Open MC Queue');
+    expect(projection.commandTargets.map((target) => target.label)).toContain(
+      'Open school ops queue',
+    );
   });
 
   it('projects neutral extension navigation with stable shell ids and match paths', () => {

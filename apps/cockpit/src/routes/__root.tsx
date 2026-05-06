@@ -31,7 +31,7 @@ import { KeyboardCheatsheet } from '@/components/cockpit/keyboard-cheatsheet';
 import { RuntimeStatusStrip } from '@/components/cockpit/runtime-status-strip';
 import { StartRunDialog } from '@/components/cockpit/start-run-dialog';
 import { IntentPlanSheet } from '@/components/cockpit/intent-plan-sheet';
-import { projectCockpitShellNavigation } from '@/lib/shell/navigation';
+import { projectCockpitShellNavigation, resolveCockpitShellProfile } from '@/lib/shell/navigation';
 import { shouldEnableRoboticsDemo } from '@/lib/robotics-runtime';
 import { Toaster } from 'sonner';
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
@@ -150,6 +150,10 @@ function RootShell() {
     accessContext: extensionServerAccess.accessContext,
     roboticsEnabled: shouldEnableRoboticsDemo(),
     liveState: { pendingApprovalCount },
+    shellProfile: resolveCockpitShellProfile(
+      extensionRegistry,
+      import.meta.env.VITE_COCKPIT_SHELL_MODE,
+    ),
   });
   const navSections = shellProjection.sidebarSections;
 

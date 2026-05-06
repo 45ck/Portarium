@@ -71,6 +71,18 @@
       ]
     },
     {
+      "id": "agentActions.propose",
+      "method": "POST",
+      "path": "/v1/workspaces/{workspaceId}/agent-actions:propose",
+      "openapi": "pending",
+      "runtime": "required",
+      "mock": "required",
+      "clientMethod": "proposeAgentAction",
+      "trackingBead": "bead-1127",
+      "reason": "Agent action proposal is mounted in runtime and still needs OpenAPI contract parity.",
+      "consumers": ["apps/cockpit/src/lib/control-plane-client.ts"]
+    },
+    {
       "id": "approvals.decide",
       "method": "POST",
       "path": "/v1/workspaces/{workspaceId}/approvals/{approvalId}/decide",

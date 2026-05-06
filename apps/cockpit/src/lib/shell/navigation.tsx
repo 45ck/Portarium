@@ -24,6 +24,7 @@ import { canAccessExtensionNavItem, selectExtensionCommands } from '@/lib/extens
 import type {
   CockpitExtensionAccessContext,
   CockpitExtensionIcon,
+  CockpitShellModeContribution,
   CockpitExtensionNavItem,
   ResolvedCockpitExtensionRegistry,
 } from '@/lib/extensions/types';
@@ -68,12 +69,24 @@ export interface CockpitShellProjection {
   commandTargets: readonly CockpitShellCommandTarget[];
 }
 
+export interface CockpitShellProfile {
+  coreSections: readonly CockpitShellNavigationSection[];
+  mobilePrimaryItemIds: readonly string[];
+  mobileMoreSectionIds: ReadonlySet<string>;
+  commandExcludedItemIds: ReadonlySet<string>;
+  sidebarExtensionInsertAfterSectionId: string;
+  extensionNavItemIds?: readonly string[];
+  extensionMobilePrimaryNavItemIds?: readonly string[];
+  defaultRoutePath?: string;
+}
+
 export interface ProjectCockpitShellNavigationInput {
   registry: ResolvedCockpitExtensionRegistry;
   persona: PersonaId;
   accessContext: CockpitExtensionAccessContext;
   roboticsEnabled: boolean;
   liveState?: CockpitShellLiveState;
+  shellProfile?: CockpitShellProfile;
 }
 
 export interface CockpitShellLiveState {
@@ -378,17 +391,63 @@ const COMMAND_EXCLUDED_ITEM_IDS = new Set([
 ]);
 const SIDEBAR_EXTENSION_INSERT_AFTER_SECTION_ID = 'work';
 
+export const PORTARIUM_COCKPIT_SHELL_PROFILE: CockpitShellProfile = {
+  coreSections: CORE_SHELL_SECTIONS,
+  mobilePrimaryItemIds: MOBILE_PRIMARY_ITEM_IDS,
+  mobileMoreSectionIds: MOBILE_MORE_SECTION_IDS,
+  commandExcludedItemIds: COMMAND_EXCLUDED_ITEM_IDS,
+  sidebarExtensionInsertAfterSectionId: SIDEBAR_EXTENSION_INSERT_AFTER_SECTION_ID,
+};
+
+export function resolveCockpitShellProfile(
+  registry: ResolvedCockpitExtensionRegistry,
+  modeId?: string,
+  baseProfile: CockpitShellProfile = PORTARIUM_COCKPIT_SHELL_PROFILE,
+): CockpitShellProfile {
+  const normalizedModeId = modeId?.trim();
+  if (!normalizedModeId) return baseProfile;
+
+  const contribution = registry.extensions
+    .filter((extension) => extension.status === 'enabled')
+    .flatMap((extension) => extension.manifest.shellContributions?.modes ?? [])
+    .filter((mode) => mode.modeId === normalizedModeId)
+    .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0))
+    .at(0);
+
+  if (!contribution || !isValidShellContribution(contribution, registry, baseProfile)) {
+    return baseProfile;
+  }
+
+  const defaultRoutePath = contribution.defaultRoute
+    ? registry.routes.find((route) => route.id === contribution.defaultRoute?.routeId)?.path
+    : undefined;
+
+  return {
+    ...baseProfile,
+    coreSections: projectProfileCoreSections(baseProfile.coreSections, contribution),
+    sidebarExtensionInsertAfterSectionId:
+      contribution.sidebarExtensionInsertAfterSectionId ??
+      baseProfile.sidebarExtensionInsertAfterSectionId,
+    extensionNavItemIds: contribution.extensionNav?.map((item) => item.navItemId),
+    extensionMobilePrimaryNavItemIds: contribution.extensionNav
+      ?.filter((item) => item.mobilePrimary)
+      .map((item) => item.navItemId),
+    defaultRoutePath,
+  };
+}
+
 export function projectCockpitShellNavigation({
   registry,
   persona,
   accessContext,
   roboticsEnabled,
   liveState,
+  shellProfile = PORTARIUM_COCKPIT_SHELL_PROFILE,
 }: ProjectCockpitShellNavigationInput): CockpitShellProjection {
   const coreSections = projectCoreNavigationSections(
     roboticsEnabled
-      ? CORE_SHELL_SECTIONS
-      : CORE_SHELL_SECTIONS.filter((section) => section.id !== 'robotics'),
+      ? shellProfile.coreSections
+      : shellProfile.coreSections.filter((section) => section.id !== 'robotics'),
     liveState,
   );
   const extensionSidebarSections = projectExtensionNavigationSections(
@@ -397,6 +456,7 @@ export function projectCockpitShellNavigation({
     'extension-nav',
     persona,
     accessContext,
+    shellProfile,
   );
   const extensionMobileMoreSections = projectExtensionNavigationSections(
     registry,
@@ -404,11 +464,13 @@ export function projectCockpitShellNavigation({
     'extension-mobile',
     persona,
     accessContext,
+    shellProfile,
   );
   const extensionMobilePrimaryItems = projectExtensionMobilePrimaryItems(
     registry,
     persona,
     accessContext,
+    shellProfile,
   );
   const extensionCommandTargets = selectExtensionCommands(registry, persona, accessContext).reduce<
     CockpitShellCommandTarget[]
@@ -428,9 +490,13 @@ export function projectCockpitShellNavigation({
     return targets;
   }, []);
 
-  const sidebarSections = insertSidebarExtensionSections(coreSections, extensionSidebarSections);
+  const sidebarSections = insertSidebarExtensionSections(
+    coreSections,
+    extensionSidebarSections,
+    shellProfile.sidebarExtensionInsertAfterSectionId,
+  );
   const mobileMoreBaseSections = coreSections.filter((section) =>
-    MOBILE_MORE_SECTION_IDS.has(section.id),
+    shellProfile.mobileMoreSectionIds.has(section.id),
   );
   const mobileMoreSections =
     extensionMobileMoreSections.length > 0
@@ -440,13 +506,13 @@ export function projectCockpitShellNavigation({
   return {
     sidebarSections,
     mobilePrimaryItems: [
-      ...projectMobilePrimaryItems(coreSections),
+      ...projectMobilePrimaryItems(coreSections, shellProfile.mobilePrimaryItemIds),
       ...extensionMobilePrimaryItems,
     ],
     mobileMoreSections,
     commandTargets: [
       ...flattenItems(coreSections)
-        .filter((item) => !item.comingSoon && !COMMAND_EXCLUDED_ITEM_IDS.has(item.id))
+        .filter((item) => !item.comingSoon && !shellProfile.commandExcludedItemIds.has(item.id))
         .map(
           (item): CockpitShellCommandTarget => ({
             id: `core-command:${item.id}`,
@@ -486,6 +552,7 @@ function projectExtensionNavigationSections(
   idPrefix: string,
   persona: PersonaId,
   accessContext: CockpitExtensionAccessContext,
+  shellProfile: CockpitShellProfile,
 ): readonly CockpitShellNavigationSection[] {
   return registry.extensions.flatMap((extension) => {
     if (extension.status !== 'enabled') return [];
@@ -496,6 +563,7 @@ function projectExtensionNavigationSections(
       .filter(
         (item) => canAccessExtensionNavItem(item, registry, { ...accessContext, persona }).allowed,
       )
+      .sort((a, b) => compareExtensionNavItems(a, b, shellProfile))
       .map((item) => projectExtensionNavigationItem(item, idPrefix));
 
     return items.length > 0
@@ -514,18 +582,49 @@ function projectExtensionMobilePrimaryItems(
   registry: ResolvedCockpitExtensionRegistry,
   persona: PersonaId,
   accessContext: CockpitExtensionAccessContext,
+  shellProfile: CockpitShellProfile,
 ): readonly CockpitShellNavigationItem[] {
+  const profileMobilePrimaryIds = new Set(shellProfile.extensionMobilePrimaryNavItemIds ?? []);
+
   return registry.extensions.flatMap((extension) => {
     if (extension.status !== 'enabled') return [];
 
     return extension.manifest.navItems
-      .filter((item) => item.mobilePrimary)
+      .filter((item) => item.mobilePrimary || profileMobilePrimaryIds.has(item.id))
       .filter(isConcretePathItem)
       .filter(
         (item) => canAccessExtensionNavItem(item, registry, { ...accessContext, persona }).allowed,
       )
+      .sort((a, b) => compareExtensionMobilePrimaryItems(a, b, shellProfile))
       .map((item) => projectExtensionNavigationItem(item, 'extension-primary'));
   });
+}
+
+function compareExtensionNavItems(
+  a: CockpitExtensionNavItem,
+  b: CockpitExtensionNavItem,
+  shellProfile: CockpitShellProfile,
+): number {
+  return (
+    readProfileOrder(shellProfile.extensionNavItemIds, a.id) -
+    readProfileOrder(shellProfile.extensionNavItemIds, b.id)
+  );
+}
+
+function compareExtensionMobilePrimaryItems(
+  a: CockpitExtensionNavItem,
+  b: CockpitExtensionNavItem,
+  shellProfile: CockpitShellProfile,
+): number {
+  return (
+    readProfileOrder(shellProfile.extensionMobilePrimaryNavItemIds, a.id) -
+    readProfileOrder(shellProfile.extensionMobilePrimaryNavItemIds, b.id)
+  );
+}
+
+function readProfileOrder(ids: readonly string[] | undefined, id: string): number {
+  const index = ids?.indexOf(id) ?? -1;
+  return index >= 0 ? index : Number.MAX_SAFE_INTEGER;
 }
 
 function projectExtensionNavigationItem(
@@ -550,12 +649,11 @@ function flattenItems(
 function insertSidebarExtensionSections(
   coreSections: readonly CockpitShellNavigationSection[],
   extensionSections: readonly CockpitShellNavigationSection[],
+  insertAfterSectionId: string,
 ): readonly CockpitShellNavigationSection[] {
   if (extensionSections.length === 0) return coreSections;
 
-  const insertAfterIndex = coreSections.findIndex(
-    (section) => section.id === SIDEBAR_EXTENSION_INSERT_AFTER_SECTION_ID,
-  );
+  const insertAfterIndex = coreSections.findIndex((section) => section.id === insertAfterSectionId);
   if (insertAfterIndex < 0) return [...coreSections, ...extensionSections];
 
   return [
@@ -567,9 +665,10 @@ function insertSidebarExtensionSections(
 
 function projectMobilePrimaryItems(
   sections: readonly CockpitShellNavigationSection[],
+  mobilePrimaryItemIds: readonly string[],
 ): readonly CockpitShellNavigationItem[] {
   const itemsById = new Map(flattenItems(sections).map((item) => [item.id, item]));
-  return MOBILE_PRIMARY_ITEM_IDS.flatMap((itemId) => {
+  return mobilePrimaryItemIds.flatMap((itemId) => {
     const item = itemsById.get(itemId);
     return item ? [item] : [];
   });
@@ -603,6 +702,98 @@ function approvalPendingBadge(
     label,
     ariaLabel: `${label} approvals`,
   };
+}
+
+function isValidShellContribution(
+  contribution: CockpitShellModeContribution,
+  registry: ResolvedCockpitExtensionRegistry,
+  baseProfile: CockpitShellProfile,
+): boolean {
+  const sectionIds = new Set(baseProfile.coreSections.map((section) => section.id));
+  const itemIds = new Set(flattenItems(baseProfile.coreSections).map((item) => item.id));
+  const routeIds = new Set(registry.routes.map((route) => route.id));
+  const navItemIds = new Set(registry.navItems.map((item) => item.id));
+
+  if (
+    contribution.defaultRoute &&
+    (!routeIds.has(contribution.defaultRoute.routeId) ||
+      registry.routes
+        .find((route) => route.id === contribution.defaultRoute?.routeId)
+        ?.path.includes('$'))
+  ) {
+    return false;
+  }
+
+  if (
+    contribution.sidebarExtensionInsertAfterSectionId &&
+    !sectionIds.has(contribution.sidebarExtensionInsertAfterSectionId)
+  ) {
+    return false;
+  }
+
+  if (contribution.coreSections?.some((section) => !sectionIds.has(section.sectionId))) {
+    return false;
+  }
+
+  if (contribution.coreItems?.some((item) => !itemIds.has(item.itemId))) {
+    return false;
+  }
+
+  if (contribution.extensionNav?.some((item) => !navItemIds.has(item.navItemId))) {
+    return false;
+  }
+
+  return true;
+}
+
+function projectProfileCoreSections(
+  sections: readonly CockpitShellNavigationSection[],
+  contribution: CockpitShellModeContribution,
+): readonly CockpitShellNavigationSection[] {
+  const sectionPreferences = new Map(
+    contribution.coreSections?.map((section) => [section.sectionId, section]) ?? [],
+  );
+  const itemPreferences = new Map(
+    contribution.coreItems?.map((item) => [item.itemId, item]) ?? [],
+  );
+
+  return sections
+    .map((section, index) => ({
+      section,
+      index,
+      preference: sectionPreferences.get(section.id),
+    }))
+    .filter(({ preference }) => preference?.visibility !== 'hidden')
+    .sort(
+      (a, b) =>
+        readContributionOrder(a.preference, a.index) -
+        readContributionOrder(b.preference, b.index),
+    )
+    .map(({ section }) => ({
+      ...section,
+      items: section.items
+        ?.map((item, index) => ({ item, index, preference: itemPreferences.get(item.id) }))
+        .filter(({ preference }) => preference?.visibility !== 'hidden')
+        .sort(
+          (a, b) =>
+            readContributionOrder(a.preference, a.index) -
+            readContributionOrder(b.preference, b.index),
+        )
+        .map(({ item }) => item),
+    }));
+}
+
+function readContributionOrder(
+  preference:
+    | { readonly visibility?: 'visible' | 'advanced' | 'hidden'; readonly order?: number }
+    | undefined,
+  fallbackIndex: number,
+): number {
+  if (typeof preference?.order === 'number' && Number.isFinite(preference.order)) {
+    return preference.order;
+  }
+
+  return preference?.visibility === 'advanced' ? fallbackIndex + 1000 : fallbackIndex;
 }
 
 function extensionIcon(icon: CockpitExtensionIcon) {

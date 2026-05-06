@@ -110,6 +110,66 @@ describe('cockpit extension registry', () => {
     expect(registry.commands).toHaveLength(1);
   });
 
+  it('accepts generic shell contributions that reference local routes and nav items', () => {
+    const manifest = cloneExtension({
+      shellContributions: {
+        modes: [
+          {
+            modeId: 'operator',
+            defaultRoute: { routeId: NEUTRAL_REFERENCE_EXTENSION.routes[0]!.id },
+            extensionNav: [
+              {
+                navItemId: NEUTRAL_REFERENCE_EXTENSION.navItems[0]!.id,
+                order: 0,
+                mobilePrimary: true,
+              },
+            ],
+          },
+        ],
+      },
+    });
+    const registry = resolveCockpitExtensionRegistry({
+      installedExtensions: [manifest],
+      activePackIds: ['example.reference'],
+      ...neutralAccessContext,
+      routeLoaders: routeLoadersFor([manifest]),
+    });
+
+    expect(registry.problems).toEqual([]);
+    expect(registry.extensions[0]?.status).toBe('enabled');
+  });
+
+  it('fails closed when shell contributions reference missing routes or nav items', () => {
+    const manifest = cloneExtension({
+      shellContributions: {
+        modes: [
+          {
+            modeId: 'operator',
+            defaultRoute: { routeId: 'missing-route' },
+            extensionNav: [{ navItemId: 'missing-nav', order: 0 }],
+          },
+        ],
+      },
+    });
+    const registry = resolveCockpitExtensionRegistry({
+      installedExtensions: [manifest],
+      activePackIds: ['example.reference'],
+      ...neutralAccessContext,
+      routeLoaders: routeLoadersFor([manifest]),
+    });
+
+    expect(registry.extensions[0]?.status).toBe('invalid');
+    expect(registry.routes).toEqual([]);
+    expect(registry.problems).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'invalid-shell-contribution',
+          itemId: 'operator',
+        }),
+      ]),
+    );
+  });
+
   it('keeps quarantined extensions out of routes, navigation, and commands', () => {
     const registry = resolveCockpitExtensionRegistry({
       installedExtensions: [NEUTRAL_REFERENCE_EXTENSION],

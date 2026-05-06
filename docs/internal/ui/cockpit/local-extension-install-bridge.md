@@ -9,8 +9,13 @@ Cockpit can load additional extension install records from ignored local files d
 - Committed Portarium files may define extension contracts, validation, rendering, and local discovery mechanics.
 - Local install files live under `apps/cockpit/src/lib/extensions/local-installed/*.local.ts`.
 - Local install files are ignored by git and may contain private package imports, local filesystem paths, or tenant-specific package names.
+- Local public assets live under `apps/cockpit/public/assets/local-extensions/<extension-id>/`.
+- Local public assets are ignored by git and are served by Vite at `/assets/local-extensions/<extension-id>/...`.
 - Local install files must export either one `CockpitInstalledExtension` or an array of `CockpitInstalledExtension` records.
 - The host still owns route activation, route loaders, package refs, workspace pack refs, and fail-closed validation.
+- Local install files, local assets, and local package aliases are private
+  development artifacts only. They are not a public publishing path and must not
+  be committed as tenant-specific distribution state.
 
 ## Runtime Flow
 
@@ -30,9 +35,25 @@ Use `apps/cockpit/.env.local` for local-only aliases and filesystem allow-list e
 VITE_COCKPIT_ENABLE_LOCAL_EXTENSIONS=true
 VITE_COCKPIT_LOCAL_EXTENSION_ALLOW_DIRS=C:/path/to/local/extension/repo
 VITE_COCKPIT_LOCAL_EXTENSION_ALIASES=@scope/package=C:/path/to/package/src/index.ts
+VITE_COCKPIT_SHELL_MODE=operator
 ```
 
 Multiple allow dirs and aliases can be separated with semicolons, commas, or new lines.
+`VITE_COCKPIT_SHELL_MODE` is optional and selects a generic extension-contributed
+shell mode when an installed extension declares one. Without it, Cockpit uses the
+default Portarium shell profile.
+
+If an extension route needs local static files, copy them into:
+
+```text
+apps/cockpit/public/assets/local-extensions/<extension-id>/
+```
+
+Reference those files with absolute Cockpit URLs such as:
+
+```text
+/assets/local-extensions/<extension-id>/example.svg
+```
 
 ## Validation
 
@@ -44,6 +65,17 @@ npm run -w apps/cockpit build
 node node_modules/vitest/vitest.mjs run packages/cockpit-extension-sdk/src/conformance.test.ts
 node scripts/ci/check-cockpit-extension-egress.mjs
 ```
+
+For route smoke evidence that depends on stable local URLs, start Cockpit with:
+
+```bash
+npm run -w apps/cockpit dev:e2e -- --host 127.0.0.1
+```
+
+Then capture the relevant local extension routes from `127.0.0.1:5173` after
+the ignored local install files and any ignored local assets have been generated.
+Those screenshots are local evidence only; do not publish tenant-specific local
+assets or route captures as public Portarium artifacts.
 
 ## Risks
 

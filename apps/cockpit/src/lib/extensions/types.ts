@@ -201,6 +201,44 @@ export interface CockpitExtensionCommand {
   shortcut?: string;
 }
 
+export type CockpitShellContributionVisibility = 'visible' | 'advanced' | 'hidden';
+
+export interface CockpitShellContributionDefaultRoute {
+  routeId: string;
+}
+
+export interface CockpitShellContributionCoreSection {
+  sectionId: string;
+  visibility?: CockpitShellContributionVisibility;
+  order?: number;
+}
+
+export interface CockpitShellContributionCoreItem {
+  itemId: string;
+  visibility?: CockpitShellContributionVisibility;
+  order?: number;
+}
+
+export interface CockpitShellContributionExtensionNavItem {
+  navItemId: string;
+  order?: number;
+  mobilePrimary?: boolean;
+}
+
+export interface CockpitShellModeContribution {
+  modeId: string;
+  priority?: number;
+  defaultRoute?: CockpitShellContributionDefaultRoute;
+  coreSections?: readonly CockpitShellContributionCoreSection[];
+  coreItems?: readonly CockpitShellContributionCoreItem[];
+  extensionNav?: readonly CockpitShellContributionExtensionNavItem[];
+  sidebarExtensionInsertAfterSectionId?: string;
+}
+
+export interface CockpitExtensionShellContributions {
+  modes: readonly CockpitShellModeContribution[];
+}
+
 export const COCKPIT_EXTENSION_WIDGET_SURFACES = [
   'dashboard',
   'route-panel',
@@ -244,6 +282,7 @@ export interface CockpitExtensionManifest {
   routes: readonly CockpitExtensionRouteRef[];
   navItems: readonly CockpitExtensionNavItem[];
   commands: readonly CockpitExtensionCommand[];
+  shellContributions?: CockpitExtensionShellContributions;
   widgets?: readonly CockpitExtensionWidgetRef[];
   dataScopes?: readonly CockpitExtensionDataScopeRef[];
   governance: CockpitExtensionGovernance;
@@ -334,6 +373,8 @@ export interface CockpitExtensionRegistryProblem {
     | 'missing-route-guard'
     | 'missing-command-guard'
     | 'missing-pack-activation'
+    | 'duplicate-shell-mode'
+    | 'invalid-shell-contribution'
     | 'invalid-manifest'
     | 'invalid-manifest-version'
     | 'forbidden-manifest-key';

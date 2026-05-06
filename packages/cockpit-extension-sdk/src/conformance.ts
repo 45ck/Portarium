@@ -136,6 +136,7 @@ function validateManifest(
   validateRoutes(manifest, routeModuleIds, problems);
   validateNavItems(manifest, problems);
   validateCommands(manifest, problems);
+  validateShellContributions(manifest, problems);
   validateDataScopes(manifest, problems);
   validateWidgets(manifest, problems);
 
@@ -392,6 +393,99 @@ function validateCommands(
       });
     }
   }
+}
+
+function validateShellContributions(
+  manifest: CockpitExtensionManifestV1,
+  problems: CockpitExtensionRegistryProblem[],
+) {
+  const modeIds = new Map<string, string>();
+  const routeIds = new Set(manifest.routes.map((route) => route.id));
+  const navItemIds = new Set(manifest.navItems.map((item) => item.id));
+  const validVisibility = new Set(['visible', 'advanced', 'hidden']);
+
+  for (const mode of manifest.shellContributions?.modes ?? []) {
+    if (mode.modeId.trim().length === 0) {
+      problems.push({
+        code: 'invalid-shell-contribution',
+        message: `Extension "${manifest.id}" shell mode must declare a non-empty mode id.`,
+        extensionId: manifest.id,
+      });
+      continue;
+    }
+
+    addDuplicateProblem(modeIds, mode.modeId, manifest.id, 'shell mode id', {
+      code: 'duplicate-shell-mode',
+      extensionId: manifest.id,
+      itemId: mode.modeId,
+      problems,
+    });
+
+    if (mode.defaultRoute && !routeIds.has(mode.defaultRoute.routeId)) {
+      problems.push({
+        code: 'invalid-shell-contribution',
+        message: `Shell mode "${mode.modeId}" default route references missing route "${mode.defaultRoute.routeId}".`,
+        extensionId: manifest.id,
+        itemId: mode.modeId,
+      });
+    }
+
+    for (const navItem of mode.extensionNav ?? []) {
+      if (!navItemIds.has(navItem.navItemId)) {
+        problems.push({
+          code: 'invalid-shell-contribution',
+          message: `Shell mode "${mode.modeId}" references missing nav item "${navItem.navItemId}".`,
+          extensionId: manifest.id,
+          itemId: mode.modeId,
+        });
+      }
+      validateOptionalOrder(manifest.id, mode.modeId, navItem.order, problems);
+    }
+
+    for (const section of mode.coreSections ?? []) {
+      if (section.visibility && !validVisibility.has(section.visibility)) {
+        problems.push({
+          code: 'invalid-shell-contribution',
+          message: `Shell mode "${mode.modeId}" uses unsupported core section visibility "${section.visibility}".`,
+          extensionId: manifest.id,
+          itemId: mode.modeId,
+        });
+      }
+      validateOptionalOrder(manifest.id, mode.modeId, section.order, problems);
+    }
+
+    for (const item of mode.coreItems ?? []) {
+      if (item.visibility && !validVisibility.has(item.visibility)) {
+        problems.push({
+          code: 'invalid-shell-contribution',
+          message: `Shell mode "${mode.modeId}" uses unsupported core item visibility "${item.visibility}".`,
+          extensionId: manifest.id,
+          itemId: mode.modeId,
+        });
+      }
+      validateOptionalOrder(manifest.id, mode.modeId, item.order, problems);
+    }
+
+    validateOptionalOrder(manifest.id, mode.modeId, mode.priority, problems);
+  }
+}
+
+function validateOptionalOrder(
+  extensionId: string,
+  itemId: string,
+  value: number | undefined,
+  problems: CockpitExtensionRegistryProblem[],
+) {
+  if (value === undefined || Number.isFinite(value)) {
+    return;
+  }
+
+  problems.push({
+    code: 'invalid-shell-contribution',
+    message: `Shell mode "${itemId}" order and priority values must be finite numbers.`,
+    extensionId,
+    itemId,
+  });
 }
 
 function validateDataScopes(

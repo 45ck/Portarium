@@ -2,7 +2,11 @@
 import { useEffect, useRef } from 'react';
 import { router } from '@/router';
 import { useUIStore } from '@/stores/ui-store';
-import { projectCockpitGChordMap, projectCockpitShellNavigation } from '@/lib/shell/navigation';
+import {
+  projectCockpitGChordMap,
+  projectCockpitShellNavigation,
+  resolveCockpitShellProfile,
+} from '@/lib/shell/navigation';
 import { shouldEnableRoboticsDemo } from '@/lib/robotics-runtime';
 import { useCockpitExtensionRegistry } from '@/hooks/use-cockpit-extension-registry';
 
@@ -32,6 +36,10 @@ export function useKeyboardShortcuts() {
     persona: activePersona,
     accessContext: extensionServerAccess.accessContext,
     roboticsEnabled: shouldEnableRoboticsDemo(),
+    shellProfile: resolveCockpitShellProfile(
+      extensionRegistry,
+      import.meta.env.VITE_COCKPIT_SHELL_MODE,
+    ),
   });
   const gChordMap = projectCockpitGChordMap(shellProjection.commandTargets);
 
