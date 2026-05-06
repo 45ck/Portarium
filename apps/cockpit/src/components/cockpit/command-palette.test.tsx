@@ -203,4 +203,17 @@ describe('CommandPalette', () => {
     expect(screen.queryByRole('button', { name: /safety/i })).toBeNull();
     expect(screen.queryByRole('button', { name: /gateways/i })).toBeNull();
   });
+
+  it('hides global actions excluded by the active shell profile', () => {
+    vi.stubEnv('VITE_COCKPIT_SHELL_MODE', 'reference-operator');
+
+    render(<CommandPalette />);
+
+    expect(screen.queryByRole('button', { name: /^new run$/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /plan new beads/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /register agent/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /switch dataset/i })).toBeNull();
+    expect(screen.getByRole('button', { name: /toggle theme/i })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /toggle sidebar/i })).toBeTruthy();
+  });
 });

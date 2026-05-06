@@ -18,6 +18,40 @@ The committed Portarium side stays tenant-neutral. Tenant-specific local wiring 
 | Access context           | Local extension packs are activated only inside the local Cockpit runtime.                                       | `withLocalCockpitExtensionActivation` augments pack ids, capabilities, API scopes, personas, and privacy classes when local modules exist.                 |
 | Documentation            | Maintainers can reproduce local install, run, and smoke validation steps.                                        | `local-extension-install-bridge.md` and this plan are linked from the Cockpit docs index.                                                                  |
 
+## Generic Shell Readiness
+
+Cockpit extensions can tailor the host shell without committing tenant-specific code to Portarium. The generic contract is `manifest.shellContributions.modes[]`, selected locally with `VITE_COCKPIT_SHELL_MODE` until workspace-scoped activation is added.
+
+Supported host shell controls:
+
+- `coreSections`: hide, show, mark advanced, or reorder built-in sidebar sections.
+- `coreItems`: hide, show, mark advanced, or reorder built-in sidebar items.
+- `extensionNav`: reorder extension navigation and promote extension items to mobile primary navigation.
+- `mobilePrimaryCoreItemIds`: replace the default mobile primary core items with known host item ids.
+- `globalActions`: hide or re-show host global actions such as `create-run`, `plan-intent`, `action:new-run`, `action:plan-new-beads`, `action:register-agent`, and `setting:switch-dataset`.
+- `defaultRoute`: redirect `/` to an enabled concrete extension route.
+- `sidebarExtensionInsertAfterSectionId`: choose where extension navigation is inserted among host sections.
+
+Invalid references fail closed: Cockpit falls back to the default Portarium shell profile when a shell mode references unknown host ids, unknown extension nav ids, unknown routes, or parameterized default routes.
+
+Production activation is still control-plane work. Local activation remains development-only and must not commit private imports, local package names, private filesystem paths, or tenant names to Portarium.
+
+## Sidebar Readiness Classification
+
+| Sidebar item | Current state | Notes |
+| ------------ | ------------- | ----- |
+| Inbox, Dashboard, Projects, Work Items | API-backed core surfaces | Live-ready when the control-plane API is available. |
+| Runs, Workflows, Approvals, Evidence | API-backed core surfaces | Live-ready for read paths; mutation paths remain governed by existing approval/run contracts. |
+| Search | API-backed with fixture fallback | Live readiness depends on embedding, semantic index, and graph ports being wired. |
+| Machines, Agents, Adapters, Credentials, Users, Extensions | API-backed configuration surfaces | Live-ready for read paths where corresponding server routes are present. |
+| Policies | Mixed | Policy reads are API-backed; studio/detail editing has explicit demo or disabled live states. |
+| Capability Posture | Prototype | Static matrix until persisted capability-default and activation contracts exist. |
+| Governance | Mixed | Policy/evidence/workflow reads are API-backed; SoD fixtures are demo-only. |
+| Observability | Derived read model | Aggregates live Cockpit entities but is not yet backed by a dedicated telemetry endpoint. |
+| Workforce Coverage | Prototype | Members and queues are API-backed; coverage planning is fixture-backed in demo mode. |
+| Blast Radius, Pack Runtime, Robotics | Demo/high-fidelity prototype | These surfaces must remain demo-gated or clearly unavailable in live mode. |
+| Tenant or vertical workspaces | Extension-owned | Tenant navigation, data areas, maps, tickets, and dashboards belong in private extensions only. |
+
 ## Implementation Slices
 
 1. Generic bridge

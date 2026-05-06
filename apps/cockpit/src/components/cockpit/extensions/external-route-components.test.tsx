@@ -370,12 +370,12 @@ describe('hosted external route components', () => {
               summary: 'Create a review-only operator suggestion from ticket snapshot evidence.',
               confidence: 'Medium confidence',
               risk: 'info',
-              sourceRefs: ['mc-source:freshservice-snapshot'],
+              sourceRefs: ['source:ticket-snapshot'],
               safety: ['snapshot only', 'no source writeback', 'human approval'],
               proposal: {
-                agentId: 'school-ops-reference-snapshot-agent',
-                actionKind: 'reference.school_ops.mock_automation.review',
-                toolName: 'school-ops-reference.ticket-triage-suggestion',
+                agentId: 'ops-reference-snapshot-agent',
+                actionKind: 'reference.ops.mock_automation.review',
+                toolName: 'ops-reference.ticket-triage-suggestion',
                 executionTier: 'HumanApprove',
                 policyIds: ['pol-001'],
                 rationale: 'Review a snapshot-backed ticket triage suggestion.',
@@ -384,7 +384,7 @@ describe('hosted external route components', () => {
                   sourceSystemAccess: 'none',
                   writebackEnabled: false,
                 },
-                idempotencyKey: 'school-ops-reference:ticket-triage-suggestion',
+                idempotencyKey: 'ops-reference:ticket-triage-suggestion',
               },
             },
           ],
@@ -431,9 +431,9 @@ describe('hosted external route components', () => {
     expect(url).toBe('/v1/workspaces/ws-demo/agent-actions:propose');
     expect(init.method).toBe('POST');
     expect(JSON.parse(String(init.body))).toEqual({
-      agentId: 'school-ops-reference-snapshot-agent',
-      actionKind: 'reference.school_ops.mock_automation.review',
-      toolName: 'school-ops-reference.ticket-triage-suggestion',
+      agentId: 'ops-reference-snapshot-agent',
+      actionKind: 'reference.ops.mock_automation.review',
+      toolName: 'ops-reference.ticket-triage-suggestion',
       executionTier: 'HumanApprove',
       policyIds: ['pol-001'],
       rationale: 'Review a snapshot-backed ticket triage suggestion.',
@@ -444,7 +444,7 @@ describe('hosted external route components', () => {
         sourceSystemAccess: 'none',
         writebackEnabled: false,
       },
-      idempotencyKey: 'school-ops-reference:ticket-triage-suggestion',
+      idempotencyKey: 'ops-reference:ticket-triage-suggestion',
     });
     expect(await screen.findByText('Proposal proposal-1')).toBeTruthy();
     expect(screen.getByRole('link', { name: /Open approval/i }).getAttribute('href')).toBe(

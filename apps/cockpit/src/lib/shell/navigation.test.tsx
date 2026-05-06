@@ -8,6 +8,7 @@ import type {
 } from '@/lib/extensions/types';
 import {
   PORTARIUM_COCKPIT_SHELL_PROFILE,
+  isCockpitShellGlobalActionVisible,
   projectCockpitGChordMap,
   projectCockpitShellNavigation,
   resolveCockpitShellProfile,
@@ -28,163 +29,163 @@ function createRouteLoaders(
 const neutralRouteLoaders = createRouteLoaders(NEUTRAL_REFERENCE_EXTENSION);
 
 const allPersonas = ['Operator', 'Approver', 'Auditor', 'Admin'] as const;
-const schoolOpsCapabilities = [
-  'school-ops.ticket.read',
-  'school-ops.map.read',
-  'school-ops.source.read',
+const opsReferenceCapabilities = [
+  'ops.ticket.read',
+  'ops.map.read',
+  'ops.source.read',
 ] as const;
-const schoolOpsApiScopes = ['school-ops.read'] as const;
-const schoolOpsReferenceExtension = {
+const opsReferenceApiScopes = ['ops.read'] as const;
+const opsReferenceExtension = {
   manifestVersion: 1,
-  id: 'reference.school-ops',
-  owner: 'school-ops-provider',
+  id: 'reference.ops',
+  owner: 'ops-reference-provider',
   version: '0.1.0',
-  displayName: 'School Ops Reference',
+  displayName: 'Ops Reference',
   description:
-    'Read-only school operations workspace for ticket triage, campus context, and source evidence.',
-  packIds: ['reference.school-ops'],
+    'Read-only operations workspace for ticket triage, campus context, and source evidence.',
+  packIds: ['reference.ops'],
   personas: allPersonas,
-  requiredCapabilities: schoolOpsCapabilities,
-  requiredApiScopes: schoolOpsApiScopes,
+  requiredCapabilities: opsReferenceCapabilities,
+  requiredApiScopes: opsReferenceApiScopes,
   routes: [
     {
-      id: 'school-ops-reference-tickets',
-      path: '/external/school-ops-reference/tickets',
+      id: 'ops-reference-tickets',
+      path: '/external/ops-reference/tickets',
       title: 'Ticket Queue',
-      description: 'Read-only ticket queue for school operations triage.',
+      description: 'Read-only ticket queue for operations triage.',
       guard: {
         personas: allPersonas,
-        requiredCapabilities: ['school-ops.ticket.read'],
-        requiredApiScopes: schoolOpsApiScopes,
+        requiredCapabilities: ['ops.ticket.read'],
+        requiredApiScopes: opsReferenceApiScopes,
         privacyClasses: ['internal', 'restricted'],
       },
-      permissionGrantIds: ['school-ops.tickets.read'],
+      permissionGrantIds: ['ops.tickets.read'],
     },
     {
-      id: 'school-ops-reference-campus-map',
-      path: '/external/school-ops-reference/map',
+      id: 'ops-reference-campus-map',
+      path: '/external/ops-reference/map',
       title: 'Campus Map',
-      description: 'Read-only campus map context for school operations.',
+      description: 'Read-only campus map context for operations.',
       guard: {
         personas: allPersonas,
-        requiredCapabilities: ['school-ops.map.read'],
-        requiredApiScopes: schoolOpsApiScopes,
+        requiredCapabilities: ['ops.map.read'],
+        requiredApiScopes: opsReferenceApiScopes,
         privacyClasses: ['internal', 'restricted'],
       },
-      permissionGrantIds: ['school-ops.map.read'],
+      permissionGrantIds: ['ops.map.read'],
     },
     {
-      id: 'school-ops-reference-data-sources',
-      path: '/external/school-ops-reference',
+      id: 'ops-reference-data-sources',
+      path: '/external/ops-reference',
       title: 'Data Sources',
-      description: 'Read-only source catalogue for school operations evidence.',
+      description: 'Read-only source catalogue for operations evidence.',
       guard: {
         personas: allPersonas,
-        requiredCapabilities: ['school-ops.source.read'],
-        requiredApiScopes: schoolOpsApiScopes,
+        requiredCapabilities: ['ops.source.read'],
+        requiredApiScopes: opsReferenceApiScopes,
         privacyClasses: ['internal', 'restricted'],
       },
-      permissionGrantIds: ['school-ops.sources.read'],
+      permissionGrantIds: ['ops.sources.read'],
     },
   ],
   navItems: [
     {
-      id: 'school-ops-reference-tickets-nav',
+      id: 'ops-reference-tickets-nav',
       title: 'Ticket Queue',
-      routeId: 'school-ops-reference-tickets',
-      to: '/external/school-ops-reference/tickets',
+      routeId: 'ops-reference-tickets',
+      to: '/external/ops-reference/tickets',
       icon: 'clipboard-check',
       surfaces: ['sidebar', 'mobile-more', 'command'],
       personas: allPersonas,
-      requiredCapabilities: ['school-ops.ticket.read'],
-      requiredApiScopes: schoolOpsApiScopes,
+      requiredCapabilities: ['ops.ticket.read'],
+      requiredApiScopes: opsReferenceApiScopes,
       mobilePrimary: true,
     },
     {
-      id: 'school-ops-reference-campus-map-nav',
+      id: 'ops-reference-campus-map-nav',
       title: 'Campus Map',
-      routeId: 'school-ops-reference-campus-map',
-      to: '/external/school-ops-reference/map',
+      routeId: 'ops-reference-campus-map',
+      to: '/external/ops-reference/map',
       icon: 'map',
       surfaces: ['sidebar', 'mobile-more', 'command'],
       personas: allPersonas,
-      requiredCapabilities: ['school-ops.map.read'],
-      requiredApiScopes: schoolOpsApiScopes,
+      requiredCapabilities: ['ops.map.read'],
+      requiredApiScopes: opsReferenceApiScopes,
     },
     {
-      id: 'school-ops-reference-data-sources-nav',
+      id: 'ops-reference-data-sources-nav',
       title: 'Data Sources',
-      routeId: 'school-ops-reference-data-sources',
-      to: '/external/school-ops-reference',
+      routeId: 'ops-reference-data-sources',
+      to: '/external/ops-reference',
       icon: 'boxes',
       surfaces: ['sidebar', 'mobile-more', 'command'],
       personas: allPersonas,
-      requiredCapabilities: ['school-ops.source.read'],
-      requiredApiScopes: schoolOpsApiScopes,
+      requiredCapabilities: ['ops.source.read'],
+      requiredApiScopes: opsReferenceApiScopes,
     },
   ],
   commands: [
     {
-      id: 'school-ops-reference-open-tickets',
-      title: 'Open school ops queue',
-      routeId: 'school-ops-reference-tickets',
+      id: 'ops-reference-open-tickets',
+      title: 'Open ops queue',
+      routeId: 'ops-reference-tickets',
       guard: {
         personas: allPersonas,
-        requiredCapabilities: ['school-ops.ticket.read'],
-        requiredApiScopes: schoolOpsApiScopes,
+        requiredCapabilities: ['ops.ticket.read'],
+        requiredApiScopes: opsReferenceApiScopes,
         privacyClasses: ['internal', 'restricted'],
       },
-      permissionGrantIds: ['school-ops.tickets.read'],
-      requiredCapabilities: ['school-ops.ticket.read'],
-      requiredApiScopes: schoolOpsApiScopes,
+      permissionGrantIds: ['ops.tickets.read'],
+      requiredCapabilities: ['ops.ticket.read'],
+      requiredApiScopes: opsReferenceApiScopes,
       shortcut: 'G T',
     },
   ],
   governance: {
     identity: {
-      publisher: 'school-ops-provider',
+      publisher: 'ops-reference-provider',
       attestation: {
         kind: 'source-review',
-        subject: 'packages/school-ops-portarium-extension/src',
+        subject: 'packages/ops-reference-extension/src',
         digestSha256: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
         issuedAtIso: '2026-05-04T00:00:00.000Z',
       },
     },
     versionPin: {
-      packageName: '@school-ops/portarium-extension',
+      packageName: '@example/ops-reference-extension',
       version: '0.1.0',
-      sourceRef: 'packages/school-ops-portarium-extension',
+      sourceRef: 'packages/ops-reference-extension',
     },
     permissions: [
       {
-        id: 'school-ops.tickets.read',
+        id: 'ops.tickets.read',
         kind: 'data-query',
-        title: 'Read school operations tickets',
-        requiredCapabilities: ['school-ops.ticket.read'],
-        requiredApiScopes: schoolOpsApiScopes,
+        title: 'Read operations tickets',
+        requiredCapabilities: ['ops.ticket.read'],
+        requiredApiScopes: opsReferenceApiScopes,
         policySemantics: 'authorization-required',
         evidenceSemantics: 'read-audited-by-control-plane',
-        auditEventTypes: ['cockpit.extension.school-ops.tickets.read'],
+        auditEventTypes: ['cockpit.extension.ops.tickets.read'],
       },
       {
-        id: 'school-ops.map.read',
+        id: 'ops.map.read',
         kind: 'data-query',
-        title: 'Read school operations map context',
-        requiredCapabilities: ['school-ops.map.read'],
-        requiredApiScopes: schoolOpsApiScopes,
+        title: 'Read operations map context',
+        requiredCapabilities: ['ops.map.read'],
+        requiredApiScopes: opsReferenceApiScopes,
         policySemantics: 'authorization-required',
         evidenceSemantics: 'read-audited-by-control-plane',
-        auditEventTypes: ['cockpit.extension.school-ops.map.read'],
+        auditEventTypes: ['cockpit.extension.ops.map.read'],
       },
       {
-        id: 'school-ops.sources.read',
+        id: 'ops.sources.read',
         kind: 'data-query',
-        title: 'Read school operations source catalogue',
-        requiredCapabilities: ['school-ops.source.read'],
-        requiredApiScopes: schoolOpsApiScopes,
+        title: 'Read operations source catalogue',
+        requiredCapabilities: ['ops.source.read'],
+        requiredApiScopes: opsReferenceApiScopes,
         policySemantics: 'authorization-required',
         evidenceSemantics: 'read-audited-by-control-plane',
-        auditEventTypes: ['cockpit.extension.school-ops.sources.read'],
+        auditEventTypes: ['cockpit.extension.ops.sources.read'],
       },
     ],
     lifecycle: {
@@ -200,11 +201,11 @@ const schoolOpsReferenceExtension = {
   },
 } as const satisfies CockpitExtensionManifest;
 
-const schoolOpsReferenceRouteLoaders = createRouteLoaders(schoolOpsReferenceExtension);
+const opsReferenceRouteLoaders = createRouteLoaders(opsReferenceExtension);
 
-const schoolOpsReferenceAccessContext = {
-  availableCapabilities: schoolOpsCapabilities,
-  availableApiScopes: schoolOpsApiScopes,
+const opsReferenceAccessContext = {
+  availableCapabilities: opsReferenceCapabilities,
+  availableApiScopes: opsReferenceApiScopes,
   availablePrivacyClasses: ['internal', 'restricted'],
   availablePersonas: ['Operator'],
 } as const;
@@ -240,18 +241,18 @@ function projectWith({
   });
 }
 
-function projectSchoolOpsWith() {
+function projectOpsReferenceWith() {
   const registry = resolveCockpitExtensionRegistry({
-    installedExtensions: [schoolOpsReferenceExtension],
-    activePackIds: ['reference.school-ops'],
-    ...schoolOpsReferenceAccessContext,
-    routeLoaders: schoolOpsReferenceRouteLoaders,
+    installedExtensions: [opsReferenceExtension],
+    activePackIds: ['reference.ops'],
+    ...opsReferenceAccessContext,
+    routeLoaders: opsReferenceRouteLoaders,
   });
 
   return projectCockpitShellNavigation({
     registry,
     persona: 'Operator',
-    accessContext: schoolOpsReferenceAccessContext,
+    accessContext: opsReferenceAccessContext,
     roboticsEnabled: false,
   });
 }
@@ -385,6 +386,7 @@ describe('projectCockpitShellNavigation', () => {
       mobilePrimaryItemIds: ['beta-one', 'alpha-one'],
       mobileMoreSectionIds: new Set(['gamma', 'alpha']),
       commandExcludedItemIds: new Set(['alpha-two']),
+      globalActionExcludedIds: new Set(),
       sidebarExtensionInsertAfterSectionId: 'beta',
     } satisfies CockpitShellProfile;
     const registry = resolveCockpitExtensionRegistry({
@@ -446,6 +448,8 @@ describe('projectCockpitShellNavigation', () => {
                 mobilePrimary: true,
               },
             ],
+            mobilePrimaryCoreItemIds: ['dashboard', 'runs'],
+            globalActions: [{ actionId: 'create-run', visibility: 'hidden' }],
             sidebarExtensionInsertAfterSectionId: 'workspace',
           },
         ],
@@ -467,6 +471,8 @@ describe('projectCockpitShellNavigation', () => {
     });
 
     expect(shellProfile.defaultRoutePath).toBe('/external/example-reference/overview');
+    expect(isCockpitShellGlobalActionVisible(shellProfile, 'create-run')).toBe(false);
+    expect(isCockpitShellGlobalActionVisible(shellProfile, 'open-command-palette')).toBe(true);
     expect(projection.sidebarSections.map((section) => section.label)).toEqual([
       'Explore',
       'Workspace',
@@ -481,6 +487,11 @@ describe('projectCockpitShellNavigation', () => {
     expect(projection.mobilePrimaryItems.map((item) => item.label)).toContain(
       'Reference Overview',
     );
+    expect(projection.mobilePrimaryItems.map((item) => item.label)).toEqual([
+      'Dashboard',
+      'Runs',
+      'Reference Overview',
+    ]);
   });
 
   it('falls back to the default shell profile when a contribution references unknown core ids', () => {
@@ -525,33 +536,33 @@ describe('projectCockpitShellNavigation', () => {
     ]);
   });
 
-  it('places a school ops extension near work with a discoverable section label', () => {
-    const projection = projectSchoolOpsWith();
+  it('places an ops extension near work with a discoverable section label', () => {
+    const projection = projectOpsReferenceWith();
     const sidebarLabels = projection.sidebarSections.map((section) => section.label);
 
     expect(sidebarLabels).toEqual([
       'Workspace',
       'Work',
-      'School Ops Reference',
+      'Ops Reference',
       'Engineering',
       'Workforce',
       'Config',
       'Explore',
     ]);
-    expect(sidebarLabels.indexOf('School Ops Reference')).toBeLessThan(
+    expect(sidebarLabels.indexOf('Ops Reference')).toBeLessThan(
       sidebarLabels.indexOf('Engineering'),
     );
     expect(
       projection.sidebarSections
-        .find((section) => section.id === 'extension:reference.school-ops:sidebar')
+        .find((section) => section.id === 'extension:reference.ops:sidebar')
         ?.items?.map((item) => [item.label, item.to]),
     ).toEqual([
-      ['Ticket Queue', '/external/school-ops-reference/tickets'],
-      ['Campus Map', '/external/school-ops-reference/map'],
-      ['Data Sources', '/external/school-ops-reference'],
+      ['Ticket Queue', '/external/ops-reference/tickets'],
+      ['Campus Map', '/external/ops-reference/map'],
+      ['Data Sources', '/external/ops-reference'],
     ]);
     expect(projection.commandTargets.map((target) => target.label)).toContain(
-      'Open school ops queue',
+      'Open ops queue',
     );
   });
 

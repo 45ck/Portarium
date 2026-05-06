@@ -345,6 +345,7 @@ function buildLocalReferenceExtension() {
         shortcut: 'G L',
       },
     ],
+    shellContributions: undefined,
     governance: {
       ...EXAMPLE_REFERENCE_EXTENSION.governance,
       versionPin: {

@@ -720,6 +720,36 @@ function validateShellContributions(
       validateOptionalOrder(extension.id, mode.modeId, item.order, addProblem);
     }
 
+    for (const itemId of mode.mobilePrimaryCoreItemIds ?? []) {
+      if (typeof itemId !== 'string' || itemId.trim().length === 0) {
+        addProblem({
+          code: 'invalid-shell-contribution',
+          message: `Shell mode "${mode.modeId}" mobile primary core item ids must be non-empty strings.`,
+          extensionId: extension.id,
+          itemId: mode.modeId,
+        });
+      }
+    }
+
+    for (const action of mode.globalActions ?? []) {
+      if (typeof action.actionId !== 'string' || action.actionId.trim().length === 0) {
+        addProblem({
+          code: 'invalid-shell-contribution',
+          message: `Shell mode "${mode.modeId}" global action ids must be non-empty strings.`,
+          extensionId: extension.id,
+          itemId: mode.modeId,
+        });
+      }
+      if (action.visibility && action.visibility !== 'visible' && action.visibility !== 'hidden') {
+        addProblem({
+          code: 'invalid-shell-contribution',
+          message: `Shell mode "${mode.modeId}" uses unsupported global action visibility "${action.visibility}".`,
+          extensionId: extension.id,
+          itemId: mode.modeId,
+        });
+      }
+    }
+
     validateOptionalOrder(extension.id, mode.modeId, mode.priority, addProblem);
   }
 }

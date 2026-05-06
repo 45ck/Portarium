@@ -147,6 +147,9 @@ describe('settings pack runtime integration', () => {
   });
 
   it('renders pack template and applies safe theme tokens', async () => {
+    vi.stubEnv('DEV', true);
+    vi.stubEnv('VITE_DEMO_MODE', 'true');
+    vi.stubEnv('VITE_PORTARIUM_ENABLE_MSW', 'true');
     vi.stubGlobal('fetch', createFetchMock(DEMO_PACK_UI_RUNTIME));
 
     await renderSettingsRoute();
@@ -159,6 +162,9 @@ describe('settings pack runtime integration', () => {
   });
 
   it('falls back to core template when pack template is missing', async () => {
+    vi.stubEnv('DEV', true);
+    vi.stubEnv('VITE_DEMO_MODE', 'true');
+    vi.stubEnv('VITE_PORTARIUM_ENABLE_MSW', 'true');
     const fallbackRuntime = {
       ...DEFAULT_PACK_UI_RUNTIME,
       coreTemplates: [CORE_CHANGE_REQUEST_TEMPLATE],

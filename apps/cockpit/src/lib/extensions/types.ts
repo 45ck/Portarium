@@ -219,6 +219,11 @@ export interface CockpitShellContributionCoreItem {
   order?: number;
 }
 
+export interface CockpitShellContributionGlobalAction {
+  actionId: string;
+  visibility?: Extract<CockpitShellContributionVisibility, 'visible' | 'hidden'>;
+}
+
 export interface CockpitShellContributionExtensionNavItem {
   navItemId: string;
   order?: number;
@@ -231,6 +236,8 @@ export interface CockpitShellModeContribution {
   defaultRoute?: CockpitShellContributionDefaultRoute;
   coreSections?: readonly CockpitShellContributionCoreSection[];
   coreItems?: readonly CockpitShellContributionCoreItem[];
+  mobilePrimaryCoreItemIds?: readonly string[];
+  globalActions?: readonly CockpitShellContributionGlobalAction[];
   extensionNav?: readonly CockpitShellContributionExtensionNavItem[];
   sidebarExtensionInsertAfterSectionId?: string;
 }

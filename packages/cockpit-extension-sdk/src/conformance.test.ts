@@ -72,6 +72,18 @@ const manifest = {
       shortcut: 'G E',
     },
   ],
+  shellContributions: {
+    modes: [
+      {
+        modeId: 'operator',
+        priority: 10,
+        defaultRoute: { routeId: 'example-overview' },
+        mobilePrimaryCoreItemIds: ['dashboard', 'approvals'],
+        extensionNav: [{ navItemId: 'example-overview-nav', order: 0, mobilePrimary: true }],
+        globalActions: [{ actionId: 'action:new-run', visibility: 'hidden' }],
+      },
+    ],
+  },
   widgets: [
     {
       id: 'example-summary-widget',
@@ -198,6 +210,17 @@ describe('cockpit extension SDK conformance', () => {
             to: '/external/example/detail/$itemId',
           },
         ],
+        shellContributions: {
+          modes: [
+            {
+              modeId: 'operator',
+              defaultRoute: { routeId: 'missing-route' },
+              extensionNav: [{ navItemId: 'missing-nav', order: 0 }],
+              mobilePrimaryCoreItemIds: [''],
+              globalActions: [{ actionId: '', visibility: 'advanced' as never }],
+            },
+          ],
+        },
       },
       packageRef: {
         packageName: '@example/other-extension',
@@ -219,6 +242,7 @@ describe('cockpit extension SDK conformance', () => {
         'invalid-direct-nav-target',
         'governance-package-ref-mismatch',
         'install-pack-ref-mismatch',
+        'invalid-shell-contribution',
       ]),
     );
   });

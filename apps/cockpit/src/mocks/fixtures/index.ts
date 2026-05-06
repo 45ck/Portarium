@@ -45,6 +45,31 @@ export const DATASETS: DatasetEntry[] = [
       }),
   },
   {
+    id: 'platform-showcase',
+    label: 'Portarium Platform Showcase',
+    description: 'Generic control-plane snapshot for operator, approval, evidence, and adapter flows',
+    load: () =>
+      import('./platform-showcase').then((m) => ({
+        WORK_ITEMS: m.WORK_ITEMS,
+        RUNS: m.RUNS,
+        APPROVALS: m.APPROVALS,
+        PLANS: m.PLANS,
+        CREDENTIAL_GRANTS: m.CREDENTIAL_GRANTS,
+        EVIDENCE: m.EVIDENCE,
+        WORKFORCE_MEMBERS: m.WORKFORCE_MEMBERS,
+        WORKFORCE_QUEUES: m.WORKFORCE_QUEUES,
+        AGENTS: m.AGENTS,
+        MACHINES: m.MACHINES,
+        ADAPTERS: m.ADAPTERS,
+        ROBOTS: m.ROBOTS,
+        MISSIONS: m.MISSIONS,
+        SAFETY_CONSTRAINTS: m.SAFETY_CONSTRAINTS,
+        APPROVAL_THRESHOLDS: m.APPROVAL_THRESHOLDS,
+        ESTOP_AUDIT_LOG: m.ESTOP_AUDIT_LOG,
+        OBSERVABILITY_DATA: m.OBSERVABILITY_DATA,
+      })),
+  },
+  {
     id: 'demo',
     label: 'Portarium Demo',
     description: 'Small generic demo (6 work items, 7 runs)',
@@ -171,4 +196,4 @@ export const DATASETS: DatasetEntry[] = [
   },
 ];
 
-export const DEFAULT_DATASET_ID: DatasetId = 'demo';
+export const DEFAULT_DATASET_ID: DatasetId = 'platform-showcase';

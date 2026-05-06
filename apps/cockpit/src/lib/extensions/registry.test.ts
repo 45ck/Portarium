@@ -82,6 +82,7 @@ function cloneRenamedExtension(
         shortcut: 'G Y',
       },
     ],
+    shellContributions: undefined,
     ...overrides,
   });
 }
@@ -124,6 +125,8 @@ describe('cockpit extension registry', () => {
                 mobilePrimary: true,
               },
             ],
+            mobilePrimaryCoreItemIds: ['dashboard', 'approvals'],
+            globalActions: [{ actionId: 'action:new-run', visibility: 'hidden' }],
           },
         ],
       },
@@ -147,6 +150,8 @@ describe('cockpit extension registry', () => {
             modeId: 'operator',
             defaultRoute: { routeId: 'missing-route' },
             extensionNav: [{ navItemId: 'missing-nav', order: 0 }],
+            mobilePrimaryCoreItemIds: [''],
+            globalActions: [{ actionId: '', visibility: 'advanced' as never }],
           },
         ],
       },

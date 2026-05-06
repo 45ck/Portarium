@@ -23,6 +23,7 @@ describe('OfflineSyncBanner', () => {
 
   it('suppresses cached-data warnings in explicit demo runtime', () => {
     vi.stubEnv('DEV', true);
+    vi.stubEnv('VITE_DEMO_MODE', 'true');
     vi.stubEnv('VITE_PORTARIUM_ENABLE_MSW', 'true');
 
     const { container } = render(<OfflineSyncBanner isOffline={false} isStaleData />);

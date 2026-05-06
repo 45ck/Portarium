@@ -346,14 +346,14 @@ describe('ControlPlaneClient', () => {
     });
 
     await client.proposeAgentAction('ws-1', {
-      agentId: 'school-ops-reference-snapshot-agent',
-      actionKind: 'reference.school_ops.mock_automation.review',
-      toolName: 'school-ops-reference.ticket-triage-suggestion',
+      agentId: 'ops-reference-snapshot-agent',
+      actionKind: 'reference.ops.mock_automation.review',
+      toolName: 'ops-reference.ticket-triage-suggestion',
       executionTier: 'HumanApprove',
-      policyIds: ['school-ops-reference.snapshot-review.policy'],
+      policyIds: ['ops-reference.snapshot-review.policy'],
       rationale: 'Create a review-only operator suggestion from static snapshot evidence.',
       parameters: { ticketId: 'FS-1' },
-      idempotencyKey: 'school-ops-reference:ticket-triage:FS-1',
+      idempotencyKey: 'ops-reference:ticket-triage:FS-1',
     });
 
     const [url, init] = fetchImpl.mock.calls[0] as unknown as [string, RequestInit];
@@ -364,14 +364,14 @@ describe('ControlPlaneClient', () => {
     expect(headers.get('X-Portarium-Request')).toBe('1');
     expect(init.credentials).toBe('omit');
     expect(JSON.parse(String(init.body))).toEqual({
-      agentId: 'school-ops-reference-snapshot-agent',
-      actionKind: 'reference.school_ops.mock_automation.review',
-      toolName: 'school-ops-reference.ticket-triage-suggestion',
+      agentId: 'ops-reference-snapshot-agent',
+      actionKind: 'reference.ops.mock_automation.review',
+      toolName: 'ops-reference.ticket-triage-suggestion',
       executionTier: 'HumanApprove',
-      policyIds: ['school-ops-reference.snapshot-review.policy'],
+      policyIds: ['ops-reference.snapshot-review.policy'],
       rationale: 'Create a review-only operator suggestion from static snapshot evidence.',
       parameters: { ticketId: 'FS-1' },
-      idempotencyKey: 'school-ops-reference:ticket-triage:FS-1',
+      idempotencyKey: 'ops-reference:ticket-triage:FS-1',
     });
   });
 

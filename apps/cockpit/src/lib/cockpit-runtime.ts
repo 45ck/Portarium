@@ -2,6 +2,7 @@ export type CockpitRuntimeMode = 'demo' | 'dev-live' | 'live';
 
 export type DatasetId =
   | 'live'
+  | 'platform-showcase'
   | 'demo'
   | 'openclaw-demo'
   | 'growth-studio'
@@ -10,10 +11,11 @@ export type DatasetId =
 
 export const DATASET_STORAGE_KEY = 'portarium-dataset';
 
-export const DEFAULT_DEMO_DATASET_ID: DatasetId = 'meridian-demo';
+export const DEFAULT_DEMO_DATASET_ID: DatasetId = 'platform-showcase';
 
 export const DATASET_WORKSPACE_MAP: Record<DatasetId, string> = {
   live: import.meta.env.VITE_PORTARIUM_DEFAULT_WORKSPACE_ID ?? 'ws-local-dev',
+  'platform-showcase': 'ws-platform-showcase',
   demo: 'ws-demo',
   'openclaw-demo': 'ws-demo',
   'growth-studio': 'ws-growth-studio',
@@ -28,6 +30,7 @@ interface CockpitEnvLike {
   readonly VITE_DEMO_MODE?: string;
   readonly VITE_PORTARIUM_ENABLE_MSW?: string;
   readonly VITE_PORTARIUM_MOCK_DATASET?: string;
+  readonly VITE_PORTARIUM_SHOW_EXTENDED_DEMOS?: string;
 }
 
 interface StorageLike {
@@ -62,7 +65,7 @@ export function isDemoDatasetId(value: DatasetId): boolean {
 
 export function shouldEnableCockpitMocks(env: CockpitEnvLike = import.meta.env): boolean {
   if (env.DEV !== true) return false;
-  if (!cockpitFlagEnabled(env.VITE_DEMO_MODE, true)) return false;
+  if (!cockpitFlagEnabled(env.VITE_DEMO_MODE, false)) return false;
   return cockpitFlagEnabled(env.VITE_PORTARIUM_ENABLE_MSW, true);
 }
 
@@ -77,6 +80,12 @@ export function resolveCockpitRuntime(env: CockpitEnvLike = import.meta.env): Co
     usesLiveTenantData: !demoMode,
     allowDemoControls: demoMode,
   };
+}
+
+export function shouldShowExtendedDemoDatasets(
+  env: CockpitEnvLike = import.meta.env,
+): boolean {
+  return cockpitFlagEnabled(env.VITE_PORTARIUM_SHOW_EXTENDED_DEMOS, false);
 }
 
 export function resolveStoredDataset(

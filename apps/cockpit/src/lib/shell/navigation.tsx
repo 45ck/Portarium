@@ -74,6 +74,7 @@ export interface CockpitShellProfile {
   mobilePrimaryItemIds: readonly string[];
   mobileMoreSectionIds: ReadonlySet<string>;
   commandExcludedItemIds: ReadonlySet<string>;
+  globalActionExcludedIds: ReadonlySet<string>;
   sidebarExtensionInsertAfterSectionId: string;
   extensionNavItemIds?: readonly string[];
   extensionMobilePrimaryNavItemIds?: readonly string[];
@@ -396,6 +397,7 @@ export const PORTARIUM_COCKPIT_SHELL_PROFILE: CockpitShellProfile = {
   mobilePrimaryItemIds: MOBILE_PRIMARY_ITEM_IDS,
   mobileMoreSectionIds: MOBILE_MORE_SECTION_IDS,
   commandExcludedItemIds: COMMAND_EXCLUDED_ITEM_IDS,
+  globalActionExcludedIds: new Set(),
   sidebarExtensionInsertAfterSectionId: SIDEBAR_EXTENSION_INSERT_AFTER_SECTION_ID,
 };
 
@@ -425,6 +427,12 @@ export function resolveCockpitShellProfile(
   return {
     ...baseProfile,
     coreSections: projectProfileCoreSections(baseProfile.coreSections, contribution),
+    mobilePrimaryItemIds:
+      contribution.mobilePrimaryCoreItemIds ?? baseProfile.mobilePrimaryItemIds,
+    globalActionExcludedIds: projectGlobalActionExclusions(
+      baseProfile.globalActionExcludedIds,
+      contribution,
+    ),
     sidebarExtensionInsertAfterSectionId:
       contribution.sidebarExtensionInsertAfterSectionId ??
       baseProfile.sidebarExtensionInsertAfterSectionId,
@@ -540,6 +548,22 @@ export function projectCockpitGChordMap(
     }
     return shortcuts;
   }, {});
+}
+
+export function isCockpitShellGlobalActionVisible(
+  shellProfile: CockpitShellProfile,
+  actionId: string,
+): boolean {
+  return !shellProfile.globalActionExcludedIds.has(actionId);
+}
+
+export function isCockpitShellCoreItemVisible(
+  shellProfile: CockpitShellProfile,
+  itemId: string,
+): boolean {
+  return shellProfile.coreSections.some((section) =>
+    (section.items ?? []).some((item) => item.id === itemId),
+  );
 }
 
 function isConcretePathItem(item: { to: string }): boolean {
@@ -739,6 +763,10 @@ function isValidShellContribution(
     return false;
   }
 
+  if (contribution.mobilePrimaryCoreItemIds?.some((itemId) => !itemIds.has(itemId))) {
+    return false;
+  }
+
   if (contribution.extensionNav?.some((item) => !navItemIds.has(item.navItemId))) {
     return false;
   }
@@ -794,6 +822,23 @@ function readContributionOrder(
   }
 
   return preference?.visibility === 'advanced' ? fallbackIndex + 1000 : fallbackIndex;
+}
+
+function projectGlobalActionExclusions(
+  baseExclusions: ReadonlySet<string>,
+  contribution: CockpitShellModeContribution,
+): ReadonlySet<string> {
+  const exclusions = new Set(baseExclusions);
+
+  for (const action of contribution.globalActions ?? []) {
+    if (action.visibility === 'visible') {
+      exclusions.delete(action.actionId);
+    } else if (action.visibility === 'hidden') {
+      exclusions.add(action.actionId);
+    }
+  }
+
+  return exclusions;
 }
 
 function extensionIcon(icon: CockpitExtensionIcon) {

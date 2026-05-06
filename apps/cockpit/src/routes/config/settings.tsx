@@ -11,14 +11,26 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useUIStore } from '@/stores/ui-store';
 import { usePackUiRuntime } from '@/hooks/queries/use-pack-ui-runtime';
 import { applyThemeTokens, resolveTemplate } from '@/lib/packs/pack-runtime';
-import { resolveCockpitRuntime, type DatasetId } from '@/lib/cockpit-runtime';
+import {
+  resolveCockpitRuntime,
+  shouldShowExtendedDemoDatasets,
+  type DatasetId,
+} from '@/lib/cockpit-runtime';
 
-const DATASET_OPTIONS: { id: DatasetId; label: string; description: string }[] = [
+const CORE_DATASET_OPTIONS: { id: DatasetId; label: string; description: string }[] = [
+  {
+    id: 'platform-showcase',
+    label: 'Portarium Platform Showcase',
+    description: 'Generic control-plane snapshot for operator, approval, evidence, and adapter flows',
+  },
   {
     id: 'demo',
     label: 'Portarium Demo',
     description: 'Small generic dataset (6 work items, 7 runs)',
   },
+];
+
+const EXTENDED_DATASET_OPTIONS: { id: DatasetId; label: string; description: string }[] = [
   {
     id: 'openclaw-demo',
     label: 'OpenClaw Approval Demo',
@@ -51,6 +63,7 @@ function getWorkspaceDisplayName({
   usesLiveTenantData: boolean;
 }): string {
   if (usesLiveTenantData) return wsId === 'ws-meridian' ? 'Meridian Workspace' : 'Live Workspace';
+  if (activeDataset === 'platform-showcase') return 'Portarium Platform Showcase';
   if (wsId === 'ws-meridian') return 'Meridian Workspace';
   if (activeDataset === 'growth-studio') return 'Growth Studio Workspace';
   if (activeDataset === 'openclaw-demo') return 'OpenClaw Demo Workspace';
@@ -62,6 +75,9 @@ function SettingsPage() {
   const activeDataset = useUIStore((s) => s.activeDataset);
   const setActiveDataset = useUIStore((s) => s.setActiveDataset);
   const runtime = resolveCockpitRuntime();
+  const datasetOptions = shouldShowExtendedDemoDatasets()
+    ? [...CORE_DATASET_OPTIONS, ...EXTENDED_DATASET_OPTIONS]
+    : CORE_DATASET_OPTIONS;
   const { data: packRuntime } = usePackUiRuntime(wsId, {
     enabled: runtime.allowDemoControls,
   });
@@ -154,7 +170,7 @@ function SettingsPage() {
               onValueChange={(v) => setActiveDataset(v as DatasetId)}
               className="gap-3"
             >
-              {DATASET_OPTIONS.map((opt) => (
+              {datasetOptions.map((opt) => (
                 <label
                   key={opt.id}
                   htmlFor={`ds-${opt.id}`}

@@ -84,7 +84,7 @@ export const DEFAULT_COCKPIT_EXTENSION_ACCESS_CONTEXT = {
   'availableCapabilities' | 'availableApiScopes' | 'availablePrivacyClasses'
 >;
 
-const INSTALLED_COCKPIT_ROUTE_HOST_ACCESS_CONTEXT = {
+export const INSTALLED_COCKPIT_ROUTE_HOST_ACCESS_CONTEXT = {
   availableCapabilities: collectInstalledRequirements(
     'requiredCapabilities',
     INSTALLED_COCKPIT_ROUTE_HOST_PACK_IDS,

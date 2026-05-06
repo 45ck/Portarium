@@ -31,7 +31,11 @@ import { KeyboardCheatsheet } from '@/components/cockpit/keyboard-cheatsheet';
 import { RuntimeStatusStrip } from '@/components/cockpit/runtime-status-strip';
 import { StartRunDialog } from '@/components/cockpit/start-run-dialog';
 import { IntentPlanSheet } from '@/components/cockpit/intent-plan-sheet';
-import { projectCockpitShellNavigation, resolveCockpitShellProfile } from '@/lib/shell/navigation';
+import {
+  isCockpitShellGlobalActionVisible,
+  projectCockpitShellNavigation,
+  resolveCockpitShellProfile,
+} from '@/lib/shell/navigation';
 import { shouldEnableRoboticsDemo } from '@/lib/robotics-runtime';
 import { Toaster } from 'sonner';
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
@@ -144,18 +148,25 @@ function RootShell() {
       persona: activePersona,
       enabled: apiAccessReady,
     });
+  const shellProfile = resolveCockpitShellProfile(
+    extensionRegistry,
+    import.meta.env.VITE_COCKPIT_SHELL_MODE,
+  );
   const shellProjection = projectCockpitShellNavigation({
     registry: extensionRegistry,
     persona: activePersona,
     accessContext: extensionServerAccess.accessContext,
     roboticsEnabled: shouldEnableRoboticsDemo(),
     liveState: { pendingApprovalCount },
-    shellProfile: resolveCockpitShellProfile(
-      extensionRegistry,
-      import.meta.env.VITE_COCKPIT_SHELL_MODE,
-    ),
+    shellProfile,
   });
   const navSections = shellProjection.sidebarSections;
+  const canCreateRun =
+    isCockpitShellGlobalActionVisible(shellProfile, 'create-run') &&
+    isCockpitShellGlobalActionVisible(shellProfile, 'action:new-run');
+  const canPlanIntent =
+    isCockpitShellGlobalActionVisible(shellProfile, 'plan-intent') &&
+    isCockpitShellGlobalActionVisible(shellProfile, 'action:plan-new-beads');
 
   // ── Auth initialization ────────────────────────────────────────────────────
 
@@ -255,6 +266,18 @@ function RootShell() {
       setActiveWorkspaceId(workspaceOptions[0]!.workspaceId);
     }
   }, [workspaceOptions, activeWorkspaceId, setActiveWorkspaceId]);
+
+  useEffect(() => {
+    if (!canCreateRun && startRunOpen) setStartRunOpen(false);
+    if (!canPlanIntent && intentPlannerOpen) setIntentPlannerOpen(false);
+  }, [
+    canCreateRun,
+    canPlanIntent,
+    intentPlannerOpen,
+    setIntentPlannerOpen,
+    setStartRunOpen,
+    startRunOpen,
+  ]);
 
   // Show loading spinner while auth state is being resolved.
   if (authStatus === 'initializing') {
@@ -454,9 +477,11 @@ function RootShell() {
         )}
 
         {/* Global overlays */}
-        <StartRunDialog open={startRunOpen} onOpenChange={setStartRunOpen} />
-        <IntentPlanSheet open={intentPlannerOpen} onOpenChange={setIntentPlannerOpen} />
-        <CommandPalette />
+        {canCreateRun && <StartRunDialog open={startRunOpen} onOpenChange={setStartRunOpen} />}
+        {canPlanIntent && (
+          <IntentPlanSheet open={intentPlannerOpen} onOpenChange={setIntentPlannerOpen} />
+        )}
+        <CommandPalette hiddenGlobalActionIds={shellProfile.globalActionExcludedIds} />
         <KeyboardCheatsheet />
         <Toaster position="bottom-right" />
       </TooltipProvider>

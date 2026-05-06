@@ -4,6 +4,7 @@ import {
   resolveCockpitRuntime,
   resolveStoredDataset,
   shouldEnableCockpitMocks,
+  shouldShowExtendedDemoDatasets,
   workspaceIdForDataset,
 } from '@/lib/cockpit-runtime';
 
@@ -25,8 +26,19 @@ function storageWithDataset(dataset: string): Storage {
 }
 
 describe('cockpit runtime mode', () => {
-  it('treats dev MSW as explicit demo runtime by default', () => {
+  it('treats bare dev as dev-live by default', () => {
     expect(resolveCockpitRuntime({ DEV: true })).toMatchObject({
+      runtimeMode: 'dev-live',
+      mockServiceWorkerEnabled: false,
+      usesLiveTenantData: true,
+      allowDemoControls: false,
+    });
+  });
+
+  it('requires explicit demo mode before enabling MSW fixtures', () => {
+    expect(
+      resolveCockpitRuntime({ DEV: true, VITE_DEMO_MODE: 'true' }),
+    ).toMatchObject({
       runtimeMode: 'demo',
       mockServiceWorkerEnabled: true,
       usesLiveTenantData: false,
@@ -88,16 +100,35 @@ describe('cockpit runtime mode', () => {
   });
 
   it('ignores the misleading mock live dataset in demo runtime', () => {
-    expect(resolveStoredDataset({ DEV: true }, storageWithDataset('live'))).toBe('meridian-demo');
+    expect(
+      resolveStoredDataset({ DEV: true, VITE_DEMO_MODE: 'true' }, storageWithDataset('live')),
+    ).toBe('platform-showcase');
+  });
+
+  it('uses the Platform Showcase fixture by default and maps it to its workspace', () => {
+    expect(resolveStoredDataset({ DEV: true, VITE_DEMO_MODE: 'true' })).toBe('platform-showcase');
+    expect(workspaceIdForDataset('platform-showcase')).toBe('ws-platform-showcase');
   });
 
   it('allows the Growth Studio fixture dataset from env and maps it to its workspace', () => {
     expect(
       resolveStoredDataset({
         DEV: true,
+        VITE_DEMO_MODE: 'true',
         VITE_PORTARIUM_MOCK_DATASET: 'growth-studio',
       }),
     ).toBe('growth-studio');
     expect(workspaceIdForDataset('growth-studio')).toBe('ws-growth-studio');
+  });
+
+  it('hides extended showcase datasets unless explicitly enabled', () => {
+    expect(shouldShowExtendedDemoDatasets({ DEV: true, VITE_DEMO_MODE: 'true' })).toBe(false);
+    expect(
+      shouldShowExtendedDemoDatasets({
+        DEV: true,
+        VITE_DEMO_MODE: 'true',
+        VITE_PORTARIUM_SHOW_EXTENDED_DEMOS: 'true',
+      }),
+    ).toBe(true);
   });
 });

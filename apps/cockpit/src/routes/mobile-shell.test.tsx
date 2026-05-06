@@ -187,6 +187,9 @@ beforeAll(() => {
 });
 
 beforeEach(() => {
+  vi.stubEnv('DEV', true);
+  vi.stubEnv('VITE_DEMO_MODE', 'true');
+  vi.stubEnv('VITE_PORTARIUM_ENABLE_MSW', 'true');
   extensionContext = {
     activePackIds: ['example.reference'],
     availablePrivacyClasses: ['internal', 'restricted'],
@@ -212,6 +215,7 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  vi.unstubAllEnvs();
 });
 
 afterAll(() => {

@@ -71,6 +71,30 @@ export const EXAMPLE_REFERENCE_EXTENSION = {
       shortcut: 'G X',
     },
   ],
+  shellContributions: {
+    modes: [
+      {
+        modeId: 'reference-operator',
+        priority: 10,
+        defaultRoute: { routeId: 'example-reference-overview' },
+        mobilePrimaryCoreItemIds: [],
+        globalActions: [
+          { actionId: 'action:new-run', visibility: 'hidden' },
+          { actionId: 'action:plan-new-beads', visibility: 'hidden' },
+          { actionId: 'action:register-agent', visibility: 'hidden' },
+          { actionId: 'setting:switch-dataset', visibility: 'hidden' },
+        ],
+        extensionNav: [
+          {
+            navItemId: 'example-reference-overview-nav',
+            order: 0,
+            mobilePrimary: true,
+          },
+        ],
+        sidebarExtensionInsertAfterSectionId: 'workspace',
+      },
+    ],
+  },
   governance: {
     identity: {
       publisher: 'portarium',

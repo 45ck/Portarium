@@ -13,7 +13,11 @@ import { useTheme } from '@/hooks/use-theme';
 import { useUIStore } from '@/stores/ui-store';
 import { router } from '@/router';
 import { useCockpitExtensionRegistry } from '@/hooks/use-cockpit-extension-registry';
-import { projectCockpitShellNavigation, resolveCockpitShellProfile } from '@/lib/shell/navigation';
+import {
+  isCockpitShellGlobalActionVisible,
+  projectCockpitShellNavigation,
+  resolveCockpitShellProfile,
+} from '@/lib/shell/navigation';
 import { shouldEnableRoboticsDemo } from '@/lib/robotics-runtime';
 import { Play, UserPlus, Palette, PanelLeft, Database, GitBranchPlus } from 'lucide-react';
 
@@ -22,10 +26,15 @@ interface CommandItemDef {
   label: string;
   icon: ReactNode;
   shortcut?: string;
+  globalActionIds?: readonly string[];
   onSelect: () => void;
 }
 
-function CommandPalette() {
+interface CommandPaletteProps {
+  hiddenGlobalActionIds?: ReadonlySet<string>;
+}
+
+function CommandPalette({ hiddenGlobalActionIds }: CommandPaletteProps) {
   const { commandPaletteOpen, setCommandPaletteOpen, activePersona, activeWorkspaceId } =
     useUIStore();
   const { theme, setTheme, themes } = useTheme();
@@ -34,16 +43,26 @@ function CommandPalette() {
       workspaceId: activeWorkspaceId,
       persona: activePersona,
     });
+  const shellProfile = resolveCockpitShellProfile(
+    extensionRegistry,
+    import.meta.env.VITE_COCKPIT_SHELL_MODE,
+  );
   const shellProjection = projectCockpitShellNavigation({
     registry: extensionRegistry,
     persona: activePersona,
     accessContext: extensionServerAccess.accessContext,
     roboticsEnabled: shouldEnableRoboticsDemo(),
-    shellProfile: resolveCockpitShellProfile(
-      extensionRegistry,
-      import.meta.env.VITE_COCKPIT_SHELL_MODE,
-    ),
+    shellProfile,
   });
+  const effectiveHiddenGlobalActionIds =
+    hiddenGlobalActionIds ?? shellProfile.globalActionExcludedIds;
+
+  function isGlobalActionVisible(item: CommandItemDef): boolean {
+    if (item.globalActionIds?.some((actionId) => effectiveHiddenGlobalActionIds.has(actionId))) {
+      return false;
+    }
+    return isCockpitShellGlobalActionVisible(shellProfile, item.id);
+  }
 
   function nav(to: string) {
     setCommandPaletteOpen(false);
@@ -74,6 +93,7 @@ function CommandPalette() {
   const actionItems: CommandItemDef[] = [
     {
       id: 'action:new-run',
+      globalActionIds: ['create-run', 'action:new-run'],
       label: 'New Run',
       icon: <Play className="h-4 w-4" />,
       onSelect: () => {
@@ -83,6 +103,7 @@ function CommandPalette() {
     },
     {
       id: 'action:plan-new-beads',
+      globalActionIds: ['plan-intent', 'action:plan-new-beads'],
       label: 'Plan New Beads',
       icon: <GitBranchPlus className="h-4 w-4" />,
       onSelect: () => {
@@ -92,6 +113,7 @@ function CommandPalette() {
     },
     {
       id: 'action:register-agent',
+      globalActionIds: ['action:register-agent'],
       label: 'Register Agent',
       icon: <UserPlus className="h-4 w-4" />,
       onSelect: () => nav('/config/agents'),
@@ -120,6 +142,7 @@ function CommandPalette() {
     },
     {
       id: 'setting:switch-dataset',
+      globalActionIds: ['setting:switch-dataset'],
       label: 'Switch Dataset',
       icon: <Database className="h-4 w-4" />,
       onSelect: () => {
@@ -128,6 +151,8 @@ function CommandPalette() {
       },
     },
   ];
+  const visibleActionItems = actionItems.filter(isGlobalActionVisible);
+  const visibleSettingsItems = settingsItems.filter(isGlobalActionVisible);
 
   return (
     <CommandDialog
@@ -152,7 +177,7 @@ function CommandPalette() {
         <CommandSeparator />
 
         <CommandGroup heading="Actions">
-          {actionItems.map((item) => (
+          {visibleActionItems.map((item) => (
             <CommandItem key={item.id} onSelect={item.onSelect}>
               {item.icon}
               <span>{item.label}</span>
@@ -164,7 +189,7 @@ function CommandPalette() {
         <CommandSeparator />
 
         <CommandGroup heading="Settings">
-          {settingsItems.map((item) => (
+          {visibleSettingsItems.map((item) => (
             <CommandItem key={item.id} onSelect={item.onSelect}>
               {item.icon}
               <span>{item.label}</span>

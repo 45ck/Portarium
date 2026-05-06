@@ -250,6 +250,7 @@ describe('robotics runtime gating', () => {
 
   it('keeps the robotics prototype available in explicit demo mode', async () => {
     vi.stubEnv('DEV', true);
+    vi.stubEnv('VITE_DEMO_MODE', 'true');
     vi.stubEnv('VITE_PORTARIUM_ENABLE_MSW', 'true');
     const { calls, fetchMock } = createFetchMock();
     vi.stubGlobal('fetch', fetchMock);
@@ -264,6 +265,7 @@ describe('robotics runtime gating', () => {
 
   it('shows a degraded demo state when the robotics data source fails', async () => {
     vi.stubEnv('DEV', true);
+    vi.stubEnv('VITE_DEMO_MODE', 'true');
     vi.stubEnv('VITE_PORTARIUM_ENABLE_MSW', 'true');
     const { fetchMock } = createFetchMock({ failRobots: true });
     vi.stubGlobal('fetch', fetchMock);
@@ -276,6 +278,7 @@ describe('robotics runtime gating', () => {
 
   it('keeps unsafe robotics actions disabled when telemetry is stale', async () => {
     vi.stubEnv('DEV', true);
+    vi.stubEnv('VITE_DEMO_MODE', 'true');
     vi.stubEnv('VITE_PORTARIUM_ENABLE_MSW', 'true');
     mockDataSourceStatus.mockReturnValue(
       baseStatus({

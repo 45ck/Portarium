@@ -1,4 +1,4 @@
-import { createRoute, Link } from '@tanstack/react-router';
+import { createRoute, Link, redirect } from '@tanstack/react-router';
 import { format, isAfter, isBefore, addHours, startOfDay, endOfDay } from 'date-fns';
 import { Route as rootRoute } from './__root';
 import { useUIStore } from '@/stores/ui-store';
@@ -24,6 +24,8 @@ import {
   type GrowthStudioActivity,
   type GrowthStudioPolicyBreakdown,
 } from '@/lib/growth-studio-dashboard';
+import { resolveActiveCockpitShellProfile } from '@/lib/shell/active-profile';
+import { isCockpitShellCoreItemVisible } from '@/lib/shell/navigation';
 
 function percentage(part: number, total: number): number {
   if (total === 0) return 0;
@@ -463,5 +465,15 @@ function DashboardPage() {
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
   path: '/dashboard',
+  beforeLoad: () => {
+    const shellProfile = resolveActiveCockpitShellProfile();
+    if (
+      shellProfile.defaultRoutePath &&
+      shellProfile.defaultRoutePath !== '/dashboard' &&
+      !isCockpitShellCoreItemVisible(shellProfile, 'dashboard')
+    ) {
+      throw redirect({ to: shellProfile.defaultRoutePath });
+    }
+  },
   component: DashboardPage,
 });
