@@ -169,7 +169,10 @@ function makeSubmitDeps(approvalStore: ApprovalStore) {
   };
 }
 
-function makeExecuteDeps(approvalStore: ApprovalStore) {
+function makeExecuteDeps(
+  approvalStore: ApprovalStore,
+  proposalStore?: AgentActionProposalStore,
+) {
   const authorization: AuthorizationPort = { isAllowed: async () => true };
   const clock: Clock = { nowIso: () => '2026-03-10T00:02:00.000Z' };
   const idGenerator: IdGenerator = {
@@ -196,6 +199,7 @@ function makeExecuteDeps(approvalStore: ApprovalStore) {
     eventPublisher,
     evidenceLog,
     actionRunner,
+    ...(proposalStore ? { proposalStore } : {}),
   };
 }
 
@@ -427,13 +431,12 @@ describe.skipIf(process.env['CI_PERF_SKIP'] === 'true' || isCoverageRun)(
 
           // Stage 3: execute
           const executeResult = await executeApprovedAgentAction(
-            makeExecuteDeps(approvalStore),
+            makeExecuteDeps(approvalStore, proposalStore),
             makeAgentCtx(i),
             {
               workspaceId: 'ws-perf-1',
               approvalId,
-              flowRef: `flow-pipeline-perf-${i}`,
-              payload: { index: i },
+              flowRef: 'email:send',
             },
           );
           if (!executeResult.ok)

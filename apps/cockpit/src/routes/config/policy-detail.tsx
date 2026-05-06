@@ -59,7 +59,7 @@ function LivePolicyDetailPage({ policyId }: { policyId: string }) {
   const policyQuery = usePolicy(wsId, policyId);
   const approvalsQuery = useApprovals(wsId);
   const runsQuery = useRuns(wsId);
-  const sodQuery = useSodConstraints(wsId);
+  const sodQuery = useSodConstraints(wsId, { enabled: false });
   const [draftTier, setDraftTier] = useState<ExecutionTier>('HumanApprove');
   const [policyBlocked, setPolicyBlocked] = useState(false);
   const [rationale, setRationale] = useState('');

@@ -312,8 +312,7 @@ describe(`sustained throughput benchmarks (${MODE} mode, n=${TOTAL_REQUESTS})`, 
           const executeResult = await executeApprovedAgentAction(deps, agentCtx(idx), {
             workspaceId: 'ws-perf',
             approvalId,
-            flowRef: `flow-pipeline-perf-${idx}`,
-            payload: { index: idx },
+            flowRef: 'email:send',
           });
           if (!executeResult.ok) throw new Error(`execute failed: ${executeResult.error.kind}`);
         },

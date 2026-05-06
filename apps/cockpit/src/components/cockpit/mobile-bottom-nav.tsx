@@ -18,8 +18,8 @@ import {
 } from '@/components/ui/select';
 import type { PersonaId } from '@/stores/ui-store';
 import { RuntimeStatusDetails } from '@/components/cockpit/runtime-status-strip';
-import { usePendingCount } from '@/hooks/use-pending-count';
 import type {
+  CockpitShellNavigationBadge,
   CockpitShellNavigationItem,
   CockpitShellNavigationSection,
 } from '@/lib/shell/navigation';
@@ -58,7 +58,6 @@ export function MobileBottomNav({
   onWorkspaceChange,
   onPersonaChange,
 }: MobileBottomNavProps) {
-  const pendingCount = usePendingCount(activeWorkspaceId);
   const matchRoute = useMatchRoute();
   const [moreOpen, setMoreOpen] = useState(false);
 
@@ -97,11 +96,7 @@ export function MobileBottomNav({
                   )}
                 >
                   {item.icon}
-                  {(item.label === 'Inbox' || item.label === 'Approvals') && pendingCount > 0 && (
-                    <span className="absolute top-1.5 right-1/2 translate-x-4 -translate-y-0.5 rounded-full bg-primary text-primary-foreground text-[9px] font-bold min-w-[16px] h-4 px-1 flex items-center justify-center leading-none">
-                      {pendingCount > 99 ? '99+' : pendingCount}
-                    </span>
-                  )}
+                  {item.badge && <MobileBadge badge={item.badge} />}
                 </motion.div>
                 <span
                   className={cn(
@@ -197,11 +192,12 @@ export function MobileBottomNav({
                     <TypedLink
                       key={item.id}
                       to={item.to}
-                      className="block px-3 py-2 rounded-md text-sm hover:bg-accent transition-colors"
+                      className="flex items-center gap-2 px-3 py-2 rounded-md text-sm hover:bg-accent transition-colors"
                       onClick={() => setMoreOpen(false)}
                       aria-label={item.label}
                     >
-                      {item.label}
+                      <span className="min-w-0 flex-1 truncate">{item.label}</span>
+                      {item.badge && <MobileDrawerBadge badge={item.badge} />}
                     </TypedLink>
                   ))}
                 </div>
@@ -211,5 +207,27 @@ export function MobileBottomNav({
         </DrawerContent>
       </Drawer>
     </>
+  );
+}
+
+function MobileBadge({ badge }: { badge: CockpitShellNavigationBadge }) {
+  return (
+    <span
+      className="absolute top-1.5 right-1/2 translate-x-4 -translate-y-0.5 rounded-full bg-primary text-primary-foreground text-[9px] font-bold min-w-[16px] h-4 px-1 flex items-center justify-center leading-none"
+      aria-label={badge.ariaLabel}
+    >
+      {badge.value > 99 ? '99+' : badge.value}
+    </span>
+  );
+}
+
+function MobileDrawerBadge({ badge }: { badge: CockpitShellNavigationBadge }) {
+  return (
+    <span
+      className="shrink-0 rounded-full bg-primary/15 text-primary text-[11px] px-1.5 py-0.5 font-medium leading-none"
+      aria-label={badge.ariaLabel}
+    >
+      {badge.label}
+    </span>
   );
 }

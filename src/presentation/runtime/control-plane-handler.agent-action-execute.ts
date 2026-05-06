@@ -168,6 +168,19 @@ export async function handleExecuteApprovedAgentAction(
     return;
   }
 
+  if (!deps.agentActionProposalStore) {
+    respondProblem(
+      res,
+      serviceUnavailableProblem(
+        'Agent action proposal store is not available in this configuration.',
+        pathname,
+      ),
+      correlationId,
+      traceContext,
+    );
+    return;
+  }
+
   const bodyResult = await readJsonBody(req);
   if (!bodyResult.ok) {
     respondProblem(
@@ -238,6 +251,7 @@ export async function handleExecuteApprovedAgentAction(
     unitOfWork: deps.unitOfWork ?? { execute: async (fn) => fn() },
     eventPublisher: deps.eventPublisher,
     actionRunner: deps.actionRunner,
+    proposalStore: deps.agentActionProposalStore,
     ...(deps.evidenceLog ? { evidenceLog: deps.evidenceLog } : {}),
     ...(deps.idempotency ? { idempotency: deps.idempotency } : {}),
   };

@@ -162,8 +162,7 @@ describe('load: concurrent multi-tenant requests', () => {
             const executeResult = await executeApprovedAgentAction({ ...deps }, agentCtx, {
               workspaceId: `ws-load-${t}`,
               approvalId,
-              flowRef: `flow-${t}-${idx}`,
-              payload: { tenant: t, index: idx },
+              flowRef: 'email:send',
             });
 
             if (!executeResult.ok) {

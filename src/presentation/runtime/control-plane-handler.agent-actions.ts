@@ -77,15 +77,60 @@ function stringFromRecord(record: Record<string, unknown>, key: string): string 
   return typeof value === 'string' && value.trim() ? value : undefined;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 function extractBeadId(parameters: Record<string, unknown> | undefined): string | undefined {
   if (!parameters) return undefined;
   const direct = stringFromRecord(parameters, 'beadId');
   if (direct) return direct;
   const metadata = parameters['metadata'];
-  if (metadata && typeof metadata === 'object') {
-    return stringFromRecord(metadata as Record<string, unknown>, 'beadId');
+  if (isRecord(metadata)) {
+    return stringFromRecord(metadata, 'beadId');
   }
   return undefined;
+}
+
+function canonicalActionParameters(
+  parameters: Record<string, unknown> | undefined,
+): Record<string, unknown> | undefined {
+  if (!parameters) return undefined;
+
+  const allowedKeys = [
+    'beadId',
+    'extensionId',
+    'automationId',
+    'mockAutomationId',
+    'sourceSystems',
+    'sourcePortIds',
+    'sourceSystemAccess',
+    'writebackEnabled',
+    'executionAdapterInstalled',
+  ] as const;
+  const sanitized: Record<string, unknown> = {};
+
+  for (const key of allowedKeys) {
+    if (parameters[key] !== undefined) {
+      sanitized[key] = parameters[key];
+    }
+  }
+
+  const metadata = parameters['metadata'];
+  if (isRecord(metadata)) {
+    const beadId = stringFromRecord(metadata, 'beadId');
+    if (beadId) {
+      sanitized['metadata'] = { beadId };
+    }
+  }
+
+  return Object.keys(sanitized).length > 0 ? sanitized : undefined;
+}
+
+function sanitizedEventParameters(
+  parameters: Record<string, unknown> | undefined,
+): Record<string, unknown> | undefined {
+  return canonicalActionParameters(parameters);
 }
 
 export async function handleProposeAgentAction(args: AgentActionArgs): Promise<void> {
@@ -213,10 +258,13 @@ export async function handleProposeAgentAction(args: AgentActionArgs): Promise<v
     unitOfWork: deps.unitOfWork ?? { execute: async (fn) => fn() },
     policyStore: deps.policyStore,
     approvalStore: deps.approvalStore,
+    ...(deps.agentActionProposalStore ? { proposalStore: deps.agentActionProposalStore } : {}),
     eventPublisher: deps.eventPublisher,
     evidenceLog: deps.evidenceLog,
   };
 
+  const rawParameters = record['parameters'];
+  const parameters = isRecord(rawParameters) ? rawParameters : undefined;
   const input: ProposeAgentActionInput = {
     workspaceId,
     agentId: String(record['agentId'] ?? ''),
@@ -229,9 +277,7 @@ export async function handleProposeAgentAction(args: AgentActionArgs): Promise<v
     rationale: String(record['rationale'] ?? ''),
     correlationId,
     ...(record['machineId'] ? { machineId: String(record['machineId']) } : {}),
-    ...(record['parameters']
-      ? { parameters: record['parameters'] as Record<string, unknown> }
-      : {}),
+    ...(parameters ? { parameters } : {}),
     ...(record['idempotencyKey'] ? { idempotencyKey: String(record['idempotencyKey']) } : {}),
   };
 
@@ -253,8 +299,9 @@ export async function handleProposeAgentAction(args: AgentActionArgs): Promise<v
   }
 
   if (result.value.decision === 'NeedsApproval' && deps.eventStream) {
-    const parameters = input.parameters;
-    const beadId = extractBeadId(parameters);
+    const eventParameters = input.parameters;
+    const safeParameters = sanitizedEventParameters(eventParameters);
+    const beadId = extractBeadId(eventParameters);
     deps.eventStream.publish({
       type: 'com.portarium.approval.ApprovalRequested',
       id: crypto.randomUUID(),
@@ -269,7 +316,7 @@ export async function handleProposeAgentAction(args: AgentActionArgs): Promise<v
         policyIds: input.policyIds,
         rationale: input.rationale,
         ...(input.machineId ? { machineId: input.machineId } : {}),
-        ...(parameters ? { parameters } : {}),
+        ...(safeParameters ? { parameters: safeParameters } : {}),
         ...(beadId ? { beadId } : {}),
       },
     });

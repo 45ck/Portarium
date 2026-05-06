@@ -889,18 +889,23 @@ function NativeTicketInboxSurfaceRenderer({
   return (
     <NativeSurfaceShell surface={surface} extension={extension} routeId={routeId}>
       <Card className="gap-0 py-0 shadow-none">
-        <CardContent className="space-y-2 p-2.5">
+        <CardContent className="space-y-3 p-3">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <TicketViews views={surface.queue.views} />
             <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+              <span>{surface.queue.statusText}</span>
               <span>{surface.queue.pageText}</span>
               <Badge variant="outline">Host-rendered</Badge>
             </div>
           </div>
           <TicketSearch search={surface.queue.search} />
           <TicketFilters filters={surface.queue.filters} />
-          <TicketQueueDrawer tickets={surface.queue.tickets} selectedTicket={selectedTicket} />
-          <TicketDetail detail={surface.selectedTicket} />
+          <div className="grid gap-3 xl:grid-cols-[minmax(280px,360px)_minmax(0,1fr)]">
+            <div className="min-w-0 xl:sticky xl:top-4 xl:self-start">
+              <TicketQueuePanel tickets={surface.queue.tickets} selectedTicket={selectedTicket} />
+            </div>
+            <TicketDetail detail={surface.selectedTicket} />
+          </div>
           <TicketPagination actions={surface.queue.pagination} />
         </CardContent>
       </Card>
@@ -1049,7 +1054,7 @@ function TicketQueueDrawer({
   selectedTicket?: NativeTicketRecord;
 }) {
   return (
-    <details className="rounded-md border bg-muted/10">
+    <details className="rounded-md border bg-muted/10 xl:hidden">
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 marker:hidden">
         <span className="min-w-0">
           <span className="block text-sm font-semibold">Ticket queue</span>
@@ -1065,6 +1070,23 @@ function TicketQueueDrawer({
         <TicketQueueList tickets={tickets} />
       </div>
     </details>
+  );
+}
+
+function TicketQueuePanel({
+  tickets,
+  selectedTicket,
+}: {
+  tickets: readonly NativeTicketRecord[];
+  selectedTicket?: NativeTicketRecord;
+}) {
+  return (
+    <>
+      <TicketQueueDrawer tickets={tickets} selectedTicket={selectedTicket} />
+      <div className="hidden xl:block">
+        <TicketQueueList tickets={tickets} />
+      </div>
+    </>
   );
 }
 
@@ -1721,74 +1743,62 @@ function NativeSurfaceShell({
     surface.automationProposals && surface.automationProposals.length > 0 ? (
       <NativeAutomationProposalPanel proposals={surface.automationProposals} extension={extension} />
     ) : null;
-  const contentWithHeader = (
-    <div className="min-w-0 flex-1 space-y-4">
+  const areaNav = surface.area ? (
+    <section className="flex flex-wrap items-center gap-3 rounded-md border bg-card px-3 py-2">
+      <div className="mr-1 min-w-fit">
+        <p className="text-xs font-semibold uppercase text-muted-foreground">
+          {surface.area.label}
+        </p>
+        <h2 className="text-sm font-semibold">{surface.area.title}</h2>
+      </div>
+      <nav
+        aria-label={`${surface.area.label} areas`}
+        className="flex min-w-0 flex-1 gap-1 overflow-x-auto"
+      >
+        {surface.area.navItems.map((item) => (
+          <Button
+            key={item.id}
+            asChild
+            size="sm"
+            variant={item.active ? 'default' : 'ghost'}
+            className="h-auto shrink-0 justify-start px-3 py-2"
+          >
+            <a href={item.href} aria-current={item.active ? 'page' : undefined}>
+              <span className="grid gap-0.5 text-left">
+                <span>{item.label}</span>
+                {item.detail ? (
+                  <span
+                    className={cn(
+                      'text-[11px] font-normal',
+                      item.active ? 'text-primary-foreground/80' : 'text-muted-foreground',
+                    )}
+                  >
+                    {item.detail}
+                  </span>
+                ) : null}
+              </span>
+            </a>
+          </Button>
+        ))}
+      </nav>
+      {surface.area.boundary && surface.area.boundary.length > 0 ? (
+        <p className="min-w-fit text-xs text-muted-foreground">
+          {surface.area.boundary.join(' · ')}
+        </p>
+      ) : null}
+    </section>
+  ) : null;
+
+  return (
+    <div className={cn('space-y-4', surface.area ? 'px-6 py-4' : 'p-6')}>
       <PageHeader
         title={surface.title}
         description={surface.description ?? extension.manifest.description}
         status={<StatusBadges badges={surface.badges ?? [{ label: routeId, tone: 'neutral' }]} />}
       />
+      {areaNav}
       {automationPanel}
       {children}
-    </div>
-  );
-  const content = (
-    <div className="min-w-0 flex-1 space-y-4">
-      {automationPanel}
-      {children}
-    </div>
-  );
-
-  if (!surface.area) {
-    return <div className="p-6">{contentWithHeader}</div>;
-  }
-
-  return (
-    <div className="space-y-3 px-6 py-4">
-      <section className="flex flex-wrap items-center gap-3 rounded-md border bg-card px-3 py-2">
-        <div className="mr-1 min-w-fit">
-          <p className="text-xs font-semibold uppercase text-muted-foreground">
-            {surface.area.label}
-          </p>
-          <h2 className="text-sm font-semibold">{surface.area.title}</h2>
-        </div>
-        <nav
-          aria-label={`${surface.area.label} areas`}
-          className="flex min-w-0 flex-1 gap-1 overflow-x-auto"
-        >
-          {surface.area.navItems.map((item) => (
-            <Button
-              key={item.id}
-              asChild
-              size="sm"
-              variant={item.active ? 'default' : 'ghost'}
-              className="h-auto shrink-0 justify-start px-3 py-2"
-            >
-              <a href={item.href} aria-current={item.active ? 'page' : undefined}>
-                <span className="grid gap-0.5 text-left">
-                  <span>{item.label}</span>
-                  {item.detail ? (
-                    <span
-                      className={cn(
-                        'text-[11px] font-normal',
-                        item.active ? 'text-primary-foreground/80' : 'text-muted-foreground',
-                      )}
-                    >
-                      {item.detail}
-                    </span>
-                  ) : null}
-                </span>
-              </a>
-            </Button>
-          ))}
-        </nav>
-        {surface.area.boundary && surface.area.boundary.length > 0 ? (
-          <p className="min-w-fit text-xs text-muted-foreground">
-            {surface.area.boundary.join(' · ')}
-          </p>
-        ) : null}
-      </section>
-      {content}
     </div>
   );
 }
@@ -1854,24 +1864,28 @@ function NativeAutomationProposalPanel({
   }
 
   return (
-    <section className="space-y-3" aria-label="Governed automation proposals">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <details
+      className="rounded-md border bg-muted/10 px-3 py-2"
+      aria-label="Governed automation proposals"
+    >
+      <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3 marker:hidden">
         <div>
-          <h2 className="text-base font-semibold">Governed Automation Proposals</h2>
+          <h2 className="text-sm font-semibold">Governed Automation Proposals</h2>
           <p className="text-xs text-muted-foreground">
-            Extension suggestions can enter Portarium as live, human-reviewed action proposals.
+            {proposals.length} extension suggestion{proposals.length === 1 ? '' : 's'} available
+            for human-reviewed action.
           </p>
         </div>
-        <Badge variant="outline">Human approval path</Badge>
-      </div>
-      <div className="grid gap-3 xl:grid-cols-3">
+        <Badge variant="outline">Approval path</Badge>
+      </summary>
+      <div className="mt-3 grid gap-2 xl:grid-cols-3">
         {proposals.map((proposal) => {
           const result = results[proposal.id];
           const isSubmitting =
             proposeAgentAction.isPending && activeProposalId === proposal.id;
 
           return (
-            <Card key={proposal.id} className="shadow-none">
+            <Card key={proposal.id} className="bg-background/80 shadow-none">
               <CardContent className="space-y-3 p-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
@@ -1936,7 +1950,7 @@ function NativeAutomationProposalPanel({
           );
         })}
       </div>
-    </section>
+    </details>
   );
 }
 

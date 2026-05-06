@@ -26,6 +26,7 @@ import {
   useWorkforceMembers,
   useWorkforceQueues,
 } from '@/hooks/queries/use-workforce';
+import { resolveCockpitRuntime } from '@/lib/cockpit-runtime';
 import { canAccess } from '@/lib/role-gate';
 import { useUIStore } from '@/stores/ui-store';
 import type {
@@ -86,6 +87,29 @@ function displayWhen(iso: string): string {
 }
 
 function WorkforceCoveragePage() {
+  const runtime = resolveCockpitRuntime();
+
+  if (!runtime.allowDemoControls) {
+    return (
+      <div className="p-6 space-y-6">
+        <PageHeader
+          title="Coverage"
+          description="Demo approval coverage fixtures are disabled while Cockpit is connected to live tenant data."
+          icon={<CalendarClock className="h-5 w-5" />}
+          breadcrumb={[{ label: 'Workforce', to: '/workforce' }, { label: 'Coverage' }]}
+        />
+        <div className="rounded-md border border-border bg-card p-4 text-sm text-muted-foreground">
+          Live approval coverage must come from the workforce coverage API. This fixture-backed
+          roster is available only in explicit demo mode.
+        </div>
+      </div>
+    );
+  }
+
+  return <DemoWorkforceCoveragePage />;
+}
+
+function DemoWorkforceCoveragePage() {
   const { activeWorkspaceId: wsId, activePersona } = useUIStore();
   const canManage = canAccess(activePersona, 'approval-coverage:manage');
   const rosterQuery = useApprovalCoverageRoster(wsId);

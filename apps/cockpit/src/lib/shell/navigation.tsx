@@ -34,9 +34,16 @@ export interface CockpitShellNavigationItem {
   label: string;
   to: string;
   icon: ReactNode;
+  badge?: CockpitShellNavigationBadge;
   comingSoon?: boolean;
   shortcut?: string;
   matchPath?: string;
+}
+
+export interface CockpitShellNavigationBadge {
+  value: number;
+  label: string;
+  ariaLabel: string;
 }
 
 export interface CockpitShellNavigationSection {
@@ -66,6 +73,11 @@ export interface ProjectCockpitShellNavigationInput {
   persona: PersonaId;
   accessContext: CockpitExtensionAccessContext;
   roboticsEnabled: boolean;
+  liveState?: CockpitShellLiveState;
+}
+
+export interface CockpitShellLiveState {
+  pendingApprovalCount?: number;
 }
 
 const CORE_SHELL_SECTIONS: readonly CockpitShellNavigationSection[] = [
@@ -364,16 +376,21 @@ const COMMAND_EXCLUDED_ITEM_IDS = new Set([
   'config-users',
   'explore-pack-runtime',
 ]);
+const SIDEBAR_EXTENSION_INSERT_AFTER_SECTION_ID = 'work';
 
 export function projectCockpitShellNavigation({
   registry,
   persona,
   accessContext,
   roboticsEnabled,
+  liveState,
 }: ProjectCockpitShellNavigationInput): CockpitShellProjection {
-  const coreSections = roboticsEnabled
-    ? CORE_SHELL_SECTIONS
-    : CORE_SHELL_SECTIONS.filter((section) => section.id !== 'robotics');
+  const coreSections = projectCoreNavigationSections(
+    roboticsEnabled
+      ? CORE_SHELL_SECTIONS
+      : CORE_SHELL_SECTIONS.filter((section) => section.id !== 'robotics'),
+    liveState,
+  );
   const extensionSidebarSections = projectExtensionNavigationSections(
     registry,
     'sidebar',
@@ -411,10 +428,7 @@ export function projectCockpitShellNavigation({
     return targets;
   }, []);
 
-  const sidebarSections =
-    extensionSidebarSections.length > 0
-      ? [...coreSections, ...extensionSidebarSections]
-      : coreSections;
+  const sidebarSections = insertSidebarExtensionSections(coreSections, extensionSidebarSections);
   const mobileMoreBaseSections = coreSections.filter((section) =>
     MOBILE_MORE_SECTION_IDS.has(section.id),
   );
@@ -533,6 +547,24 @@ function flattenItems(
   return sections.flatMap((section) => section.items ?? []);
 }
 
+function insertSidebarExtensionSections(
+  coreSections: readonly CockpitShellNavigationSection[],
+  extensionSections: readonly CockpitShellNavigationSection[],
+): readonly CockpitShellNavigationSection[] {
+  if (extensionSections.length === 0) return coreSections;
+
+  const insertAfterIndex = coreSections.findIndex(
+    (section) => section.id === SIDEBAR_EXTENSION_INSERT_AFTER_SECTION_ID,
+  );
+  if (insertAfterIndex < 0) return [...coreSections, ...extensionSections];
+
+  return [
+    ...coreSections.slice(0, insertAfterIndex + 1),
+    ...extensionSections,
+    ...coreSections.slice(insertAfterIndex + 1),
+  ];
+}
+
 function projectMobilePrimaryItems(
   sections: readonly CockpitShellNavigationSection[],
 ): readonly CockpitShellNavigationItem[] {
@@ -541,6 +573,36 @@ function projectMobilePrimaryItems(
     const item = itemsById.get(itemId);
     return item ? [item] : [];
   });
+}
+
+function projectCoreNavigationSections(
+  sections: readonly CockpitShellNavigationSection[],
+  liveState: CockpitShellLiveState | undefined,
+): readonly CockpitShellNavigationSection[] {
+  const pendingApprovalBadge = approvalPendingBadge(liveState?.pendingApprovalCount ?? 0);
+  if (!pendingApprovalBadge) return sections;
+
+  return sections.map((section) => ({
+    ...section,
+    items: section.items?.map((item) =>
+      item.id === 'inbox' || item.id === 'approvals'
+        ? { ...item, badge: pendingApprovalBadge }
+        : item,
+    ),
+  }));
+}
+
+function approvalPendingBadge(
+  pendingApprovalCount: number,
+): CockpitShellNavigationBadge | undefined {
+  if (pendingApprovalCount <= 0) return undefined;
+
+  const label = `${pendingApprovalCount} pending`;
+  return {
+    value: pendingApprovalCount,
+    label,
+    ariaLabel: `${label} approvals`,
+  };
 }
 
 function extensionIcon(icon: CockpitExtensionIcon) {

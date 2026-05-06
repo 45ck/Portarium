@@ -164,6 +164,7 @@ beforeAll(() => {
 });
 
 beforeEach(() => {
+  vi.stubEnv('VITE_PORTARIUM_ENABLE_MSW', 'true');
   queryClient.clear();
   localStorage.clear();
   document.documentElement.className = '';
@@ -173,6 +174,7 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  vi.unstubAllEnvs();
 });
 
 afterAll(() => {
@@ -180,6 +182,17 @@ afterAll(() => {
 });
 
 describe('workforce coverage route', () => {
+  it('does not expose fixture-backed coverage in dev-live mode', async () => {
+    vi.stubEnv('VITE_PORTARIUM_ENABLE_MSW', 'false');
+    useUIStore.getState().setActivePersona('Operator');
+
+    await renderCoverageRoute();
+
+    expect(await screen.findByRole('heading', { name: 'Coverage' })).toBeTruthy();
+    expect(screen.getByText(/fixture-backed roster is available only/i)).toBeTruthy();
+    expect(screen.queryByText('Coverage Windows')).toBeNull();
+  });
+
   it('explains assigned, delegated, waiting, and escalated pending approval routing', async () => {
     useUIStore.getState().setActivePersona('Operator');
     await renderCoverageRoute();

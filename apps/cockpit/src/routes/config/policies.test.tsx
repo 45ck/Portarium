@@ -257,7 +257,7 @@ describe('Policy Studio route', () => {
     expect(screen.getByText(/Recent Overrides And Incidents/i)).toBeTruthy();
     expect(screen.getByText(/Ownership And Review State/i)).toBeTruthy();
     expect(screen.getByRole('link', { name: /Open Policy Studio/i })).toBeTruthy();
-    expect(screen.getByRole('link', { name: /Capability Posture/i })).toBeTruthy();
+    expect(screen.getAllByRole('link', { name: /Capability Posture/i }).length).toBeGreaterThan(0);
     expect(screen.getByText(/Outbound Payment Approval/i)).toBeTruthy();
   });
 

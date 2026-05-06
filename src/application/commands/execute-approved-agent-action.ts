@@ -48,7 +48,9 @@ import type {
   IdempotencyStore,
   IdGenerator,
   UnitOfWork,
+  AgentActionProposalStore,
 } from '../ports/index.js';
+import type { AgentActionProposalV1 } from '../../domain/machines/index.js';
 
 const EXECUTE_SOURCE = 'portarium.control-plane.agent-actions';
 const EXECUTE_COMMAND = 'ExecuteApprovedAgentAction';
@@ -94,6 +96,7 @@ export interface ExecuteApprovedAgentActionDeps {
   unitOfWork: UnitOfWork;
   eventPublisher: EventPublisher;
   actionRunner: ActionRunnerPort;
+  proposalStore?: AgentActionProposalStore;
   evidenceLog?: EvidenceLogPort;
   idempotency?: IdempotencyStore;
 }
@@ -152,6 +155,81 @@ function stableJson(value: unknown): string {
       .join(',')}}`;
   }
   return JSON.stringify(value);
+}
+
+function expectedProposalFlowRefs(proposal: AgentActionProposalV1): readonly string[] {
+  return [
+    String(proposal.toolName),
+    ...(proposal.machineId ? [`${String(proposal.machineId)}/${String(proposal.toolName)}`] : []),
+  ];
+}
+
+function approvedProposalFlowRef(proposal: AgentActionProposalV1): string {
+  return proposal.machineId
+    ? `${String(proposal.machineId)}/${String(proposal.toolName)}`
+    : String(proposal.toolName);
+}
+
+function validateApprovedProposalBinding(
+  approval: Readonly<{ workspaceId: WorkspaceIdType }>,
+  proposal: AgentActionProposalV1 | null,
+  input: ExecuteApprovedAgentActionInput,
+): ExecuteApprovedAgentActionError | null {
+  if (!proposal) {
+    return {
+      kind: 'NotFound',
+      resource: 'AgentActionProposal',
+      message: `No stored agent action proposal is linked to approval ${input.approvalId}.`,
+    };
+  }
+
+  if (String(proposal.workspaceId) !== input.workspaceId) {
+    return {
+      kind: 'Forbidden',
+      action: APP_ACTIONS.agentActionExecute,
+      message: 'Stored agent action proposal workspace does not match requested workspace.',
+    };
+  }
+
+  if (!proposal.approvalId || String(proposal.approvalId) !== input.approvalId) {
+    return {
+      kind: 'Conflict',
+      message: 'Stored agent action proposal is not linked to the requested approval.',
+    };
+  }
+
+  if (proposal.decision !== 'NeedsApproval') {
+    return {
+      kind: 'Conflict',
+      message: `Stored agent action proposal is not approval-bound (current: ${proposal.decision}).`,
+    };
+  }
+
+  if (String(approval.workspaceId) !== String(proposal.workspaceId)) {
+    return {
+      kind: 'Conflict',
+      message: 'Approval and stored agent action proposal workspace do not match.',
+    };
+  }
+
+  const acceptedFlowRefs = expectedProposalFlowRefs(proposal);
+  if (!acceptedFlowRefs.includes(input.flowRef)) {
+    return {
+      kind: 'Conflict',
+      message: 'Execution flowRef does not match the approved agent action proposal.',
+    };
+  }
+
+  const approvedPayload = proposal.parameters ?? {};
+  const requestedPayload = input.payload ?? {};
+  if (stableJson(approvedPayload) !== stableJson(requestedPayload)) {
+    return {
+      kind: 'Conflict',
+      message: 'Execution payload does not match the approved agent action proposal.',
+    };
+  }
+
+  return null;
 }
 
 function normalizeCachedOutput(value: unknown): ExecuteApprovedAgentActionOutput | null {
@@ -401,11 +479,37 @@ export async function executeApprovedAgentAction(
     });
   }
 
+  const proposalBoundApproval = String(approval.runId) === String(approval.planId);
+  const proposal = deps.proposalStore
+    ? await deps.proposalStore.getProposalByApprovalId(ctx.tenantId, approvalId)
+    : null;
+  if (proposal) {
+    const proposalBindingError = validateApprovedProposalBinding(approval, proposal, input);
+    if (proposalBindingError) {
+      return err(proposalBindingError);
+    }
+  } else if (proposalBoundApproval) {
+    if (!deps.proposalStore) {
+      return err({
+        kind: 'DependencyFailure',
+        message: 'Agent action proposal store is required to execute proposal-bound approvals.',
+      });
+    }
+    return err({
+      kind: 'NotFound',
+      resource: 'AgentActionProposal',
+      message: `No stored agent action proposal is linked to approval ${input.approvalId}.`,
+    });
+  }
+
+  const approvedFlowRef = proposal ? approvedProposalFlowRef(proposal) : input.flowRef;
+  const approvedPayload = proposal ? (proposal.parameters ?? {}) : (input.payload ?? {});
+
   const providedIdempotencyKey = input.idempotencyKey?.trim();
   const dispatchIdempotencyKey =
     providedIdempotencyKey !== undefined && providedIdempotencyKey !== ''
       ? providedIdempotencyKey
-      : `${EXECUTE_COMMAND}:${String(ctx.tenantId)}:${String(workspaceId)}:${String(approvalId)}:${input.flowRef}`;
+      : `${EXECUTE_COMMAND}:${String(ctx.tenantId)}:${String(workspaceId)}:${String(approvalId)}:${approvedFlowRef}`;
 
   const commandKey = {
     tenantId: ctx.tenantId,
@@ -415,8 +519,8 @@ export async function executeApprovedAgentAction(
   const idempotencyFingerprint = stableJson({
     workspaceId: input.workspaceId,
     approvalId: input.approvalId,
-    flowRef: input.flowRef,
-    payload: input.payload ?? {},
+    flowRef: approvedFlowRef,
+    payload: approvedPayload,
     principalId: String(ctx.principalId),
   });
 
@@ -556,8 +660,8 @@ export async function executeApprovedAgentAction(
     tenantId: ctx.tenantId,
     runId: approval.runId,
     correlationId: ctx.correlationId,
-    flowRef: input.flowRef,
-    payload: input.payload ?? {},
+    flowRef: approvedFlowRef,
+    payload: approvedPayload,
   });
 
   // --- Build domain event ---

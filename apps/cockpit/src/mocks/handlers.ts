@@ -586,6 +586,25 @@ export const handlers = [
     const proposalId = `proposal-${Date.now()}`;
     const toolName = body.toolName ?? 'extension.mock-automation.review';
     const executionTier = body.executionTier ?? 'HumanApprove';
+    const proposalParameters = body.parameters ?? {};
+    const isHumanGatedTier =
+      executionTier === 'HumanApprove' || executionTier === 'ManualOnly';
+    const isSnapshotOnlyProposal =
+      proposalParameters['sourceSystemAccess'] === 'none' &&
+      proposalParameters['writebackEnabled'] === false &&
+      proposalParameters['executionAdapterInstalled'] === false;
+
+    if (!isHumanGatedTier || !isSnapshotOnlyProposal) {
+      return HttpResponse.json(
+        {
+          title: 'Unsafe agent action proposal rejected',
+          detail:
+            'Mock extension proposals must be snapshot-only, writeback-disabled, and human-gated.',
+        },
+        { status: 422 },
+      );
+    }
+
     const approval = {
       schemaVersion: 1,
       approvalId,

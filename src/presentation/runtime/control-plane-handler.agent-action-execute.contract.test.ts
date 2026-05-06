@@ -12,9 +12,13 @@ import { toAppContext } from '../../application/common/context.js';
 import { ok } from '../../application/common/result.js';
 import type { IdempotencyStore } from '../../application/ports/index.js';
 import {
+  AgentId,
   ApprovalId,
+  CorrelationId,
   HashSha256,
   PlanId,
+  PolicyId,
+  ProposalId,
   RunId,
   UserId,
   WorkspaceId,
@@ -24,6 +28,7 @@ import type {
   ApprovalPendingV1,
   ApprovalV1,
 } from '../../domain/approvals/index.js';
+import type { AgentActionProposalV1 } from '../../domain/machines/index.js';
 import { createControlPlaneHandler } from './control-plane-handler.js';
 import type { ControlPlaneDeps } from './control-plane-handler.shared.js';
 import { startHealthServer } from './health-server.js';
@@ -63,8 +68,33 @@ const APPROVED_APPROVAL: ApprovalDecidedV1 = {
   rationale: 'Approved.',
 };
 
+const APPROVED_PROPOSAL: AgentActionProposalV1 = {
+  schemaVersion: 1,
+  proposalId: ProposalId('prop-execute-1'),
+  workspaceId: WorkspaceId(WORKSPACE_ID),
+  agentId: AgentId('agent-system-1'),
+  actionKind: 'machine:execute',
+  toolName: 'machine-1/tool-name',
+  executionTier: 'HumanApprove',
+  toolClassification: {
+    toolName: 'machine-1/tool-name',
+    category: 'Mutation',
+    minimumTier: 'HumanApprove',
+    rationale: 'Contract test mutation.',
+  },
+  policyDecision: 'RequireApproval',
+  policyIds: [PolicyId('pol-1')],
+  decision: 'NeedsApproval',
+  approvalId: ApprovalId(APPROVAL_ID),
+  rationale: 'Approved proposal.',
+  requestedByUserId: UserId('agent-1'),
+  correlationId: CorrelationId('corr-execute-contract'),
+  proposedAtIso: '2026-03-01T00:00:00.000Z',
+};
+
 function makeDeps(overrides: Partial<ControlPlaneDeps> = {}): ControlPlaneDeps {
   let approval: ApprovalV1 = APPROVED_APPROVAL;
+  let proposal: AgentActionProposalV1 | null = APPROVED_PROPOSAL;
 
   return {
     authentication: {
@@ -97,6 +127,14 @@ function makeDeps(overrides: Partial<ControlPlaneDeps> = {}): ControlPlaneDeps {
     },
     actionRunner: {
       dispatchAction: async () => ({ ok: true as const, output: { executed: true } }),
+    },
+    agentActionProposalStore: {
+      getProposalById: async () => proposal,
+      getProposalByApprovalId: async () => proposal,
+      getProposalByIdempotencyKey: async () => proposal,
+      saveProposal: async (_tenantId, next) => {
+        proposal = next;
+      },
     },
     eventPublisher: {
       publish: async () => undefined,
@@ -185,6 +223,23 @@ describe('POST /agent-actions/:approvalId/execute — missing deps', () => {
       host: '127.0.0.1',
       port: 0,
       handler: createControlPlaneHandler(depsWithoutEventPublisher),
+    });
+    const res = await fetch(executeUrl(), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ flowRef: 'machine-1/tool-name' }),
+    });
+    expect(res.status).toBe(503);
+  });
+
+  it('returns 503 when agentActionProposalStore is not wired', async () => {
+    const deps = makeDeps();
+    const { agentActionProposalStore: _removed, ...depsWithoutProposalStore } = deps;
+    handle = await startHealthServer({
+      role: 'control-plane',
+      host: '127.0.0.1',
+      port: 0,
+      handler: createControlPlaneHandler(depsWithoutProposalStore),
     });
     const res = await fetch(executeUrl(), {
       method: 'POST',
@@ -295,6 +350,31 @@ describe('POST /agent-actions/:approvalId/execute — wrong approval status', ()
   });
 });
 
+describe('POST /agent-actions/:approvalId/execute — proposal binding', () => {
+  it('returns 409 when flowRef does not match the stored approved proposal', async () => {
+    let dispatchCount = 0;
+    await startWith({
+      actionRunner: {
+        dispatchAction: async () => {
+          dispatchCount += 1;
+          return { ok: true as const, output: { executed: true } };
+        },
+      },
+    });
+
+    const res = await fetch(executeUrl(), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ flowRef: 'machine-1/different-tool' }),
+    });
+
+    expect(res.status).toBe(409);
+    const body = (await res.json()) as { detail: string };
+    expect(body.detail).toMatch(/flowRef/);
+    expect(dispatchCount).toBe(0);
+  });
+});
+
 describe('POST /agent-actions/:approvalId/execute — dependency failure hygiene', () => {
   it('does not leak internal dependency errors in 503 detail', async () => {
     await startWith({
@@ -323,7 +403,7 @@ describe('POST /agent-actions/:approvalId/execute — success', () => {
     const res = await fetch(executeUrl(), {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ flowRef: 'machine-1/tool-name', payload: { key: 'value' } }),
+      body: JSON.stringify({ flowRef: 'machine-1/tool-name' }),
     });
     expect(res.status).toBe(200);
     const body = (await res.json()) as {
@@ -391,7 +471,7 @@ describe('POST /agent-actions/:approvalId/execute — success', () => {
         'content-type': 'application/json',
         'Idempotency-Key': 'execute-http-idem-1',
       },
-      body: JSON.stringify({ flowRef: 'machine-1/tool-name', payload: { key: 'value' } }),
+      body: JSON.stringify({ flowRef: 'machine-1/tool-name' }),
     };
 
     const first = await fetch(executeUrl(), request);

@@ -8,7 +8,7 @@ import { queryClient } from '@/lib/query-client';
 import { useTheme } from '@/hooks/use-theme';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useApprovals } from '@/hooks/queries/use-approvals';
+import { usePendingCount } from '@/hooks/use-pending-count';
 import { useApprovalEventStream } from '@/hooks/queries/use-approval-event-stream';
 import { useCockpitExtensionRegistry } from '@/hooks/use-cockpit-extension-registry';
 import { useUIStore } from '@/stores/ui-store';
@@ -36,7 +36,10 @@ import { shouldEnableRoboticsDemo } from '@/lib/robotics-runtime';
 import { Toaster } from 'sonner';
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import type { PersonaId } from '@/stores/ui-store';
-import type { CockpitShellNavigationItem } from '@/lib/shell/navigation';
+import type {
+  CockpitShellNavigationBadge,
+  CockpitShellNavigationItem,
+} from '@/lib/shell/navigation';
 
 interface WorkspaceOption {
   workspaceId: string;
@@ -90,13 +93,13 @@ function NavLink({
   return link;
 }
 
-function InboxBadge({ wsId }: { wsId: string }) {
-  const { data } = useApprovals(wsId);
-  const pendingCount = (data?.items ?? []).filter((a) => a.status === 'Pending').length;
-  if (pendingCount === 0) return null;
+function ShellNavBadge({ badge }: { badge: CockpitShellNavigationBadge }) {
   return (
-    <span className="ml-auto rounded-full bg-primary/15 text-primary text-[11px] px-1.5 py-0.5 font-medium leading-none">
-      {pendingCount} pending
+    <span
+      className="ml-auto rounded-full bg-primary/15 text-primary text-[11px] px-1.5 py-0.5 font-medium leading-none"
+      aria-label={badge.ariaLabel}
+    >
+      {badge.label}
     </span>
   );
 }
@@ -128,6 +131,7 @@ function RootShell() {
   const [workspaceOptions, setWorkspaceOptions] = useState<WorkspaceOption[]>([]);
   const oidcEnabled = isOidcConfigured(loadOidcConfig());
   const hasBearerToken = Boolean(readBearerToken());
+  const pendingApprovalCount = usePendingCount(activeWorkspaceId);
   const currentPath = typeof window === 'undefined' ? '' : window.location.pathname;
   const isAuthRoute = currentPath.startsWith('/auth/');
   const shouldRedirectToLogin =
@@ -145,6 +149,7 @@ function RootShell() {
     persona: activePersona,
     accessContext: extensionServerAccess.accessContext,
     roboticsEnabled: shouldEnableRoboticsDemo(),
+    liveState: { pendingApprovalCount },
   });
   const navSections = shellProjection.sidebarSections;
 
@@ -350,8 +355,8 @@ function RootShell() {
                             {!sidebarCollapsed && (
                               <span className="flex-1 text-left truncate">{item.label}</span>
                             )}
-                            {item.to === '/inbox' && !sidebarCollapsed && (
-                              <InboxBadge wsId={activeWorkspaceId} />
+                            {item.badge && !sidebarCollapsed && (
+                              <ShellNavBadge badge={item.badge} />
                             )}
                           </NavLink>
                         ),

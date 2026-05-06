@@ -2,13 +2,19 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   ActionId,
+  AgentId,
   ApprovalId,
+  CorrelationId,
+  MachineId,
   PlanId,
+  PolicyId,
+  ProposalId,
   RunId,
   UserId,
   WorkspaceId,
 } from '../../domain/primitives/index.js';
 import type { ApprovalDecidedV1 } from '../../domain/approvals/index.js';
+import type { AgentActionProposalV1 } from '../../domain/machines/index.js';
 import { toAppContext } from '../common/context.js';
 import type {
   ActionRunnerPort,
@@ -19,6 +25,7 @@ import type {
   IdGenerator,
   IdempotencyStore,
   UnitOfWork,
+  AgentActionProposalStore,
 } from '../ports/index.js';
 import { executeApprovedAgentAction } from './execute-approved-agent-action.js';
 
@@ -37,6 +44,31 @@ const APPROVED: ApprovalDecidedV1 = {
   rationale: 'Approved.',
 };
 
+const APPROVED_PROPOSAL: AgentActionProposalV1 = {
+  schemaVersion: 1,
+  proposalId: ProposalId('prop-1'),
+  workspaceId: WorkspaceId('ws-1'),
+  agentId: AgentId('agent-1'),
+  actionKind: 'comms:sendEmail',
+  toolName: 'flow-abc',
+  parameters: { key: 'value' },
+  executionTier: 'HumanApprove',
+  toolClassification: {
+    toolName: 'flow-abc',
+    category: 'Mutation',
+    minimumTier: 'HumanApprove',
+    rationale: 'Send email mutates external state.',
+  },
+  policyDecision: 'RequireApproval',
+  policyIds: [PolicyId('pol-1')],
+  decision: 'NeedsApproval',
+  approvalId: ApprovalId('appr-1'),
+  rationale: 'Approved proposal.',
+  requestedByUserId: UserId('user-2'),
+  correlationId: CorrelationId('corr-exec-1'),
+  proposedAtIso: '2026-03-01T00:00:00.000Z',
+};
+
 describe('executeApprovedAgentAction', () => {
   let authorization: AuthorizationPort;
   let clock: Clock;
@@ -46,7 +78,9 @@ describe('executeApprovedAgentAction', () => {
   let eventPublisher: EventPublisher;
   let actionRunner: ActionRunnerPort;
   let idempotency: IdempotencyStore;
+  let proposalStore: AgentActionProposalStore;
   let storedApproval: ApprovalDecidedV1;
+  let storedProposal: AgentActionProposalV1 | null;
 
   beforeEach(() => {
     authorization = { isAllowed: vi.fn(async () => true) };
@@ -72,6 +106,15 @@ describe('executeApprovedAgentAction', () => {
         },
       ),
     };
+    storedProposal = APPROVED_PROPOSAL;
+    proposalStore = {
+      getProposalById: vi.fn(async () => storedProposal),
+      getProposalByApprovalId: vi.fn(async () => storedProposal),
+      getProposalByIdempotencyKey: vi.fn(async () => storedProposal),
+      saveProposal: vi.fn(async (_tenantId, proposal) => {
+        storedProposal = proposal;
+      }),
+    };
     unitOfWork = { execute: vi.fn(async (fn) => fn()) };
     eventPublisher = { publish: vi.fn(async () => undefined) };
     actionRunner = {
@@ -92,6 +135,7 @@ describe('executeApprovedAgentAction', () => {
     unitOfWork,
     eventPublisher,
     actionRunner,
+    proposalStore,
   });
 
   const makeCtx = () =>
@@ -161,6 +205,70 @@ describe('executeApprovedAgentAction', () => {
     expect(result.ok).toBe(false);
     if (result.ok) throw new Error('Expected not-found.');
     expect(result.error.kind).toBe('NotFound');
+    expect(actionRunner.dispatchAction).not.toHaveBeenCalled();
+  });
+
+  it('returns NotFound when the approved proposal is not stored', async () => {
+    storedProposal = null;
+    storedApproval = {
+      ...APPROVED,
+      runId: RunId('prop-missing'),
+      planId: PlanId('prop-missing'),
+    };
+
+    const result = await executeApprovedAgentAction(makeDeps(), makeCtx(), makeInput());
+
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('Expected missing proposal.');
+    expect(result.error.kind).toBe('NotFound');
+    expect(result.error.message).toMatch(/agent action proposal/i);
+    expect(actionRunner.dispatchAction).not.toHaveBeenCalled();
+  });
+
+  it('fails closed when proposalStore is not configured', async () => {
+    const { proposalStore: _proposalStore, ...depsWithoutProposalStore } = makeDeps();
+    storedApproval = {
+      ...APPROVED,
+      runId: RunId('prop-missing'),
+      planId: PlanId('prop-missing'),
+    };
+
+    const result = await executeApprovedAgentAction(
+      depsWithoutProposalStore,
+      makeCtx(),
+      makeInput(),
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('Expected dependency failure.');
+    expect(result.error.kind).toBe('DependencyFailure');
+    expect(result.error.message).toMatch(/proposal store/i);
+    expect(actionRunner.dispatchAction).not.toHaveBeenCalled();
+  });
+
+  it('rejects execution when flowRef differs from the approved proposal', async () => {
+    const result = await executeApprovedAgentAction(makeDeps(), makeCtx(), {
+      ...makeInput(),
+      flowRef: 'different-flow',
+    });
+
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('Expected conflict.');
+    expect(result.error.kind).toBe('Conflict');
+    expect(result.error.message).toMatch(/flowRef/);
+    expect(actionRunner.dispatchAction).not.toHaveBeenCalled();
+  });
+
+  it('rejects execution when payload differs from the approved proposal', async () => {
+    const result = await executeApprovedAgentAction(makeDeps(), makeCtx(), {
+      ...makeInput(),
+      payload: { key: 'changed' },
+    });
+
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('Expected conflict.');
+    expect(result.error.kind).toBe('Conflict');
+    expect(result.error.message).toMatch(/payload/);
     expect(actionRunner.dispatchAction).not.toHaveBeenCalled();
   });
 
@@ -240,6 +348,31 @@ describe('executeApprovedAgentAction', () => {
         flowRef: 'flow-abc',
         idempotencyKey: 'ExecuteApprovedAgentAction:tenant-1:ws-1:appr-1:flow-abc',
         payload: { key: 'value' },
+      }),
+    );
+  });
+
+  it('dispatches the canonical approved proposal flow and payload', async () => {
+    storedProposal = {
+      ...APPROVED_PROPOSAL,
+      machineId: MachineId('machine-1'),
+      toolName: 'tool-name',
+      parameters: { key: 'approved' },
+    };
+
+    const result = await executeApprovedAgentAction(makeDeps(), makeCtx(), {
+      ...makeInput(),
+      flowRef: 'tool-name',
+      payload: { key: 'approved' },
+    });
+
+    expect(result.ok).toBe(true);
+    expect(actionRunner.dispatchAction).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actionId: ActionId('ExecuteApprovedAgentAction:tenant-1:ws-1:appr-1:machine-1/tool-name'),
+        flowRef: 'machine-1/tool-name',
+        idempotencyKey: 'ExecuteApprovedAgentAction:tenant-1:ws-1:appr-1:machine-1/tool-name',
+        payload: { key: 'approved' },
       }),
     );
   });
