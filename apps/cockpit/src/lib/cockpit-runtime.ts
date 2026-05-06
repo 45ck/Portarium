@@ -62,6 +62,7 @@ export function isDemoDatasetId(value: DatasetId): boolean {
 
 export function shouldEnableCockpitMocks(env: CockpitEnvLike = import.meta.env): boolean {
   if (env.DEV !== true) return false;
+  if (!cockpitFlagEnabled(env.VITE_DEMO_MODE, true)) return false;
   return cockpitFlagEnabled(env.VITE_PORTARIUM_ENABLE_MSW, true);
 }
 

@@ -5,6 +5,8 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { RouterProvider, createMemoryHistory } from '@tanstack/react-router';
 import { createCockpitRouter } from '@/router';
 import { queryClient } from '@/lib/query-client';
+import { useAuthStore } from '@/stores/auth-store';
+import { useUIStore } from '@/stores/ui-store';
 import {
   ADAPTERS,
   AGENTS,
@@ -365,6 +367,24 @@ beforeEach(() => {
   queryClient.clear();
   localStorage.clear();
   document.documentElement.className = '';
+  useUIStore.setState({
+    sidebarCollapsed: false,
+    activePersona: 'Operator',
+    activeWorkspaceId: 'ws-demo',
+  });
+  useAuthStore.setState({
+    status: 'authenticated',
+    token: 'token-1',
+    claims: {
+      sub: 'user-1',
+      workspaceId: 'ws-demo',
+      roles: ['operator'],
+      personas: ['Operator'],
+      capabilities: ['extension:read', 'extension:inspect'],
+      apiScopes: ['extensions.read', 'extensions.inspect'],
+    },
+    error: null,
+  });
 });
 
 afterEach(() => {
@@ -386,5 +406,13 @@ describe('cockpit route page-load smoke', () => {
     expect(
       (await screen.findAllByRole('heading', { name: heading }, { timeout: 5_000 })).length,
     ).toBeGreaterThan(0);
+  });
+
+  it('keeps pending approval signal visible in the collapsed desktop sidebar', async () => {
+    useUIStore.setState({ sidebarCollapsed: true });
+
+    await renderRoute('/dashboard');
+
+    expect((await screen.findAllByLabelText(/\d+ pending approvals/)).length).toBeGreaterThan(0);
   });
 });

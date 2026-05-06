@@ -298,6 +298,22 @@ describe('executeApprovedAgentAction', () => {
     expect(result.error.kind).toBe('Conflict');
   });
 
+  it('returns DependencyFailure when actionRunner is not configured', async () => {
+    const { actionRunner: _actionRunner, ...depsWithoutActionRunner } = makeDeps();
+
+    const result = await executeApprovedAgentAction(
+      depsWithoutActionRunner,
+      makeCtx(),
+      makeInput(),
+    );
+
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error('Expected dependency failure.');
+    expect(result.error.kind).toBe('DependencyFailure');
+    expect(result.error.message).toMatch(/action runner/i);
+    expect(approvalStore.saveApprovalIfStatus).not.toHaveBeenCalled();
+  });
+
   it('returns Forbidden when the executor is the same user who approved the action', async () => {
     const result = await executeApprovedAgentAction(
       makeDeps(),

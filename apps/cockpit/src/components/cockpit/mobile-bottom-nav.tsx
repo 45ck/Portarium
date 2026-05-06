@@ -74,6 +74,24 @@ export function MobileBottomNav({
         <div className="flex items-center justify-around h-14">
           {primaryItems.map((item, i) => {
             const isActive = i === activeIndex;
+            if (item.comingSoon) {
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  className="relative flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 h-full px-0.5 text-muted-foreground/50"
+                  aria-label={`${item.label} coming soon`}
+                  aria-disabled="true"
+                  disabled
+                >
+                  <span className="opacity-60">{item.icon}</span>
+                  <span className="max-w-full truncate text-[10px] leading-none sm:text-[11px]">
+                    {item.label}
+                  </span>
+                </button>
+              );
+            }
+
             return (
               <TypedLink
                 key={item.id}
@@ -188,18 +206,30 @@ export function MobileBottomNav({
                   {section.label}
                 </p>
                 <div className="space-y-0.5">
-                  {section.items?.map((item) => (
-                    <TypedLink
-                      key={item.id}
-                      to={item.to}
-                      className="flex items-center gap-2 px-3 py-2 rounded-md text-sm hover:bg-accent transition-colors"
-                      onClick={() => setMoreOpen(false)}
-                      aria-label={item.label}
-                    >
-                      <span className="min-w-0 flex-1 truncate">{item.label}</span>
-                      {item.badge && <MobileDrawerBadge badge={item.badge} />}
-                    </TypedLink>
-                  ))}
+                  {section.items?.map((item) =>
+                    item.comingSoon ? (
+                      <span
+                        key={item.id}
+                        className="flex items-center gap-2 px-3 py-2 rounded-md text-sm text-muted-foreground/60"
+                        aria-label={`${item.label} coming soon`}
+                        aria-disabled="true"
+                      >
+                        <span className="min-w-0 flex-1 truncate">{item.label}</span>
+                        <span className="shrink-0 text-[11px] italic">soon</span>
+                      </span>
+                    ) : (
+                      <TypedLink
+                        key={item.id}
+                        to={item.to}
+                        className="flex items-center gap-2 px-3 py-2 rounded-md text-sm hover:bg-accent transition-colors"
+                        onClick={() => setMoreOpen(false)}
+                        aria-label={item.label}
+                      >
+                        <span className="min-w-0 flex-1 truncate">{item.label}</span>
+                        {item.badge && <MobileDrawerBadge badge={item.badge} />}
+                      </TypedLink>
+                    ),
+                  )}
                 </div>
               </div>
             ))}

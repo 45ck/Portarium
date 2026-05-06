@@ -10,19 +10,53 @@ interface LocalInstallCollection {
   problems: readonly CockpitExtensionRegistryProblem[];
 }
 
-const discoveredLocalInstallModules = import.meta.glob<LocalInstallModule>(
-  './local-installed/*.local.ts',
-  {
-    eager: true,
-  },
-);
-const localInstallModules = isLocalExtensionInstallEnabled() ? discoveredLocalInstallModules : {};
+type LocalInstallModuleLoader = () => Promise<LocalInstallModule>;
 
-const localInstallCollection = collectLocalInstallModules(localInstallModules);
+const localInstallCollection = await loadConfiguredLocalInstallModules();
 
 export const LOCAL_COCKPIT_EXTENSION_MODULES = localInstallCollection.extensions;
 
 export const LOCAL_COCKPIT_EXTENSION_INSTALL_PROBLEMS = localInstallCollection.problems;
+
+export const LOCAL_COCKPIT_EXTENSION_FIXTURE_ACCESS_ENABLED =
+  isLocalExtensionFixtureAccessEnabled();
+
+async function loadConfiguredLocalInstallModules(): Promise<LocalInstallCollection> {
+  if (!isLocalExtensionInstallEnabled()) return { extensions: [], problems: [] };
+
+  const discoveredLocalInstallModuleLoaders = import.meta.glob<LocalInstallModule>(
+    './local-installed/*.local.ts',
+  );
+  return loadLocalInstallModules(discoveredLocalInstallModuleLoaders, { enabled: true });
+}
+
+export async function loadLocalInstallModules(
+  moduleLoaders: Readonly<Record<string, LocalInstallModuleLoader>>,
+  options: { enabled: boolean },
+): Promise<LocalInstallCollection> {
+  if (!options.enabled) return { extensions: [], problems: [] };
+
+  const extensions: CockpitInstalledExtension[] = [];
+  const problems: CockpitExtensionRegistryProblem[] = [];
+
+  for (const [modulePath, loadModule] of Object.entries(moduleLoaders).sort(([left], [right]) =>
+    left.localeCompare(right),
+  )) {
+    try {
+      const collection = collectLocalInstallModules({ [modulePath]: await loadModule() });
+      extensions.push(...collection.extensions);
+      problems.push(...collection.problems);
+    } catch (error) {
+      problems.push({
+        code: 'invalid-manifest',
+        message: `Local Cockpit extension install module "${modulePath}" failed to load: ${toErrorMessage(error)}`,
+        itemId: modulePath,
+      });
+    }
+  }
+
+  return { extensions, problems };
+}
 
 export function collectLocalInstallModules(
   modules: Readonly<Record<string, LocalInstallModule>>,
@@ -80,9 +114,28 @@ function isInstalledExtension(value: unknown): value is CockpitInstalledExtensio
 }
 
 function isLocalExtensionInstallEnabled(): boolean {
+  const env = localExtensionEnv();
   if (import.meta.env.MODE === 'test') {
-    return import.meta.env['VITE_COCKPIT_ENABLE_LOCAL_EXTENSIONS_IN_TESTS'] === 'true';
+    return env['VITE_COCKPIT_ENABLE_LOCAL_EXTENSIONS_IN_TESTS'] === 'true';
   }
 
-  return import.meta.env['VITE_COCKPIT_ENABLE_LOCAL_EXTENSIONS'] === 'true';
+  return env['VITE_COCKPIT_ENABLE_LOCAL_EXTENSIONS'] === 'true';
+}
+
+function isLocalExtensionFixtureAccessEnabled(): boolean {
+  const env = localExtensionEnv();
+  if (import.meta.env.MODE === 'test') {
+    return env['VITE_COCKPIT_ENABLE_LOCAL_EXTENSION_FIXTURE_ACCESS_IN_TESTS'] === 'true';
+  }
+
+  return env['VITE_COCKPIT_ENABLE_LOCAL_EXTENSION_FIXTURE_ACCESS'] === 'true';
+}
+
+function localExtensionEnv(): ImportMetaEnv & Readonly<Record<string, string | undefined>> {
+  return import.meta.env as ImportMetaEnv & Readonly<Record<string, string | undefined>>;
+}
+
+function toErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  return String(error);
 }

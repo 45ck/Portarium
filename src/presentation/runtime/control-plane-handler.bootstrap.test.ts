@@ -25,6 +25,8 @@ const AUTH_ENV_KEYS = [
   'NODE_ENV',
   'PORTARIUM_USE_POSTGRES_STORES',
   'PORTARIUM_DATABASE_URL',
+  'OPENCLAW_GATEWAY_BASE_URL',
+  'OPENCLAW_GATEWAY_BEARER_TOKEN',
 ] as const;
 
 let savedEnv: Partial<Record<(typeof AUTH_ENV_KEYS)[number], string | undefined>> = {};
@@ -231,6 +233,35 @@ describe('buildJoseAuthenticationConfigFromEnv', () => {
 });
 
 describe('buildControlPlaneDeps store bootstrap', () => {
+  it('does not wire a success-returning action runner when OpenClaw is not configured', async () => {
+    for (const key of AUTH_ENV_KEYS) delete process.env[key];
+    process.env['NODE_ENV'] = 'test';
+    process.env['DEV_STUB_STORES'] = 'true';
+    process.env['ENABLE_DEV_AUTH'] = 'true';
+    process.env['PORTARIUM_DEV_TOKEN'] = 'dev-token';
+    process.env['PORTARIUM_DEV_WORKSPACE_ID'] = 'workspace-1';
+    process.env['PORTARIUM_DEV_USER_ID'] = 'user-1';
+
+    const deps = await buildControlPlaneDeps();
+
+    expect(deps.actionRunner).toBeUndefined();
+  });
+
+  it('does not wire an action runner when OpenClaw token is missing', async () => {
+    for (const key of AUTH_ENV_KEYS) delete process.env[key];
+    process.env['NODE_ENV'] = 'test';
+    process.env['DEV_STUB_STORES'] = 'true';
+    process.env['ENABLE_DEV_AUTH'] = 'true';
+    process.env['PORTARIUM_DEV_TOKEN'] = 'dev-token';
+    process.env['PORTARIUM_DEV_WORKSPACE_ID'] = 'workspace-1';
+    process.env['PORTARIUM_DEV_USER_ID'] = 'user-1';
+    process.env['OPENCLAW_GATEWAY_BASE_URL'] = 'https://openclaw.example.test';
+
+    const deps = await buildControlPlaneDeps();
+
+    expect(deps.actionRunner).toBeUndefined();
+  });
+
   it('wires workforce, queue, and human-task stores in dev stub mode', async () => {
     for (const key of AUTH_ENV_KEYS) delete process.env[key];
     process.env['NODE_ENV'] = 'test';

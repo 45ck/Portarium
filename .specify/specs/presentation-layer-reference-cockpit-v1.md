@@ -187,7 +187,7 @@ For each primary screen, show dedicated state components for:
 - Extension route code must not be imported until pack activation, quarantine state, route-module availability, persona, capability, API-scope, and privacy-class checks pass.
 - Cockpit v1 extension executable code must be installed at compile time through host-reviewed packages or workspace links; manifests must not trigger runtime remote JavaScript loading or manifest-driven imports.
 - Missing, unknown, stale, or partial guard inputs must fail closed and prevent route, navigation, command, shortcut, and mobile surfaces from becoming reachable.
-- The same resolved route guard decision must drive `/external/` direct navigation, sidebar links, mobile navigation, command palette actions, and keyboard shortcuts.
+- The same resolved route guard decision must drive `/external/` direct navigation; sidebar links, mobile navigation, command palette actions, and keyboard shortcuts must additionally enforce their own declared persona, capability, and API-scope requirements.
 - Sidebar, mobile navigation, command palette entries, and keyboard shortcuts must be projected only from the resolved Cockpit extension registry; shell code must not read raw manifest arrays or maintain separate extension navigation or command allowlists.
 - Sidebar and mobile-more navigation should group extension items by the enabled Cockpit Extension identity instead of merging all extension links into one generic bucket.
 - Guard denials must expose audit-ready decision metadata for the host while user-facing forbidden and not-found fallbacks avoid leaking sensitive extension route metadata.

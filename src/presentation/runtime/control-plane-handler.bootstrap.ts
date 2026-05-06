@@ -697,11 +697,11 @@ async function tryBuildWorkflowOrchestrator(): Promise<WorkflowOrchestrator | un
 }
 
 /**
- * Build the action runner. If OPENCLAW_GATEWAY_BASE_URL is set, uses the real
- * OpenClaw gateway invoker (HTTP dispatch). Otherwise falls back to a stub
- * that always returns ok:true without dispatching.
+ * Build the action runner. If OpenClaw gateway configuration is complete, uses
+ * the real gateway invoker. Otherwise leaves execution unwired so HTTP execute
+ * routes fail closed with 503.
  */
-function buildActionRunner(): ActionRunnerPort {
+function buildActionRunner(): ActionRunnerPort | undefined {
   const gatewayUrl = process.env['OPENCLAW_GATEWAY_BASE_URL']?.trim();
   const gatewayToken = process.env['OPENCLAW_GATEWAY_BEARER_TOKEN']?.trim();
 
@@ -717,22 +717,16 @@ function buildActionRunner(): ActionRunnerPort {
   if (gatewayUrl && !gatewayToken) {
     process.stderr.write(
       '[portarium] WARNING: OPENCLAW_GATEWAY_BASE_URL is set but OPENCLAW_GATEWAY_BEARER_TOKEN is not. ' +
-        'Falling back to stub action runner. Set OPENCLAW_GATEWAY_BEARER_TOKEN to enable real dispatch.\n',
+        'Approved agent action execution will return 503 until OPENCLAW_GATEWAY_BEARER_TOKEN enables real dispatch.\n',
     );
+    return undefined;
   }
 
   process.stderr.write(
-    '[portarium] WARNING: Using stub action runner (OPENCLAW_GATEWAY_BASE_URL not set). ' +
-      'Agent actions will appear to succeed but are not dispatched.\n',
+    '[portarium] WARNING: Action runner is not configured (OPENCLAW_GATEWAY_BASE_URL not set). ' +
+      'Approved agent action execution will return 503 until a real runner is configured.\n',
   );
-  return {
-    dispatchAction: async (input) => {
-      process.stderr.write(
-        `[portarium] STUB: action dispatched (not real) — actionId=${String(input.actionId)} runId=${String(input.runId)}\n`,
-      );
-      return { ok: true as const, output: { status: 'completed', runId: String(input.runId) } };
-    },
-  };
+  return undefined;
 }
 
 export async function buildControlPlaneDeps(): Promise<ControlPlaneDeps> {
@@ -806,7 +800,7 @@ export async function buildControlPlaneDeps(): Promise<ControlPlaneDeps> {
       workspaceUserStore,
       eventPublisher,
       unitOfWork,
-      actionRunner,
+      ...(actionRunner ? { actionRunner } : {}),
       cockpitExtensionActivationSource,
       cockpitWebSessionStore,
       cockpitWebSessionConfig,
@@ -884,7 +878,7 @@ export async function buildControlPlaneDeps(): Promise<ControlPlaneDeps> {
     planQueryStore,
     eventPublisher,
     unitOfWork,
-    actionRunner,
+    ...(actionRunner ? { actionRunner } : {}),
     cockpitExtensionActivationSource,
     cockpitWebSessionStore,
     cockpitWebSessionConfig,

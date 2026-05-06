@@ -44,6 +44,16 @@ describe('cockpit runtime mode', () => {
     });
   });
 
+  it('does not start MSW fixtures for explicit dev-live mode', () => {
+    expect(shouldEnableCockpitMocks({ DEV: true, VITE_DEMO_MODE: 'false' })).toBe(false);
+    expect(resolveCockpitRuntime({ DEV: true, VITE_DEMO_MODE: 'false' })).toMatchObject({
+      runtimeMode: 'dev-live',
+      mockServiceWorkerEnabled: false,
+      usesLiveTenantData: true,
+      allowDemoControls: false,
+    });
+  });
+
   it('does not allow demo controls in production without MSW even when demo mode is requested', () => {
     expect(resolveCockpitRuntime({ DEV: false, VITE_DEMO_MODE: 'true' })).toMatchObject({
       runtimeMode: 'live',

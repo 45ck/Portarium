@@ -13,24 +13,41 @@ import { useUIStore } from '@/stores/ui-store';
 
 const TENANT_QUERY_PREFIXES = new Set([
   'adapters',
+  'agents',
+  'approval-coverage-roster',
   'approval-thresholds',
   'approvals',
+  'cockpit-extension-context',
+  'credential-grants',
   'evidence',
   'estop-log',
   'estop-status',
+  'events-stream',
   'gateways',
   'human-tasks',
+  'machines',
   'missions',
+  'pack-ui-runtime',
+  'plans',
+  'policies',
+  'projects',
   'robot-locations',
   'robots',
+  'run-evidence',
   'runs',
   'safety-constraints',
+  'sod-constraints',
+  'users',
   'work-items',
+  'workflows',
   'workforce-members',
   'workforce-queues',
 ]);
 
-function queryBelongsToWorkspace(queryKey: readonly unknown[], workspaceId: string): boolean {
+export function queryBelongsToWorkspace(
+  queryKey: readonly unknown[],
+  workspaceId: string,
+): boolean {
   const [prefix] = queryKey;
   return (
     typeof prefix === 'string' &&

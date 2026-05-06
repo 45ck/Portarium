@@ -48,13 +48,67 @@ describe('installed cockpit extension catalog', () => {
     ]);
   });
 
-  it('returns effective local activation grants for shell projections', async () => {
+  it('registers local install modules without fixture auto-activation grants by default', async () => {
     vi.resetModules();
 
     const localExtension = buildLocalReferenceExtension();
     const localInstalledExtension = buildInstalledExtension(localExtension);
 
     vi.doMock('./local-install', () => ({
+      LOCAL_COCKPIT_EXTENSION_FIXTURE_ACCESS_ENABLED: false,
+      LOCAL_COCKPIT_EXTENSION_MODULES: [localInstalledExtension],
+      LOCAL_COCKPIT_EXTENSION_INSTALL_PROBLEMS: [],
+    }));
+
+    const installed = await import('./installed');
+    expect(
+      installed.INSTALLED_COCKPIT_EXTENSION_MODULES.map((extension) => extension.manifest.id),
+    ).toContain('local.reference');
+
+    const serverAccess = installed.resolveInstalledCockpitExtensionServerAccess({
+      activePackIds: [],
+      quarantinedExtensionIds: [],
+      emergencyDisabledExtensionIds: [],
+      accessContext: {
+        persona: 'Operator',
+        availablePersonas: ['Operator'],
+        availableCapabilities: [],
+        availableApiScopes: [],
+        availablePrivacyClasses: [],
+      },
+      usable: false,
+    });
+
+    expect(serverAccess.activePackIds).not.toContain('local.reference');
+    expect(serverAccess.accessContext.availableCapabilities).not.toContain('local:read');
+    expect(serverAccess.accessContext.availableApiScopes).not.toContain('local.read');
+    expect(serverAccess.accessContext.availablePrivacyClasses).not.toContain('internal');
+
+    const registry = installed.resolveInstalledCockpitExtensionRegistry({
+      activePackIds: serverAccess.activePackIds,
+      availablePersonas: serverAccess.accessContext.availablePersonas,
+      availableCapabilities: serverAccess.accessContext.availableCapabilities,
+      availableApiScopes: serverAccess.accessContext.availableApiScopes,
+      availablePrivacyClasses: serverAccess.accessContext.availablePrivacyClasses,
+    });
+
+    expect(
+      registry.extensions.find((extension) => extension.manifest.id === 'local.reference')?.status,
+    ).toBe('disabled');
+    expect(registry.navItems.map((item) => item.id)).not.toContain('local-reference-overview-nav');
+
+    vi.doUnmock('./local-install');
+    vi.resetModules();
+  });
+
+  it('returns effective local activation grants only when fixture access is enabled', async () => {
+    vi.resetModules();
+
+    const localExtension = buildLocalReferenceExtension();
+    const localInstalledExtension = buildInstalledExtension(localExtension);
+
+    vi.doMock('./local-install', () => ({
+      LOCAL_COCKPIT_EXTENSION_FIXTURE_ACCESS_ENABLED: true,
       LOCAL_COCKPIT_EXTENSION_MODULES: [localInstalledExtension],
       LOCAL_COCKPIT_EXTENSION_INSTALL_PROBLEMS: [],
     }));

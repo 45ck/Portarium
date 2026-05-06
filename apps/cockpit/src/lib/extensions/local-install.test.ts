@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { EXAMPLE_REFERENCE_EXTENSION } from './example-reference/manifest';
-import { collectLocalInstallModules } from './local-install';
+import { collectLocalInstallModules, loadLocalInstallModules } from './local-install';
 import type { CockpitInstalledExtension } from './types';
 
 const installedExtension = {
@@ -17,6 +17,23 @@ const installedExtension = {
 } satisfies CockpitInstalledExtension;
 
 describe('local cockpit extension install modules', () => {
+  it('does not load local-installed modules when local installs are disabled', async () => {
+    const loadModule = vi.fn(async () => {
+      throw new Error('disabled local extension modules must not be evaluated');
+    });
+
+    const collection = await loadLocalInstallModules(
+      {
+        './local-installed/reference.local.ts': loadModule,
+      },
+      { enabled: false },
+    );
+
+    expect(loadModule).not.toHaveBeenCalled();
+    expect(collection.extensions).toEqual([]);
+    expect(collection.problems).toEqual([]);
+  });
+
   it('accepts a default installed extension export', () => {
     const collection = collectLocalInstallModules({
       './local-installed/reference.local.ts': { default: installedExtension },

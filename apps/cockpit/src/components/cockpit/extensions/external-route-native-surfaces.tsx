@@ -1,5 +1,38 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import {
+  hasCockpitNativeRouteSurface as hasNativeRouteSurface,
+  isCockpitNativeRouteSurface as isNativeRouteSurface,
+  type CockpitNativeAutomationProposal as NativeAutomationProposal,
+  type CockpitNativeBaseMap as NativeBaseMap,
+  type CockpitNativeDataExplorerInsight as NativeDataExplorerInsight,
+  type CockpitNativeDataExplorerMetric as NativeDataExplorerMetric,
+  type CockpitNativeDataExplorerSource as NativeDataExplorerSource,
+  type CockpitNativeDataExplorerSurface as NativeDataExplorerSurface,
+  type CockpitNativeKeyValue as NativeKeyValue,
+  type CockpitNativeLinkAction as NativeLinkAction,
+  type CockpitNativeMapEntity as NativeMapEntity,
+  type CockpitNativeMapLayer as NativeMapLayer,
+  type CockpitNativeMapWorkbenchSurface as NativeMapWorkbenchSurface,
+  type CockpitNativeReadOnlyGroup as NativeReadOnlyGroup,
+  type CockpitNativeRelatedItem as NativeRelatedItem,
+  type CockpitNativeRouteSurfaceBase as NativeRouteSurfaceBase,
+  type CockpitNativeRouteSurfaceData as NativeRouteSurfaceData,
+  type CockpitNativeSelectOption as NativeSelectOption,
+  type CockpitNativeSnapshotPort as NativeSnapshotPort,
+  type CockpitNativeSourcePostureSummary as NativeSourcePostureSummary,
+  type CockpitNativeStatusBadge as NativeStatusBadge,
+  type CockpitNativeTicketConversationBlock as NativeTicketConversationBlock,
+  type CockpitNativeTicketConversationItem as NativeTicketConversationItem,
+  type CockpitNativeTicketDetail as NativeTicketDetail,
+  type CockpitNativeTicketDetailSection as NativeTicketDetailSection,
+  type CockpitNativeTicketFilterGroup as NativeTicketFilterGroup,
+  type CockpitNativeTicketFilterOption as NativeTicketFilterOption,
+  type CockpitNativeTicketInboxSurface as NativeTicketInboxSurface,
+  type CockpitNativeTicketRecord as NativeTicketRecord,
+  type CockpitNativeTicketSectionContent as NativeTicketSectionContent,
+  type CockpitNativeTicketView as NativeTicketView,
+} from '@portarium/cockpit-extension-sdk';
+import {
   ArrowRight,
   Bot,
   CheckCircle2,
@@ -32,364 +65,7 @@ import { useProposeAgentAction } from '@/hooks/queries/use-approvals';
 import { useUIStore } from '@/stores/ui-store';
 import type { ExternalRouteComponentProps } from './external-route-adapter';
 
-type NativeSurfaceKind =
-  | 'portarium.native.dataExplorer.v1'
-  | 'portarium.native.ticketInbox.v1'
-  | 'portarium.native.mapWorkbench.v1';
-
-interface NativeRouteSurfaceData {
-  nativeSurface?: unknown;
-}
-
-interface NativeStatusBadge {
-  label: string;
-  tone?: 'neutral' | 'info' | 'success' | 'warning' | 'critical';
-}
-
-interface NativeAreaNavItem {
-  id: string;
-  label: string;
-  href: string;
-  detail?: string;
-  active?: boolean;
-}
-
-interface NativeRouteSurfaceBase {
-  kind: NativeSurfaceKind;
-  title: string;
-  description?: string;
-  badges?: readonly NativeStatusBadge[];
-  automationProposals?: readonly NativeAutomationProposal[];
-  area?: {
-    label: string;
-    title: string;
-    navItems: readonly NativeAreaNavItem[];
-    boundary?: readonly string[];
-  };
-}
-
-interface NativeAutomationProposal {
-  id: string;
-  label: string;
-  summary: string;
-  confidence?: string;
-  risk?: NativeStatusBadge['tone'];
-  sourceRefs?: readonly string[];
-  safety?: readonly string[];
-  proposal: {
-    agentId: string;
-    actionKind: string;
-    toolName: string;
-    executionTier: 'Auto' | 'Assisted' | 'HumanApprove' | 'ManualOnly';
-    policyIds: readonly string[];
-    rationale: string;
-    parameters?: Record<string, unknown>;
-    machineId?: string;
-    idempotencyKey?: string;
-  };
-}
-
-interface NativeTicketView {
-  id: string;
-  label: string;
-  count: number;
-  href: string;
-  active?: boolean;
-}
-
-interface NativeTicketFilterOption {
-  label: string;
-  href: string;
-  active?: boolean;
-}
-
-interface NativeTicketFilterGroup {
-  label: string;
-  options: readonly NativeTicketFilterOption[];
-}
-
-interface NativeTicketRecord {
-  id: string;
-  label: string;
-  summary: string;
-  href: string;
-  selected?: boolean;
-  statusLabel: string;
-  lifecycle?: string;
-  priorityLabel: string;
-  typeLabel?: string;
-  category?: string;
-  requesterLabel?: string;
-  ownerLabel?: string;
-  updatedAtLabel: string;
-  dueLabel?: string;
-  roomLabel?: string;
-  sourceRef: string;
-}
-
-interface NativeTicketConversationItem {
-  id: string;
-  authorLabel?: string;
-  timestampLabel?: string;
-  bodyPreview?: string;
-  bodyFormat?: 'plain' | 'html-derived' | 'markdown-like';
-  body: string;
-  bodyBlocks?: readonly NativeTicketConversationBlock[];
-  direction?: 'incoming' | 'outgoing' | 'unknown';
-  private?: boolean;
-  metadata?: string;
-}
-
-type NativeTicketConversationBlock =
-  | {
-      kind: 'paragraph' | 'quote';
-      text: string;
-    }
-  | {
-      kind: 'list';
-      items: readonly string[];
-    };
-
-interface NativeTicketDetail {
-  label: string;
-  sourceRef: string;
-  summary: string;
-  activeSection?: string;
-  sections?: readonly NativeTicketDetailSection[];
-  badges: readonly NativeStatusBadge[];
-  conversation: {
-    title: string;
-    message: string;
-    summary?: string;
-    items?: readonly NativeTicketConversationItem[];
-    totalCount?: number;
-    omittedCount?: number;
-  };
-  sectionContent?: NativeTicketSectionContent;
-  properties: readonly NativeKeyValue[];
-  relatedContext: {
-    roomLinks?: readonly { label: string; href: string }[];
-    items: readonly NativeRelatedItem[];
-  };
-  diagnostics: readonly NativeKeyValue[];
-}
-
-interface NativeTicketDetailSection {
-  id: string;
-  label: string;
-  href: string;
-  active?: boolean;
-}
-
-type NativeTicketSectionContent =
-  | {
-      kind: 'conversation';
-      title?: string;
-      message?: string;
-      summary?: string;
-      items?: readonly NativeTicketConversationItem[];
-      totalCount?: number;
-    }
-  | {
-      kind: 'evidence';
-      title?: string;
-      items?: readonly NativeRelatedItem[];
-      emptyText?: string;
-    }
-  | {
-      kind: 'room';
-      title?: string;
-      roomLinks?: readonly { label: string; href: string }[];
-      evidenceCount?: number;
-      emptyText?: string;
-    }
-  | {
-      kind: 'source';
-      title?: string;
-      properties?: readonly NativeKeyValue[];
-    };
-
-interface NativeTicketInboxSurface extends NativeRouteSurfaceBase {
-  kind: 'portarium.native.ticketInbox.v1';
-  queue: {
-    views: readonly NativeTicketView[];
-    filters: readonly NativeTicketFilterGroup[];
-    search: {
-      action: string;
-      query?: string;
-      sort: string;
-      pageSize: number;
-      sortOptions: readonly NativeSelectOption[];
-      pageSizeOptions: readonly number[];
-    };
-    statusText: string;
-    pageText: string;
-    tickets: readonly NativeTicketRecord[];
-    pagination: readonly NativeLinkAction[];
-    auditTableHref?: string;
-  };
-  selectedTicket?: NativeTicketDetail;
-}
-
-interface NativeBaseMap {
-  id: string;
-  label: string;
-  kind: 'provider' | 'custom';
-  provider?: string;
-  description?: string;
-  imageHref?: string;
-  imageAlt?: string;
-  active?: boolean;
-}
-
-interface NativeMapLayer {
-  id: string;
-  label: string;
-  enabled: boolean;
-  kind: string;
-  privacyClass?: string;
-  freshnessLabel?: string;
-}
-
-interface NativeMapEntity {
-  id: string;
-  label: string;
-  kind: string;
-  status?: string;
-  locationLabel?: string;
-  sourceRef?: string;
-}
-
-interface NativeMapWorkbenchSurface extends NativeRouteSurfaceBase {
-  kind: 'portarium.native.mapWorkbench.v1';
-  map: {
-    mode: 'provider' | 'custom' | 'hybrid';
-    activeBaseMapId: string;
-    baseMaps: readonly NativeBaseMap[];
-    layers: readonly NativeMapLayer[];
-    entities: readonly NativeMapEntity[];
-    selectionLabel?: string;
-    tabs: readonly { id: string; label: string; count?: number }[];
-    activeTab: string;
-    readOnlyGroups: readonly NativeReadOnlyGroup[];
-  };
-}
-
-interface NativeDataExplorerMetric {
-  id: string;
-  label: string;
-  value: string;
-  detail?: string;
-  tone?: NativeStatusBadge['tone'];
-}
-
-interface NativeDataExplorerSource {
-  id: string;
-  label: string;
-  sourceSystem: string;
-  sourceMode: string;
-  category?: string;
-  readiness?: string;
-  freshness?: string;
-  privacyClass?: string;
-  itemCount?: number;
-  recordCount?: number;
-  summary: string;
-  href?: string;
-  sourceRefs?: readonly string[];
-  capabilityIds?: readonly string[];
-  connectorIds?: readonly string[];
-  visualisations?: readonly string[];
-  answerableQuestions?: readonly string[];
-  portariumSurfaces?: readonly string[];
-}
-
-interface NativeDataExplorerInsight {
-  id: string;
-  title: string;
-  summary: string;
-  tone?: NativeStatusBadge['tone'];
-  sourceIds?: readonly string[];
-  href?: string;
-}
-
-interface NativeSnapshotPort {
-  id: string;
-  label: string;
-  sourceSystem: string;
-  state: string;
-  sourceSystemAccess?: string;
-  writebackEnabled?: boolean;
-  rawPayloadsIncluded?: boolean;
-  credentialsIncluded?: boolean;
-  capabilityIds?: readonly string[];
-  mockDataPlane?: string;
-  livePromotionGate?: string;
-}
-
-interface NativeSourcePostureSummary {
-  generatedAt?: string;
-  sourceSystemAccess?: string;
-  dataOrigin?: string;
-  sourceCount?: number;
-  readOnlySourceCount?: number;
-  localSnapshotCount?: number;
-  restrictedOrSensitiveCount?: number;
-  staleOrUnknownCount?: number;
-}
-
-interface NativeDataExplorerSurface extends NativeRouteSurfaceBase {
-  kind: 'portarium.native.dataExplorer.v1';
-  explorer: {
-    metrics: readonly NativeDataExplorerMetric[];
-    sourcePosture?: NativeSourcePostureSummary;
-    sources: readonly NativeDataExplorerSource[];
-    snapshotPorts?: readonly NativeSnapshotPort[];
-    insights: readonly NativeDataExplorerInsight[];
-    integrationNotes?: readonly string[];
-  };
-}
-
-interface NativeReadOnlyGroup {
-  id: string;
-  label: string;
-  description?: string;
-  items: readonly NativeRelatedItem[];
-}
-
-interface NativeRelatedItem {
-  id: string;
-  label: string;
-  summary?: string;
-  metadata?: string;
-}
-
-interface NativeKeyValue {
-  label: string;
-  value: string;
-}
-
-interface NativeLinkAction {
-  label: string;
-  href: string;
-  active?: boolean;
-  disabled?: boolean;
-}
-
-interface NativeSelectOption {
-  value: string;
-  label: string;
-}
-
-type NativeRouteSurface =
-  | NativeDataExplorerSurface
-  | NativeTicketInboxSurface
-  | NativeMapWorkbenchSurface;
-
-export function hasNativeRouteSurface(value: unknown): value is NativeRouteSurfaceData {
-  const nativeSurface = readRecord(value)?.nativeSurface;
-  return isNativeRouteSurface(nativeSurface);
-}
+export { hasNativeRouteSurface };
 
 export function ExternalRouteNativeSurfaceRenderer({
   data,
@@ -1741,7 +1417,10 @@ function NativeSurfaceShell({
 }) {
   const automationPanel =
     surface.automationProposals && surface.automationProposals.length > 0 ? (
-      <NativeAutomationProposalPanel proposals={surface.automationProposals} extension={extension} />
+      <NativeAutomationProposalPanel
+        proposals={surface.automationProposals}
+        extension={extension}
+      />
     ) : null;
   const areaNav = surface.area ? (
     <section className="flex flex-wrap items-center gap-3 rounded-md border bg-card px-3 py-2">
@@ -1872,8 +1551,8 @@ function NativeAutomationProposalPanel({
         <div>
           <h2 className="text-sm font-semibold">Governed Automation Proposals</h2>
           <p className="text-xs text-muted-foreground">
-            {proposals.length} extension suggestion{proposals.length === 1 ? '' : 's'} available
-            for human-reviewed action.
+            {proposals.length} extension suggestion{proposals.length === 1 ? '' : 's'} available for
+            human-reviewed action.
           </p>
         </div>
         <Badge variant="outline">Approval path</Badge>
@@ -1881,8 +1560,7 @@ function NativeAutomationProposalPanel({
       <div className="mt-3 grid gap-2 xl:grid-cols-3">
         {proposals.map((proposal) => {
           const result = results[proposal.id];
-          const isSubmitting =
-            proposeAgentAction.isPending && activeProposalId === proposal.id;
+          const isSubmitting = proposeAgentAction.isPending && activeProposalId === proposal.id;
 
           return (
             <Card key={proposal.id} className="bg-background/80 shadow-none">
@@ -2017,22 +1695,6 @@ function RelatedItems({
       ))}
     </div>
   );
-}
-
-function isNativeRouteSurface(value: unknown): value is NativeRouteSurface {
-  const record = readRecord(value);
-  const kind = record?.kind;
-  return (
-    kind === 'portarium.native.dataExplorer.v1' ||
-    kind === 'portarium.native.ticketInbox.v1' ||
-    kind === 'portarium.native.mapWorkbench.v1'
-  );
-}
-
-function readRecord(value: unknown): Record<string, unknown> | undefined {
-  return value && typeof value === 'object' && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : undefined;
 }
 
 function badgeVariant(

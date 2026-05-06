@@ -73,7 +73,7 @@ function NavLink({
   const link = (
     <TypedLink
       to={to}
-      className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+      className="relative flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
       activeProps={{ className: 'bg-accent text-accent-foreground font-medium' }}
       aria-label={collapsed ? label : undefined}
     >
@@ -354,6 +354,12 @@ function RootShell() {
                             <span className="shrink-0">{item.icon}</span>
                             {!sidebarCollapsed && (
                               <span className="flex-1 text-left truncate">{item.label}</span>
+                            )}
+                            {item.badge && sidebarCollapsed && (
+                              <span
+                                className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-primary"
+                                aria-label={item.badge.ariaLabel}
+                              />
                             )}
                             {item.badge && !sidebarCollapsed && (
                               <ShellNavBadge badge={item.badge} />

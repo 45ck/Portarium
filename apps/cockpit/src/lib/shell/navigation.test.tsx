@@ -250,6 +250,30 @@ function projectSchoolOpsWith() {
   });
 }
 
+function projectExtensionWith({
+  manifest,
+  accessContext,
+  persona = 'Operator',
+}: {
+  manifest: CockpitExtensionManifest;
+  accessContext: CockpitExtensionAccessContext;
+  persona?: 'Operator' | 'Approver' | 'Auditor' | 'Admin';
+}) {
+  const registry = resolveCockpitExtensionRegistry({
+    installedExtensions: [manifest],
+    activePackIds: ['example.reference'],
+    ...neutralAccessContext,
+    routeLoaders: createRouteLoaders(manifest),
+  });
+
+  return projectCockpitShellNavigation({
+    registry,
+    persona,
+    accessContext,
+    roboticsEnabled: false,
+  });
+}
+
 describe('projectCockpitShellNavigation', () => {
   it('projects core sidebar, mobile, commands, and shortcuts from one shell model', () => {
     const projection = projectWith();
@@ -404,6 +428,38 @@ describe('projectCockpitShellNavigation', () => {
       'Open extension reference',
     );
     expect(projectCockpitGChordMap(projection.commandTargets).x).toBeUndefined();
+  });
+
+  it('hides extension navigation when the nav item is stricter than its route guard', () => {
+    const stricterNavExtension = {
+      ...NEUTRAL_REFERENCE_EXTENSION,
+      navItems: [
+        {
+          ...NEUTRAL_REFERENCE_EXTENSION.navItems[0]!,
+          personas: ['Approver'],
+          requiredCapabilities: ['extension:inspect'],
+          requiredApiScopes: ['extensions.inspect'],
+        },
+      ],
+    } satisfies CockpitExtensionManifest;
+    const projection = projectExtensionWith({
+      manifest: stricterNavExtension,
+      accessContext: {
+        ...neutralAccessContext,
+        availableCapabilities: ['extension:read'],
+        availableApiScopes: ['extensions.read'],
+      },
+    });
+
+    expect(projection.sidebarSections.map((section) => section.label)).not.toContain(
+      'Reference Extension',
+    );
+    expect(projection.mobileMoreSections.map((section) => section.label)).not.toContain(
+      'Reference Extension',
+    );
+    expect(projection.mobilePrimaryItems.map((item) => item.label)).not.toContain(
+      'Reference Overview',
+    );
   });
 
   it('filters robotics entries through the same projected shell model', () => {

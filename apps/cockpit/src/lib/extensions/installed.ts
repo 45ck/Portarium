@@ -2,6 +2,7 @@ import { EXAMPLE_REFERENCE_EXTENSION } from './example-reference/manifest';
 import { EXAMPLE_REFERENCE_ROUTE_LOADERS } from './example-reference/route-loaders';
 import { createCockpitExtensionManifestV1ConformanceReport } from '@portarium/cockpit-extension-sdk';
 import {
+  LOCAL_COCKPIT_EXTENSION_FIXTURE_ACCESS_ENABLED,
   LOCAL_COCKPIT_EXTENSION_INSTALL_PROBLEMS,
   LOCAL_COCKPIT_EXTENSION_MODULES,
 } from './local-install';
@@ -24,6 +25,10 @@ export type ResolveInstalledCockpitExtensionRegistryInput = Omit<
   ResolveCockpitExtensionRegistryInput,
   'installedExtensions' | 'routeLoaders'
 >;
+
+export interface LocalCockpitExtensionActivationOptions {
+  enableLocalFixtureAccess?: boolean;
+}
 
 const BUILT_IN_COCKPIT_EXTENSION_MODULES = [
   {
@@ -255,8 +260,10 @@ function collectInstalledPrivacyClasses(activePackIds: readonly string[]): reado
 
 export function withLocalCockpitExtensionActivation(
   input: ResolveInstalledCockpitExtensionRegistryInput,
+  options: LocalCockpitExtensionActivationOptions = {},
 ): ResolveInstalledCockpitExtensionRegistryInput {
   if (LOCAL_COCKPIT_EXTENSION_MODULES.length === 0) return input;
+  if (!isLocalFixtureAccessEnabled(options)) return input;
 
   const localPackIds = [
     ...new Set(LOCAL_COCKPIT_EXTENSION_MODULES.flatMap((extension) => extension.manifest.packIds)),
@@ -282,6 +289,12 @@ export function withLocalCockpitExtensionActivation(
       ...collectInstalledPrivacyClasses(localPackIds),
     ]),
   };
+}
+
+function isLocalFixtureAccessEnabled(options: LocalCockpitExtensionActivationOptions): boolean {
+  return (
+    options.enableLocalFixtureAccess === true || LOCAL_COCKPIT_EXTENSION_FIXTURE_ACCESS_ENABLED
+  );
 }
 
 function uniqueStrings(values: readonly string[]): readonly string[] {

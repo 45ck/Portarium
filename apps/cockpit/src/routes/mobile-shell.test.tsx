@@ -275,6 +275,16 @@ describe('cockpit mobile shell', () => {
     expect(screen.getByRole('link', { name: 'Inbox' })).toBeTruthy();
   });
 
+  it('renders coming-soon mobile drawer items without navigation links', async () => {
+    const user = userEvent.setup();
+    await renderRoute('/runs');
+
+    await user.click(screen.getByRole('button', { name: 'Open more navigation' }));
+
+    expect(await screen.findByLabelText('Autonomy coming soon')).toBeTruthy();
+    expect(screen.queryByRole('link', { name: 'Autonomy' })).toBeNull();
+  });
+
   it('hides extension mobile navigation when activation or guard context denies it', async () => {
     extensionContext = {
       activePackIds: ['example.reference'],

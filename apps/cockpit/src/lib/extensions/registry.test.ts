@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { COCKPIT_EXTENSION_FIXTURES, NEUTRAL_REFERENCE_EXTENSION } from './fixtures';
 import {
+  canAccessExtensionNavItem,
   canAccessExtensionRoute,
   resolveCockpitExtensionRegistry,
   selectExtensionCommands,
@@ -925,6 +926,62 @@ describe('cockpit extension registry', () => {
         availablePrivacyClasses: [],
       }),
     ).toEqual([]);
+  });
+
+  it('applies nav item personas, capabilities, and API scopes in addition to route guards', () => {
+    const stricterNav = cloneExtension({
+      navItems: [
+        {
+          ...NEUTRAL_REFERENCE_EXTENSION.navItems[0]!,
+          personas: ['Approver'],
+          requiredCapabilities: ['extension:inspect'],
+          requiredApiScopes: ['extensions.inspect'],
+        },
+      ],
+    });
+    const registry = resolveCockpitExtensionRegistry({
+      installedExtensions: [stricterNav],
+      activePackIds: ['example.reference'],
+      ...neutralAccessContext,
+      routeLoaders: neutralRouteLoaders,
+    });
+
+    expect(
+      canAccessExtensionRoute(stricterNav.routes[0]!, {
+        persona: 'Operator',
+        availableCapabilities: ['extension:read'],
+        availableApiScopes: ['extensions.read'],
+        availablePrivacyClasses: ['internal'],
+      }).allowed,
+    ).toBe(true);
+    expect(
+      canAccessExtensionNavItem(stricterNav.navItems[0]!, registry, {
+        persona: 'Operator',
+        availableCapabilities: ['extension:read'],
+        availableApiScopes: ['extensions.read'],
+        availablePrivacyClasses: ['internal'],
+      }),
+    ).toEqual({
+      allowed: false,
+      denials: [
+        { code: 'persona' },
+        { code: 'missing-capability', missing: ['extension:inspect'] },
+        { code: 'missing-api-scope', missing: ['extensions.inspect'] },
+      ],
+    });
+    expect(
+      selectExtensionNavItems(registry, 'sidebar', 'Operator', {
+        availableCapabilities: ['extension:read'],
+        availableApiScopes: ['extensions.read'],
+        availablePrivacyClasses: ['internal'],
+      }),
+    ).toEqual([]);
+    expect(
+      selectExtensionNavItems(registry, 'sidebar', 'Approver', {
+        ...neutralAccessContext,
+        availablePersonas: ['Approver'],
+      }).map((item) => item.id),
+    ).toEqual(['example-reference-overview-nav']);
   });
 
   it('applies command guard personas in addition to route guard personas', () => {

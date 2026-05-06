@@ -248,7 +248,21 @@ export function canAccessExtensionNavItem(
 ): CockpitExtensionAccessDecision {
   const route = registry.routes.find((candidate) => candidate.id === item.routeId);
   if (!route) return { allowed: false, denials: [{ code: 'route-unavailable' }] };
-  return canAccessExtensionRoute(route, context);
+  return decideAccess(
+    {
+      personas: combinePersonaRequirements(route.guard.personas, item.personas),
+      requiredCapabilities: uniqueStrings([
+        ...route.guard.requiredCapabilities,
+        ...(item.requiredCapabilities ?? []),
+      ]),
+      requiredApiScopes: uniqueStrings([
+        ...route.guard.requiredApiScopes,
+        ...(item.requiredApiScopes ?? []),
+      ]),
+      privacyClasses: route.guard.privacyClasses ?? [],
+    },
+    context,
+  );
 }
 
 export function canAccessExtensionCommand(

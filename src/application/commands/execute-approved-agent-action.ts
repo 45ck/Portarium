@@ -95,7 +95,7 @@ export interface ExecuteApprovedAgentActionDeps {
   approvalStore: ApprovalStore;
   unitOfWork: UnitOfWork;
   eventPublisher: EventPublisher;
-  actionRunner: ActionRunnerPort;
+  actionRunner?: ActionRunnerPort;
   proposalStore?: AgentActionProposalStore;
   evidenceLog?: EvidenceLogPort;
   idempotency?: IdempotencyStore;
@@ -562,6 +562,13 @@ export async function executeApprovedAgentAction(
     return err({
       kind: 'Conflict',
       message: `Approval ${input.approvalId} is not in Approved status (current: ${approval.status}).`,
+    });
+  }
+
+  if (!deps.actionRunner) {
+    return err({
+      kind: 'DependencyFailure',
+      message: 'Action runner is not configured for approved action execution.',
     });
   }
 
