@@ -22,6 +22,7 @@ Architecture Decision Records live in `docs/internal/adr/`.
 - Generic Cockpit plugin host control plane: `docs/internal/adr/ADR-0145-generic-cockpit-plugin-host-control-plane.md`
 - Cockpit local extension install bridge: `docs/internal/adr/ADR-0146-cockpit-local-extension-install-bridge.md`
 - Host-native Cockpit extension surfaces: `docs/internal/adr/ADR-0149-host-native-extension-surfaces.md`
+- Host-native extension suggestions and governed proposals: `docs/internal/adr/ADR-0150-host-native-extension-suggestions-and-governed-proposals.md`
 
 ## Working rule
 
