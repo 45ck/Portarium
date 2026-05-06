@@ -4,7 +4,6 @@ import {
   resolveCockpitRuntime,
   resolveStoredDataset,
   shouldEnableCockpitMocks,
-  shouldShowExtendedDemoDatasets,
   workspaceIdForDataset,
 } from '@/lib/cockpit-runtime';
 
@@ -94,7 +93,7 @@ describe('cockpit runtime mode', () => {
     expect(
       resolveStoredDataset(
         { DEV: true, VITE_PORTARIUM_ENABLE_MSW: 'false' },
-        storageWithDataset('openclaw-demo'),
+        storageWithDataset('retired-vertical-demo'),
       ),
     ).toBe('live');
   });
@@ -110,25 +109,16 @@ describe('cockpit runtime mode', () => {
     expect(workspaceIdForDataset('platform-showcase')).toBe('ws-platform-showcase');
   });
 
-  it('allows the Growth Studio fixture dataset from env and maps it to its workspace', () => {
+  it('ignores retired vertical fixture dataset IDs', () => {
     expect(
-      resolveStoredDataset({
-        DEV: true,
-        VITE_DEMO_MODE: 'true',
-        VITE_PORTARIUM_MOCK_DATASET: 'growth-studio',
-      }),
-    ).toBe('growth-studio');
-    expect(workspaceIdForDataset('growth-studio')).toBe('ws-growth-studio');
-  });
-
-  it('hides extended showcase datasets unless explicitly enabled', () => {
-    expect(shouldShowExtendedDemoDatasets({ DEV: true, VITE_DEMO_MODE: 'true' })).toBe(false);
-    expect(
-      shouldShowExtendedDemoDatasets({
-        DEV: true,
-        VITE_DEMO_MODE: 'true',
-        VITE_PORTARIUM_SHOW_EXTENDED_DEMOS: 'true',
-      }),
-    ).toBe(true);
+      resolveStoredDataset(
+        {
+          DEV: true,
+          VITE_DEMO_MODE: 'true',
+          VITE_PORTARIUM_MOCK_DATASET: 'growth-studio',
+        },
+        storageWithDataset('retired-expanded-snapshot'),
+      ),
+    ).toBe('platform-showcase');
   });
 });

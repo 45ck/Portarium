@@ -91,7 +91,7 @@ function ExploreGovernancePage() {
   const activePolicies = policies.filter((p) => p.status === 'Active').length;
   const activeSod = runtime.allowDemoControls
     ? sodConstraints.filter((c) => c.status === 'Active').length
-    : 'Demo-only';
+    : 'Unavailable';
 
   const policyColumns = [
     {

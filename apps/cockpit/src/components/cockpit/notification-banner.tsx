@@ -45,7 +45,7 @@ export function NotificationBanner({ pendingCount, onTap }: NotificationBannerPr
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between">
-                <span className="text-[13px] font-semibold text-white">OpenClaw</span>
+                <span className="text-[13px] font-semibold text-white">Portarium</span>
                 <span className="text-[11px] text-white/50">now</span>
               </div>
               <p className="text-[13px] leading-snug text-white/80 mt-0.5">

@@ -9,10 +9,10 @@ import { useMachines } from '@/hooks/queries/use-machines';
 import { AgentCapabilityBadge } from '@/components/cockpit/agent-capability-badge';
 import { opColors } from '@/components/cockpit/lib/effect-colors';
 
-type AgentKind = 'openclaw' | 'code' | 'llm';
+type AgentKind = 'machine' | 'code' | 'llm';
 
 function agentKind(agent: AgentV1): AgentKind {
-  if (agent.allowedCapabilities.includes('machine:invoke')) return 'openclaw';
+  if (agent.allowedCapabilities.includes('machine:invoke')) return 'machine';
   if (agent.allowedCapabilities.includes('execute-code')) return 'code';
   return 'llm';
 }
@@ -20,7 +20,7 @@ function agentKind(agent: AgentV1): AgentKind {
 const KIND_ICON: Record<AgentKind, { Icon: typeof Bot; cls: string; label: string }> = {
   llm: { Icon: Sparkles, cls: 'text-violet-500', label: 'LLM' },
   code: { Icon: Code2, cls: 'text-blue-500', label: 'Code' },
-  openclaw: { Icon: Cpu, cls: 'text-teal-500', label: 'OpenClaw' },
+  machine: { Icon: Cpu, cls: 'text-teal-500', label: 'Machine' },
 };
 
 function AgentCard({ agent }: { agent: AgentV1 }) {

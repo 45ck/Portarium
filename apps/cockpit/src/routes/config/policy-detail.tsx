@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { createRoute, Link } from '@tanstack/react-router';
 import { AlertCircle, Ban, GitCompareArrows, RotateCcw, ShieldCheck } from 'lucide-react';
 import type { PolicySummary } from '@portarium/cockpit-types';
@@ -19,15 +19,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { useApprovals } from '@/hooks/queries/use-approvals';
 import { usePolicy, useSodConstraints } from '@/hooks/queries/use-policies';
 import { useRuns } from '@/hooks/queries/use-runs';
-import { resolveCockpitRuntime } from '@/lib/cockpit-runtime';
 import { cn } from '@/lib/utils';
 import { useUIStore } from '@/stores/ui-store';
-
-const DemoPolicyDetailPage = lazy(() =>
-  import('@/mocks/routes/config/policy-detail-demo').then((module) => ({
-    default: module.DemoPolicyDetailPage,
-  })),
-);
 
 const EXECUTION_TIER_OPTIONS: ExecutionTier[] = ['Auto', 'Assisted', 'HumanApprove', 'ManualOnly'];
 
@@ -290,23 +283,7 @@ function LivePolicyDetailPage({ policyId }: { policyId: string }) {
 
 function PolicyDetailPage() {
   const { policyId } = Route.useParams();
-  const runtime = resolveCockpitRuntime();
-
-  if (!runtime.allowDemoControls) {
-    return <LivePolicyDetailPage policyId={policyId} />;
-  }
-
-  return (
-    <Suspense
-      fallback={
-        <div className="p-6">
-          <div className="h-56 animate-pulse rounded-md border border-border bg-muted/30" />
-        </div>
-      }
-    >
-      <DemoPolicyDetailPage policyId={policyId} />
-    </Suspense>
-  );
+  return <LivePolicyDetailPage policyId={policyId} />;
 }
 
 export const Route = createRoute({

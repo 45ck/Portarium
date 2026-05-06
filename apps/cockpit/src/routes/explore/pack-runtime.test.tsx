@@ -46,7 +46,7 @@ function createFetch(runtime: typeof DEMO_PACK_UI_RUNTIME) {
 
     if (pathname === '/v1/workspaces') {
       return Promise.resolve(
-        json({ items: [{ workspaceId: 'ws-meridian', name: 'Meridian Workspace' }] }),
+        json({ items: [{ workspaceId: 'ws-platform-showcase', name: 'Platform Snapshot Workspace' }] }),
       );
     }
 
@@ -100,10 +100,14 @@ beforeEach(() => {
   queryClient.clear();
   localStorage.clear();
   document.documentElement.className = '';
+  vi.stubEnv('VITE_DEMO_MODE', 'true');
+  vi.stubEnv('VITE_PORTARIUM_ENABLE_MSW', 'true');
+  vi.stubEnv('VITE_PORTARIUM_SHOW_INTERNAL_COCKPIT', 'true');
 });
 
 afterEach(() => {
   cleanup();
+  vi.unstubAllEnvs();
 });
 
 afterAll(() => {

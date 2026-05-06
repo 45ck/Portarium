@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, RotateCcw } from 'lucide-react';
 import { canAccess } from '@/lib/role-gate';
+import { shouldShowInternalCockpitSurfaces } from '@/lib/shell/navigation';
 import type { WorkflowSummary } from '@portarium/cockpit-types';
 
 const STATUS_OPTIONS = [
@@ -29,7 +30,8 @@ const TRIGGER_OPTIONS = [
 
 function WorkflowsPage() {
   const { activeWorkspaceId: wsId, activePersona } = useUIStore();
-  const canEdit = canAccess(activePersona, 'workflows:edit');
+  const showInternalSurfaces = shouldShowInternalCockpitSurfaces();
+  const canEdit = showInternalSurfaces && canAccess(activePersona, 'workflows:edit');
   const navigate = useNavigate();
   const [filters, setFilters] = useState<Record<string, string>>({
     status: 'all',

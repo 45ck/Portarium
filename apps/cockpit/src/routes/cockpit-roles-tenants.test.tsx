@@ -180,6 +180,7 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  vi.unstubAllEnvs();
 });
 
 afterAll(() => {
@@ -258,6 +259,10 @@ describe('persona-aware default redirect', () => {
 // ---------------------------------------------------------------------------
 
 describe('workflow list - edit control gating', () => {
+  beforeEach(() => {
+    vi.stubEnv('VITE_PORTARIUM_SHOW_INTERNAL_COCKPIT', 'true');
+  });
+
   it('Operator sees Edit button and New Workflow action', async () => {
     useUIStore.getState().setActivePersona('Operator');
     await renderRoute('/workflows');
@@ -299,6 +304,10 @@ describe('workflow list - edit control gating', () => {
 
 describe('workflow detail - edit control gating', () => {
   const WORKFLOW_ID = 'wf-invoice-remediation';
+
+  beforeEach(() => {
+    vi.stubEnv('VITE_PORTARIUM_SHOW_INTERNAL_COCKPIT', 'true');
+  });
 
   it('Operator sees Edit Workflow button on detail page', async () => {
     useUIStore.getState().setActivePersona('Operator');

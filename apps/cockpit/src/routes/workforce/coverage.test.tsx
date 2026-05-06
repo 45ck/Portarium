@@ -164,6 +164,7 @@ beforeAll(() => {
 });
 
 beforeEach(() => {
+  vi.stubEnv('VITE_DEMO_MODE', 'true');
   vi.stubEnv('VITE_PORTARIUM_ENABLE_MSW', 'true');
   queryClient.clear();
   localStorage.clear();

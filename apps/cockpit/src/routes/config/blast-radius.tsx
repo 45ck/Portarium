@@ -1,15 +1,24 @@
-import { lazy, Suspense } from 'react';
-import { createRoute } from '@tanstack/react-router';
+import { createRoute, redirect } from '@tanstack/react-router';
 import { ShieldAlert } from 'lucide-react';
 import { Route as rootRoute } from '../__root';
 import { PageHeader } from '@/components/cockpit/page-header';
 import { resolveCockpitRuntime } from '@/lib/cockpit-runtime';
+import { shouldShowInternalCockpitSurfaces } from '@/lib/shell/navigation';
 
-const DemoBlastRadiusPage = lazy(() =>
-  import('@/mocks/routes/config/blast-radius-demo').then((module) => ({
-    default: module.DemoBlastRadiusPage,
-  })),
-);
+function BlastRadiusUnavailablePage() {
+  return (
+    <div className="p-6 space-y-6">
+      <PageHeader
+        title="Tool Blast Radius"
+        description="Fixture-backed tool-classification data is not included in production Cockpit builds."
+        icon={<ShieldAlert className="h-6 w-6 text-primary" />}
+      />
+      <div className="rounded-md border border-border bg-card p-4 text-sm text-muted-foreground">
+        Live tool classification must come from the control-plane config API.
+      </div>
+    </div>
+  );
+}
 
 function BlastRadiusPage() {
   const runtime = resolveCockpitRuntime();
@@ -30,21 +39,16 @@ function BlastRadiusPage() {
     );
   }
 
-  return (
-    <Suspense
-      fallback={
-        <div className="p-6">
-          <div className="h-56 animate-pulse rounded-md border border-border bg-muted/30" />
-        </div>
-      }
-    >
-      <DemoBlastRadiusPage />
-    </Suspense>
-  );
+  return <BlastRadiusUnavailablePage />;
 }
 
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
   path: '/config/blast-radius',
+  beforeLoad: () => {
+    if (!shouldShowInternalCockpitSurfaces()) {
+      throw redirect({ to: '/config/policies' });
+    }
+  },
   component: BlastRadiusPage,
 });

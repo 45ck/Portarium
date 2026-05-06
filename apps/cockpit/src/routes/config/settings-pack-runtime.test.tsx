@@ -46,7 +46,7 @@ function json(body: unknown, status = 200): Response {
 function createFetchMock(
   runtimeResponse: unknown,
   workspaceItems: Array<{ workspaceId: string; name: string }> = [
-    { workspaceId: 'ws-meridian', name: 'Meridian Workspace' },
+    { workspaceId: 'ws-platform-showcase', name: 'Platform Snapshot Workspace' },
   ],
 ) {
   return vi.fn((input: RequestInfo | URL) => {
@@ -113,7 +113,10 @@ beforeEach(() => {
   queryClient.clear();
   localStorage.clear();
   document.documentElement.className = '';
-  useUIStore.setState({ activeWorkspaceId: 'ws-meridian', activeDataset: 'meridian-demo' });
+  useUIStore.setState({
+    activeWorkspaceId: 'ws-platform-showcase',
+    activeDataset: 'platform-showcase',
+  });
 });
 
 afterEach(() => {

@@ -166,6 +166,9 @@ beforeAll(() => {
 });
 
 beforeEach(() => {
+  vi.stubEnv('VITE_DEMO_MODE', 'true');
+  vi.stubEnv('VITE_PORTARIUM_ENABLE_MSW', 'true');
+  vi.stubEnv('VITE_PORTARIUM_ENABLE_ROBOTICS_DEMO', 'true');
   queryClient.clear();
   localStorage.clear();
   document.documentElement.className = '';
@@ -173,6 +176,7 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  vi.unstubAllEnvs();
 });
 
 afterAll(() => {

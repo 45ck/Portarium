@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { createRoute } from '@tanstack/react-router';
+import { createRoute, redirect } from '@tanstack/react-router';
 import { Route as rootRoute } from '../__root';
 import { PageHeader } from '@/components/cockpit/page-header';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { usePackUiRuntime } from '@/hooks/queries/use-pack-ui-runtime';
 import { applyThemeTokens, resolveTemplate } from '@/lib/packs/pack-runtime';
 import { resolveCockpitRuntime } from '@/lib/cockpit-runtime';
+import { shouldShowInternalCockpitSurfaces } from '@/lib/shell/navigation';
 import { useUIStore } from '@/stores/ui-store';
 import type { RuntimeSchemaProperty } from '@/lib/packs/types';
 
@@ -42,7 +43,7 @@ function PackRuntimePage() {
       {!runtime.allowDemoControls ? (
         <Card className="shadow-none">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Demo-only Surface</CardTitle>
+            <CardTitle className="text-sm">Fixture-backed Surface</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-xs text-muted-foreground">
@@ -171,5 +172,10 @@ function SchemaField({
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
   path: '/explore/pack-runtime',
+  beforeLoad: () => {
+    if (!shouldShowInternalCockpitSurfaces()) {
+      throw redirect({ to: '/explore/extensions' });
+    }
+  },
   component: PackRuntimePage,
 });

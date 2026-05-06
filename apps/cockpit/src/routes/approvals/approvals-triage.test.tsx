@@ -97,7 +97,14 @@ function createMemoryStorage(): Storage {
   };
 }
 
-async function renderApprovalsRoute(initialEntry = '/approvals') {
+async function renderApprovalsRoute(
+  initialEntry = '/approvals',
+  options: { internalPolicyStudio?: boolean } = {},
+) {
+  if (initialEntry.includes('from=policy-studio') && options.internalPolicyStudio !== false) {
+    vi.stubEnv('VITE_PORTARIUM_SHOW_INTERNAL_COCKPIT', 'true');
+  }
+
   const router = createCockpitRouter({
     history: createMemoryHistory({ initialEntries: [initialEntry] }),
   });
@@ -189,6 +196,31 @@ describe('Approvals triage page', () => {
     });
   });
 
+  it('does not enable demo policy injection in default mock mode without the internal flag', async () => {
+    vi.stubEnv('VITE_DEMO_MODE', 'true');
+    _mockApprovals = [];
+
+    await renderApprovalsRoute('/approvals?demo=true');
+
+    expect(await screen.findByRole('heading', { name: 'Approvals', level: 1 })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /Policy tightened/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /Policy relaxed/i })).toBeNull();
+  });
+
+  it('treats policy-studio handoff search as ordinary approval focus without the internal flag', async () => {
+    const focused = ALL_PENDING[0]!;
+    vi.stubEnv('VITE_PORTARIUM_SHOW_INTERNAL_COCKPIT', 'false');
+
+    await renderApprovalsRoute(
+      `/approvals?focus=${encodeURIComponent(focused.approvalId)}&from=policy-studio&returnSlice=CRON-CREATE-BLOCK-001`,
+      { internalPolicyStudio: false },
+    );
+
+    expect(await screen.findByRole('heading', { name: 'Approvals', level: 1 })).toBeTruthy();
+    expect(screen.queryByText(/opened from policy studio/i)).toBeNull();
+    expect(screen.queryByRole('link', { name: /Back to Policy Studio/i })).toBeNull();
+  });
+
   it('renders the Approvals heading', async () => {
     await renderApprovalsRoute();
 
@@ -251,7 +283,7 @@ describe('Approvals triage page', () => {
     expect(screen.getAllByText(/focused policy-linked review/i).length).toBeGreaterThan(0);
     expect(await screen.findByText('1 of 1 pending')).toBeTruthy();
     expect(await screen.findByText(/Decide this live case now/i)).toBeTruthy();
-    expect(await screen.findByText('Proposed Action')).toBeTruthy();
+    expect((await screen.findAllByText('Proposed Action')).length).toBeGreaterThan(0);
     expect(await screen.findByText('Why gated')).toBeTruthy();
     expect(await screen.findByText('Current recommendation')).toBeTruthy();
     expect(await screen.findByText('Evidence and policy context')).toBeTruthy();
@@ -594,7 +626,9 @@ describe('Approvals triage page', () => {
     await renderApprovalsRoute();
 
     expect(await screen.findAllByText(blockedApproval.prompt, { exact: false })).toBeTruthy();
-    expect(await screen.findByText(/you cannot approve your own request/i)).toBeTruthy();
+    expect(
+      (await screen.findAllByText(/you cannot approve your own request/i)).length,
+    ).toBeGreaterThan(0);
 
     // The action-bar group is labelled "Make approval decision"; scope there to
     // get the unique Approve button rather than matching list-panel item buttons.

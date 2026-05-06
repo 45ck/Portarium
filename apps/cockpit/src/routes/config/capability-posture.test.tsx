@@ -39,6 +39,8 @@ function json(body: unknown, status = 200): Response {
 }
 
 async function renderCapabilityPostureRoute(initialEntry = '/config/capability-posture') {
+  vi.stubEnv('VITE_PORTARIUM_SHOW_INTERNAL_COCKPIT', 'true');
+
   const router = createCockpitRouter({
     history: createMemoryHistory({ initialEntries: [initialEntry] }),
   });
@@ -89,6 +91,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
+  vi.unstubAllEnvs();
 });
 
 afterAll(() => {

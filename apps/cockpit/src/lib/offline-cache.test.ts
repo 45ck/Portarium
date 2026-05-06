@@ -28,6 +28,14 @@ function createMemoryStorage(): Storage {
 }
 
 describe('offline cache', () => {
+  const mockPolicy = {
+    runtimeMode: 'demo' as const,
+    usesLiveTenantData: false,
+    allowOfflineTenantData: true,
+    persistTenantQueryCache: true,
+    serviceWorkerTenantApiCache: true,
+  };
+
   beforeEach(() => {
     vi.stubGlobal('localStorage', createMemoryStorage());
   });
@@ -36,9 +44,13 @@ describe('offline cache', () => {
     writeOfflineCache(
       'approvals:ws-demo',
       { items: [{ approvalId: 'apr-1' }] },
-      { savedAtIso: '2026-02-21T00:00:00.000Z' },
+      { savedAtIso: '2026-02-21T00:00:00.000Z', policy: mockPolicy },
     );
-    const cached = readOfflineCache<{ items: Array<{ approvalId: string }> }>('approvals:ws-demo');
+    const cached = readOfflineCache<{ items: Array<{ approvalId: string }> }>(
+      'approvals:ws-demo',
+      undefined,
+      mockPolicy,
+    );
 
     expect(cached).toEqual({
       version: 1,
@@ -49,7 +61,7 @@ describe('offline cache', () => {
 
   it('returns null for invalid JSON values', () => {
     localStorage.setItem('portarium:cockpit:offline:broken', '{oops');
-    expect(readOfflineCache('broken')).toBeNull();
+    expect(readOfflineCache('broken', undefined, mockPolicy)).toBeNull();
   });
 
   it('does not read or write offline tenant payloads in live mode by default', () => {

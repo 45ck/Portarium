@@ -1,4 +1,4 @@
-import { createRoute } from '@tanstack/react-router';
+import { createRoute, redirect } from '@tanstack/react-router';
 import { Link } from '@tanstack/react-router';
 import {
   Activity,
@@ -31,6 +31,7 @@ import { useWorkforceQueues } from '@/hooks/queries/use-workforce';
 import { useUIStore } from '@/stores/ui-store';
 import { buildAgentObservabilityModel } from '@/lib/agent-observability';
 import { cn } from '@/lib/utils';
+import { shouldShowInternalCockpitSurfaces } from '@/lib/shell/navigation';
 import type { ApprovalSummary, RunSummary } from '@portarium/cockpit-types';
 
 const ACTIVE_RUN_STATUSES = new Set<RunSummary['status']>([
@@ -371,5 +372,10 @@ function SignalRow({ label, value, hot }: { label: string; value: number | strin
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
   path: '/engineering/mission-control',
+  beforeLoad: () => {
+    if (!shouldShowInternalCockpitSurfaces()) {
+      throw redirect({ to: '/dashboard' as string });
+    }
+  },
   component: MissionControlRoute,
 });

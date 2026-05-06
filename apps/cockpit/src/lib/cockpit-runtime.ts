@@ -1,13 +1,6 @@
 export type CockpitRuntimeMode = 'demo' | 'dev-live' | 'live';
 
-export type DatasetId =
-  | 'live'
-  | 'platform-showcase'
-  | 'demo'
-  | 'openclaw-demo'
-  | 'growth-studio'
-  | 'meridian-demo'
-  | 'meridian-full';
+export type DatasetId = 'live' | 'platform-showcase';
 
 export const DATASET_STORAGE_KEY = 'portarium-dataset';
 
@@ -16,11 +9,6 @@ export const DEFAULT_DEMO_DATASET_ID: DatasetId = 'platform-showcase';
 export const DATASET_WORKSPACE_MAP: Record<DatasetId, string> = {
   live: import.meta.env.VITE_PORTARIUM_DEFAULT_WORKSPACE_ID ?? 'ws-local-dev',
   'platform-showcase': 'ws-platform-showcase',
-  demo: 'ws-demo',
-  'openclaw-demo': 'ws-demo',
-  'growth-studio': 'ws-growth-studio',
-  'meridian-demo': 'ws-meridian',
-  'meridian-full': 'ws-meridian',
 };
 
 export const DATASET_IDS = Object.keys(DATASET_WORKSPACE_MAP) as DatasetId[];
@@ -30,7 +18,6 @@ interface CockpitEnvLike {
   readonly VITE_DEMO_MODE?: string;
   readonly VITE_PORTARIUM_ENABLE_MSW?: string;
   readonly VITE_PORTARIUM_MOCK_DATASET?: string;
-  readonly VITE_PORTARIUM_SHOW_EXTENDED_DEMOS?: string;
 }
 
 interface StorageLike {
@@ -63,6 +50,10 @@ export function isDemoDatasetId(value: DatasetId): boolean {
   return value !== 'live';
 }
 
+export function isSelectableDemoDatasetId(value: DatasetId): boolean {
+  return isDemoDatasetId(value);
+}
+
 export function shouldEnableCockpitMocks(env: CockpitEnvLike = import.meta.env): boolean {
   if (env.DEV !== true) return false;
   if (!cockpitFlagEnabled(env.VITE_DEMO_MODE, false)) return false;
@@ -82,12 +73,6 @@ export function resolveCockpitRuntime(env: CockpitEnvLike = import.meta.env): Co
   };
 }
 
-export function shouldShowExtendedDemoDatasets(
-  env: CockpitEnvLike = import.meta.env,
-): boolean {
-  return cockpitFlagEnabled(env.VITE_PORTARIUM_SHOW_EXTENDED_DEMOS, false);
-}
-
 export function resolveStoredDataset(
   env: CockpitEnvLike = import.meta.env,
   storage?: StorageLike,
@@ -96,10 +81,12 @@ export function resolveStoredDataset(
   if (!runtime.allowDemoControls) return 'live';
 
   const envPreferred = (env.VITE_PORTARIUM_MOCK_DATASET ?? '').trim();
-  if (isDatasetId(envPreferred) && isDemoDatasetId(envPreferred)) return envPreferred;
+  if (isDatasetId(envPreferred) && isSelectableDemoDatasetId(envPreferred)) {
+    return envPreferred;
+  }
 
   const stored = storage?.getItem(DATASET_STORAGE_KEY);
-  if (isDatasetId(stored) && isDemoDatasetId(stored)) return stored;
+  if (isDatasetId(stored) && isSelectableDemoDatasetId(stored)) return stored;
 
   return DEFAULT_DEMO_DATASET_ID;
 }

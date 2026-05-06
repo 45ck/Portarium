@@ -216,4 +216,18 @@ describe('CommandPalette', () => {
     expect(screen.getByRole('button', { name: /toggle theme/i })).toBeTruthy();
     expect(screen.getByRole('button', { name: /toggle sidebar/i })).toBeTruthy();
   });
+
+  it('hides internal bead planning action by default', () => {
+    render(<CommandPalette />);
+
+    expect(screen.queryByRole('button', { name: /plan new beads/i })).toBeNull();
+  });
+
+  it('shows internal bead planning action when internal Cockpit surfaces are enabled', () => {
+    vi.stubEnv('VITE_PORTARIUM_SHOW_INTERNAL_COCKPIT', 'true');
+
+    render(<CommandPalette />);
+
+    expect(screen.getByRole('button', { name: /plan new beads/i })).toBeTruthy();
+  });
 });

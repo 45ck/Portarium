@@ -364,6 +364,9 @@ beforeAll(() => {
 });
 
 beforeEach(() => {
+  vi.stubEnv('VITE_DEMO_MODE', 'true');
+  vi.stubEnv('VITE_PORTARIUM_SHOW_INTERNAL_COCKPIT', 'true');
+  vi.stubEnv('VITE_PORTARIUM_ENABLE_ROBOTICS_DEMO', 'true');
   queryClient.clear();
   localStorage.clear();
   document.documentElement.className = '';
@@ -389,6 +392,7 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  vi.unstubAllEnvs();
 });
 
 afterAll(() => {
@@ -414,5 +418,26 @@ describe('cockpit route page-load smoke', () => {
     await renderRoute('/dashboard');
 
     expect((await screen.findAllByLabelText(/\d+ pending approvals/)).length).toBeGreaterThan(0);
+  });
+
+  it.each([
+    { path: '/workflows/builder', redirectedHeading: 'Workflows' },
+    {
+      path: '/workflows/wf-invoice-remediation/edit',
+      redirectedHeading: 'Workflow: wf-invoice-remediation',
+    },
+    { path: '/config/policies/studio', redirectedHeading: 'Policy Overview' },
+    { path: '/config/capability-posture', redirectedHeading: 'Policy Overview' },
+    { path: '/config/blast-radius', redirectedHeading: 'Policy Overview' },
+    { path: '/explore/pack-runtime', redirectedHeading: 'External Extensions' },
+  ])('redirects internal-only route $path in the default shell', async ({ path, redirectedHeading }) => {
+    vi.stubEnv('VITE_PORTARIUM_SHOW_INTERNAL_COCKPIT', 'false');
+
+    await renderRoute(path);
+
+    expect(
+      (await screen.findAllByRole('heading', { name: redirectedHeading }, { timeout: 5_000 }))
+        .length,
+    ).toBeGreaterThan(0);
   });
 });

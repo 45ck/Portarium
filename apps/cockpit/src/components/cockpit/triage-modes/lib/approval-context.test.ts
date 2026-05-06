@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { resolveApprovalContext, type ApprovalDomain } from './approval-context';
 import { getRelevantModes, getNextRelevantMode, getPrevRelevantMode, TRIAGE_MODES } from '../index';
 import type {
@@ -8,6 +8,10 @@ import type {
   RunSummary,
   WorkflowSummary,
 } from '@portarium/cockpit-types';
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+});
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -246,9 +250,11 @@ describe('resolveApprovalContext — context properties', () => {
 // Mode visibility (relevance)
 // ---------------------------------------------------------------------------
 describe('getRelevantModes — mode visibility', () => {
-  it('returns all modes when no context provided', () => {
+  it('returns default-selectable modes when no context provided', () => {
     const modes = getRelevantModes();
-    expect(modes.length).toBe(TRIAGE_MODES.length);
+    expect(modes.length).toBeLessThan(TRIAGE_MODES.length);
+    expect(modes.map((mode) => mode.id)).toContain('default');
+    expect(modes.map((mode) => mode.id)).not.toContain('policy-precedent');
   });
 
   it('hides diff-view and action-replay when no effects', () => {
@@ -274,6 +280,7 @@ describe('getRelevantModes — mode visibility', () => {
   });
 
   it('shows policy-precedent for runtime-to-policy conversion', () => {
+    vi.stubEnv('VITE_PORTARIUM_SHOW_ADVANCED_TRIAGE', 'true');
     const ctx = resolveApprovalContext(makeApproval(), [], []);
     const modes = getRelevantModes(ctx);
     const precedentMode = modes.find((m) => m.id === 'policy-precedent');
@@ -282,6 +289,9 @@ describe('getRelevantModes — mode visibility', () => {
   });
 
   it('shows robotics-safety as recommended for robotics domain', () => {
+    vi.stubEnv('VITE_DEMO_MODE', 'true');
+    vi.stubEnv('VITE_PORTARIUM_ENABLE_MSW', 'true');
+    vi.stubEnv('VITE_PORTARIUM_ENABLE_ROBOTICS_DEMO', 'true');
     const ctx = resolveApprovalContext(makeApproval(), [], [], makeRun({ robotIds: ['r-1'] }));
     const modes = getRelevantModes(ctx);
     const roboticsMode = modes.find((m) => m.id === 'robotics-safety');
@@ -297,6 +307,7 @@ describe('getRelevantModes — mode visibility', () => {
   });
 
   it('shows finance-impact as recommended for finance domain', () => {
+    vi.stubEnv('VITE_PORTARIUM_SHOW_ADVANCED_TRIAGE', 'true');
     const ctx = resolveApprovalContext(
       makeApproval(),
       [makeEffect({ portFamily: 'FinanceAccounting' })],

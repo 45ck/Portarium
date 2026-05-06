@@ -14,15 +14,15 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { AgentV1 } from '@portarium/cockpit-types';
 
-function agentKind(agent: AgentV1): 'openclaw' | 'code' | 'llm' {
+function agentKind(agent: AgentV1): 'machine' | 'code' | 'llm' {
   const caps = agent.allowedCapabilities ?? [];
-  if (caps.includes('machine:invoke')) return 'openclaw';
+  if (caps.includes('machine:invoke')) return 'machine';
   if (caps.includes('execute-code')) return 'code';
   return 'llm';
 }
 
 const KIND_ICON = {
-  openclaw: { Icon: Bot, cls: 'text-orange-500' },
+  machine: { Icon: Bot, cls: 'text-orange-500' },
   code: { Icon: Code2, cls: 'text-violet-500' },
   llm: { Icon: Brain, cls: 'text-blue-500' },
 } as const;

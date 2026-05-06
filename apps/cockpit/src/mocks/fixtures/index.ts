@@ -2,7 +2,7 @@
 // Fixture index — dataset switcher
 // ---------------------------------------------------------------------------
 
-import type { MeridianDataset } from './meridian-seed';
+import type { MockCockpitDataset } from './dataset';
 import type { DatasetId } from '@/lib/cockpit-runtime';
 
 export type { DatasetId } from '@/lib/cockpit-runtime';
@@ -11,11 +11,11 @@ export interface DatasetEntry {
   id: DatasetId;
   label: string;
   description: string;
-  load: () => Promise<MeridianDataset>;
+  load: () => Promise<MockCockpitDataset>;
 }
 
 /**
- * Registry of available demo datasets.
+ * Registry of available mock datasets.
  * Each entry lazy-loads its module so only the active dataset occupies memory.
  */
 export const DATASETS: DatasetEntry[] = [
@@ -50,131 +50,6 @@ export const DATASETS: DatasetEntry[] = [
     description: 'Generic control-plane snapshot for operator, approval, evidence, and adapter flows',
     load: () =>
       import('./platform-showcase').then((m) => ({
-        WORK_ITEMS: m.WORK_ITEMS,
-        RUNS: m.RUNS,
-        APPROVALS: m.APPROVALS,
-        PLANS: m.PLANS,
-        CREDENTIAL_GRANTS: m.CREDENTIAL_GRANTS,
-        EVIDENCE: m.EVIDENCE,
-        WORKFORCE_MEMBERS: m.WORKFORCE_MEMBERS,
-        WORKFORCE_QUEUES: m.WORKFORCE_QUEUES,
-        AGENTS: m.AGENTS,
-        MACHINES: m.MACHINES,
-        ADAPTERS: m.ADAPTERS,
-        ROBOTS: m.ROBOTS,
-        MISSIONS: m.MISSIONS,
-        SAFETY_CONSTRAINTS: m.SAFETY_CONSTRAINTS,
-        APPROVAL_THRESHOLDS: m.APPROVAL_THRESHOLDS,
-        ESTOP_AUDIT_LOG: m.ESTOP_AUDIT_LOG,
-        OBSERVABILITY_DATA: m.OBSERVABILITY_DATA,
-      })),
-  },
-  {
-    id: 'demo',
-    label: 'Portarium Demo',
-    description: 'Small generic demo (6 work items, 7 runs)',
-    load: () =>
-      import('./demo').then((m) => ({
-        WORK_ITEMS: m.WORK_ITEMS,
-        RUNS: m.RUNS,
-        APPROVALS: m.APPROVALS,
-        PLANS: m.PLANS,
-        CREDENTIAL_GRANTS: m.CREDENTIAL_GRANTS,
-        EVIDENCE: m.EVIDENCE,
-        WORKFORCE_MEMBERS: m.WORKFORCE_MEMBERS,
-        WORKFORCE_QUEUES: m.WORKFORCE_QUEUES,
-        AGENTS: m.AGENTS,
-        MACHINES: m.MACHINES,
-        ADAPTERS: m.ADAPTERS,
-        ROBOTS: m.ROBOTS,
-        MISSIONS: m.MISSIONS,
-        SAFETY_CONSTRAINTS: m.SAFETY_CONSTRAINTS,
-        APPROVAL_THRESHOLDS: m.APPROVAL_THRESHOLDS,
-        ESTOP_AUDIT_LOG: m.ESTOP_AUDIT_LOG,
-        OBSERVABILITY_DATA: m.OBSERVABILITY_DATA,
-      })),
-  },
-  {
-    id: 'openclaw-demo',
-    label: 'OpenClaw Approval Demo',
-    description: 'OpenClaw machine approvals focused triage queue for demo capture',
-    load: () =>
-      import('./openclaw-demo').then((m) => ({
-        WORK_ITEMS: m.WORK_ITEMS,
-        RUNS: m.RUNS,
-        APPROVALS: m.APPROVALS,
-        PLANS: m.PLANS,
-        CREDENTIAL_GRANTS: m.CREDENTIAL_GRANTS,
-        EVIDENCE: m.EVIDENCE,
-        WORKFORCE_MEMBERS: m.WORKFORCE_MEMBERS,
-        WORKFORCE_QUEUES: m.WORKFORCE_QUEUES,
-        AGENTS: m.AGENTS as MeridianDataset['AGENTS'],
-        MACHINES: m.MACHINES,
-        ADAPTERS: m.ADAPTERS,
-        ROBOTS: m.ROBOTS,
-        MISSIONS: m.MISSIONS,
-        SAFETY_CONSTRAINTS: m.SAFETY_CONSTRAINTS,
-        APPROVAL_THRESHOLDS: m.APPROVAL_THRESHOLDS,
-        ESTOP_AUDIT_LOG: m.ESTOP_AUDIT_LOG,
-        OBSERVABILITY_DATA: m.OBSERVABILITY_DATA,
-      })),
-  },
-  {
-    id: 'growth-studio',
-    label: 'Growth Studio Demo',
-    description: 'Growth operations loop with CRM, outreach, policy, and billing approvals',
-    load: () =>
-      import('./growth-studio-demo').then((m) => ({
-        WORK_ITEMS: m.WORK_ITEMS,
-        RUNS: m.RUNS,
-        APPROVALS: m.APPROVALS,
-        PLANS: m.PLANS,
-        CREDENTIAL_GRANTS: m.CREDENTIAL_GRANTS,
-        EVIDENCE: m.EVIDENCE,
-        WORKFORCE_MEMBERS: m.WORKFORCE_MEMBERS,
-        WORKFORCE_QUEUES: m.WORKFORCE_QUEUES,
-        AGENTS: m.AGENTS,
-        MACHINES: m.MACHINES,
-        ADAPTERS: m.ADAPTERS,
-        ROBOTS: m.ROBOTS,
-        MISSIONS: m.MISSIONS,
-        SAFETY_CONSTRAINTS: m.SAFETY_CONSTRAINTS,
-        APPROVAL_THRESHOLDS: m.APPROVAL_THRESHOLDS,
-        ESTOP_AUDIT_LOG: m.ESTOP_AUDIT_LOG,
-        OBSERVABILITY_DATA: m.OBSERVABILITY_DATA,
-      })),
-  },
-  {
-    id: 'meridian-demo',
-    label: 'Meridian Cold Chain (Demo)',
-    description: 'Pharma cold-chain — 3 months, 50 runs, 15 robots',
-    load: () =>
-      import('./meridian-demo').then((m) => ({
-        WORK_ITEMS: m.WORK_ITEMS,
-        RUNS: m.RUNS,
-        APPROVALS: m.APPROVALS,
-        PLANS: m.PLANS,
-        CREDENTIAL_GRANTS: m.CREDENTIAL_GRANTS,
-        EVIDENCE: m.EVIDENCE,
-        WORKFORCE_MEMBERS: m.WORKFORCE_MEMBERS,
-        WORKFORCE_QUEUES: m.WORKFORCE_QUEUES,
-        AGENTS: m.AGENTS,
-        MACHINES: m.MACHINES,
-        ADAPTERS: m.ADAPTERS,
-        ROBOTS: m.ROBOTS,
-        MISSIONS: m.MISSIONS,
-        SAFETY_CONSTRAINTS: m.SAFETY_CONSTRAINTS,
-        APPROVAL_THRESHOLDS: m.APPROVAL_THRESHOLDS,
-        ESTOP_AUDIT_LOG: m.ESTOP_AUDIT_LOG,
-        OBSERVABILITY_DATA: m.OBSERVABILITY_DATA,
-      })),
-  },
-  {
-    id: 'meridian-full',
-    label: 'Meridian Cold Chain (Full)',
-    description: 'Pharma cold-chain — 6 months, 300 runs, 28 robots, 1200 evidence',
-    load: () =>
-      import('./meridian-full').then((m) => ({
         WORK_ITEMS: m.WORK_ITEMS,
         RUNS: m.RUNS,
         APPROVALS: m.APPROVALS,

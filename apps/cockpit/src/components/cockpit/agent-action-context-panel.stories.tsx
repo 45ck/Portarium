@@ -14,7 +14,7 @@ type Story = StoryObj<typeof AgentActionContextPanel>;
 
 const BASE_PROPOSAL: AgentActionProposalMeta = {
   proposalId: 'prop-story-001',
-  agentId: 'agent-meridian-ops',
+  agentId: 'agent-ops-review',
   machineId: 'machine-prod-us-east-1',
   toolName: 'send_email',
   toolCategory: 'Mutation',

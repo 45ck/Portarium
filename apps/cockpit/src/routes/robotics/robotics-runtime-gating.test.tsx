@@ -252,6 +252,7 @@ describe('robotics runtime gating', () => {
     vi.stubEnv('DEV', true);
     vi.stubEnv('VITE_DEMO_MODE', 'true');
     vi.stubEnv('VITE_PORTARIUM_ENABLE_MSW', 'true');
+    vi.stubEnv('VITE_PORTARIUM_ENABLE_ROBOTICS_DEMO', 'true');
     const { calls, fetchMock } = createFetchMock();
     vi.stubGlobal('fetch', fetchMock);
 
@@ -267,6 +268,7 @@ describe('robotics runtime gating', () => {
     vi.stubEnv('DEV', true);
     vi.stubEnv('VITE_DEMO_MODE', 'true');
     vi.stubEnv('VITE_PORTARIUM_ENABLE_MSW', 'true');
+    vi.stubEnv('VITE_PORTARIUM_ENABLE_ROBOTICS_DEMO', 'true');
     const { fetchMock } = createFetchMock({ failRobots: true });
     vi.stubGlobal('fetch', fetchMock);
 
@@ -280,6 +282,7 @@ describe('robotics runtime gating', () => {
     vi.stubEnv('DEV', true);
     vi.stubEnv('VITE_DEMO_MODE', 'true');
     vi.stubEnv('VITE_PORTARIUM_ENABLE_MSW', 'true');
+    vi.stubEnv('VITE_PORTARIUM_ENABLE_ROBOTICS_DEMO', 'true');
     mockDataSourceStatus.mockReturnValue(
       baseStatus({
         state: 'stale',

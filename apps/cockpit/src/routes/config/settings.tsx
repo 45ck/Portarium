@@ -11,45 +11,15 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useUIStore } from '@/stores/ui-store';
 import { usePackUiRuntime } from '@/hooks/queries/use-pack-ui-runtime';
 import { applyThemeTokens, resolveTemplate } from '@/lib/packs/pack-runtime';
-import {
-  resolveCockpitRuntime,
-  shouldShowExtendedDemoDatasets,
-  type DatasetId,
-} from '@/lib/cockpit-runtime';
+import { resolveCockpitRuntime, type DatasetId } from '@/lib/cockpit-runtime';
 
-const CORE_DATASET_OPTIONS: { id: DatasetId; label: string; description: string }[] = [
+type DatasetOption = { id: DatasetId; label: string; description: string };
+
+const DATASET_OPTIONS: DatasetOption[] = [
   {
     id: 'platform-showcase',
-    label: 'Portarium Platform Showcase',
+    label: 'Platform Snapshot',
     description: 'Generic control-plane snapshot for operator, approval, evidence, and adapter flows',
-  },
-  {
-    id: 'demo',
-    label: 'Portarium Demo',
-    description: 'Small generic dataset (6 work items, 7 runs)',
-  },
-];
-
-const EXTENDED_DATASET_OPTIONS: { id: DatasetId; label: string; description: string }[] = [
-  {
-    id: 'openclaw-demo',
-    label: 'OpenClaw Approval Demo',
-    description: 'OpenClaw machine approvals with triage-ready pending queue',
-  },
-  {
-    id: 'growth-studio',
-    label: 'Growth Studio Demo',
-    description: 'Growth loop approvals across CRM, outreach, campaigns, and billing',
-  },
-  {
-    id: 'meridian-demo',
-    label: 'Meridian Cold Chain \u2014 Demo',
-    description: '3 months pharma cold-chain (20 work items, 50 runs, 15 robots)',
-  },
-  {
-    id: 'meridian-full',
-    label: 'Meridian Cold Chain \u2014 Full',
-    description: '6 months enterprise scale (80 work items, 300 runs, 1 200+ evidence, 28 robots)',
   },
 ];
 
@@ -62,12 +32,9 @@ function getWorkspaceDisplayName({
   activeDataset: DatasetId;
   usesLiveTenantData: boolean;
 }): string {
-  if (usesLiveTenantData) return wsId === 'ws-meridian' ? 'Meridian Workspace' : 'Live Workspace';
-  if (activeDataset === 'platform-showcase') return 'Portarium Platform Showcase';
-  if (wsId === 'ws-meridian') return 'Meridian Workspace';
-  if (activeDataset === 'growth-studio') return 'Growth Studio Workspace';
-  if (activeDataset === 'openclaw-demo') return 'OpenClaw Demo Workspace';
-  return 'Demo Workspace';
+  if (usesLiveTenantData) return 'Live Workspace';
+  if (activeDataset === 'platform-showcase') return 'Platform Snapshot';
+  return `${wsId} snapshot`;
 }
 
 function SettingsPage() {
@@ -75,9 +42,6 @@ function SettingsPage() {
   const activeDataset = useUIStore((s) => s.activeDataset);
   const setActiveDataset = useUIStore((s) => s.setActiveDataset);
   const runtime = resolveCockpitRuntime();
-  const datasetOptions = shouldShowExtendedDemoDatasets()
-    ? [...CORE_DATASET_OPTIONS, ...EXTENDED_DATASET_OPTIONS]
-    : CORE_DATASET_OPTIONS;
   const { data: packRuntime } = usePackUiRuntime(wsId, {
     enabled: runtime.allowDemoControls,
   });
@@ -159,9 +123,9 @@ function SettingsPage() {
       {runtime.allowDemoControls && (
         <Card className="shadow-none">
           <CardHeader>
-            <CardTitle className="text-sm">Demo Dataset</CardTitle>
+            <CardTitle className="text-sm">Mock Dataset</CardTitle>
             <CardDescription>
-              Choose which fixture dataset the mock API serves. Changing dataset reloads the page.
+              Choose which read-only snapshot the mock API serves. Changing dataset reloads the page.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -170,7 +134,7 @@ function SettingsPage() {
               onValueChange={(v) => setActiveDataset(v as DatasetId)}
               className="gap-3"
             >
-              {datasetOptions.map((opt) => (
+              {DATASET_OPTIONS.map((opt) => (
                 <label
                   key={opt.id}
                   htmlFor={`ds-${opt.id}`}
@@ -195,7 +159,7 @@ function SettingsPage() {
       {runtime.allowDemoControls ? (
         <Card className="shadow-none">
           <CardHeader>
-            <CardTitle className="text-sm">Vertical Pack UI Runtime</CardTitle>
+            <CardTitle className="text-sm">Pack UI Runtime</CardTitle>
             <CardDescription>
               Template source:{' '}
               <span className="font-mono">{resolvedPackTemplate?.source ?? 'none'}</span>
@@ -214,8 +178,8 @@ function SettingsPage() {
       ) : (
         <Card className="shadow-none">
           <CardHeader>
-            <CardTitle className="text-sm">Vertical Pack UI Runtime</CardTitle>
-            <CardDescription>Demo-only pack template preview</CardDescription>
+            <CardTitle className="text-sm">Pack UI Runtime</CardTitle>
+            <CardDescription>Pack template preview</CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-xs text-muted-foreground">

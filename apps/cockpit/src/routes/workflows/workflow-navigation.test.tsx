@@ -51,7 +51,7 @@ function createFetchMock() {
     if (pathname === '/v1/workspaces') {
       return Promise.resolve(
         json({
-          items: [{ workspaceId: 'ws-meridian', name: 'Meridian Workspace' }],
+          items: [{ workspaceId: 'ws-platform-showcase', name: 'Platform Snapshot Workspace' }],
         }),
       );
     }
@@ -117,11 +117,13 @@ beforeEach(() => {
   queryClient.clear();
   localStorage.clear();
   document.documentElement.className = '';
+  vi.stubEnv('VITE_PORTARIUM_SHOW_INTERNAL_COCKPIT', 'true');
   vi.stubGlobal('fetch', createFetchMock());
 });
 
 afterEach(() => {
   cleanup();
+  vi.unstubAllEnvs();
 });
 
 afterAll(() => {

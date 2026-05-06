@@ -24,6 +24,11 @@ import type {
   WorkflowSummary,
 } from '@portarium/cockpit-types';
 import type { ApprovalContext } from './lib/approval-context';
+import { shouldEnableRoboticsDemo } from '@/lib/robotics-runtime';
+import {
+  isTriageModeSelectableByDefault,
+  shouldShowAdvancedTriageModes,
+} from '@/lib/triage-runtime';
 
 export type ModeRelevance = 'recommended' | 'available' | 'hidden';
 
@@ -38,6 +43,11 @@ export interface TriageModeDefinition {
 
 /** Finance port families for relevance checks. */
 const FINANCE_FAMILIES = new Set(['FinanceAccounting', 'PaymentsBilling', 'Invoicing', 'Treasury']);
+
+function advancedMode(relevance: (ctx: ApprovalContext) => ModeRelevance) {
+  return (ctx: ApprovalContext): ModeRelevance =>
+    shouldShowAdvancedTriageModes() ? relevance(ctx) : 'hidden';
+}
 
 export const TRIAGE_MODES: TriageModeDefinition[] = [
   {
@@ -62,7 +72,7 @@ export const TRIAGE_MODES: TriageModeDefinition[] = [
     shortLabel: 'Brief',
     icon: ScrollText,
     description: '6-section executive briefing with full domain context',
-    relevance: () => 'available',
+    relevance: advancedMode(() => 'available'),
   },
   {
     id: 'risk-radar',
@@ -70,7 +80,7 @@ export const TRIAGE_MODES: TriageModeDefinition[] = [
     shortLabel: 'Radar',
     icon: Radar,
     description: 'Spider chart with 8-axis risk assessment',
-    relevance: () => 'available',
+    relevance: advancedMode(() => 'available'),
   },
   {
     id: 'blast-map',
@@ -78,7 +88,7 @@ export const TRIAGE_MODES: TriageModeDefinition[] = [
     shortLabel: 'Graph',
     icon: Network,
     description: 'Entity relationship graph centered on the approval gate',
-    relevance: () => 'available',
+    relevance: advancedMode(() => 'available'),
   },
   {
     id: 'diff-view',
@@ -94,7 +104,7 @@ export const TRIAGE_MODES: TriageModeDefinition[] = [
     shortLabel: 'Replay',
     icon: Play,
     description: 'Step-through simulation of planned effects',
-    relevance: (ctx) => (ctx.hasEffects ? 'available' : 'hidden'),
+    relevance: advancedMode((ctx) => (ctx.hasEffects ? 'available' : 'hidden')),
   },
   {
     id: 'evidence-chain',
@@ -110,7 +120,7 @@ export const TRIAGE_MODES: TriageModeDefinition[] = [
     shortLabel: 'Story',
     icon: Clock,
     description: 'Horizontal chronology of the approval lifecycle',
-    relevance: () => 'available',
+    relevance: advancedMode(() => 'available'),
   },
   {
     id: 'policy-precedent',
@@ -118,7 +128,7 @@ export const TRIAGE_MODES: TriageModeDefinition[] = [
     shortLabel: 'Policy',
     icon: GitBranch,
     description: 'Convert runtime judgment into one-off or reusable policy guidance',
-    relevance: () => 'available',
+    relevance: advancedMode(() => 'available'),
   },
   {
     id: 'robotics-safety',
@@ -126,7 +136,8 @@ export const TRIAGE_MODES: TriageModeDefinition[] = [
     shortLabel: 'Safety',
     icon: ShieldCheck,
     description: 'Robotics safety constraints and mission context',
-    relevance: (ctx) => (ctx.domain === 'robotics' ? 'recommended' : 'hidden'),
+    relevance: (ctx) =>
+      ctx.domain === 'robotics' && shouldEnableRoboticsDemo() ? 'recommended' : 'hidden',
   },
   {
     id: 'finance-impact',
@@ -134,13 +145,13 @@ export const TRIAGE_MODES: TriageModeDefinition[] = [
     shortLabel: 'Finance',
     icon: DollarSign,
     description: 'Financial impact summary with irreversibility and SoD',
-    relevance: (ctx) => {
+    relevance: advancedMode((ctx) => {
       if (ctx.domain === 'finance') return 'recommended';
       for (const pf of ctx.portFamilies) {
         if (FINANCE_FAMILIES.has(pf)) return 'available';
       }
       return 'hidden';
-    },
+    }),
   },
   {
     id: 'compliance-checklist',
@@ -179,10 +190,10 @@ export function getPrevMode(current: TriageViewMode): TriageViewMode {
 /**
  * Returns modes filtered and ordered by relevance:
  * recommended first, then available. Hidden modes are excluded.
- * When no context is provided, all modes are returned (backwards-compatible).
+ * When no context is provided, only default-safe modes are returned.
  */
 export function getRelevantModes(ctx?: ApprovalContext): TriageModeDefinition[] {
-  if (!ctx) return TRIAGE_MODES;
+  if (!ctx) return TRIAGE_MODES.filter((mode) => isTriageModeSelectableByDefault(mode.id));
 
   const recommended: TriageModeDefinition[] = [];
   const available: TriageModeDefinition[] = [];

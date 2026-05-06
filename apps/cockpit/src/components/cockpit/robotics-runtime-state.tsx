@@ -36,7 +36,7 @@ export function RoboticsUnavailableState({ surface = 'Robotics' }: { surface?: s
         <p className="mt-1">{ROBOTICS_LIVE_UNSUPPORTED_DETAIL}</p>
         <p className="mt-2">
           Live Cockpit continues to use the supported location-events and map-layers contracts for
-          telemetry evidence, but this prototype fleet UI remains hidden from navigation and cannot
+          telemetry evidence, but this non-live fleet UI remains hidden from navigation and cannot
           send robotics commands.
         </p>
       </div>

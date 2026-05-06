@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { NEUTRAL_REFERENCE_EXTENSION } from '@/lib/extensions/fixtures';
 import { resolveCockpitExtensionRegistry } from '@/lib/extensions/registry';
 import type {
@@ -281,7 +281,15 @@ function projectExtensionWith({
   });
 }
 
+function flattenLabels(sections: readonly { items?: readonly { label: string }[] }[]): string[] {
+  return sections.flatMap((section) => section.items?.map((item) => item.label) ?? []);
+}
+
 describe('projectCockpitShellNavigation', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it('projects core sidebar, mobile, commands, and shortcuts from one shell model', () => {
     const projection = projectWith();
 
@@ -289,7 +297,6 @@ describe('projectCockpitShellNavigation', () => {
       'Workspace',
       'Work',
       'Reference Extension',
-      'Engineering',
       'Workforce',
       'Config',
       'Explore',
@@ -304,7 +311,6 @@ describe('projectCockpitShellNavigation', () => {
     expect(projection.mobileMoreSections.map((section) => section.label)).toEqual([
       'Workspace',
       'Work',
-      'Engineering',
       'Workforce',
       'Config',
       'Explore',
@@ -313,11 +319,13 @@ describe('projectCockpitShellNavigation', () => {
     expect(projection.commandTargets.map((target) => target.label)).toEqual(
       expect.arrayContaining(['Inbox', 'Dashboard', 'Extensions', 'Open extension reference']),
     );
-    expect(
-      projection.sidebarSections
-        .find((section) => section.id === 'engineering')
-        ?.items?.map((item) => [item.label, item.to]),
-    ).toContainEqual(['Mission Control', '/engineering/mission-control']);
+    expect(projection.sidebarSections.map((section) => section.id)).not.toContain('engineering');
+    expect(projection.commandTargets.map((target) => target.label)).not.toContain(
+      'Mission Control',
+    );
+    expect(flattenLabels(projection.sidebarSections)).not.toEqual(
+      expect.arrayContaining(['Builder', 'Capability Posture', 'Blast Radius', 'Pack Runtime']),
+    );
     const extensionTargets = [
       ...projection.sidebarSections.flatMap((section) => section.items ?? []),
       ...projection.mobileMoreSections.flatMap((section) => section.items ?? []),
@@ -331,6 +339,22 @@ describe('projectCockpitShellNavigation', () => {
       d: '/dashboard',
       x: '/external/example-reference/overview',
     });
+  });
+
+  it('can show internal Cockpit surfaces when explicitly enabled', () => {
+    vi.stubEnv('VITE_PORTARIUM_SHOW_INTERNAL_COCKPIT', 'true');
+
+    const projection = projectWith();
+
+    expect(projection.sidebarSections.map((section) => section.label)).toContain('Engineering');
+    expect(
+      projection.sidebarSections
+        .find((section) => section.id === 'engineering')
+        ?.items?.map((item) => [item.label, item.to]),
+    ).toContainEqual(['Mission Control', '/engineering/mission-control']);
+    expect(flattenLabels(projection.sidebarSections)).toEqual(
+      expect.arrayContaining(['Builder', 'Capability Posture', 'Blast Radius', 'Pack Runtime']),
+    );
   });
 
   it('honors custom shell profile core sections, mobile order, command exclusions, and extension anchor', () => {
@@ -516,6 +540,44 @@ describe('projectCockpitShellNavigation', () => {
     expect(resolveCockpitShellProfile(registry, 'operator')).toBe(PORTARIUM_COCKPIT_SHELL_PROFILE);
   });
 
+  it('falls back to the default shell profile when contributed routes are not accessible', () => {
+    const profiledReferenceExtension = {
+      ...NEUTRAL_REFERENCE_EXTENSION,
+      shellContributions: {
+        modes: [
+          {
+            modeId: 'operator',
+            defaultRoute: { routeId: NEUTRAL_REFERENCE_EXTENSION.routes[0]!.id },
+            mobilePrimaryCoreItemIds: [],
+            extensionNav: [
+              {
+                navItemId: NEUTRAL_REFERENCE_EXTENSION.navItems[0]!.id,
+                order: 0,
+                mobilePrimary: true,
+              },
+            ],
+          },
+        ],
+      },
+    } satisfies CockpitExtensionManifest;
+    const registry = resolveCockpitExtensionRegistry({
+      installedExtensions: [profiledReferenceExtension],
+      activePackIds: ['example.reference'],
+      ...neutralAccessContext,
+      routeLoaders: createRouteLoaders(profiledReferenceExtension),
+    });
+
+    expect(
+      resolveCockpitShellProfile(registry, 'operator', undefined, {
+        persona: 'Operator',
+        accessContext: {
+          ...neutralAccessContext,
+          availablePrivacyClasses: [],
+        },
+      }),
+    ).toBe(PORTARIUM_COCKPIT_SHELL_PROFILE);
+  });
+
   it('hides extension projections while keeping core shell entries when activation is absent', () => {
     const projection = projectWith({ activePackIds: [] });
 
@@ -544,13 +606,12 @@ describe('projectCockpitShellNavigation', () => {
       'Workspace',
       'Work',
       'Ops Reference',
-      'Engineering',
       'Workforce',
       'Config',
       'Explore',
     ]);
     expect(sidebarLabels.indexOf('Ops Reference')).toBeLessThan(
-      sidebarLabels.indexOf('Engineering'),
+      sidebarLabels.indexOf('Workforce'),
     );
     expect(
       projection.sidebarSections

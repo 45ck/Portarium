@@ -20,7 +20,11 @@ import {
   Users,
 } from 'lucide-react';
 import { EntityIcon } from '@/components/domain/entity-icon';
-import { canAccessExtensionNavItem, selectExtensionCommands } from '@/lib/extensions/registry';
+import {
+  canAccessExtensionNavItem,
+  canAccessExtensionRoute,
+  selectExtensionCommands,
+} from '@/lib/extensions/registry';
 import type {
   CockpitExtensionAccessContext,
   CockpitExtensionIcon,
@@ -79,6 +83,11 @@ export interface CockpitShellProfile {
   extensionNavItemIds?: readonly string[];
   extensionMobilePrimaryNavItemIds?: readonly string[];
   defaultRoutePath?: string;
+}
+
+export interface ResolveCockpitShellProfileOptions {
+  persona?: PersonaId;
+  accessContext?: CockpitExtensionAccessContext;
 }
 
 export interface ProjectCockpitShellNavigationInput {
@@ -375,7 +384,6 @@ const MOBILE_PRIMARY_ITEM_IDS = ['inbox', 'approvals', 'runs', 'dashboard'] as c
 const MOBILE_MORE_SECTION_IDS = new Set([
   'workspace',
   'work',
-  'engineering',
   'workforce',
   'config',
   'explore',
@@ -384,6 +392,7 @@ const COMMAND_EXCLUDED_ITEM_IDS = new Set([
   'search',
   'workflow-builder',
   'engineering-beads',
+  'engineering-mission-control',
   'engineering-autonomy',
   'config-blast-radius',
   'config-policies',
@@ -391,6 +400,13 @@ const COMMAND_EXCLUDED_ITEM_IDS = new Set([
   'explore-pack-runtime',
 ]);
 const SIDEBAR_EXTENSION_INSERT_AFTER_SECTION_ID = 'work';
+const DEFAULT_HIDDEN_SECTION_IDS = new Set(['engineering']);
+const DEFAULT_HIDDEN_ITEM_IDS = new Set([
+  'workflow-builder',
+  'config-capability-posture',
+  'config-blast-radius',
+  'explore-pack-runtime',
+]);
 
 export const PORTARIUM_COCKPIT_SHELL_PROFILE: CockpitShellProfile = {
   coreSections: CORE_SHELL_SECTIONS,
@@ -405,6 +421,7 @@ export function resolveCockpitShellProfile(
   registry: ResolvedCockpitExtensionRegistry,
   modeId?: string,
   baseProfile: CockpitShellProfile = PORTARIUM_COCKPIT_SHELL_PROFILE,
+  options: ResolveCockpitShellProfileOptions = {},
 ): CockpitShellProfile {
   const normalizedModeId = modeId?.trim();
   if (!normalizedModeId) return baseProfile;
@@ -416,7 +433,11 @@ export function resolveCockpitShellProfile(
     .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0))
     .at(0);
 
-  if (!contribution || !isValidShellContribution(contribution, registry, baseProfile)) {
+  if (
+    !contribution ||
+    !isValidShellContribution(contribution, registry, baseProfile) ||
+    !canAccessShellContribution(contribution, registry, options)
+  ) {
     return baseProfile;
   }
 
@@ -452,10 +473,11 @@ export function projectCockpitShellNavigation({
   liveState,
   shellProfile = PORTARIUM_COCKPIT_SHELL_PROFILE,
 }: ProjectCockpitShellNavigationInput): CockpitShellProjection {
+  const shellSections = shouldShowInternalCockpitSurfaces()
+    ? shellProfile.coreSections
+    : hideDefaultInternalCockpitSurfaces(shellProfile.coreSections);
   const coreSections = projectCoreNavigationSections(
-    roboticsEnabled
-      ? shellProfile.coreSections
-      : shellProfile.coreSections.filter((section) => section.id !== 'robotics'),
+    roboticsEnabled ? shellSections : shellSections.filter((section) => section.id !== 'robotics'),
     liveState,
   );
   const extensionSidebarSections = projectExtensionNavigationSections(
@@ -533,6 +555,10 @@ export function projectCockpitShellNavigation({
       ...extensionCommandTargets,
     ],
   };
+}
+
+export function shouldShowInternalCockpitSurfaces(): boolean {
+  return import.meta.env.VITE_PORTARIUM_SHOW_INTERNAL_COCKPIT === 'true';
 }
 
 export function projectCockpitGChordMap(
@@ -715,6 +741,18 @@ function projectCoreNavigationSections(
   }));
 }
 
+function hideDefaultInternalCockpitSurfaces(
+  sections: readonly CockpitShellNavigationSection[],
+): readonly CockpitShellNavigationSection[] {
+  return sections
+    .filter((section) => !DEFAULT_HIDDEN_SECTION_IDS.has(section.id))
+    .map((section) => ({
+      ...section,
+      items: section.items?.filter((item) => !DEFAULT_HIDDEN_ITEM_IDS.has(item.id)),
+    }))
+    .filter((section) => section.comingSoon || (section.items?.length ?? 0) > 0);
+}
+
 function approvalPendingBadge(
   pendingApprovalCount: number,
 ): CockpitShellNavigationBadge | undefined {
@@ -769,6 +807,29 @@ function isValidShellContribution(
 
   if (contribution.extensionNav?.some((item) => !navItemIds.has(item.navItemId))) {
     return false;
+  }
+
+  return true;
+}
+
+function canAccessShellContribution(
+  contribution: CockpitShellModeContribution,
+  registry: ResolvedCockpitExtensionRegistry,
+  options: ResolveCockpitShellProfileOptions,
+): boolean {
+  const accessContext = options.accessContext;
+  const persona = options.persona;
+  if (!accessContext || !persona) return true;
+
+  const context = { ...accessContext, persona };
+  if (contribution.defaultRoute) {
+    const route = registry.routes.find((candidate) => candidate.id === contribution.defaultRoute?.routeId);
+    if (!route || !canAccessExtensionRoute(route, context).allowed) return false;
+  }
+
+  for (const item of contribution.extensionNav ?? []) {
+    const navItem = registry.navItems.find((candidate) => candidate.id === item.navItemId);
+    if (!navItem || !canAccessExtensionNavItem(navItem, registry, context).allowed) return false;
   }
 
   return true;

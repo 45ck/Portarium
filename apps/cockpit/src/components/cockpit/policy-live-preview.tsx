@@ -1,4 +1,4 @@
-import { lazy, Suspense, useMemo } from 'react';
+import { useMemo } from 'react';
 import { Activity, ArrowRight, Ban, GitCompareArrows, UserCheck } from 'lucide-react';
 import type {
   ApprovalSummary,
@@ -8,7 +8,6 @@ import type {
 } from '@portarium/cockpit-types';
 import { ExecutionTierBadge } from '@/components/cockpit/execution-tier-badge';
 import { Badge } from '@/components/ui/badge';
-import { resolveCockpitRuntime } from '@/lib/cockpit-runtime';
 import { cn } from '@/lib/utils';
 
 export type ExecutionTier = 'Auto' | 'Assisted' | 'HumanApprove' | 'ManualOnly';
@@ -34,12 +33,6 @@ type ApprovalImpact = Readonly<{
   approval: ApprovalSummary;
   outcome: 'new-approval' | 'lower-gate' | 'blocked' | 'unchanged';
 }>;
-
-const DemoPolicyLivePreview = lazy(() =>
-  import('@/mocks/components/demo-policy-live-preview').then((module) => ({
-    default: module.PolicyLivePreview,
-  })),
-);
 
 const TIER_RANK: Record<ExecutionTier, number> = {
   Auto: 0,
@@ -240,21 +233,5 @@ function LivePolicyPreview({
 }
 
 export function PolicyLivePreview(props: LivePolicyPreviewProps) {
-  const runtime = resolveCockpitRuntime();
-
-  if (!runtime.allowDemoControls) {
-    return <LivePolicyPreview {...props} />;
-  }
-
-  return (
-    <Suspense
-      fallback={
-        <div className="rounded-xl border border-border bg-muted/30 p-4">
-          <div className="h-28 animate-pulse rounded-md bg-background/70" />
-        </div>
-      }
-    >
-      <DemoPolicyLivePreview form={props.form} />
-    </Suspense>
-  );
+  return <LivePolicyPreview {...props} />;
 }

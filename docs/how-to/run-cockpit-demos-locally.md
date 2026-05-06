@@ -20,6 +20,20 @@ npm run dev
 
 Open `http://localhost:5173`. The Cockpit loads with in-memory mock handlers — no live backend required for L0 demos.
 
+By default, demo mode uses the generic `platform-showcase` dataset. This is
+Portarium control-plane snapshot data that exercises real Cockpit routes without
+loading a customer-specific vertical prototype. Legacy vertical demo datasets
+have been retired from Cockpit's active dataset registry.
+Robotics demo surfaces are separately hidden unless
+`VITE_PORTARIUM_ENABLE_ROBOTICS_DEMO=true`. Internal Engineering/Beads
+surfaces are hidden from the default shell unless
+`VITE_PORTARIUM_SHOW_INTERNAL_COCKPIT=true`. Advanced approval triage modes
+such as briefing, graph, replay, and timeline are also hidden unless
+`VITE_PORTARIUM_SHOW_ADVANCED_TRIAGE=true`.
+
+Production Cockpit builds emit the generic `platform-showcase` mock asset only;
+retired vertical chunks are not part of the production asset set.
+
 ---
 
 ## 2. Start Cockpit with live local data

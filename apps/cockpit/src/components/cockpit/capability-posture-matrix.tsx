@@ -293,7 +293,7 @@ export function CapabilityPostureMatrixPage() {
         ]}
         action={
           <Button variant="outline" size="sm" asChild>
-            <Link to="/config/policies">Open Policy Studio</Link>
+            <Link to="/config/policies">Open Policies</Link>
           </Button>
         }
       />

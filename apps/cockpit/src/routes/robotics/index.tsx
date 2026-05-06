@@ -42,7 +42,7 @@ const ROBOTICS_SECTIONS = [
   },
   {
     title: 'Gateways',
-    description: 'OpenClaw gateway connectivity and SPIFFE/X.509 attestation status.',
+    description: 'Gateway connectivity and SPIFFE/X.509 attestation status.',
     href: '/robotics/gateways',
     icon: <Radio className="h-5 w-5" />,
   },

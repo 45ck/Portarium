@@ -141,13 +141,6 @@ function json(body: unknown, status = 200): Response {
   });
 }
 
-function readFormValue(element: HTMLElement): string {
-  if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
-    return element.value;
-  }
-  return '';
-}
-
 function createFetchMock() {
   return vi.fn((input: RequestInfo | URL) => {
     const rawUrl =
@@ -191,6 +184,15 @@ function createFetchMock() {
 }
 
 async function renderPoliciesRoute(initialEntry = '/config/policies') {
+  if (
+    initialEntry.startsWith('/config/policies/studio') ||
+    initialEntry.startsWith('/config/blast-radius') ||
+    initialEntry.startsWith('/config/capability-posture')
+  ) {
+    vi.stubEnv('VITE_PORTARIUM_SHOW_INTERNAL_COCKPIT', 'true');
+    vi.stubEnv('VITE_DEMO_MODE', 'true');
+  }
+
   const router = createCockpitRouter({
     history: createMemoryHistory({ initialEntries: [initialEntry] }),
   });
@@ -256,8 +258,8 @@ describe('Policy Studio route', () => {
     expect(screen.getByText(/Noisy Approval Classes And Drift/i)).toBeTruthy();
     expect(screen.getByText(/Recent Overrides And Incidents/i)).toBeTruthy();
     expect(screen.getByText(/Ownership And Review State/i)).toBeTruthy();
-    expect(screen.getByRole('link', { name: /Open Policy Studio/i })).toBeTruthy();
-    expect(screen.getAllByRole('link', { name: /Capability Posture/i }).length).toBeGreaterThan(0);
+    expect(screen.queryByRole('link', { name: /Open Policy Studio/i })).toBeNull();
+    expect(screen.queryByRole('link', { name: /Capability Posture/i })).toBeNull();
     expect(screen.getByText(/Outbound Payment Approval/i)).toBeTruthy();
   });
 
@@ -320,96 +322,69 @@ describe('Policy Studio route', () => {
     expect(screen.queryByText(/gmail:bulk-delete/i)).toBeNull();
   });
 
-  it('renders the prototype surface and its primary sections', async () => {
+  it('uses the generic policy studio surface in mock mode', async () => {
     vi.stubEnv('VITE_PORTARIUM_ENABLE_MSW', 'true');
 
     await renderPoliciesRoute('/config/policies/studio');
 
     expect(await screen.findByRole('heading', { name: 'Policy Studio' })).toBeTruthy();
-    expect(
-      await screen.findByText(/Start from a live case, stage the future default/i),
-    ).toBeTruthy();
-    expect(await screen.findByText(/Applies now: decide the live approval/i)).toBeTruthy();
-    expect(await screen.findByText(/Applies after publish: future Policy default/i)).toBeTruthy();
-    expect(await screen.findByText(/Capability posture matrix/i)).toBeTruthy();
-    expect(await screen.findByText(/Simulation lab/i)).toBeTruthy();
-    expect(await screen.findByText(/Runtime precedent to policy/i)).toBeTruthy();
+    expect(await screen.findByText(/Outbound Payment Approval/i)).toBeTruthy();
+    expect(screen.getAllByText(/Current Rule/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Proposed Diff/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Expected Impact And Simulation/i)).toBeTruthy();
+    expect(screen.getByText(/Backend policy lifecycle mutation is not wired/i)).toBeTruthy();
+    expect(screen.queryByText(/Simulation lab/i)).toBeNull();
+    expect(screen.queryByText(/Runtime precedent to policy/i)).toBeNull();
   });
 
-  it('shows explicit working context and time-horizon cues', async () => {
+  it('ignores old showcase return params in mock mode', async () => {
     vi.stubEnv('VITE_PORTARIUM_ENABLE_MSW', 'true');
 
     await renderPoliciesRoute(
       '/config/policies/studio?slice=CRON-CREATE-BLOCK-001&precedent=precedent-persistent-cron&scenario=apr-oc-3205&draftTier=ManualOnly&draftEvidence=Diff%20artifact%7C%7CRollback%20plan%7C%7CConnector%20posture%20check%7C%7CPolicy%20trace&draftRationale=Escalate%20schedule%20creation%20to%20a%20control-room%20review%20path',
     );
 
-    expect(await screen.findByText(/Current live case/i)).toBeTruthy();
-    expect(await screen.findAllByText(/Future default draft/i)).toBeTruthy();
-    expect(await screen.findAllByText(/Published default today/i)).toBeTruthy();
-    expect(await screen.findByText(/Current approval work/i)).toBeTruthy();
-    expect(await screen.findByText(/Future policy work/i)).toBeTruthy();
-    expect(await screen.findByText(/This draft does not decide the live approval/i)).toBeTruthy();
-    expect((await screen.findAllByText(/Applies now/i)).length).toBeGreaterThan(0);
-    expect((await screen.findAllByText(/Applies after publish/i)).length).toBeGreaterThan(0);
+    expect(await screen.findByRole('heading', { name: 'Policy Studio' })).toBeTruthy();
+    expect(await screen.findByText(/Outbound Payment Approval/i)).toBeTruthy();
+    expect(screen.queryByText(/Persistent cron creation request/i)).toBeNull();
+    expect(screen.queryByText(/Current live case/i)).toBeNull();
+    expect(screen.queryByText(/Future default draft/i)).toBeNull();
   });
 
-  it('applies a runtime precedent into the draft state', async () => {
+  it('stages a local policy-blocked draft in mock mode', async () => {
     vi.stubEnv('VITE_PORTARIUM_ENABLE_MSW', 'true');
 
     await renderPoliciesRoute('/config/policies/studio');
 
+    await userEvent.click(await screen.findByRole('button', { name: /Set Manual Only/i }));
     await userEvent.click(
-      await screen.findByRole('button', { name: /Persistent cron creation request/i }),
+      screen.getByLabelText(/Treat matching future actions as policy-blocked/i),
     );
-    await userEvent.click(await screen.findByRole('button', { name: /Apply to draft/i }));
+    await userEvent.type(screen.getByLabelText(/Rationale/i), 'Keep destructive paths manual.');
 
-    const rationale = await screen.findByLabelText(/Rationale capture/i);
-    expect(readFormValue(rationale)).toContain(
-      'Escalate schedule creation to a control-room review path',
-    );
+    expect(screen.getAllByText(/Policy-blocked/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Risky change/i)).toBeTruthy();
+    expect(screen.getByText(/Captured for review/i)).toBeTruthy();
   });
 
-  it('offers a focused handoff into the approvals triage deck', async () => {
+  it('does not expose the old focused demo handoff from policy studio', async () => {
     vi.stubEnv('VITE_PORTARIUM_ENABLE_MSW', 'true');
 
     await renderPoliciesRoute('/config/policies/studio');
 
-    await userEvent.click(
-      await screen.findByRole('button', { name: /Persistent cron creation request/i }),
-    );
-    await userEvent.click(await screen.findByRole('button', { name: /Apply to draft/i }));
-
-    const handoffLink = await screen.findByRole('link', { name: /Open focused review/i });
-    const href = handoffLink.getAttribute('href') ?? '';
-
-    expect(href).toContain('/approvals');
-    expect(href).toContain('demo=true');
-    expect(href).toContain('from=policy-studio');
-    expect(href).toContain('focus=');
-    expect(href).toContain('returnSlice=CRON-CREATE-BLOCK-001');
-    expect(href).toContain('returnPrecedent=precedent-persistent-cron');
-    expect(href).toContain('returnScenario=apr-oc-3205');
-    expect(href).toContain('returnDraftRationale=');
+    expect(await screen.findByRole('heading', { name: 'Policy Studio' })).toBeTruthy();
+    expect(screen.queryByRole('link', { name: /Open focused review/i })).toBeNull();
+    expect(screen.queryByText(/demo=true/i)).toBeNull();
   });
 
-  it('hydrates the staged draft from search params after a return trip', async () => {
+  it('uses the generic policy detail surface in mock mode', async () => {
     vi.stubEnv('VITE_PORTARIUM_ENABLE_MSW', 'true');
 
-    await renderPoliciesRoute(
-      '/config/policies/studio?slice=CRON-CREATE-BLOCK-001&precedent=precedent-persistent-cron&scenario=apr-oc-3205&draftTier=ManualOnly&draftEvidence=Diff%20artifact%7C%7CRollback%20plan%7C%7CConnector%20posture%20check%7C%7CPolicy%20trace&draftRationale=Escalate%20schedule%20creation%20to%20a%20control-room%20review%20path',
-    );
+    await renderPoliciesRoute('/config/policies/pol-live-001');
 
-    expect(
-      (await screen.findAllByText(/Persistent cron creation request/i)).length,
-    ).toBeGreaterThan(0);
-
-    const rationale = await screen.findByLabelText(/Rationale capture/i);
-    expect(readFormValue(rationale)).toContain(
-      'Escalate schedule creation to a control-room review path',
-    );
-    expect((await screen.findAllByText(/Draft staged/i)).length).toBeGreaterThan(0);
-    expect(
-      await screen.findByText(/Editing the future default because of apr-oc-3205/i),
-    ).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'Outbound Payment Approval' })).toBeTruthy();
+    expect(screen.getByText(/Detail edits are local simulation only/i)).toBeTruthy();
+    expect(screen.getByText(/Expected Impact And Simulation/i)).toBeTruthy();
+    expect(screen.queryByText(/Bulk Email Deletion Block/i)).toBeNull();
   });
 });

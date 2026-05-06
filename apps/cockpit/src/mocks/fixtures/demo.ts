@@ -849,10 +849,10 @@ export const AGENTS: AgentV1[] = [
   },
   {
     schemaVersion: 1,
-    agentId: 'agent-openclaw-001',
+    agentId: 'agent-machine-001',
     workspaceId: 'ws-demo',
-    name: 'OpenClaw Robot Controller',
-    endpoint: 'openclaw://gateway.portarium.local/robot-controller',
+    name: 'Machine Robot Controller',
+    endpoint: 'machine://gateway.portarium.local/robot-controller',
     allowedCapabilities: ['machine:invoke', 'execute-code', 'notify'],
     usedByWorkflowIds: ['wf-robot-mission'],
     machineId: 'machine-001',

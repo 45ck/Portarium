@@ -33,4 +33,8 @@ describe('useUIStore workspace cache isolation', () => {
     expect(localStorage.getItem('portarium-triage-view')).toBe('briefing');
     expect(queryClient.getQueryData(['runs', 'ws-1'])).toBeUndefined();
   });
+
+  it('defaults triage to the plain view when no preference is stored', () => {
+    expect(useUIStore.getState().triageViewMode).toBe('default');
+  });
 });

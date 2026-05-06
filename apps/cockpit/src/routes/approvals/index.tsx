@@ -23,20 +23,15 @@ import { EmptyState } from '@/components/cockpit/empty-state';
 import { OfflineSyncBanner } from '@/components/cockpit/offline-sync-banner';
 import { FreshnessBadge } from '@/components/cockpit/freshness-badge';
 import { NotificationBanner } from '@/components/cockpit/notification-banner';
-import { CheckSquare, AlertCircle, RotateCcw, Bell, Zap } from 'lucide-react';
+import { CheckSquare, AlertCircle, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import type { ApprovalSummary, ApprovalDecisionRequest } from '@portarium/cockpit-types';
-import {
-  usePolicyUpdates,
-  useDemoTriggers,
-  type PolicyUpdatePayload,
-} from '@/lib/policy-event-bridge';
+import type { ApprovalDecisionRequest } from '@portarium/cockpit-types';
 import {
   fromApprovalReturnSearch,
   type PolicyStudioReturnSearch,
   validatePolicyStudioReturnSearch,
 } from '@/lib/policy-studio-search';
-import { resolveCockpitRuntime } from '@/lib/cockpit-runtime';
+import { shouldShowInternalCockpitSurfaces } from '@/lib/shell/navigation';
 
 const UNDO_DELAY_MS = 5_000;
 
@@ -52,17 +47,12 @@ interface PendingAction {
 interface ApprovalsSearch extends PolicyStudioReturnSearch {
   focus?: string;
   from?: string;
-  demo?: boolean;
-}
-
-async function loadDemoApproval(approvalIds: readonly string[]): Promise<ApprovalSummary | null> {
-  const { findOpenClawApproval } = await import('@/mocks/loaders/openclaw-approvals');
-  return findOpenClawApproval(approvalIds);
 }
 
 function ApprovalsPage() {
   const search = Route.useSearch();
-  const policyLinkedMode = search.from === 'policy-studio';
+  const policyLinkedMode =
+    shouldShowInternalCockpitSurfaces() && search.from === 'policy-studio';
   const singleCaseApprovalId =
     (search.from === 'notification' || policyLinkedMode) && search.focus ? search.focus : undefined;
   const singleCaseMode = singleCaseApprovalId !== undefined;
@@ -71,77 +61,7 @@ function ApprovalsPage() {
   const { data, isLoading, isError, refetch, offlineMeta } = useApprovals(wsId);
   const { submitDecision, pendingCount, isFlushing } = useApprovalDecisionOutbox(wsId);
   const rawItems = data?.items ?? [];
-  const runtime = resolveCockpitRuntime();
-
-  // -- Live-update state (policy event bridge) --
-  const [injectedApprovals, setInjectedApprovals] = useState<ApprovalSummary[]>([]);
-  const [removedApprovalIds, setRemovedApprovalIds] = useState<Set<string>>(new Set());
-  const [relaxFlashId, setRelaxFlashId] = useState<string | null>(null);
-
-  const showDemo = runtime.allowDemoControls && search.demo === true;
-  const { triggerTighten, triggerRelax } = useDemoTriggers();
-
-  usePolicyUpdates(
-    useCallback(
-      (payload: PolicyUpdatePayload) => {
-        if (!showDemo) return;
-        if (payload.effect === 'tighten') {
-          void loadDemoApproval(payload.affectedApprovalIds).then((injected) => {
-            if (!injected) return;
-            const asNewPending: ApprovalSummary = {
-              ...injected,
-              status: 'Pending',
-              decidedAtIso: undefined,
-              decidedByUserId: undefined,
-              rationale: undefined,
-              requestedAtIso: new Date().toISOString(),
-            };
-            setInjectedApprovals((prev) => {
-              if (prev.some((a) => a.approvalId === asNewPending.approvalId)) return prev;
-              return [...prev, asNewPending];
-            });
-            setRemovedApprovalIds((prev) => {
-              if (!prev.has(asNewPending.approvalId)) return prev;
-              const next = new Set(prev);
-              next.delete(asNewPending.approvalId);
-              return next;
-            });
-          });
-
-          toast(`Policy tightened: ${payload.policyName}`, {
-            description: payload.changeDescription,
-            icon: <Bell className="h-4 w-4 text-orange-500" />,
-            duration: 5_000,
-          });
-        } else {
-          // Relax: remove affected approvals with green flash
-          const targetId = payload.affectedApprovalIds[0];
-          if (targetId) {
-            setRelaxFlashId(targetId);
-            setTimeout(() => {
-              setRemovedApprovalIds((prev) => new Set([...prev, targetId]));
-              setRelaxFlashId(null);
-              // Also remove from injected if it was there
-              setInjectedApprovals((prev) => prev.filter((a) => a.approvalId !== targetId));
-            }, 800);
-          }
-
-          toast(`Policy relaxed: ${payload.policyName}`, {
-            description: payload.changeDescription,
-            icon: <Zap className="h-4 w-4 text-green-500" />,
-            duration: 5_000,
-          });
-        }
-      },
-      [showDemo],
-    ),
-  );
-
-  // Merge injected approvals and filter removed ones
-  const items = [
-    ...rawItems.filter((a) => !removedApprovalIds.has(a.approvalId)),
-    ...injectedApprovals.filter((a) => !removedApprovalIds.has(a.approvalId)),
-  ];
+  const items = rawItems;
   const pendingItems = items.filter((a) => a.status === 'Pending');
 
   const [triageSkipped, setTriageSkipped] = useState<Set<string>>(new Set());
@@ -565,18 +485,6 @@ function ApprovalsPage() {
   } else {
     triageChild = (
       <div className="relative">
-        {/* Green flash overlay for relax animation */}
-        <AnimatePresence>
-          {relaxFlashId === currentApproval.approvalId && (
-            <motion.div
-              className="absolute inset-0 z-20 rounded-xl bg-green-500/20 pointer-events-none"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: [0, 0.6, 0.3, 0.6, 0] }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.8, ease: 'easeInOut' }}
-            />
-          )}
-        </AnimatePresence>
         <ApprovalTriageDeck
           key={currentApproval.approvalId}
           approval={currentApproval}
@@ -663,7 +571,7 @@ function ApprovalsPage() {
         </motion.div>
       ) : null}
       {showNotification ? <NotificationBanner pendingCount={notificationPendingCount} /> : null}
-      {search.from === 'policy-studio' ? (
+      {policyLinkedMode ? (
         <motion.div
           className="rounded-lg border border-primary/30 bg-primary/5 p-4"
           initial={{ opacity: 0, y: -8 }}
@@ -708,33 +616,6 @@ function ApprovalsPage() {
           decisionContext="approval-review"
         />
       ) : null}
-      {showDemo && !policyLinkedMode && !singleCaseMode && (
-        <motion.div
-          className="flex items-center gap-2 rounded-lg border border-dashed border-muted-foreground/30 bg-muted/30 px-3 py-2"
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-        >
-          <span className="text-[11px] font-medium text-muted-foreground mr-1">Demo</span>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-7 text-xs gap-1.5"
-            onClick={triggerTighten}
-          >
-            <Bell className="h-3 w-3" />
-            Policy tightened
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-7 text-xs gap-1.5"
-            onClick={triggerRelax}
-          >
-            <Zap className="h-3 w-3" />
-            Policy relaxed
-          </Button>
-        </motion.div>
-      )}
       {currentApproval && triageQueue.length > 0 ? (
         <div
           className={
@@ -768,19 +649,9 @@ export const Route = createRoute({
   component: ApprovalsPage,
   validateSearch: (search: Record<string, unknown>): ApprovalsSearch => {
     const policyStudioReturnSearch = validatePolicyStudioReturnSearch(search);
-    const allowDemo = resolveCockpitRuntime().allowDemoControls;
     return {
       focus: typeof search.focus === 'string' ? search.focus : undefined,
       from: typeof search.from === 'string' ? search.from : undefined,
-      demo:
-        allowDemo &&
-        (search.demo === true ||
-          search.demo === 'true' ||
-          search.demo === '"true"' ||
-          search.demo === 1 ||
-          search.demo === '1')
-          ? true
-          : undefined,
       ...policyStudioReturnSearch,
     };
   },

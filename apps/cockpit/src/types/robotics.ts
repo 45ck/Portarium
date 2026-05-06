@@ -1,5 +1,5 @@
-// Local types for the robotics prototype UI.
-// These are not yet in @portarium/cockpit-types as robotics is prototype-stage.
+// Local types for the gated robotics surface.
+// These are not yet in @portarium/cockpit-types because robotics remains opt-in.
 
 export type RobotClass = 'AMR' | 'AGV' | 'Manipulator' | 'UAV' | 'PLC';
 export type RobotStatus = 'Online' | 'Degraded' | 'E-Stopped' | 'Offline';

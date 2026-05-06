@@ -18,50 +18,608 @@ import type {
   RobotSummary,
   SafetyConstraint,
 } from '@/types/robotics';
-import {
-  ADAPTERS as DEMO_ADAPTERS,
-  AGENTS as DEMO_AGENTS,
-  APPROVALS as DEMO_APPROVALS,
-  CREDENTIAL_GRANTS as DEMO_CREDENTIAL_GRANTS,
-  EVIDENCE as DEMO_EVIDENCE,
-  MACHINES as DEMO_MACHINES,
-  OBSERVABILITY_DATA as DEMO_OBSERVABILITY_DATA,
-  PLANS as DEMO_PLANS,
-  RUNS as DEMO_RUNS,
-  WORKFORCE_MEMBERS as DEMO_WORKFORCE_MEMBERS,
-  WORKFORCE_QUEUES as DEMO_WORKFORCE_QUEUES,
-  WORK_ITEMS as DEMO_WORK_ITEMS,
-} from './demo';
 
 const WORKSPACE_ID = 'ws-platform-showcase';
 const TENANT_ID = 'tenant-platform-showcase';
 
-function withWorkspace<T extends { workspaceId: string }>(items: readonly T[]): T[] {
-  return items.map((item) => ({ ...item, workspaceId: WORKSPACE_ID }));
-}
+export const WORK_ITEMS: WorkItemSummary[] = [
+  {
+    schemaVersion: 1,
+    workItemId: 'wi-showcase-1001',
+    workspaceId: WORKSPACE_ID,
+    createdAtIso: '2026-04-14T08:00:00Z',
+    createdByUserId: 'system',
+    title: 'Review connector sync degradation before retry',
+    status: 'Open',
+    ownerUserId: 'user-operator-riley',
+    sla: { dueAtIso: '2026-04-14T12:00:00Z' },
+    links: {
+      runIds: ['run-showcase-2001'],
+      workflowIds: ['wf-adapter-sync-review'],
+      approvalIds: ['apr-showcase-3001'],
+      evidenceIds: ['evd-showcase-4001', 'evd-showcase-4002'],
+      externalRefs: [
+        {
+          sorName: 'Connector Registry',
+          portFamily: 'ControlPlane',
+          externalId: 'adapter-docs-primary',
+          externalType: 'Adapter',
+          displayLabel: 'Docs adapter sync window',
+        },
+      ],
+    },
+  },
+  {
+    schemaVersion: 1,
+    workItemId: 'wi-showcase-1002',
+    workspaceId: WORKSPACE_ID,
+    createdAtIso: '2026-04-14T08:20:00Z',
+    createdByUserId: 'system',
+    title: 'Approve credential rotation plan',
+    status: 'Blocked',
+    ownerUserId: 'user-approver-morgan',
+    sla: { dueAtIso: '2026-04-14T16:00:00Z' },
+    links: {
+      runIds: ['run-showcase-2002'],
+      workflowIds: ['wf-credential-rotation'],
+      approvalIds: ['apr-showcase-3002'],
+      evidenceIds: ['evd-showcase-4003', 'evd-showcase-4004'],
+    },
+  },
+  {
+    schemaVersion: 1,
+    workItemId: 'wi-showcase-1003',
+    workspaceId: WORKSPACE_ID,
+    createdAtIso: '2026-04-14T09:05:00Z',
+    createdByUserId: 'user-operator-riley',
+    title: 'Triage failed evidence projection run',
+    status: 'InProgress',
+    ownerUserId: 'user-operator-riley',
+    links: {
+      runIds: ['run-showcase-2003'],
+      workflowIds: ['wf-evidence-projection'],
+      evidenceIds: ['evd-showcase-4005'],
+    },
+  },
+  {
+    schemaVersion: 1,
+    workItemId: 'wi-showcase-1004',
+    workspaceId: WORKSPACE_ID,
+    createdAtIso: '2026-04-13T15:00:00Z',
+    createdByUserId: 'system',
+    title: 'Audit completed policy exception',
+    status: 'Closed',
+    ownerUserId: 'user-auditor-casey',
+    links: {
+      runIds: ['run-showcase-2004'],
+      workflowIds: ['wf-policy-exception-review'],
+      approvalIds: ['apr-showcase-3003'],
+      evidenceIds: ['evd-showcase-4006', 'evd-showcase-4007'],
+    },
+  },
+  {
+    schemaVersion: 1,
+    workItemId: 'wi-showcase-1005',
+    workspaceId: WORKSPACE_ID,
+    createdAtIso: '2026-04-14T10:15:00Z',
+    createdByUserId: 'system',
+    title: 'Prepare read-only adapter access review',
+    status: 'Open',
+    ownerUserId: 'user-admin-jordan',
+    links: {
+      runIds: ['run-showcase-2005'],
+      workflowIds: ['wf-adapter-access-review'],
+      approvalIds: ['apr-showcase-3004'],
+    },
+  },
+];
 
-function withTenant<T extends { tenantId: string }>(items: readonly T[]): T[] {
-  return items.map((item) => ({ ...item, tenantId: TENANT_ID }));
-}
+export const RUNS: RunSummary[] = [
+  {
+    schemaVersion: 1,
+    runId: 'run-showcase-2001',
+    workspaceId: WORKSPACE_ID,
+    workflowId: 'wf-adapter-sync-review',
+    correlationId: 'cor-showcase-sync-review',
+    executionTier: 'HumanApprove',
+    initiatedByUserId: 'system',
+    status: 'WaitingForApproval',
+    createdAtIso: '2026-04-14T08:02:00Z',
+    startedAtIso: '2026-04-14T08:02:05Z',
+    agentIds: ['agent-showcase-001'],
+    workforceMemberIds: ['wfm-showcase-001'],
+  },
+  {
+    schemaVersion: 1,
+    runId: 'run-showcase-2002',
+    workspaceId: WORKSPACE_ID,
+    workflowId: 'wf-credential-rotation',
+    correlationId: 'cor-showcase-credential-rotation',
+    executionTier: 'HumanApprove',
+    initiatedByUserId: 'user-admin-jordan',
+    status: 'Paused',
+    createdAtIso: '2026-04-14T08:21:00Z',
+    startedAtIso: '2026-04-14T08:21:10Z',
+    agentIds: ['agent-showcase-002'],
+    workforceMemberIds: ['wfm-showcase-002'],
+  },
+  {
+    schemaVersion: 1,
+    runId: 'run-showcase-2003',
+    workspaceId: WORKSPACE_ID,
+    workflowId: 'wf-evidence-projection',
+    correlationId: 'cor-showcase-evidence-failure',
+    executionTier: 'Assisted',
+    initiatedByUserId: 'system',
+    status: 'Failed',
+    createdAtIso: '2026-04-14T09:06:00Z',
+    startedAtIso: '2026-04-14T09:06:02Z',
+    endedAtIso: '2026-04-14T09:08:30Z',
+    agentIds: ['agent-showcase-003'],
+  },
+  {
+    schemaVersion: 1,
+    runId: 'run-showcase-2004',
+    workspaceId: WORKSPACE_ID,
+    workflowId: 'wf-policy-exception-review',
+    correlationId: 'cor-showcase-policy-exception',
+    executionTier: 'Auto',
+    initiatedByUserId: 'system',
+    status: 'Succeeded',
+    createdAtIso: '2026-04-13T15:05:00Z',
+    startedAtIso: '2026-04-13T15:05:03Z',
+    endedAtIso: '2026-04-13T15:14:40Z',
+    agentIds: ['agent-showcase-003'],
+  },
+  {
+    schemaVersion: 1,
+    runId: 'run-showcase-2005',
+    workspaceId: WORKSPACE_ID,
+    workflowId: 'wf-adapter-access-review',
+    correlationId: 'cor-showcase-access-review',
+    executionTier: 'ManualOnly',
+    initiatedByUserId: 'user-admin-jordan',
+    status: 'Running',
+    createdAtIso: '2026-04-14T10:16:00Z',
+    startedAtIso: '2026-04-14T10:16:12Z',
+    agentIds: ['agent-showcase-001'],
+  },
+];
 
-export const WORK_ITEMS: WorkItemSummary[] = withWorkspace(DEMO_WORK_ITEMS);
-export const RUNS: RunSummary[] = withWorkspace(DEMO_RUNS);
-export const APPROVALS: ApprovalSummary[] = withWorkspace(DEMO_APPROVALS);
-export const PLANS: Plan[] = withWorkspace(DEMO_PLANS);
-export const EVIDENCE: EvidenceEntry[] = withWorkspace(DEMO_EVIDENCE);
-export const WORKFORCE_MEMBERS: WorkforceMemberSummary[] = withTenant(DEMO_WORKFORCE_MEMBERS);
-export const WORKFORCE_QUEUES: WorkforceQueueSummary[] = withTenant(DEMO_WORKFORCE_QUEUES);
-export const AGENTS: AgentV1[] = withWorkspace(
-  DEMO_AGENTS.filter((agent) => !agent.agentId.includes('openclaw')),
-);
-export const MACHINES: MachineV1[] = withWorkspace(DEMO_MACHINES);
-export const ADAPTERS: AdapterSummary[] = DEMO_ADAPTERS.map((adapter) => ({ ...adapter }));
-export const CREDENTIAL_GRANTS: CredentialGrantV1[] = withWorkspace(DEMO_CREDENTIAL_GRANTS).map(
-  (grant) => ({
-    ...grant,
-    credentialsRef: grant.credentialsRef.replace('vault://ws-demo', `vault://${WORKSPACE_ID}`),
-  }),
-);
+export const APPROVALS: ApprovalSummary[] = [
+  {
+    schemaVersion: 1,
+    approvalId: 'apr-showcase-3001',
+    workspaceId: WORKSPACE_ID,
+    runId: 'run-showcase-2001',
+    planId: 'plan-showcase-5001',
+    workItemId: 'wi-showcase-1001',
+    prompt: 'Approve a read-only connector retry after degraded sync evidence was reviewed.',
+    status: 'Pending',
+    requestedAtIso: '2026-04-14T08:03:00Z',
+    requestedByUserId: 'system',
+    assigneeUserId: 'user-approver-morgan',
+    dueAtIso: '2026-04-14T12:00:00Z',
+    policyRule: {
+      ruleId: 'ADAPTER-RETRY-READONLY',
+      trigger: 'adapter:retry AND degraded-sync',
+      tier: 'HumanApprove',
+      blastRadius: ['Connector Registry', '1 adapter'],
+      irreversibility: 'partial',
+    },
+  },
+  {
+    schemaVersion: 1,
+    approvalId: 'apr-showcase-3002',
+    workspaceId: WORKSPACE_ID,
+    runId: 'run-showcase-2002',
+    planId: 'plan-showcase-5002',
+    workItemId: 'wi-showcase-1002',
+    prompt: 'Approve replacing an expiring credential grant with the same read-only scope.',
+    status: 'Pending',
+    requestedAtIso: '2026-04-14T08:22:00Z',
+    requestedByUserId: 'user-admin-jordan',
+    assigneeUserId: 'user-approver-morgan',
+    sodEvaluation: {
+      state: 'blocked-self',
+      requestorId: 'user-admin-jordan',
+      ruleId: 'SOD-CREDENTIAL-ROTATION',
+      rolesRequired: ['approver'],
+    },
+    policyRule: {
+      ruleId: 'CREDENTIAL-ROTATION-HUMAN-GATE',
+      trigger: 'credential:rotate',
+      tier: 'HumanApprove',
+      blastRadius: ['Vault reference', '1 credential grant'],
+      irreversibility: 'partial',
+    },
+  },
+  {
+    schemaVersion: 1,
+    approvalId: 'apr-showcase-3003',
+    workspaceId: WORKSPACE_ID,
+    runId: 'run-showcase-2004',
+    planId: 'plan-showcase-5003',
+    workItemId: 'wi-showcase-1004',
+    prompt: 'Approve completed policy exception audit record.',
+    status: 'Approved',
+    requestedAtIso: '2026-04-13T15:06:00Z',
+    requestedByUserId: 'system',
+    assigneeUserId: 'user-auditor-casey',
+    decidedAtIso: '2026-04-13T15:10:00Z',
+    decidedByUserId: 'user-auditor-casey',
+    rationale: 'Evidence chain and policy evaluation are complete.',
+  },
+  {
+    schemaVersion: 1,
+    approvalId: 'apr-showcase-3004',
+    workspaceId: WORKSPACE_ID,
+    runId: 'run-showcase-2005',
+    planId: 'plan-showcase-5004',
+    workItemId: 'wi-showcase-1005',
+    prompt: 'Approve adapter access review export for audit evidence.',
+    status: 'Denied',
+    requestedAtIso: '2026-04-14T10:18:00Z',
+    requestedByUserId: 'system',
+    assigneeUserId: 'user-approver-morgan',
+    decidedAtIso: '2026-04-14T10:30:00Z',
+    decidedByUserId: 'user-approver-morgan',
+    rationale: 'Denied until the export plan removes unrestricted metadata fields.',
+  },
+];
+
+export const PLANS: Plan[] = [
+  {
+    schemaVersion: 1,
+    planId: 'plan-showcase-5001',
+    workspaceId: WORKSPACE_ID,
+    createdAtIso: '2026-04-14T08:02:30Z',
+    createdByUserId: 'system',
+    plannedEffects: [
+      {
+        effectId: 'eff-showcase-1',
+        operation: 'Update',
+        target: {
+          sorName: 'Connector Registry',
+          portFamily: 'ControlPlane',
+          externalId: 'adapter-docs-primary',
+          externalType: 'Adapter',
+          displayLabel: 'Docs adapter retry marker',
+        },
+        summary: 'Mark the degraded adapter for a read-only retry window.',
+      },
+    ],
+  },
+  {
+    schemaVersion: 1,
+    planId: 'plan-showcase-5002',
+    workspaceId: WORKSPACE_ID,
+    createdAtIso: '2026-04-14T08:21:40Z',
+    createdByUserId: 'user-admin-jordan',
+    plannedEffects: [
+      {
+        effectId: 'eff-showcase-2',
+        operation: 'Update',
+        target: {
+          sorName: 'Credential Vault',
+          portFamily: 'ControlPlane',
+          externalId: 'grant-docs-read',
+          externalType: 'CredentialGrant',
+          displayLabel: 'Docs read credential grant',
+        },
+        summary: 'Rotate credential reference with unchanged read-only scope.',
+      },
+    ],
+  },
+  {
+    schemaVersion: 1,
+    planId: 'plan-showcase-5003',
+    workspaceId: WORKSPACE_ID,
+    createdAtIso: '2026-04-13T15:05:30Z',
+    createdByUserId: 'system',
+    plannedEffects: [
+      {
+        effectId: 'eff-showcase-3',
+        operation: 'Create',
+        target: {
+          sorName: 'Evidence Store',
+          portFamily: 'ControlPlane',
+          externalId: 'policy-exception-audit',
+          externalType: 'Evidence',
+          displayLabel: 'Policy exception audit bundle',
+        },
+        summary: 'Record policy exception evidence bundle.',
+      },
+    ],
+  },
+  {
+    schemaVersion: 1,
+    planId: 'plan-showcase-5004',
+    workspaceId: WORKSPACE_ID,
+    createdAtIso: '2026-04-14T10:17:00Z',
+    createdByUserId: 'system',
+    plannedEffects: [
+      {
+        effectId: 'eff-showcase-4',
+        operation: 'Create',
+        target: {
+          sorName: 'Evidence Store',
+          portFamily: 'ControlPlane',
+          externalId: 'adapter-access-review-export',
+          externalType: 'Report',
+          displayLabel: 'Adapter access review export',
+        },
+        summary: 'Prepare a redacted adapter access review export.',
+      },
+    ],
+  },
+];
+
+export const EVIDENCE: EvidenceEntry[] = [
+  {
+    schemaVersion: 1,
+    evidenceId: 'evd-showcase-4001',
+    workspaceId: WORKSPACE_ID,
+    occurredAtIso: '2026-04-14T08:02:05Z',
+    category: 'System',
+    summary: 'Adapter sync review run started.',
+    actor: { kind: 'System' },
+    links: { runId: 'run-showcase-2001', workItemId: 'wi-showcase-1001' },
+    hashSha256: '1111111111111111111111111111111111111111111111111111111111111111',
+  },
+  {
+    schemaVersion: 1,
+    evidenceId: 'evd-showcase-4002',
+    workspaceId: WORKSPACE_ID,
+    occurredAtIso: '2026-04-14T08:03:00Z',
+    category: 'Approval',
+    summary: 'Human approval requested for degraded adapter retry.',
+    actor: { kind: 'System' },
+    links: { runId: 'run-showcase-2001', workItemId: 'wi-showcase-1001' },
+    previousHash: '1111111111111111111111111111111111111111111111111111111111111111',
+    hashSha256: '2222222222222222222222222222222222222222222222222222222222222222',
+  },
+  {
+    schemaVersion: 1,
+    evidenceId: 'evd-showcase-4003',
+    workspaceId: WORKSPACE_ID,
+    occurredAtIso: '2026-04-14T08:21:10Z',
+    category: 'System',
+    summary: 'Credential rotation plan generated with unchanged read-only scope.',
+    actor: { kind: 'System' },
+    links: { runId: 'run-showcase-2002', workItemId: 'wi-showcase-1002' },
+    previousHash: '2222222222222222222222222222222222222222222222222222222222222222',
+    hashSha256: '3333333333333333333333333333333333333333333333333333333333333333',
+  },
+  {
+    schemaVersion: 1,
+    evidenceId: 'evd-showcase-4004',
+    workspaceId: WORKSPACE_ID,
+    occurredAtIso: '2026-04-14T08:22:00Z',
+    category: 'Approval',
+    summary: 'Self-approval blocked by credential rotation policy.',
+    actor: { kind: 'System' },
+    links: { runId: 'run-showcase-2002', workItemId: 'wi-showcase-1002' },
+    previousHash: '3333333333333333333333333333333333333333333333333333333333333333',
+    hashSha256: '4444444444444444444444444444444444444444444444444444444444444444',
+  },
+  {
+    schemaVersion: 1,
+    evidenceId: 'evd-showcase-4005',
+    workspaceId: WORKSPACE_ID,
+    occurredAtIso: '2026-04-14T09:08:30Z',
+    category: 'System',
+    summary: 'Evidence projection failed while reading a stale source cursor.',
+    actor: { kind: 'Machine', machineId: 'machine-showcase-001' },
+    links: { runId: 'run-showcase-2003', workItemId: 'wi-showcase-1003' },
+    previousHash: '4444444444444444444444444444444444444444444444444444444444444444',
+    hashSha256: '5555555555555555555555555555555555555555555555555555555555555555',
+  },
+  {
+    schemaVersion: 1,
+    evidenceId: 'evd-showcase-4006',
+    workspaceId: WORKSPACE_ID,
+    occurredAtIso: '2026-04-13T15:10:00Z',
+    category: 'Approval',
+    summary: 'Policy exception audit approved.',
+    actor: { kind: 'User', userId: 'user-auditor-casey' },
+    links: { runId: 'run-showcase-2004', workItemId: 'wi-showcase-1004' },
+    previousHash: '5555555555555555555555555555555555555555555555555555555555555555',
+    hashSha256: '6666666666666666666666666666666666666666666666666666666666666666',
+  },
+  {
+    schemaVersion: 1,
+    evidenceId: 'evd-showcase-4007',
+    workspaceId: WORKSPACE_ID,
+    occurredAtIso: '2026-04-13T15:14:40Z',
+    category: 'Action',
+    summary: 'Policy exception evidence bundle recorded.',
+    actor: { kind: 'Adapter', adapterId: 'adapter-evidence-store' },
+    links: { runId: 'run-showcase-2004', workItemId: 'wi-showcase-1004' },
+    previousHash: '6666666666666666666666666666666666666666666666666666666666666666',
+    hashSha256: '7777777777777777777777777777777777777777777777777777777777777777',
+  },
+];
+
+export const WORKFORCE_MEMBERS: WorkforceMemberSummary[] = [
+  {
+    schemaVersion: 1,
+    workforceMemberId: 'wfm-showcase-001',
+    linkedUserId: 'user-operator-riley',
+    displayName: 'Riley Operator',
+    capabilities: ['operations.dispatch', 'operations.escalation'],
+    availabilityStatus: 'available',
+    queueMemberships: ['queue-showcase-ops'],
+    tenantId: TENANT_ID,
+    createdAtIso: '2026-01-01T00:00:00Z',
+  },
+  {
+    schemaVersion: 1,
+    workforceMemberId: 'wfm-showcase-002',
+    linkedUserId: 'user-approver-morgan',
+    displayName: 'Morgan Approver',
+    capabilities: ['operations.approval', 'operations.escalation'],
+    availabilityStatus: 'busy',
+    queueMemberships: ['queue-showcase-approvals'],
+    tenantId: TENANT_ID,
+    createdAtIso: '2026-01-01T00:00:00Z',
+  },
+  {
+    schemaVersion: 1,
+    workforceMemberId: 'wfm-showcase-003',
+    linkedUserId: 'user-auditor-casey',
+    displayName: 'Casey Auditor',
+    capabilities: ['operations.approval'],
+    availabilityStatus: 'available',
+    queueMemberships: ['queue-showcase-audit'],
+    tenantId: TENANT_ID,
+    createdAtIso: '2026-01-01T00:00:00Z',
+  },
+];
+
+export const WORKFORCE_QUEUES: WorkforceQueueSummary[] = [
+  {
+    schemaVersion: 1,
+    workforceQueueId: 'queue-showcase-ops',
+    name: 'Operations Review',
+    requiredCapabilities: ['operations.dispatch'],
+    memberIds: ['wfm-showcase-001'],
+    routingStrategy: 'round-robin',
+    tenantId: TENANT_ID,
+  },
+  {
+    schemaVersion: 1,
+    workforceQueueId: 'queue-showcase-approvals',
+    name: 'Approval Review',
+    requiredCapabilities: ['operations.approval'],
+    memberIds: ['wfm-showcase-002'],
+    routingStrategy: 'least-busy',
+    tenantId: TENANT_ID,
+  },
+  {
+    schemaVersion: 1,
+    workforceQueueId: 'queue-showcase-audit',
+    name: 'Audit Review',
+    requiredCapabilities: ['operations.approval'],
+    memberIds: ['wfm-showcase-003'],
+    routingStrategy: 'round-robin',
+    tenantId: TENANT_ID,
+  },
+];
+
+export const AGENTS: AgentV1[] = [
+  {
+    schemaVersion: 1,
+    agentId: 'agent-showcase-001',
+    workspaceId: WORKSPACE_ID,
+    name: 'Connector Triage Agent',
+    modelId: 'portarium-local-reviewer',
+    endpoint: 'mock://agents/connector-triage',
+    allowedCapabilities: ['read:external', 'classify', 'analyze'],
+    usedByWorkflowIds: ['wf-adapter-sync-review', 'wf-adapter-access-review'],
+  },
+  {
+    schemaVersion: 1,
+    agentId: 'agent-showcase-002',
+    workspaceId: WORKSPACE_ID,
+    name: 'Credential Review Agent',
+    modelId: 'portarium-local-reviewer',
+    endpoint: 'mock://agents/credential-review',
+    allowedCapabilities: ['read:external', 'analyze'],
+    usedByWorkflowIds: ['wf-credential-rotation'],
+  },
+  {
+    schemaVersion: 1,
+    agentId: 'agent-showcase-003',
+    workspaceId: WORKSPACE_ID,
+    name: 'Evidence Projector',
+    modelId: 'portarium-local-reviewer',
+    endpoint: 'mock://agents/evidence-projector',
+    allowedCapabilities: ['read:external', 'analyze', 'classify'],
+    usedByWorkflowIds: ['wf-evidence-projection', 'wf-policy-exception-review'],
+  },
+];
+
+export const MACHINES: MachineV1[] = [
+  {
+    schemaVersion: 1,
+    machineId: 'machine-showcase-001',
+    workspaceId: WORKSPACE_ID,
+    hostname: 'worker-01.platform.local',
+    osImage: 'ubuntu-22.04-lts',
+    registeredAtIso: '2026-03-01T09:00:00Z',
+    lastHeartbeatAtIso: '2026-04-14T10:30:00Z',
+    status: 'Online',
+    activeRunCount: 2,
+    allowedCapabilities: ['read:external', 'analyze'],
+  },
+  {
+    schemaVersion: 1,
+    machineId: 'machine-showcase-002',
+    workspaceId: WORKSPACE_ID,
+    hostname: 'worker-02.platform.local',
+    osImage: 'debian-12',
+    registeredAtIso: '2026-03-02T09:00:00Z',
+    lastHeartbeatAtIso: '2026-04-14T09:45:00Z',
+    status: 'Degraded',
+    activeRunCount: 1,
+    allowedCapabilities: ['read:external'],
+  },
+];
+
+export const ADAPTERS: AdapterSummary[] = [
+  {
+    adapterId: 'adapter-connector-registry',
+    name: 'Connector Registry',
+    sorFamily: 'ControlPlane',
+    status: 'healthy',
+    lastSyncIso: '2026-04-14T10:20:00Z',
+  },
+  {
+    adapterId: 'adapter-docs-primary',
+    name: 'Docs Adapter',
+    sorFamily: 'KnowledgeBaseDocs',
+    status: 'degraded',
+    lastSyncIso: '2026-04-14T08:00:00Z',
+  },
+  {
+    adapterId: 'adapter-evidence-store',
+    name: 'Evidence Store',
+    sorFamily: 'ControlPlane',
+    status: 'healthy',
+    lastSyncIso: '2026-04-14T10:25:00Z',
+  },
+  {
+    adapterId: 'adapter-identity-read',
+    name: 'Identity Directory',
+    sorFamily: 'IamDirectory',
+    status: 'healthy',
+    lastSyncIso: '2026-04-14T10:10:00Z',
+  },
+];
+
+export const CREDENTIAL_GRANTS: CredentialGrantV1[] = [
+  {
+    schemaVersion: 1,
+    credentialGrantId: 'cg-showcase-7001',
+    workspaceId: WORKSPACE_ID,
+    adapterId: 'adapter-docs-primary',
+    credentialsRef: 'vault://ws-platform-showcase/docs/read-token',
+    scope: 'docs:read',
+    issuedAtIso: '2026-03-14T00:00:00Z',
+    expiresAtIso: '2026-05-14T00:00:00Z',
+  },
+  {
+    schemaVersion: 1,
+    credentialGrantId: 'cg-showcase-7002',
+    workspaceId: WORKSPACE_ID,
+    adapterId: 'adapter-identity-read',
+    credentialsRef: 'vault://ws-platform-showcase/identity/read-token',
+    scope: 'users:read groups:read',
+    issuedAtIso: '2026-03-01T00:00:00Z',
+    expiresAtIso: '2026-06-01T00:00:00Z',
+  },
+];
 
 export const ROBOTS: RobotSummary[] = [];
 export const MISSIONS: MissionSummary[] = [];
@@ -70,6 +628,13 @@ export const APPROVAL_THRESHOLDS: ApprovalThreshold[] = [];
 export const ESTOP_AUDIT_LOG: EStopAuditEntry[] = [];
 
 export const OBSERVABILITY_DATA = {
-  ...DEMO_OBSERVABILITY_DATA,
-  runsOverTime: DEMO_OBSERVABILITY_DATA.runsOverTime.map((point) => ({ ...point })),
+  runsOverTime: [
+    { date: '2026-04-10', succeeded: 7, failed: 1, waitingForApproval: 1 },
+    { date: '2026-04-11', succeeded: 9, failed: 1, waitingForApproval: 1 },
+    { date: '2026-04-12', succeeded: 6, failed: 1, waitingForApproval: 1 },
+    { date: '2026-04-13', succeeded: 11, failed: 1, waitingForApproval: 1 },
+    { date: '2026-04-14', succeeded: 4, failed: 1, waitingForApproval: 2 },
+  ],
+  successRate: 82,
+  avgSlaDays: 1.2,
 };

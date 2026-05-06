@@ -6,6 +6,7 @@ describe('cockpit data retention policy', () => {
     expect(
       getCockpitDataRetentionPolicy({
         DEV: true,
+        VITE_DEMO_MODE: 'true',
         VITE_PORTARIUM_ENABLE_MSW: 'true',
       }),
     ).toMatchObject({

@@ -1,5 +1,5 @@
 import { http, HttpResponse } from 'msw';
-import type { MeridianDataset } from './fixtures/meridian-seed';
+import type { MockCockpitDataset } from './fixtures/dataset';
 import type {
   ApprovalDecisionRequest,
   AssignHumanTaskRequest,
@@ -24,6 +24,9 @@ import type {
   AgentCapability,
   AdapterSummary,
   PolicySummary,
+  RetrievalSearchResponse,
+  GraphTraversalResult,
+  DerivedArtifactListResponse,
 } from '@portarium/cockpit-types';
 import { buildMockWorkflows } from './fixtures/workflows';
 import { buildMockHumanTasks } from './fixtures/human-tasks';
@@ -39,20 +42,20 @@ import { resolveStoredDataset } from '@/lib/cockpit-runtime';
 // Mutable dataset reference — replaced at bootstrap via loadActiveDataset()
 // ---------------------------------------------------------------------------
 
-let data: MeridianDataset | null = null;
+let data: MockCockpitDataset | null = null;
 
 // In-memory mutable state for mutation demo
-let approvals: MeridianDataset['APPROVALS'] = [];
+let approvals: MockCockpitDataset['APPROVALS'] = [];
 let credentialGrants: CredentialGrantV1[] = [];
 let approvalCoverageRoster: ApprovalCoverageRosterSummary = emptyApprovalCoverageRoster('ws-demo');
 let humanTasks: HumanTaskSummary[] = [];
 let evidence: EvidenceEntry[] = [];
-let workItems: MeridianDataset['WORK_ITEMS'] = [];
+let workItems: MockCockpitDataset['WORK_ITEMS'] = [];
 let users: UserSummary[] = [...MOCK_USERS];
-let agents: MeridianDataset['AGENTS'] = [];
-let machines: MeridianDataset['MACHINES'] = [];
-let runs: MeridianDataset['RUNS'] = [];
-let missions: MeridianDataset['MISSIONS'] = [];
+let agents: MockCockpitDataset['AGENTS'] = [];
+let machines: MockCockpitDataset['MACHINES'] = [];
+let runs: MockCockpitDataset['RUNS'] = [];
+let missions: MockCockpitDataset['MISSIONS'] = [];
 let globalEstopActive = false;
 let workflowOverrides = new Map<string, Partial<WorkflowSummary>>();
 
@@ -121,6 +124,120 @@ function getWorkflows(): WorkflowSummary[] {
 
 function findWorkflowById(workflowId: string): WorkflowSummary | null {
   return getWorkflows().find((workflow) => workflow.workflowId === workflowId) ?? null;
+}
+
+function buildRetrievalSearchResult(workspaceId: string): RetrievalSearchResponse {
+  const hits = evidence
+    .filter((entry) => entry.links?.runId)
+    .slice(0, 6)
+    .map((entry, index) => ({
+      artifactId: `art-${entry.evidenceId}`,
+      score: Number((0.94 - index * 0.06).toFixed(2)),
+      text: `${entry.category}: ${entry.summary}`,
+      metadata: {
+        category: entry.category,
+        runId: entry.links!.runId,
+        workItemId: entry.links?.workItemId,
+      },
+      provenance: {
+        workspaceId,
+        runId: entry.links!.runId!,
+        evidenceId: entry.evidenceId,
+      },
+    }));
+
+  return { strategy: 'semantic', hits };
+}
+
+function buildGraphTraversalResult(workspaceId: string): GraphTraversalResult {
+  const graphRun = runs.find((run) => run.status === 'WaitingForApproval') ?? runs[0];
+  const graphApproval =
+    approvals.find((approval) => approval.runId === graphRun?.runId) ?? approvals[0];
+  const graphEvidence = evidence
+    .filter((entry) => !graphRun || entry.links?.runId === graphRun.runId)
+    .slice(0, 3);
+
+  const nodes: GraphTraversalResult['nodes'] = [];
+  const edges: GraphTraversalResult['edges'] = [];
+
+  if (graphRun) {
+    nodes.push({
+      nodeId: graphRun.runId,
+      workspaceId,
+      kind: 'run',
+      label: graphRun.workflowId,
+      properties: { status: graphRun.status, workflowId: graphRun.workflowId },
+    });
+  }
+
+  if (graphApproval) {
+    nodes.push({
+      nodeId: graphApproval.approvalId,
+      workspaceId,
+      kind: 'approval',
+      label: graphApproval.prompt,
+      properties: { status: graphApproval.status, assigneeUserId: graphApproval.assigneeUserId },
+    });
+    if (graphRun) {
+      edges.push({
+        edgeId: `edge-${graphRun.runId}-${graphApproval.approvalId}`,
+        fromNodeId: graphRun.runId,
+        toNodeId: graphApproval.approvalId,
+        relation: 'REQUIRES_APPROVAL',
+        workspaceId,
+      });
+    }
+  }
+
+  for (const entry of graphEvidence) {
+    nodes.push({
+      nodeId: entry.evidenceId,
+      workspaceId,
+      kind: 'evidence-entry',
+      label: entry.summary,
+      properties: { category: entry.category, planId: entry.links?.planId },
+    });
+    if (graphRun) {
+      edges.push({
+        edgeId: `edge-${graphRun.runId}-${entry.evidenceId}`,
+        fromNodeId: graphRun.runId,
+        toNodeId: entry.evidenceId,
+        relation: 'PRODUCED_EVIDENCE',
+        workspaceId,
+      });
+    }
+  }
+
+  return { nodes, edges };
+}
+
+function buildDerivedArtifacts(workspaceId: string): DerivedArtifactListResponse {
+  const items = evidence
+    .filter((entry) => entry.links?.runId)
+    .slice(0, 6)
+    .map((entry, index) => ({
+      schemaVersion: 1 as const,
+      artifactId: `art-${entry.evidenceId}`,
+      workspaceId,
+      kind: index % 3 === 2 ? ('chunk-index' as const) : ('embedding' as const),
+      provenance: {
+        workspaceId,
+        runId: entry.links!.runId!,
+        evidenceId: entry.evidenceId,
+        projectorVersion: '1.0.0',
+      },
+      retentionPolicy: index % 3 === 2 ? ('ttl' as const) : ('run-lifetime' as const),
+      createdAtIso: entry.occurredAtIso,
+      ...(index % 3 === 2
+        ? {
+            expiresAtIso: new Date(
+              new Date(entry.occurredAtIso).getTime() + 30 * 86_400_000,
+            ).toISOString(),
+          }
+        : {}),
+    }));
+
+  return { total: items.length, items };
 }
 
 type WorkspaceUserRole = 'admin' | 'operator' | 'approver' | 'auditor';
@@ -1120,14 +1237,18 @@ export const handlers = [
   // Pack UI runtime
   http.get('/v1/workspaces/:wsId/pack-ui-runtime', ({ params }) => {
     const wsId = String(params['wsId'] ?? 'ws-demo');
-    if (wsId === 'ws-meridian') return HttpResponse.json(DEMO_PACK_UI_RUNTIME);
+    if (wsId === 'ws-platform-showcase') return HttpResponse.json(DEMO_PACK_UI_RUNTIME);
     return HttpResponse.json(DEFAULT_PACK_UI_RUNTIME);
   }),
 
   // Robotics — Robot Locations (map)
-  http.get('/v1/workspaces/:wsId/robotics/robot-locations', () =>
-    HttpResponse.json({ items: ROBOT_LOCATIONS, geofences: GEOFENCES, alerts: SPATIAL_ALERTS }),
-  ),
+  http.get('/v1/workspaces/:wsId/robotics/robot-locations', () => {
+    if ((data?.ROBOTS.length ?? 0) === 0) {
+      return HttpResponse.json({ items: [], geofences: [], alerts: [] });
+    }
+
+    return HttpResponse.json({ items: ROBOT_LOCATIONS, geofences: GEOFENCES, alerts: SPATIAL_ALERTS });
+  }),
 
   // Robotics — Robots
   http.get('/v1/workspaces/:wsId/robotics/robots', () =>
@@ -1253,35 +1374,37 @@ export const handlers = [
 
   // Robotics — Gateways
   http.get('/v1/workspaces/:wsId/robotics/gateways', () =>
-    HttpResponse.json({ items: MOCK_GATEWAYS }),
+    HttpResponse.json({ items: (data?.ROBOTS.length ?? 0) === 0 ? [] : MOCK_GATEWAYS }),
   ),
 
   // Retrieval & Graph
-  http.post('/v1/workspaces/:wsId/retrieval/search', async ({ request }) => {
+  http.post('/v1/workspaces/:wsId/retrieval/search', async ({ request, params }) => {
     const body = (await request.json()) as { strategy?: string };
-    const { RETRIEVAL_SEARCH_RESULT, GRAPH_TRAVERSAL_RESULT } = await import('./fixtures/demo');
+    const wsId = String(params['wsId'] ?? data?.RUNS[0]?.workspaceId ?? 'ws-demo');
+    const retrievalSearchResult = buildRetrievalSearchResult(wsId);
+    const graphTraversalResult = buildGraphTraversalResult(wsId);
     if (body.strategy === 'graph') {
       return HttpResponse.json({
         strategy: 'graph',
         hits: [],
-        graph: GRAPH_TRAVERSAL_RESULT,
+        graph: graphTraversalResult,
       });
     }
     if (body.strategy === 'hybrid') {
       return HttpResponse.json({
         strategy: 'hybrid',
-        hits: RETRIEVAL_SEARCH_RESULT.hits,
-        graph: GRAPH_TRAVERSAL_RESULT,
+        hits: retrievalSearchResult.hits,
+        graph: graphTraversalResult,
       });
     }
-    return HttpResponse.json(RETRIEVAL_SEARCH_RESULT);
+    return HttpResponse.json(retrievalSearchResult);
   }),
-  http.post('/v1/workspaces/:wsId/graph/query', async () => {
-    const { GRAPH_TRAVERSAL_RESULT } = await import('./fixtures/demo');
-    return HttpResponse.json(GRAPH_TRAVERSAL_RESULT);
+  http.post('/v1/workspaces/:wsId/graph/query', async ({ params }) => {
+    const wsId = String(params['wsId'] ?? data?.RUNS[0]?.workspaceId ?? 'ws-demo');
+    return HttpResponse.json(buildGraphTraversalResult(wsId));
   }),
-  http.get('/v1/workspaces/:wsId/derived-artifacts', async () => {
-    const { DERIVED_ARTIFACTS } = await import('./fixtures/demo');
-    return HttpResponse.json(DERIVED_ARTIFACTS);
+  http.get('/v1/workspaces/:wsId/derived-artifacts', async ({ params }) => {
+    const wsId = String(params['wsId'] ?? data?.RUNS[0]?.workspaceId ?? 'ws-demo');
+    return HttpResponse.json(buildDerivedArtifacts(wsId));
   }),
 ];

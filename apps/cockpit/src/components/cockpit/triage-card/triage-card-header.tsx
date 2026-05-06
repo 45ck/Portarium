@@ -22,17 +22,8 @@ import { ActorBadge } from './actor-badge';
 import { SorBadge } from './sor-badge';
 import { HeaderProvenanceTrail } from './header-provenance-trail';
 
-// ---------------------------------------------------------------------------
-// Agent display name resolution (demo-friendly)
-// ---------------------------------------------------------------------------
-
-const AGENT_DISPLAY_NAMES: Record<string, string> = {
-  'agent-openclaw-001': 'OpenClaw Watchtower',
-  'agent-openclaw-watchtower-001': 'OpenClaw Watchtower',
-};
-
 function resolveAgentDisplayName(agentId: string): string {
-  return AGENT_DISPLAY_NAMES[agentId] ?? agentId;
+  return agentId;
 }
 
 // ---------------------------------------------------------------------------

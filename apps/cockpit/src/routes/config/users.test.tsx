@@ -155,11 +155,11 @@ describe('Users/RBAC management page', () => {
   it('displays users from the API with name, role, and status', async () => {
     await renderUsersRoute();
 
-    const alice = MOCK_USERS.find((u) => u.name === 'Alice Chen');
-    expect(alice).toBeDefined();
+    const user = MOCK_USERS.find((u) => u.name === 'Riley Operator');
+    expect(user).toBeDefined();
 
-    expect(await screen.findByText('Alice Chen')).toBeTruthy();
-    expect(await screen.findByText(alice!.email)).toBeTruthy();
+    expect(await screen.findByText('Riley Operator')).toBeTruthy();
+    expect(await screen.findByText(user!.email)).toBeTruthy();
   });
 
   it('shows the Invite User button', async () => {
@@ -205,20 +205,20 @@ describe('Users/RBAC management page', () => {
   it('opens role assignment sheet when a user row is clicked', async () => {
     await renderUsersRoute();
 
-    const aliceCell = await screen.findByText('Alice Chen');
-    await userEvent.click(aliceCell);
+    const userCell = await screen.findByText('Riley Operator');
+    await userEvent.click(userCell);
 
-    const aliceUser = MOCK_USERS.find((u) => u.name === 'Alice Chen');
+    const selectedUser = MOCK_USERS.find((u) => u.name === 'Riley Operator');
     const dialog = await screen.findByRole('dialog');
-    expect(within(dialog).getByText(aliceUser!.email)).toBeTruthy();
+    expect(within(dialog).getByText(selectedUser!.email)).toBeTruthy();
     expect(await screen.findByRole('button', { name: /update role/i })).toBeTruthy();
   });
 
   it('disables Update Role button when role is unchanged', async () => {
     await renderUsersRoute();
 
-    const aliceCell = await screen.findByText('Alice Chen');
-    await userEvent.click(aliceCell);
+    const userCell = await screen.findByText('Riley Operator');
+    await userEvent.click(userCell);
 
     await waitFor(() => {
       const updateBtn = screen.getByRole('button', { name: /update role/i });

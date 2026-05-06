@@ -12,12 +12,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { canAccess } from '@/lib/role-gate';
+import { shouldShowInternalCockpitSurfaces } from '@/lib/shell/navigation';
 import type { RunSummary, WorkflowActionSummary } from '@portarium/cockpit-types';
 
 function WorkflowDetailPage() {
   const { workflowId } = Route.useParams();
   const { activeWorkspaceId: wsId, activePersona } = useUIStore();
-  const canEdit = canAccess(activePersona, 'workflows:edit');
+  const canEdit = shouldShowInternalCockpitSurfaces() && canAccess(activePersona, 'workflows:edit');
 
   const workflow = useWorkflow(wsId, workflowId);
   const runs = useRuns(wsId);

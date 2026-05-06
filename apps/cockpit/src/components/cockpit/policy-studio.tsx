@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   AlertCircle,
   Ban,
@@ -27,15 +27,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { useApprovals } from '@/hooks/queries/use-approvals';
 import { usePolicies, useSodConstraints } from '@/hooks/queries/use-policies';
 import { useRuns } from '@/hooks/queries/use-runs';
-import { resolveCockpitRuntime } from '@/lib/cockpit-runtime';
 import { cn } from '@/lib/utils';
 import { useUIStore } from '@/stores/ui-store';
-
-const DemoPolicyStudioPage = lazy(() =>
-  import('@/mocks/components/demo-policy-studio').then((module) => ({
-    default: module.DemoPolicyStudioPage,
-  })),
-);
 
 const EXECUTION_TIER_OPTIONS: ExecutionTier[] = ['Auto', 'Assisted', 'HumanApprove', 'ManualOnly'];
 
@@ -502,15 +495,5 @@ function LivePolicyStudioPage() {
 }
 
 export function PolicyStudioPage() {
-  const runtime = resolveCockpitRuntime();
-
-  if (!runtime.allowDemoControls) {
-    return <LivePolicyStudioPage />;
-  }
-
-  return (
-    <Suspense fallback={<DemoLoadingState />}>
-      <DemoPolicyStudioPage />
-    </Suspense>
-  );
+  return <LivePolicyStudioPage />;
 }

@@ -136,11 +136,13 @@ beforeAll(() => {
 beforeEach(() => {
   queryClient.clear();
   localStorage.clear();
+  vi.stubEnv('VITE_PORTARIUM_SHOW_INTERNAL_COCKPIT', 'true');
   vi.stubGlobal('fetch', createFetch());
 });
 
 afterEach(() => {
   cleanup();
+  vi.unstubAllEnvs();
 });
 
 afterAll(() => {

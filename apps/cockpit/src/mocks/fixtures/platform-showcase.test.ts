@@ -46,5 +46,20 @@ describe('platform showcase fixture', () => {
     expect(ROBOTS).toEqual([]);
     expect(MISSIONS).toEqual([]);
     expect(SAFETY_CONSTRAINTS).toEqual([]);
+    expect(RUNS.some((run) => (run.robotIds ?? []).length > 0)).toBe(false);
+  });
+
+  it('uses neutral platform wording rather than vertical demo branding', () => {
+    const serialized = JSON.stringify({
+      WORK_ITEMS,
+      RUNS,
+      APPROVALS,
+      EVIDENCE,
+      ADAPTERS,
+    });
+
+    expect(serialized).not.toMatch(
+      /Odoo|BambooHR|Salesforce|Stripe|Meridian|OpenClaw|Growth Studio|pharma|finance/i,
+    );
   });
 });

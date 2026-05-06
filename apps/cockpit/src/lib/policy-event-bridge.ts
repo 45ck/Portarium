@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -43,40 +43,4 @@ export function usePolicyUpdates(callback: (payload: PolicyUpdatePayload) => voi
   useEffect(() => {
     return onPolicyUpdate((payload) => callbackRef.current(payload));
   }, []);
-}
-
-// ---------------------------------------------------------------------------
-// Demo presets — easy triggers for the showcase
-// ---------------------------------------------------------------------------
-
-/** Simulate tightening: Communication Approval now requires ManualOnly */
-export function emitDemoTighten(): void {
-  emitPolicyUpdate({
-    policyId: 'COMMUNICATION-APPROVAL-001',
-    policyName: 'External Email Approval',
-    changeDescription: 'Tier changed to ManualOnly — all pending emails now require manual review',
-    effect: 'tighten',
-    affectedApprovalIds: ['apr-oc-3299'],
-  });
-}
-
-/** Simulate relaxing: Sub-Agent Inbox Update now auto-approved */
-export function emitDemoRelax(): void {
-  emitPolicyUpdate({
-    policyId: 'SUBAGENT-APPLY-001',
-    policyName: 'Sub-Agent Inbox Update Approval',
-    changeDescription: 'Tier changed to Auto — inbox label updates are now auto-approved',
-    effect: 'relax',
-    affectedApprovalIds: ['apr-oc-3206'],
-  });
-}
-
-/**
- * Hook that returns stable demo trigger functions.
- * Only used by the demo button — keeps the approvals page clean.
- */
-export function useDemoTriggers() {
-  const triggerTighten = useCallback(() => emitDemoTighten(), []);
-  const triggerRelax = useCallback(() => emitDemoRelax(), []);
-  return { triggerTighten, triggerRelax } as const;
 }

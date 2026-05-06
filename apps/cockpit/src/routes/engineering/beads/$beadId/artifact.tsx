@@ -1,6 +1,7 @@
-import { createRoute } from '@tanstack/react-router';
+import { createRoute, redirect } from '@tanstack/react-router';
 import { Route as rootRoute } from '../../../__root';
 import { RunArtifactViewer } from '@/components/cockpit/run-artifact-viewer';
+import { shouldShowInternalCockpitSurfaces } from '@/lib/shell/navigation';
 
 function BeadArtifactPage() {
   const { beadId } = Route.useParams();
@@ -38,5 +39,10 @@ function BeadArtifactPage() {
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
   path: '/engineering/beads/$beadId/artifact',
+  beforeLoad: () => {
+    if (!shouldShowInternalCockpitSurfaces()) {
+      throw redirect({ to: '/dashboard' as string });
+    }
+  },
   component: BeadArtifactPage,
 });

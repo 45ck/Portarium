@@ -26,6 +26,7 @@ import { useApprovals } from '@/hooks/queries/use-approvals';
 import { useEvidence } from '@/hooks/queries/use-evidence';
 import { usePolicies, useSodConstraints } from '@/hooks/queries/use-policies';
 import { useRuns } from '@/hooks/queries/use-runs';
+import { shouldShowInternalCockpitSurfaces } from '@/lib/shell/navigation';
 import { cn } from '@/lib/utils';
 import { useUIStore } from '@/stores/ui-store';
 
@@ -290,6 +291,7 @@ function dedupeEvidence(entries: readonly EvidenceEntry[]): EvidenceEntry[] {
 
 export function PolicyOverviewPage() {
   const { activeWorkspaceId: wsId } = useUIStore();
+  const showInternalSurfaces = shouldShowInternalCockpitSurfaces();
   const policiesQuery = usePolicies(wsId);
   const approvalsQuery = useApprovals(wsId);
   const runsQuery = useRuns(wsId);
@@ -368,15 +370,19 @@ export function PolicyOverviewPage() {
         }
         action={
           <div className="flex flex-wrap gap-2">
-            <Button size="sm" asChild>
-              <Link to="/config/policies/studio">
-                <GitCompareArrows className="h-4 w-4" aria-hidden="true" />
-                Open Policy Studio
-              </Link>
-            </Button>
-            <Button variant="outline" size="sm" asChild>
-              <Link to="/config/blast-radius">Capability Posture</Link>
-            </Button>
+            {showInternalSurfaces ? (
+              <Button size="sm" asChild>
+                <Link to="/config/policies/studio">
+                  <GitCompareArrows className="h-4 w-4" aria-hidden="true" />
+                  Open Policy Studio
+                </Link>
+              </Button>
+            ) : null}
+            {showInternalSurfaces ? (
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/config/capability-posture">Capability Posture</Link>
+              </Button>
+            ) : null}
           </div>
         }
       />
@@ -530,12 +536,14 @@ export function PolicyOverviewPage() {
                       </div>
                     ) : null}
                   </div>
-                  <Button variant="outline" size="sm" asChild>
-                    <Link to="/config/policies/studio">
-                      Simulate
-                      <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-                    </Link>
-                  </Button>
+                  {showInternalSurfaces ? (
+                    <Button variant="outline" size="sm" asChild>
+                      <Link to="/config/policies/studio">
+                        Simulate
+                        <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                      </Link>
+                    </Button>
+                  ) : null}
                 </div>
               ))
             )}
@@ -636,16 +644,24 @@ export function PolicyOverviewPage() {
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {[
-          {
-            title: 'Policy Studio',
-            description: 'Stage posture changes and simulate approval impact.',
-            to: '/config/policies/studio',
-          },
-          {
-            title: 'Capability Posture',
-            description: 'Inspect tool blast radius and capability controls.',
-            to: '/config/blast-radius',
-          },
+          ...(showInternalSurfaces
+            ? [
+                {
+                  title: 'Policy Studio',
+                  description: 'Stage posture changes and simulate approval impact.',
+                  to: '/config/policies/studio',
+                },
+              ]
+            : []),
+          ...(showInternalSurfaces
+            ? [
+                {
+                  title: 'Capability Posture',
+                  description: 'Inspect capability controls and policy coverage.',
+                  to: '/config/capability-posture',
+                },
+              ]
+            : []),
           {
             title: 'Governance Explorer',
             description: 'Open raw Policy, SoD, and evidence tables.',

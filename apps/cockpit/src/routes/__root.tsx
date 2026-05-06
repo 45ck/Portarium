@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { createRootRoute, Outlet, Link, useNavigate } from '@tanstack/react-router';
+import { createRootRoute, Outlet, Link, useLocation, useNavigate } from '@tanstack/react-router';
 import { useAuthStore, setupDeepLinkAuthHandler } from '@/stores/auth-store';
 import { loadOidcConfig, isOidcConfigured } from '@/lib/oidc-client';
 import { QueryClientProvider } from '@tanstack/react-query';
@@ -33,9 +33,11 @@ import { StartRunDialog } from '@/components/cockpit/start-run-dialog';
 import { IntentPlanSheet } from '@/components/cockpit/intent-plan-sheet';
 import {
   isCockpitShellGlobalActionVisible,
+  isCockpitShellCoreItemVisible,
   projectCockpitShellNavigation,
   resolveCockpitShellProfile,
 } from '@/lib/shell/navigation';
+import { ActiveCockpitShellProfileContext } from '@/lib/shell/active-profile-context';
 import { shouldEnableRoboticsDemo } from '@/lib/robotics-runtime';
 import { Toaster } from 'sonner';
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
@@ -49,6 +51,20 @@ interface WorkspaceOption {
   workspaceId: string;
   name: string;
 }
+
+const SHELL_DEFAULT_REDIRECT_SOURCE_PATHS = new Set([
+  '/inbox',
+  '/approvals',
+  '/dashboard',
+  '/config/settings',
+]);
+
+const SHELL_DEFAULT_REDIRECT_CORE_ITEMS = new Map([
+  ['/inbox', 'inbox'],
+  ['/approvals', 'approvals'],
+  ['/dashboard', 'dashboard'],
+  ['/config/settings', 'config-settings'],
+]);
 
 // Wrapper to avoid TS errors while child routes are not yet registered.
 // Once all route files are in place the router's type map will include
@@ -120,6 +136,7 @@ function RootShell() {
   const isMobile = useIsMobile();
   const authStatus = useAuthStore((state) => state.status);
   const navigate = useNavigate();
+  const location = useLocation();
   const {
     sidebarCollapsed,
     setSidebarCollapsed,
@@ -136,7 +153,7 @@ function RootShell() {
   const oidcEnabled = isOidcConfigured(loadOidcConfig());
   const hasBearerToken = Boolean(readBearerToken());
   const pendingApprovalCount = usePendingCount(activeWorkspaceId);
-  const currentPath = typeof window === 'undefined' ? '' : window.location.pathname;
+  const currentPath = location.pathname;
   const isAuthRoute = currentPath.startsWith('/auth/');
   const shouldRedirectToLogin =
     authStatus === 'unauthenticated' && oidcEnabled && !hasBearerToken && !isAuthRoute;
@@ -151,6 +168,11 @@ function RootShell() {
   const shellProfile = resolveCockpitShellProfile(
     extensionRegistry,
     import.meta.env.VITE_COCKPIT_SHELL_MODE,
+    undefined,
+    {
+      persona: activePersona,
+      accessContext: extensionServerAccess.accessContext,
+    },
   );
   const shellProjection = projectCockpitShellNavigation({
     registry: extensionRegistry,
@@ -206,6 +228,16 @@ function RootShell() {
       void navigate({ to: '/auth/login' });
     }
   }, [navigate, shouldRedirectToLogin]);
+
+  useEffect(() => {
+    if (!shellProfile.defaultRoutePath || isAuthRoute) return;
+    if (currentPath === shellProfile.defaultRoutePath) return;
+    if (!SHELL_DEFAULT_REDIRECT_SOURCE_PATHS.has(currentPath)) return;
+    const coreItemId = SHELL_DEFAULT_REDIRECT_CORE_ITEMS.get(currentPath);
+    if (coreItemId && isCockpitShellCoreItemVisible(shellProfile, coreItemId)) return;
+
+    void navigate({ to: shellProfile.defaultRoutePath, replace: true });
+  }, [currentPath, isAuthRoute, navigate, shellProfile]);
 
   // Handle web redirect callback (query params on page load).
   useEffect(() => {
@@ -458,7 +490,9 @@ function RootShell() {
           >
             <RuntimeStatusStrip />
             <ErrorBoundary>
-              <Outlet />
+              <ActiveCockpitShellProfileContext.Provider value={shellProfile}>
+                <Outlet />
+              </ActiveCockpitShellProfileContext.Provider>
             </ErrorBoundary>
           </main>
         </div>

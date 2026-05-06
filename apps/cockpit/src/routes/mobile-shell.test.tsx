@@ -279,13 +279,14 @@ describe('cockpit mobile shell', () => {
     expect(screen.getByRole('link', { name: 'Inbox' })).toBeTruthy();
   });
 
-  it('renders coming-soon mobile drawer items without navigation links', async () => {
+  it('omits hidden internal drawer items on phone viewports', async () => {
     const user = userEvent.setup();
     await renderRoute('/runs');
 
     await user.click(screen.getByRole('button', { name: 'Open more navigation' }));
 
-    expect(await screen.findByLabelText('Autonomy coming soon')).toBeTruthy();
+    expect(await screen.findByText('Navigation')).toBeTruthy();
+    expect(screen.queryByLabelText('Autonomy coming soon')).toBeNull();
     expect(screen.queryByRole('link', { name: 'Autonomy' })).toBeNull();
   });
 
@@ -304,9 +305,10 @@ describe('cockpit mobile shell', () => {
     expect(screen.queryByRole('link', { name: 'Reference Overview' })).toBeNull();
   });
 
-  it('keeps workflow builder entry visible on phone viewports', async () => {
+  it('keeps workflow builder entry hidden on phone viewports by default', async () => {
     await renderRoute('/workflows');
 
-    expect(await screen.findByRole('link', { name: 'New Workflow' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'Workflows' })).toBeTruthy();
+    expect(screen.queryByRole('link', { name: 'New Workflow' })).toBeNull();
   });
 });

@@ -17,7 +17,9 @@ import {
   isCockpitShellGlobalActionVisible,
   projectCockpitShellNavigation,
   resolveCockpitShellProfile,
+  shouldShowInternalCockpitSurfaces,
 } from '@/lib/shell/navigation';
+import { resolveCockpitRuntime } from '@/lib/cockpit-runtime';
 import { shouldEnableRoboticsDemo } from '@/lib/robotics-runtime';
 import { Play, UserPlus, Palette, PanelLeft, Database, GitBranchPlus } from 'lucide-react';
 
@@ -38,6 +40,7 @@ function CommandPalette({ hiddenGlobalActionIds }: CommandPaletteProps) {
   const { commandPaletteOpen, setCommandPaletteOpen, activePersona, activeWorkspaceId } =
     useUIStore();
   const { theme, setTheme, themes } = useTheme();
+  const runtime = resolveCockpitRuntime();
   const { registry: extensionRegistry, serverAccess: extensionServerAccess } =
     useCockpitExtensionRegistry({
       workspaceId: activeWorkspaceId,
@@ -46,6 +49,11 @@ function CommandPalette({ hiddenGlobalActionIds }: CommandPaletteProps) {
   const shellProfile = resolveCockpitShellProfile(
     extensionRegistry,
     import.meta.env.VITE_COCKPIT_SHELL_MODE,
+    undefined,
+    {
+      persona: activePersona,
+      accessContext: extensionServerAccess.accessContext,
+    },
   );
   const shellProjection = projectCockpitShellNavigation({
     registry: extensionRegistry,
@@ -101,16 +109,20 @@ function CommandPalette({ hiddenGlobalActionIds }: CommandPaletteProps) {
         useUIStore.getState().setStartRunOpen(true);
       },
     },
-    {
-      id: 'action:plan-new-beads',
-      globalActionIds: ['plan-intent', 'action:plan-new-beads'],
-      label: 'Plan New Beads',
-      icon: <GitBranchPlus className="h-4 w-4" />,
-      onSelect: () => {
-        setCommandPaletteOpen(false);
-        useUIStore.getState().setIntentPlannerOpen(true);
-      },
-    },
+    ...(shouldShowInternalCockpitSurfaces()
+      ? [
+          {
+            id: 'action:plan-new-beads',
+            globalActionIds: ['plan-intent', 'action:plan-new-beads'],
+            label: 'Plan New Beads',
+            icon: <GitBranchPlus className="h-4 w-4" />,
+            onSelect: () => {
+              setCommandPaletteOpen(false);
+              useUIStore.getState().setIntentPlannerOpen(true);
+            },
+          },
+        ]
+      : []),
     {
       id: 'action:register-agent',
       globalActionIds: ['action:register-agent'],
@@ -140,16 +152,20 @@ function CommandPalette({ hiddenGlobalActionIds }: CommandPaletteProps) {
         useUIStore.getState().setSidebarCollapsed(!useUIStore.getState().sidebarCollapsed);
       },
     },
-    {
-      id: 'setting:switch-dataset',
-      globalActionIds: ['setting:switch-dataset'],
-      label: 'Switch Dataset',
-      icon: <Database className="h-4 w-4" />,
-      onSelect: () => {
-        setCommandPaletteOpen(false);
-        nav('/config/settings');
-      },
-    },
+    ...(runtime.allowDemoControls
+      ? [
+          {
+            id: 'setting:switch-dataset',
+            globalActionIds: ['setting:switch-dataset'],
+            label: 'Switch Dataset',
+            icon: <Database className="h-4 w-4" />,
+            onSelect: () => {
+              setCommandPaletteOpen(false);
+              nav('/config/settings');
+            },
+          },
+        ]
+      : []),
   ];
   const visibleActionItems = actionItems.filter(isGlobalActionVisible);
   const visibleSettingsItems = settingsItems.filter(isGlobalActionVisible);

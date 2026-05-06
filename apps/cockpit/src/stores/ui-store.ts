@@ -2,11 +2,13 @@ import { create } from 'zustand';
 import { purgeCockpitTenantData } from '@/lib/cockpit-tenant-data';
 import {
   DATASET_STORAGE_KEY,
+  DEFAULT_DEMO_DATASET_ID,
   resolveCockpitRuntime,
   resolveStoredDataset,
   workspaceIdForDataset,
   type DatasetId,
 } from '@/lib/cockpit-runtime';
+import { isTriageModeSelectableByDefault } from '@/lib/triage-runtime';
 
 const TRIAGE_VIEW_STORAGE_KEY = 'portarium-triage-view';
 
@@ -68,10 +70,14 @@ const VALID_TRIAGE_MODES: TriageViewMode[] = [
 
 function readStoredTriageView(): TriageViewMode {
   const stored = localStorage.getItem(TRIAGE_VIEW_STORAGE_KEY);
-  if (stored && VALID_TRIAGE_MODES.includes(stored as TriageViewMode)) {
+  if (
+    stored &&
+    VALID_TRIAGE_MODES.includes(stored as TriageViewMode) &&
+    isTriageModeSelectableByDefault(stored as TriageViewMode)
+  ) {
     return stored as TriageViewMode;
   }
-  return 'briefing';
+  return 'default';
 }
 
 function readStoredDataset(): DatasetId {
@@ -95,12 +101,14 @@ export const useUIStore = create<UIStore>((set) => ({
   setStartRunOpen: (v) => set({ startRunOpen: v }),
   setIntentPlannerOpen: (v) => set({ intentPlannerOpen: v }),
   setActiveDataset: (id) => {
-    if (!resolveCockpitRuntime().allowDemoControls) {
+    const runtime = resolveCockpitRuntime();
+    if (!runtime.allowDemoControls) {
       localStorage.setItem(DATASET_STORAGE_KEY, 'live');
       set({ activeDataset: 'live', activeWorkspaceId: workspaceIdForDataset('live') });
       return;
     }
-    localStorage.setItem(DATASET_STORAGE_KEY, id);
+    const nextDataset = id === 'platform-showcase' ? id : DEFAULT_DEMO_DATASET_ID;
+    localStorage.setItem(DATASET_STORAGE_KEY, nextDataset);
     window.location.reload();
   },
   setActiveWorkspaceId: (id) =>
@@ -113,6 +121,11 @@ export const useUIStore = create<UIStore>((set) => ({
   setActivePersona: (persona) => set({ activePersona: persona }),
   setKeyboardCheatsheetOpen: (v) => set({ keyboardCheatsheetOpen: v }),
   setTriageViewMode: (mode) => {
+    if (!isTriageModeSelectableByDefault(mode)) {
+      localStorage.setItem(TRIAGE_VIEW_STORAGE_KEY, 'default');
+      set({ triageViewMode: 'default' });
+      return;
+    }
     localStorage.setItem(TRIAGE_VIEW_STORAGE_KEY, mode);
     set({ triageViewMode: mode });
   },
