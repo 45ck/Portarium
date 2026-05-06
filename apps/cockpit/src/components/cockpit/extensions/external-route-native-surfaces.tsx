@@ -1,5 +1,17 @@
 import { useMemo, useState, type ReactNode } from 'react';
-import { ArrowRight, Database, FileText, Lightbulb, Map, Network, ShieldCheck } from 'lucide-react';
+import {
+  ArrowRight,
+  Bot,
+  CheckCircle2,
+  Database,
+  FileText,
+  Lightbulb,
+  Loader2,
+  Map,
+  Network,
+  ShieldCheck,
+} from 'lucide-react';
+import { toast } from 'sonner';
 import { MapWorkbenchShell } from '@/components/cockpit/map-host/map-workbench-shell';
 import { PageHeader } from '@/components/cockpit/page-header';
 import { Badge } from '@/components/ui/badge';
@@ -16,6 +28,8 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import type { ResolvedCockpitExtension } from '@/lib/extensions/types';
+import { useProposeAgentAction } from '@/hooks/queries/use-approvals';
+import { useUIStore } from '@/stores/ui-store';
 import type { ExternalRouteComponentProps } from './external-route-adapter';
 
 type NativeSurfaceKind =
@@ -45,11 +59,33 @@ interface NativeRouteSurfaceBase {
   title: string;
   description?: string;
   badges?: readonly NativeStatusBadge[];
+  automationProposals?: readonly NativeAutomationProposal[];
   area?: {
     label: string;
     title: string;
     navItems: readonly NativeAreaNavItem[];
     boundary?: readonly string[];
+  };
+}
+
+interface NativeAutomationProposal {
+  id: string;
+  label: string;
+  summary: string;
+  confidence?: string;
+  risk?: NativeStatusBadge['tone'];
+  sourceRefs?: readonly string[];
+  safety?: readonly string[];
+  proposal: {
+    agentId: string;
+    actionKind: string;
+    toolName: string;
+    executionTier: 'Auto' | 'Assisted' | 'HumanApprove' | 'ManualOnly';
+    policyIds: readonly string[];
+    rationale: string;
+    parameters?: Record<string, unknown>;
+    machineId?: string;
+    idempotencyKey?: string;
   };
 }
 
@@ -1681,6 +1717,10 @@ function NativeSurfaceShell({
   routeId: string;
   children: ReactNode;
 }) {
+  const automationPanel =
+    surface.automationProposals && surface.automationProposals.length > 0 ? (
+      <NativeAutomationProposalPanel proposals={surface.automationProposals} extension={extension} />
+    ) : null;
   const contentWithHeader = (
     <div className="min-w-0 flex-1 space-y-4">
       <PageHeader
@@ -1688,10 +1728,16 @@ function NativeSurfaceShell({
         description={surface.description ?? extension.manifest.description}
         status={<StatusBadges badges={surface.badges ?? [{ label: routeId, tone: 'neutral' }]} />}
       />
+      {automationPanel}
       {children}
     </div>
   );
-  const content = <div className="min-w-0 flex-1 space-y-4">{children}</div>;
+  const content = (
+    <div className="min-w-0 flex-1 space-y-4">
+      {automationPanel}
+      {children}
+    </div>
+  );
 
   if (!surface.area) {
     return <div className="p-6">{contentWithHeader}</div>;
@@ -1744,6 +1790,153 @@ function NativeSurfaceShell({
       </section>
       {content}
     </div>
+  );
+}
+
+function NativeAutomationProposalPanel({
+  proposals,
+  extension,
+}: {
+  proposals: readonly NativeAutomationProposal[];
+  extension: ResolvedCockpitExtension;
+}) {
+  const { activeWorkspaceId: workspaceId } = useUIStore();
+  const proposeAgentAction = useProposeAgentAction(workspaceId);
+  const [results, setResults] = useState<
+    Record<string, { decision: string; approvalId?: string; proposalId: string }>
+  >({});
+  const [activeProposalId, setActiveProposalId] = useState<string | null>(null);
+
+  async function handlePropose(proposal: NativeAutomationProposal) {
+    setActiveProposalId(proposal.id);
+    try {
+      const result = await proposeAgentAction.mutateAsync({
+        ...proposal.proposal,
+        policyIds: [...proposal.proposal.policyIds],
+        parameters: {
+          extensionId: extension.manifest.id,
+          automationId: proposal.id,
+          ...(proposal.proposal.parameters ?? {}),
+        },
+        idempotencyKey:
+          proposal.proposal.idempotencyKey ??
+          `${extension.manifest.id}:${proposal.id}:${workspaceId}`,
+      });
+      setResults((current) => ({
+        ...current,
+        [proposal.id]: {
+          decision: result.decision,
+          approvalId: result.approvalId,
+          proposalId: result.proposalId,
+        },
+      }));
+
+      if (result.approvalId) {
+        toast.success('Approval requested', {
+          description: `${proposal.label} is now in the Portarium approval queue.`,
+        });
+      } else if (result.decision === 'Allow') {
+        toast.success('Proposal allowed', {
+          description: `${proposal.label} did not require approval.`,
+        });
+      } else {
+        toast.info('Proposal recorded', {
+          description: `${proposal.label} returned ${result.decision}.`,
+        });
+      }
+    } catch {
+      toast.error('Failed to propose automation', {
+        description: 'Portarium did not accept the governed action proposal.',
+      });
+    } finally {
+      setActiveProposalId(null);
+    }
+  }
+
+  return (
+    <section className="space-y-3" aria-label="Governed automation proposals">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="text-base font-semibold">Governed Automation Proposals</h2>
+          <p className="text-xs text-muted-foreground">
+            Extension suggestions can enter Portarium as live, human-reviewed action proposals.
+          </p>
+        </div>
+        <Badge variant="outline">Human approval path</Badge>
+      </div>
+      <div className="grid gap-3 xl:grid-cols-3">
+        {proposals.map((proposal) => {
+          const result = results[proposal.id];
+          const isSubmitting =
+            proposeAgentAction.isPending && activeProposalId === proposal.id;
+
+          return (
+            <Card key={proposal.id} className="shadow-none">
+              <CardContent className="space-y-3 p-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <Bot className="h-4 w-4 text-primary" />
+                      <h3 className="text-sm font-semibold">{proposal.label}</h3>
+                    </div>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {proposal.proposal.toolName}
+                    </p>
+                  </div>
+                  <Badge variant={badgeVariant(proposal.risk ?? 'neutral')}>
+                    {proposal.proposal.executionTier}
+                  </Badge>
+                </div>
+
+                <p className="text-sm leading-6 text-muted-foreground">{proposal.summary}</p>
+
+                <div className="flex flex-wrap gap-1.5">
+                  {proposal.confidence ? (
+                    <Badge variant="secondary">{proposal.confidence}</Badge>
+                  ) : null}
+                  {(proposal.safety ?? []).slice(0, 3).map((item) => (
+                    <Badge key={item} variant="outline">
+                      {item}
+                    </Badge>
+                  ))}
+                </div>
+
+                <SourceRefList refs={proposal.sourceRefs ?? []} />
+
+                {result ? (
+                  <div className="rounded-md border bg-muted/20 p-2 text-xs">
+                    <div className="flex items-center gap-2 font-medium">
+                      <CheckCircle2 className="h-3.5 w-3.5 text-success" />
+                      {result.decision}
+                    </div>
+                    <p className="mt-1 text-muted-foreground">Proposal {result.proposalId}</p>
+                    {result.approvalId ? (
+                      <Button asChild size="xs" variant="outline" className="mt-2">
+                        <a href={`/approvals?focus=${encodeURIComponent(result.approvalId)}`}>
+                          Open approval
+                          <ArrowRight className="h-3 w-3" />
+                        </a>
+                      </Button>
+                    ) : null}
+                  </div>
+                ) : null}
+
+                <Button
+                  type="button"
+                  size="sm"
+                  className="w-full"
+                  disabled={isSubmitting || !workspaceId}
+                  onClick={() => void handlePropose(proposal)}
+                >
+                  {isSubmitting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
+                  Send to approval queue
+                </Button>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 

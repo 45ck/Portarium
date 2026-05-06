@@ -1,10 +1,13 @@
 // @vitest-environment jsdom
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import type { ReactElement } from 'react';
 import { INSTALLED_COCKPIT_ROUTE_LOADERS } from '@/lib/extensions/installed';
 import { EXAMPLE_REFERENCE_EXTENSION } from '@/lib/extensions/example-reference/manifest';
 import type { ResolvedCockpitExtension } from '@/lib/extensions/types';
+import { useUIStore } from '@/stores/ui-store';
 import {
   createHostedExternalRouteComponent,
   HOSTED_EXTERNAL_ROUTE_COMPONENTS,
@@ -19,7 +22,21 @@ const resolvedExtension = {
   workspacePackRefs: [{ packId: 'example.reference' }],
 } satisfies ResolvedCockpitExtension;
 
-afterEach(() => cleanup());
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
+
+function renderWithQueryClient(ui: ReactElement) {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
+  });
+
+  return render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>);
+}
 
 describe('hosted external route components', () => {
   it('builds hosted route components only from the compile-time installed module catalog', () => {
@@ -318,6 +335,120 @@ describe('hosted external route components', () => {
     expect(screen.getByText('example.service-desk.snapshot')).toBeTruthy();
     expect(screen.getByText('Room ticket clusters')).toBeTruthy();
     expect(screen.getByText('Portarium Integration Boundary')).toBeTruthy();
+  });
+
+  it('submits host-native automation proposals through the Portarium approval path', async () => {
+    useUIStore.setState({ activeWorkspaceId: 'ws-demo' });
+    const fetchImpl = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            proposalId: 'proposal-1',
+            evidenceId: 'evidence-1',
+            decision: 'NeedsApproval',
+            approvalId: 'approval-1',
+          }),
+          {
+            status: 202,
+            headers: { 'Content-Type': 'application/json' },
+          },
+        ),
+    );
+    vi.stubGlobal('fetch', fetchImpl);
+
+    const Component = createHostedExternalRouteComponent({
+      hostRendering: { mode: 'host-native' },
+      loader: async () => ({
+        nativeSurface: {
+          kind: 'portarium.native.dataExplorer.v1',
+          title: 'Native Data Explorer',
+          description: 'Read-only data source landscape.',
+          automationProposals: [
+            {
+              id: 'ticket-triage-suggestion',
+              label: 'Ticket triage suggestion',
+              summary: 'Create a review-only operator suggestion from ticket snapshot evidence.',
+              confidence: 'Medium confidence',
+              risk: 'info',
+              sourceRefs: ['mc-source:freshservice-snapshot'],
+              safety: ['snapshot only', 'no source writeback', 'human approval'],
+              proposal: {
+                agentId: 'mc-school-ops-snapshot-agent',
+                actionKind: 'mc.school_ops.mock_automation.review',
+                toolName: 'mc-school-ops.ticket-triage-suggestion',
+                executionTier: 'HumanApprove',
+                policyIds: ['pol-001'],
+                rationale: 'Review a snapshot-backed ticket triage suggestion.',
+                parameters: {
+                  mockAutomationId: 'ticket-triage-suggestion',
+                  sourceSystemAccess: 'none',
+                  writebackEnabled: false,
+                },
+                idempotencyKey: 'mc-school-ops:ticket-triage-suggestion',
+              },
+            },
+          ],
+          explorer: {
+            metrics: [],
+            sourcePosture: {
+              generatedAt: '2026-05-06T00:00:00.000Z',
+              sourceSystemAccess: 'none',
+              dataOrigin: 'static-redacted-read-model',
+              sourceCount: 0,
+              readOnlySourceCount: 0,
+              localSnapshotCount: 0,
+              restrictedOrSensitiveCount: 0,
+              staleOrUnknownCount: 0,
+            },
+            snapshotPorts: [],
+            sources: [],
+            insights: [],
+            integrationNotes: [],
+          },
+        },
+      }),
+    });
+
+    renderWithQueryClient(
+      <Component
+        route={route}
+        extension={resolvedExtension}
+        params={{}}
+        pathname="/external/native/data"
+      />,
+    );
+
+    expect(
+      await screen.findByRole('heading', { name: 'Governed Automation Proposals' }),
+    ).toBeTruthy();
+    expect(screen.getByText('Ticket triage suggestion')).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Send to approval queue' }));
+
+    await waitFor(() => expect(fetchImpl).toHaveBeenCalledTimes(1));
+    const [url, init] = fetchImpl.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toBe('/v1/workspaces/ws-demo/agent-actions:propose');
+    expect(init.method).toBe('POST');
+    expect(JSON.parse(String(init.body))).toEqual({
+      agentId: 'mc-school-ops-snapshot-agent',
+      actionKind: 'mc.school_ops.mock_automation.review',
+      toolName: 'mc-school-ops.ticket-triage-suggestion',
+      executionTier: 'HumanApprove',
+      policyIds: ['pol-001'],
+      rationale: 'Review a snapshot-backed ticket triage suggestion.',
+      parameters: {
+        extensionId: 'example.reference',
+        automationId: 'ticket-triage-suggestion',
+        mockAutomationId: 'ticket-triage-suggestion',
+        sourceSystemAccess: 'none',
+        writebackEnabled: false,
+      },
+      idempotencyKey: 'mc-school-ops:ticket-triage-suggestion',
+    });
+    expect(await screen.findByText('Proposal proposal-1')).toBeTruthy();
+    expect(screen.getByRole('link', { name: /Open approval/i }).getAttribute('href')).toBe(
+      '/approvals?focus=approval-1',
+    );
   });
 
   it('renders host-native map workbench surfaces inside shared extension chrome', async () => {

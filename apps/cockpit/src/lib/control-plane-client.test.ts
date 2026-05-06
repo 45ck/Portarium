@@ -323,6 +323,58 @@ describe('ControlPlaneClient', () => {
     });
   });
 
+  it('proposes agent actions against the governed proposal endpoint', async () => {
+    const fetchImpl = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            proposalId: 'proposal-1',
+            evidenceId: 'evidence-1',
+            decision: 'NeedsApproval',
+            approvalId: 'ap-1',
+          }),
+          {
+            status: 202,
+            headers: { 'Content-Type': 'application/json' },
+          },
+        ),
+    );
+    const client = new ControlPlaneClient({
+      baseUrl: 'https://api.example.test',
+      getBearerToken: () => 'token-123',
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+
+    await client.proposeAgentAction('ws-1', {
+      agentId: 'mc-school-ops-snapshot-agent',
+      actionKind: 'mc.school_ops.mock_automation.review',
+      toolName: 'mc-school-ops.ticket-triage-suggestion',
+      executionTier: 'HumanApprove',
+      policyIds: ['mc-school-ops.snapshot-review.policy'],
+      rationale: 'Create a review-only operator suggestion from static snapshot evidence.',
+      parameters: { ticketId: 'FS-1' },
+      idempotencyKey: 'mc-school-ops:ticket-triage:FS-1',
+    });
+
+    const [url, init] = fetchImpl.mock.calls[0] as unknown as [string, RequestInit];
+    const headers = new Headers(init.headers);
+    expect(url).toBe('https://api.example.test/v1/workspaces/ws-1/agent-actions:propose');
+    expect(init.method).toBe('POST');
+    expect(headers.get('Authorization')).toBe('Bearer token-123');
+    expect(headers.get('X-Portarium-Request')).toBe('1');
+    expect(init.credentials).toBe('omit');
+    expect(JSON.parse(String(init.body))).toEqual({
+      agentId: 'mc-school-ops-snapshot-agent',
+      actionKind: 'mc.school_ops.mock_automation.review',
+      toolName: 'mc-school-ops.ticket-triage-suggestion',
+      executionTier: 'HumanApprove',
+      policyIds: ['mc-school-ops.snapshot-review.policy'],
+      rationale: 'Create a review-only operator suggestion from static snapshot evidence.',
+      parameters: { ticketId: 'FS-1' },
+      idempotencyKey: 'mc-school-ops:ticket-triage:FS-1',
+    });
+  });
+
   it('posts natural language intents to the plan endpoint', async () => {
     const fetchImpl = vi.fn(
       async () =>

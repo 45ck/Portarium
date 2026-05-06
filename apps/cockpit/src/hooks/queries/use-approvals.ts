@@ -4,7 +4,11 @@ import type {
   ApprovalDecisionRequest,
   CreateApprovalRequest,
 } from '@portarium/cockpit-types';
-import { controlPlaneClient } from '@/lib/control-plane-client';
+import {
+  controlPlaneClient,
+  type ProposeAgentActionRequest,
+  type ProposeAgentActionResponse,
+} from '@/lib/control-plane-client';
 import { useOfflineQuery } from '@/hooks/queries/use-offline-query';
 
 async function fetchApprovals(wsId: string): Promise<{ items: ApprovalSummary[] }> {
@@ -25,6 +29,13 @@ async function postApprovalDecision(
 
 async function postApproval(wsId: string, body: CreateApprovalRequest): Promise<ApprovalSummary> {
   return controlPlaneClient.createApproval(wsId, body);
+}
+
+async function postAgentActionProposal(
+  wsId: string,
+  body: ProposeAgentActionRequest,
+): Promise<ProposeAgentActionResponse> {
+  return controlPlaneClient.proposeAgentAction(wsId, body);
 }
 
 export function useApprovals(wsId: string) {
@@ -62,6 +73,20 @@ export function useCreateApproval(wsId: string) {
     onSuccess: (approval) => {
       qc.invalidateQueries({ queryKey: ['approvals', wsId] });
       qc.setQueryData(['approvals', wsId, approval.approvalId], approval);
+    },
+  });
+}
+
+export function useProposeAgentAction(wsId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: ProposeAgentActionRequest) => postAgentActionProposal(wsId, body),
+    onSuccess: (result) => {
+      qc.invalidateQueries({ queryKey: ['approvals', wsId] });
+      if (result.approvalId) {
+        qc.invalidateQueries({ queryKey: ['approvals', wsId, result.approvalId] });
+      }
+      qc.invalidateQueries({ queryKey: ['evidence', wsId] });
     },
   });
 }

@@ -568,6 +568,58 @@ export const handlers = [
     approvals = [approval, ...approvals];
     return HttpResponse.json(approval, { status: 201 });
   }),
+  http.post('/v1/workspaces/:wsId/agent-actions:propose', async ({ request, params }) => {
+    const body = (await request.json()) as {
+      agentId?: string;
+      actionKind?: string;
+      toolName?: string;
+      executionTier?: 'Auto' | 'Assisted' | 'HumanApprove' | 'ManualOnly';
+      policyIds?: string[];
+      rationale?: string;
+      machineId?: string;
+      parameters?: Record<string, unknown>;
+      idempotencyKey?: string;
+    };
+    const wsId = String(params['wsId'] ?? 'ws-demo');
+    const nowIso = new Date().toISOString();
+    const approvalId = `apr-agent-${Date.now()}`;
+    const proposalId = `proposal-${Date.now()}`;
+    const toolName = body.toolName ?? 'extension.mock-automation.review';
+    const executionTier = body.executionTier ?? 'HumanApprove';
+    const approval = {
+      schemaVersion: 1,
+      approvalId,
+      workspaceId: wsId,
+      runId: `run-${proposalId}`,
+      planId: `plan-${proposalId}`,
+      prompt: body.rationale ?? `Review proposed action ${toolName}`,
+      requestedAtIso: nowIso,
+      requestedByUserId: data?.WORKFORCE_MEMBERS[0]?.linkedUserId ?? 'user-system',
+      status: 'Pending' as const,
+      agentActionProposal: {
+        proposalId,
+        agentId: body.agentId ?? 'extension-snapshot-agent',
+        ...(body.machineId ? { machineId: body.machineId } : {}),
+        toolName,
+        toolCategory: 'ReadOnly' as const,
+        blastRadiusTier: executionTier,
+        rationale:
+          body.rationale ??
+          'Extension supplied a read-only mock automation proposal for human review.',
+      },
+    };
+    approvals = [approval, ...approvals];
+    return HttpResponse.json(
+      {
+        proposalId,
+        evidenceId: `evidence-${proposalId}`,
+        decision: 'NeedsApproval',
+        approvalId,
+        message: `Mock proposal ${toolName} requires human approval.`,
+      },
+      { status: 202 },
+    );
+  }),
   http.get('/v1/workspaces/:wsId/approvals/:id', ({ params }) => {
     const approval = approvals.find((a) => a.approvalId === params['id']);
     if (!approval) return HttpResponse.json(null, { status: 404 });

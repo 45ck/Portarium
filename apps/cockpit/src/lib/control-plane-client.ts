@@ -29,6 +29,26 @@ import type {
 } from '@portarium/cockpit-types';
 import { readBearerToken } from '@/lib/auth-token';
 
+export type ProposeAgentActionRequest = Readonly<{
+  agentId: string;
+  machineId?: string;
+  actionKind: string;
+  toolName: string;
+  executionTier: 'Auto' | 'Assisted' | 'HumanApprove' | 'ManualOnly';
+  policyIds: readonly string[];
+  rationale: string;
+  parameters?: Readonly<Record<string, unknown>>;
+  idempotencyKey?: string;
+}>;
+
+export type ProposeAgentActionResponse = Readonly<{
+  proposalId: string;
+  evidenceId?: string;
+  decision: 'Allow' | 'NeedsApproval' | 'Denied';
+  approvalId?: string;
+  message?: string;
+}>;
+
 interface ProblemDetails {
   type?: string;
   title?: string;
@@ -362,6 +382,16 @@ export class ControlPlaneClient {
 
   public queryGraph(workspaceId: string, body: GraphQueryRequest): Promise<GraphTraversalResult> {
     return this.request(`/v1/workspaces/${pathSegment(workspaceId)}/graph/query`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+  }
+
+  public proposeAgentAction(
+    workspaceId: string,
+    body: ProposeAgentActionRequest,
+  ): Promise<ProposeAgentActionResponse> {
+    return this.request(`/v1/workspaces/${pathSegment(workspaceId)}/agent-actions:propose`, {
       method: 'POST',
       body: JSON.stringify(body),
     });

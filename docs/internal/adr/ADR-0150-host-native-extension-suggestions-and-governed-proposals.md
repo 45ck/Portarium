@@ -1,6 +1,6 @@
 # ADR-0150: Host-Native Extension Suggestions And Governed Proposals
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-05-06
 
 ## Context
@@ -128,14 +128,19 @@ Negative:
 
 ## Implementation Notes
 
-1. Keep the initial suggestion descriptors internal to Cockpit host-native
-   surfaces until the schema stabilizes.
-2. Add conformance checks before exposing the shape in the public extension SDK.
-3. Add route-loader tests that reject executable callbacks, raw source payloads,
-   credentials, or undeclared egress in suggestion descriptors.
-4. Add a generic proposal-review native surface only after the approval packet
-   contract and action governance lifecycle are aligned.
-5. Keep tenant-specific examples outside the Portarium repo. The committed
+1. Cockpit now accepts internal `automationProposals` descriptors on
+   host-native route surfaces and renders them with host-owned components.
+2. Proposal submission uses `ControlPlaneClient.proposeAgentAction()` against
+   `/v1/workspaces/:workspaceId/agent-actions:propose`; extensions do not
+   receive execution authority.
+3. The mutation invalidates approval and evidence queries so the proposal can
+   flow into the existing operator review surfaces.
+4. MSW mirrors the same endpoint for demo/dev mode while the live client path
+   remains API-backed.
+5. Keep the initial descriptor shape internal to Cockpit host-native surfaces
+   until the schema stabilizes.
+6. Add conformance checks before exposing the shape in the public extension SDK.
+7. Keep tenant-specific examples outside the Portarium repo. The committed
    reference extension should remain neutral.
 
 ## Related Artifacts
