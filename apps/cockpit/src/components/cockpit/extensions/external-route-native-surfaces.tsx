@@ -83,11 +83,36 @@ interface NativeTicketRecord {
   priorityLabel: string;
   typeLabel?: string;
   category?: string;
+  requesterLabel?: string;
+  ownerLabel?: string;
   updatedAtLabel: string;
   dueLabel?: string;
   roomLabel?: string;
   sourceRef: string;
 }
+
+interface NativeTicketConversationItem {
+  id: string;
+  authorLabel?: string;
+  timestampLabel?: string;
+  bodyPreview?: string;
+  bodyFormat?: 'plain' | 'html-derived' | 'markdown-like';
+  body: string;
+  bodyBlocks?: readonly NativeTicketConversationBlock[];
+  direction?: 'incoming' | 'outgoing' | 'unknown';
+  private?: boolean;
+  metadata?: string;
+}
+
+type NativeTicketConversationBlock =
+  | {
+      kind: 'paragraph' | 'quote';
+      text: string;
+    }
+  | {
+      kind: 'list';
+      items: readonly string[];
+    };
 
 interface NativeTicketDetail {
   label: string;
@@ -98,6 +123,9 @@ interface NativeTicketDetail {
     title: string;
     message: string;
     summary?: string;
+    items?: readonly NativeTicketConversationItem[];
+    totalCount?: number;
+    omittedCount?: number;
   };
   properties: readonly NativeKeyValue[];
   relatedContext: {
@@ -135,6 +163,8 @@ interface NativeBaseMap {
   kind: 'provider' | 'custom';
   provider?: string;
   description?: string;
+  imageHref?: string;
+  imageAlt?: string;
   active?: boolean;
 }
 
@@ -654,24 +684,17 @@ function NativeTicketInboxSurfaceRenderer({
   return (
     <NativeSurfaceShell surface={surface} extension={extension} routeId={routeId}>
       <Card className="gap-0 py-0 shadow-none">
-        <CardHeader className="border-b py-4">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <CardTitle className="text-base">Inbox</CardTitle>
-              <p className="mt-1 text-xs text-muted-foreground">{surface.queue.statusText}</p>
+        <CardContent className="space-y-2 p-2.5">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <TicketViews views={surface.queue.views} />
+            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+              <span>{surface.queue.pageText}</span>
+              <Badge variant="outline">Host-rendered</Badge>
             </div>
-            <Badge variant="outline">Host-rendered</Badge>
           </div>
-        </CardHeader>
-        <CardContent className="space-y-4 p-4">
-          <TicketViews views={surface.queue.views} />
           <TicketSearch search={surface.queue.search} />
           <TicketFilters filters={surface.queue.filters} />
-          <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
-            <span>{surface.queue.statusText}</span>
-            <span>{surface.queue.pageText}</span>
-          </div>
-          <div className="grid gap-4 xl:grid-cols-[minmax(320px,0.95fr)_minmax(420px,1.05fr)]">
+          <div className="grid h-[calc(100vh-19rem)] min-h-[420px] max-h-[820px] gap-3 xl:grid-cols-[320px_minmax(0,1fr)]">
             <TicketQueueList tickets={surface.queue.tickets} />
             <TicketDetail detail={surface.selectedTicket} />
           </div>
@@ -684,14 +707,14 @@ function NativeTicketInboxSurfaceRenderer({
 
 function TicketViews({ views }: { views: readonly NativeTicketView[] }) {
   return (
-    <nav aria-label="Ticket views" className="flex flex-wrap gap-2">
+    <nav aria-label="Ticket views" className="flex flex-wrap gap-1.5">
       {views.map((view) => (
         <Button
           key={view.id}
           asChild
           size="sm"
           variant={view.active ? 'default' : 'outline'}
-          className="justify-between gap-2"
+          className="h-8 justify-between gap-2 px-2.5"
         >
           <a href={view.href} aria-current={view.active ? 'true' : undefined}>
             <span>{view.label}</span>
@@ -705,10 +728,15 @@ function TicketViews({ views }: { views: readonly NativeTicketView[] }) {
 
 function TicketSearch({ search }: { search: NativeTicketInboxSurface['queue']['search'] }) {
   return (
-    <form action={search.action} method="get" role="search" className="rounded-md border p-3">
-      <div className="grid gap-3 lg:grid-cols-[minmax(240px,1fr)_180px_140px_auto_auto]">
-        <div className="space-y-1">
-          <Label htmlFor="external-ticket-search" className="text-xs">
+    <form
+      action={search.action}
+      method="get"
+      role="search"
+      className="rounded-md border bg-muted/10 p-2"
+    >
+      <div className="grid gap-2 lg:grid-cols-[minmax(240px,1fr)_150px_96px_auto_auto]">
+        <div>
+          <Label htmlFor="external-ticket-search" className="sr-only">
             Search
           </Label>
           <Input
@@ -716,26 +744,34 @@ function TicketSearch({ search }: { search: NativeTicketInboxSurface['queue']['s
             name="q"
             type="search"
             defaultValue={search.query ?? ''}
-            placeholder="Ticket ID, room, category, source ref"
+            placeholder="Ticket ID, subject, requester, room"
+            className="h-9"
           />
         </div>
-        <NativeSelect name="sort" label="Sort" value={search.sort} options={search.sortOptions} />
+        <NativeSelect
+          name="sort"
+          label="Sort"
+          value={search.sort}
+          options={search.sortOptions}
+          labelClassName="sr-only"
+        />
         <NativeSelect
           name="pageSize"
           label="Rows"
           value={String(search.pageSize)}
+          labelClassName="sr-only"
           options={search.pageSizeOptions.map((size) => ({
             value: String(size),
             label: String(size),
           }))}
         />
-        <div className="flex items-end">
-          <Button type="submit" className="w-full">
+        <div>
+          <Button type="submit" className="h-9 w-full">
             Apply
           </Button>
         </div>
-        <div className="flex items-end">
-          <Button asChild type="button" variant="outline" className="w-full">
+        <div>
+          <Button asChild type="button" variant="outline" className="h-9 w-full">
             <a href={search.action}>Clear</a>
           </Button>
         </div>
@@ -749,17 +785,19 @@ function NativeSelect({
   label,
   value,
   options,
+  labelClassName,
 }: {
   name: string;
   label: string;
   value: string;
   options: readonly NativeSelectOption[];
+  labelClassName?: string;
 }) {
   return (
-    <div className="space-y-1">
-      <Label className="text-xs">{label}</Label>
+    <div>
+      <Label className={cn('text-xs', labelClassName)}>{label}</Label>
       <Select name={name} defaultValue={value}>
-        <SelectTrigger>
+        <SelectTrigger className="h-9 w-full">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -776,9 +814,9 @@ function NativeSelect({
 
 function TicketFilters({ filters }: { filters: readonly NativeTicketFilterGroup[] }) {
   return (
-    <details className="rounded-md border bg-muted/10 p-3">
+    <details className="rounded-md border bg-muted/10 px-3 py-1.5">
       <summary className="cursor-pointer text-xs font-medium">Filters</summary>
-      <section aria-label="Ticket filters" className="mt-3 space-y-2">
+      <section aria-label="Ticket filters" className="mt-2 space-y-2">
         {filters.map((group) => (
           <div key={group.label} className="flex flex-wrap items-center gap-2">
             <span className="w-20 text-xs font-medium text-muted-foreground">{group.label}</span>
@@ -813,14 +851,15 @@ function TicketQueueList({ tickets }: { tickets: readonly NativeTicketRecord[] }
   }
 
   return (
-    <section aria-label="Queue list" className="overflow-hidden rounded-md border">
+    <section
+      aria-label="Queue list"
+      className="flex min-h-0 flex-col overflow-hidden rounded-md border bg-background"
+    >
       <header className="flex items-center justify-between gap-3 border-b px-3 py-2">
-        <h2 className="text-sm font-semibold">Queue List</h2>
-        <span className="text-xs text-muted-foreground">
-          First ticket preloaded; select any row to inspect it.
-        </span>
+        <h2 className="text-sm font-semibold">Ticket List</h2>
+        <span className="text-xs text-muted-foreground">{tickets.length} visible</span>
       </header>
-      <div className="max-h-[min(70vh,760px)] overflow-y-auto divide-y">
+      <div className="min-h-0 flex-1 overflow-y-auto divide-y overscroll-contain">
         {tickets.map((ticket) => (
           <a
             key={ticket.id}
@@ -838,21 +877,36 @@ function TicketQueueList({ tickets }: { tickets: readonly NativeTicketRecord[] }
             )}
           >
             <span className="flex items-start justify-between gap-3">
-              <strong>{ticket.label}</strong>
-              <Badge variant={ticket.lifecycle === 'open' ? 'info' : 'outline'}>
-                {ticket.statusLabel}
-              </Badge>
+              <span className="min-w-0">
+                <strong className="block truncate">{ticket.label}</strong>
+                <span className="mt-1 line-clamp-2 block text-xs leading-5 text-muted-foreground">
+                  {ticket.summary}
+                </span>
+              </span>
+              <span className="flex shrink-0 flex-col items-end gap-1">
+                <Badge variant={ticket.lifecycle === 'open' ? 'info' : 'outline'}>
+                  {ticket.statusLabel}
+                </Badge>
+                <span className="text-[11px] font-medium text-muted-foreground">
+                  {ticket.priorityLabel}
+                </span>
+              </span>
             </span>
-            <span className="text-xs text-muted-foreground">{ticket.summary}</span>
-            <span className="flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
-              <span>{ticket.priorityLabel}</span>
-              <span>{ticket.typeLabel ?? 'Unspecified'}</span>
-              <span>{ticket.category ?? 'Uncategorised'}</span>
-              <span>{ticket.updatedAtLabel}</span>
-              {ticket.dueLabel ? <span>{ticket.dueLabel}</span> : null}
+            <span className="grid gap-1 text-[11px] text-muted-foreground sm:grid-cols-2">
+              <span>
+                {ticket.typeLabel ?? 'Unspecified'} · {ticket.category ?? 'Uncategorised'}
+              </span>
+              <span>
+                {ticket.updatedAtLabel}
+                {ticket.dueLabel ? ` · ${ticket.dueLabel}` : ''}
+              </span>
+              <span>{ticket.requesterLabel ?? 'Requester unknown'}</span>
+              <span>{ticket.ownerLabel ?? 'No responder'}</span>
             </span>
             <span className="flex items-center justify-between gap-3 text-[11px]">
-              <span className="font-medium text-primary">{ticket.roomLabel ?? 'No room hint'}</span>
+              <span className="rounded-sm bg-primary/10 px-1.5 py-0.5 font-medium text-primary">
+                {ticket.roomLabel ?? 'No room hint'}
+              </span>
               <code className="truncate text-muted-foreground">{ticket.sourceRef}</code>
             </span>
           </a>
@@ -879,52 +933,253 @@ function TicketDetail({ detail }: { detail?: NativeTicketDetail }) {
     <section
       id="ticket-reader"
       aria-label="Ticket reader"
-      className="space-y-4 rounded-md border p-4"
+      className="flex min-h-0 flex-col overflow-hidden rounded-md border bg-background"
     >
-      <header className="space-y-2 border-b pb-3">
+      <header className="border-b bg-muted/15 px-4 py-3">
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h2 className="text-base font-semibold">Selected Ticket</h2>
-            <p className="text-xs text-muted-foreground">{detail.sourceRef}</p>
+          <div className="min-w-0 space-y-1">
+            <p className="text-xs font-medium text-muted-foreground">Selected Ticket</p>
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="truncate text-base font-semibold">{detail.label}</h2>
+              <StatusBadges badges={detail.badges} />
+            </div>
+            <code className="block text-[11px] break-all text-muted-foreground">
+              {detail.sourceRef}
+            </code>
           </div>
-          <span className="text-xs text-muted-foreground">Read-only ticket detail</span>
+          <Badge variant="outline">Read-only</Badge>
         </div>
-        <p className="text-sm text-muted-foreground">{detail.summary}</p>
-        <StatusBadges badges={detail.badges} />
       </header>
 
-      <KeyValueSection title="Properties" items={detail.properties} />
+      <div className="grid min-h-0 flex-1 overflow-y-auto gap-0 2xl:grid-cols-[minmax(0,1fr)_280px]">
+        <div className="min-w-0 space-y-4 p-4">
+          <section className="rounded-md border p-3">
+            <p className="text-xs font-medium text-muted-foreground">Subject / Summary</p>
+            <p className="mt-2 text-sm leading-6">{detail.summary}</p>
+          </section>
 
-      <section className="space-y-2">
-        <h3 className="text-sm font-semibold">Related Context</h3>
-        {detail.relatedContext.roomLinks && detail.relatedContext.roomLinks.length > 0 ? (
-          <div className="flex flex-wrap gap-2">
-            {detail.relatedContext.roomLinks.map((link) => (
-              <Button key={link.href} asChild size="xs" variant="outline">
-                <a href={link.href}>{link.label}</a>
-              </Button>
-            ))}
-          </div>
-        ) : null}
-        <RelatedItems
-          items={detail.relatedContext.items}
-          emptyText="No extra redacted context item matched this ticket."
-        />
-      </section>
+          <TicketConversationPanel conversation={detail.conversation} />
 
-      <div className="rounded-md border bg-muted/20 p-3 text-xs text-muted-foreground">
-        <p className="font-medium text-foreground">{detail.conversation.title}</p>
-        <p className="mt-1">{detail.conversation.message}</p>
-      </div>
+          <section className="space-y-2">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <h3 className="text-sm font-semibold">Related Context</h3>
+              {detail.relatedContext.roomLinks && detail.relatedContext.roomLinks.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {detail.relatedContext.roomLinks.map((link) => (
+                    <Button key={link.href} asChild size="xs" variant="outline">
+                      <a href={link.href}>{link.label}</a>
+                    </Button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+            <RelatedItems
+              items={detail.relatedContext.items}
+              emptyText="No extra redacted context item matched this ticket."
+            />
+          </section>
 
-      <details className="rounded-md border bg-muted/20 p-3">
-        <summary className="cursor-pointer text-sm font-semibold">Diagnostics</summary>
-        <div className="mt-3">
-          <KeyValueList items={detail.diagnostics} />
+          <details className="rounded-md border bg-muted/20 p-3">
+            <summary className="cursor-pointer text-sm font-semibold">Diagnostics</summary>
+            <div className="mt-3">
+              <KeyValueList items={detail.diagnostics} />
+            </div>
+          </details>
         </div>
-      </details>
+
+        <aside className="border-t bg-muted/10 p-4 2xl:border-t-0 2xl:border-l">
+          <KeyValueSection title="Ticket fields" items={detail.properties} />
+        </aside>
+      </div>
     </section>
   );
+}
+
+function TicketConversationPanel({
+  conversation,
+}: {
+  conversation: NativeTicketDetail['conversation'];
+}) {
+  const items = conversation.items ?? [];
+  const visibleItems = items.slice(0, 3);
+  const remainingItems = items.slice(3);
+  const totalCount = conversation.totalCount ?? items.length;
+  const hiddenByRouteCount = conversation.omittedCount ?? Math.max(0, totalCount - items.length);
+
+  return (
+    <section className="space-y-2">
+      <h3 className="text-sm font-semibold">Activity</h3>
+      <div className="rounded-md border">
+        <div className="border-b px-3 py-2">
+          <p className="text-sm font-medium">{conversation.title}</p>
+          {conversation.summary ? (
+            <p className="mt-1 text-xs text-muted-foreground">{conversation.summary}</p>
+          ) : null}
+        </div>
+        <div className="max-h-[min(52vh,600px)] space-y-3 overflow-y-auto overscroll-contain px-3 py-3">
+          {items.length > 0 ? (
+            <>
+              <p className="text-xs text-muted-foreground">
+                Showing newest {items.length} of {totalCount} entries.
+                {hiddenByRouteCount > 0
+                  ? ` ${hiddenByRouteCount} older entries are not loaded in this view.`
+                  : ''}
+              </p>
+              {visibleItems.map((item, index) => (
+                <TicketConversationEntry key={item.id} item={item} defaultOpen={index === 0} />
+              ))}
+              {remainingItems.length > 0 ? (
+                <details className="rounded-md border bg-muted/10">
+                  <summary className="cursor-pointer px-3 py-2 text-xs font-medium">
+                    Show {remainingItems.length} older entries
+                  </summary>
+                  <div className="space-y-3 border-t p-3">
+                    {remainingItems.map((item) => (
+                      <TicketConversationEntry key={item.id} item={item} />
+                    ))}
+                  </div>
+                </details>
+              ) : null}
+            </>
+          ) : (
+            <div className="flex gap-3">
+              <span
+                aria-hidden="true"
+                className="mt-1 h-2 w-2 shrink-0 rounded-full bg-muted-foreground"
+              />
+              <div className="min-w-0">
+                <p className="text-sm leading-6">{conversation.message}</p>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Conversation bodies are shown here when an extension provides a governed read-only
+                  activity snapshot.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function TicketConversationEntry({
+  item,
+  defaultOpen = false,
+}: {
+  item: NativeTicketConversationItem;
+  defaultOpen?: boolean;
+}) {
+  return (
+    <article className="flex gap-3">
+      <span
+        aria-hidden="true"
+        className={cn(
+          'mt-3 h-2 w-2 shrink-0 rounded-full',
+          item.direction === 'incoming' ? 'bg-info' : 'bg-primary',
+        )}
+      />
+      <details className="min-w-0 flex-1 rounded-md border bg-muted/10" open={defaultOpen}>
+        <summary className="cursor-pointer list-none px-3 py-2 marker:hidden">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs font-medium">{item.authorLabel ?? 'Freshservice user'}</p>
+            {item.timestampLabel ? (
+              <time className="text-[11px] text-muted-foreground">{item.timestampLabel}</time>
+            ) : null}
+          </div>
+          {item.bodyPreview ? (
+            <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">
+              {item.bodyPreview}
+            </p>
+          ) : null}
+          <div className="mt-2 flex flex-wrap gap-2">
+            {item.bodyFormat && item.bodyFormat !== 'plain' ? (
+              <Badge variant="outline">{item.bodyFormat}</Badge>
+            ) : null}
+            {item.private ? <Badge variant="outline">Private</Badge> : null}
+            {item.metadata ? (
+              <span className="text-[11px] text-muted-foreground">{item.metadata}</span>
+            ) : null}
+          </div>
+        </summary>
+        <div className="border-t px-3 py-3">
+          <ConversationBody body={item.body} blocks={item.bodyBlocks} />
+        </div>
+      </details>
+    </article>
+  );
+}
+
+function ConversationBody({
+  body,
+  blocks: providedBlocks,
+}: {
+  body: string;
+  blocks?: readonly NativeTicketConversationBlock[];
+}) {
+  const blocks =
+    providedBlocks && providedBlocks.length > 0 ? providedBlocks : conversationBlocks(body);
+
+  return (
+    <div className="space-y-2 text-sm leading-6">
+      {blocks.map((block, index) => {
+        if (block.kind === 'quote') {
+          return (
+            <blockquote
+              key={`${block.kind}-${index}`}
+              className="border-l-2 pl-3 text-muted-foreground"
+            >
+              {block.text}
+            </blockquote>
+          );
+        }
+
+        if (block.kind === 'list') {
+          return (
+            <ul key={`${block.kind}-${index}`} className="list-disc space-y-1 pl-5">
+              {block.items.map((item, itemIndex) => (
+                <li key={`${item}-${itemIndex}`}>{item}</li>
+              ))}
+            </ul>
+          );
+        }
+
+        return <p key={`${block.kind}-${index}`}>{block.text}</p>;
+      })}
+    </div>
+  );
+}
+
+function conversationBlocks(body: string): NativeTicketConversationBlock[] {
+  const blocks: NativeTicketConversationBlock[] = [];
+  const paragraphs = body
+    .replace(/\r\n?/g, '\n')
+    .split(/\n{2,}/g)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean);
+
+  for (const paragraph of paragraphs) {
+    const lines = paragraph
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean);
+
+    if (lines.length > 0 && lines.every((line) => /^[-*+]\s+/.test(line))) {
+      blocks.push({ kind: 'list', items: lines.map((line) => line.replace(/^[-*+]\s+/, '')) });
+      continue;
+    }
+
+    if (lines.length > 0 && lines.every((line) => /^>\s?/.test(line))) {
+      blocks.push({
+        kind: 'quote',
+        text: lines.map((line) => line.replace(/^>\s?/, '')).join(' '),
+      });
+      continue;
+    }
+
+    blocks.push({ kind: 'paragraph', text: lines.join(' ') });
+  }
+
+  return blocks.length > 0 ? blocks : [{ kind: 'paragraph', text: body }];
 }
 
 function TicketPagination({ actions }: { actions: readonly NativeLinkAction[] }) {
@@ -1057,10 +1312,21 @@ function NativeMapCanvas({
         )}
       />
       <div className="absolute inset-6 rounded-xl border border-border bg-card/70 shadow-inner">
-        <div className="absolute inset-x-8 top-1/3 h-px bg-border" />
-        <div className="absolute inset-y-8 left-1/3 w-px bg-border" />
-        <div className="absolute right-10 bottom-10 left-10 h-24 rounded-lg border border-primary/30 bg-primary/5" />
-        <div className="absolute top-10 right-10 h-32 w-44 rounded-lg border border-border bg-background/80" />
+        {activeBaseMap?.imageHref ? (
+          <img
+            src={activeBaseMap.imageHref}
+            alt={activeBaseMap.imageAlt ?? activeBaseMap.label}
+            className="h-full w-full object-contain p-4"
+            draggable={false}
+          />
+        ) : (
+          <>
+            <div className="absolute inset-x-8 top-1/3 h-px bg-border" />
+            <div className="absolute inset-y-8 left-1/3 w-px bg-border" />
+            <div className="absolute right-10 bottom-10 left-10 h-24 rounded-lg border border-primary/30 bg-primary/5" />
+            <div className="absolute top-10 right-10 h-32 w-44 rounded-lg border border-border bg-background/80" />
+          </>
+        )}
       </div>
       <div className="absolute top-4 left-4 max-w-sm rounded-md border bg-background/95 p-3 shadow-sm">
         <div className="flex items-center gap-2">
@@ -1110,7 +1376,7 @@ function NativeSurfaceShell({
   routeId: string;
   children: ReactNode;
 }) {
-  const content = (
+  const contentWithHeader = (
     <div className="min-w-0 flex-1 space-y-4">
       <PageHeader
         title={surface.title}
@@ -1120,31 +1386,45 @@ function NativeSurfaceShell({
       {children}
     </div>
   );
+  const content = <div className="min-w-0 flex-1 space-y-4">{children}</div>;
 
   if (!surface.area) {
-    return <div className="p-6">{content}</div>;
+    return <div className="p-6">{contentWithHeader}</div>;
   }
 
   return (
-    <div className="flex flex-wrap items-start gap-4 p-6">
-      <aside className="w-full shrink-0 rounded-md border bg-card p-3 sm:w-56">
-        <p className="text-xs font-semibold uppercase text-muted-foreground">
-          {surface.area.label}
-        </p>
-        <h2 className="mt-1 text-base font-semibold">{surface.area.title}</h2>
-        <nav aria-label={`${surface.area.label} areas`} className="mt-4 grid gap-1">
+    <div className="space-y-3 px-6 py-4">
+      <section className="flex flex-wrap items-center gap-3 rounded-md border bg-card px-3 py-2">
+        <div className="mr-1 min-w-fit">
+          <p className="text-xs font-semibold uppercase text-muted-foreground">
+            {surface.area.label}
+          </p>
+          <h2 className="text-sm font-semibold">{surface.area.title}</h2>
+        </div>
+        <nav
+          aria-label={`${surface.area.label} areas`}
+          className="flex min-w-0 flex-1 gap-1 overflow-x-auto"
+        >
           {surface.area.navItems.map((item) => (
             <Button
               key={item.id}
               asChild
-              variant={item.active ? 'secondary' : 'ghost'}
-              className="h-auto justify-start px-2 py-2"
+              size="sm"
+              variant={item.active ? 'default' : 'ghost'}
+              className="h-auto shrink-0 justify-start px-3 py-2"
             >
               <a href={item.href} aria-current={item.active ? 'page' : undefined}>
                 <span className="grid gap-0.5 text-left">
                   <span>{item.label}</span>
                   {item.detail ? (
-                    <span className="text-xs font-normal text-muted-foreground">{item.detail}</span>
+                    <span
+                      className={cn(
+                        'text-[11px] font-normal',
+                        item.active ? 'text-primary-foreground/80' : 'text-muted-foreground',
+                      )}
+                    >
+                      {item.detail}
+                    </span>
                   ) : null}
                 </span>
               </a>
@@ -1152,13 +1432,11 @@ function NativeSurfaceShell({
           ))}
         </nav>
         {surface.area.boundary && surface.area.boundary.length > 0 ? (
-          <div className="mt-4 space-y-1 border-t pt-3 text-xs text-muted-foreground">
-            {surface.area.boundary.map((line) => (
-              <p key={line}>{line}</p>
-            ))}
-          </div>
+          <p className="min-w-fit text-xs text-muted-foreground">
+            {surface.area.boundary.join(' · ')}
+          </p>
         ) : null}
-      </aside>
+      </section>
       {content}
     </div>
   );
