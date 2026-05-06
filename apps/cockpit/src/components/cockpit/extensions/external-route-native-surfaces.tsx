@@ -681,6 +681,8 @@ function NativeTicketInboxSurfaceRenderer({
   extension: ResolvedCockpitExtension;
   routeId: string;
 }) {
+  const selectedTicket = surface.queue.tickets.find((ticket) => ticket.selected);
+
   return (
     <NativeSurfaceShell surface={surface} extension={extension} routeId={routeId}>
       <Card className="gap-0 py-0 shadow-none">
@@ -694,10 +696,8 @@ function NativeTicketInboxSurfaceRenderer({
           </div>
           <TicketSearch search={surface.queue.search} />
           <TicketFilters filters={surface.queue.filters} />
-          <div className="grid h-[calc(100vh-19rem)] min-h-[420px] max-h-[820px] gap-3 xl:grid-cols-[320px_minmax(0,1fr)]">
-            <TicketQueueList tickets={surface.queue.tickets} />
-            <TicketDetail detail={surface.selectedTicket} />
-          </div>
+          <TicketQueueDrawer tickets={surface.queue.tickets} selectedTicket={selectedTicket} />
+          <TicketDetail detail={surface.selectedTicket} />
           <TicketPagination actions={surface.queue.pagination} />
         </CardContent>
       </Card>
@@ -838,6 +838,33 @@ function TicketFilters({ filters }: { filters: readonly NativeTicketFilterGroup[
   );
 }
 
+function TicketQueueDrawer({
+  tickets,
+  selectedTicket,
+}: {
+  tickets: readonly NativeTicketRecord[];
+  selectedTicket?: NativeTicketRecord;
+}) {
+  return (
+    <details className="rounded-md border bg-muted/10">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 marker:hidden">
+        <span className="min-w-0">
+          <span className="block text-sm font-semibold">Ticket queue</span>
+          <span className="block truncate text-xs text-muted-foreground">
+            {selectedTicket
+              ? `${selectedTicket.label} selected · ${selectedTicket.summary}`
+              : 'Open the queue to select a ticket'}
+          </span>
+        </span>
+        <span className="shrink-0 text-xs text-muted-foreground">{tickets.length} visible</span>
+      </summary>
+      <div className="border-t p-2">
+        <TicketQueueList tickets={tickets} />
+      </div>
+    </details>
+  );
+}
+
 function TicketQueueList({ tickets }: { tickets: readonly NativeTicketRecord[] }) {
   if (tickets.length === 0) {
     return (
@@ -851,15 +878,12 @@ function TicketQueueList({ tickets }: { tickets: readonly NativeTicketRecord[] }
   }
 
   return (
-    <section
-      aria-label="Queue list"
-      className="flex min-h-0 flex-col overflow-hidden rounded-md border bg-background"
-    >
+    <section aria-label="Queue list" className="overflow-hidden rounded-md border bg-background">
       <header className="flex items-center justify-between gap-3 border-b px-3 py-2">
         <h2 className="text-sm font-semibold">Ticket List</h2>
         <span className="text-xs text-muted-foreground">{tickets.length} visible</span>
       </header>
-      <div className="min-h-0 flex-1 overflow-y-auto divide-y overscroll-contain">
+      <div className="max-h-[360px] overflow-y-auto divide-y overscroll-contain">
         {tickets.map((ticket) => (
           <a
             key={ticket.id}
@@ -933,7 +957,7 @@ function TicketDetail({ detail }: { detail?: NativeTicketDetail }) {
     <section
       id="ticket-reader"
       aria-label="Ticket reader"
-      className="flex min-h-0 flex-col overflow-hidden rounded-md border bg-background"
+      className="rounded-md border bg-background"
     >
       <header className="border-b bg-muted/15 px-4 py-3">
         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -951,7 +975,7 @@ function TicketDetail({ detail }: { detail?: NativeTicketDetail }) {
         </div>
       </header>
 
-      <div className="grid min-h-0 flex-1 overflow-y-auto gap-0 2xl:grid-cols-[minmax(0,1fr)_280px]">
+      <div className="grid gap-0 2xl:grid-cols-[minmax(0,1fr)_280px]">
         <div className="min-w-0 space-y-4 p-4">
           <section className="rounded-md border p-3">
             <p className="text-xs font-medium text-muted-foreground">Subject / Summary</p>
@@ -1016,7 +1040,7 @@ function TicketConversationPanel({
             <p className="mt-1 text-xs text-muted-foreground">{conversation.summary}</p>
           ) : null}
         </div>
-        <div className="max-h-[min(52vh,600px)] space-y-3 overflow-y-auto overscroll-contain px-3 py-3">
+        <div className="space-y-3 px-3 py-3">
           {items.length > 0 ? (
             <>
               <p className="text-xs text-muted-foreground">
