@@ -25,6 +25,11 @@ const DATASET_OPTIONS: { id: DatasetId; label: string; description: string }[] =
     description: 'OpenClaw machine approvals with triage-ready pending queue',
   },
   {
+    id: 'growth-studio',
+    label: 'Growth Studio Demo',
+    description: 'Growth loop approvals across CRM, outreach, campaigns, and billing',
+  },
+  {
     id: 'meridian-demo',
     label: 'Meridian Cold Chain \u2014 Demo',
     description: '3 months pharma cold-chain (20 work items, 50 runs, 15 robots)',
@@ -47,6 +52,7 @@ function getWorkspaceDisplayName({
 }): string {
   if (usesLiveTenantData) return wsId === 'ws-meridian' ? 'Meridian Workspace' : 'Live Workspace';
   if (wsId === 'ws-meridian') return 'Meridian Workspace';
+  if (activeDataset === 'growth-studio') return 'Growth Studio Workspace';
   if (activeDataset === 'openclaw-demo') return 'OpenClaw Demo Workspace';
   return 'Demo Workspace';
 }

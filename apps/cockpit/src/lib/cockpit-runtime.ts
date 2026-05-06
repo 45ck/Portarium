@@ -1,6 +1,12 @@
 export type CockpitRuntimeMode = 'demo' | 'dev-live' | 'live';
 
-export type DatasetId = 'live' | 'demo' | 'openclaw-demo' | 'meridian-demo' | 'meridian-full';
+export type DatasetId =
+  | 'live'
+  | 'demo'
+  | 'openclaw-demo'
+  | 'growth-studio'
+  | 'meridian-demo'
+  | 'meridian-full';
 
 export const DATASET_STORAGE_KEY = 'portarium-dataset';
 
@@ -10,6 +16,7 @@ export const DATASET_WORKSPACE_MAP: Record<DatasetId, string> = {
   live: import.meta.env.VITE_PORTARIUM_DEFAULT_WORKSPACE_ID ?? 'ws-local-dev',
   demo: 'ws-demo',
   'openclaw-demo': 'ws-demo',
+  'growth-studio': 'ws-growth-studio',
   'meridian-demo': 'ws-meridian',
   'meridian-full': 'ws-meridian',
 };

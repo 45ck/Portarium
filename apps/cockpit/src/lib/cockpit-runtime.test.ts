@@ -4,6 +4,7 @@ import {
   resolveCockpitRuntime,
   resolveStoredDataset,
   shouldEnableCockpitMocks,
+  workspaceIdForDataset,
 } from '@/lib/cockpit-runtime';
 
 function storageWithDataset(dataset: string): Storage {
@@ -78,5 +79,15 @@ describe('cockpit runtime mode', () => {
 
   it('ignores the misleading mock live dataset in demo runtime', () => {
     expect(resolveStoredDataset({ DEV: true }, storageWithDataset('live'))).toBe('meridian-demo');
+  });
+
+  it('allows the Growth Studio fixture dataset from env and maps it to its workspace', () => {
+    expect(
+      resolveStoredDataset({
+        DEV: true,
+        VITE_PORTARIUM_MOCK_DATASET: 'growth-studio',
+      }),
+    ).toBe('growth-studio');
+    expect(workspaceIdForDataset('growth-studio')).toBe('ws-growth-studio');
   });
 });
