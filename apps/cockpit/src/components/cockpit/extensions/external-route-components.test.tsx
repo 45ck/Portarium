@@ -145,10 +145,35 @@ describe('hosted external route components', () => {
           label: 'FS 1',
           sourceRef: 'service-desk-snapshot/1',
           summary: 'Incident snapshot',
+          activeSection: 'evidence',
+          sections: [
+            {
+              id: 'conversation',
+              label: 'Conversation',
+              href: '/external/native/tickets?ticket=1&tab=conversation#ticket-reader',
+            },
+            {
+              id: 'evidence',
+              label: 'Evidence',
+              href: '/external/native/tickets?ticket=1&tab=evidence#ticket-reader',
+              active: true,
+            },
+          ],
           badges: [{ label: 'open', tone: 'info' }],
           conversation: {
             title: 'Conversation unavailable',
             message: 'Redacted snapshot only.',
+          },
+          sectionContent: {
+            kind: 'evidence',
+            title: 'Read-only evidence',
+            items: [
+              {
+                id: 'evidence-1',
+                label: 'Room signal',
+                summary: 'Redacted room context matched this ticket.',
+              },
+            ],
           },
           properties: [{ label: 'Status', value: 'Open' }],
           relatedContext: { items: [] },
@@ -175,6 +200,10 @@ describe('hosted external route components', () => {
     expect(await screen.findByRole('heading', { name: 'Native Ticket Queue' })).toBeTruthy();
     expect(screen.queryByRole('heading', { name: 'Custom renderer should not show' })).toBeNull();
     expect(screen.getByText('Selected Ticket')).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Conversation' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Evidence' })).toBeTruthy();
+    expect(screen.getByText('Read-only evidence')).toBeTruthy();
+    expect(screen.getByText('Room signal')).toBeTruthy();
     expect(loader).toHaveBeenCalledWith(
       expect.objectContaining({
         pathname: '/external/native/tickets',
@@ -200,6 +229,31 @@ describe('hosted external route components', () => {
                 value: '2',
                 detail: 'Static source projections',
                 tone: 'info',
+              },
+            ],
+            sourcePosture: {
+              generatedAt: '2026-05-06T00:00:00.000Z',
+              sourceSystemAccess: 'none',
+              dataOrigin: 'static-redacted-read-model',
+              sourceCount: 2,
+              readOnlySourceCount: 2,
+              localSnapshotCount: 1,
+              restrictedOrSensitiveCount: 1,
+              staleOrUnknownCount: 0,
+            },
+            snapshotPorts: [
+              {
+                id: 'service-desk',
+                label: 'Service desk mock',
+                sourceSystem: 'service_desk',
+                state: 'ready',
+                sourceSystemAccess: 'none',
+                writebackEnabled: false,
+                rawPayloadsIncluded: false,
+                credentialsIncluded: false,
+                capabilityIds: ['service-desk.ticket.snapshot.read'],
+                mockDataPlane: 'Local redacted ticket snapshot.',
+                livePromotionGate: 'Governed read-only adapter review.',
               },
             ],
             sources: [
@@ -249,6 +303,10 @@ describe('hosted external route components', () => {
 
     expect(await screen.findByRole('heading', { name: 'Native Data Explorer' })).toBeTruthy();
     expect(screen.getByLabelText('Operational snapshot')).toBeTruthy();
+    expect(screen.getByText('Source Posture')).toBeTruthy();
+    expect(screen.getByLabelText('Snapshot mock ports')).toBeTruthy();
+    expect(screen.getByText('Service desk mock')).toBeTruthy();
+    expect(screen.getByText('Local redacted ticket snapshot.')).toBeTruthy();
     expect(screen.getByText('Recommended Checks')).toBeTruthy();
     expect(screen.getByText('Read-Only Data Sources')).toBeTruthy();
     expect(screen.getByText('Available Static Data')).toBeTruthy();
@@ -256,7 +314,7 @@ describe('hosted external route components', () => {
     expect(screen.getAllByText('743')).not.toHaveLength(0);
     expect(screen.getByText('Technical evidence and routing')).toBeTruthy();
     expect(screen.getByText('fixtures/service-desk-tickets.redacted.json')).toBeTruthy();
-    expect(screen.getByText('service-desk.ticket.snapshot.read')).toBeTruthy();
+    expect(screen.getAllByText('service-desk.ticket.snapshot.read')).not.toHaveLength(0);
     expect(screen.getByText('example.service-desk.snapshot')).toBeTruthy();
     expect(screen.getByText('Room ticket clusters')).toBeTruthy();
     expect(screen.getByText('Portarium Integration Boundary')).toBeTruthy();

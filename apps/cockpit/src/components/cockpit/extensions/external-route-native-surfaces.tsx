@@ -118,6 +118,8 @@ interface NativeTicketDetail {
   label: string;
   sourceRef: string;
   summary: string;
+  activeSection?: string;
+  sections?: readonly NativeTicketDetailSection[];
   badges: readonly NativeStatusBadge[];
   conversation: {
     title: string;
@@ -127,6 +129,7 @@ interface NativeTicketDetail {
     totalCount?: number;
     omittedCount?: number;
   };
+  sectionContent?: NativeTicketSectionContent;
   properties: readonly NativeKeyValue[];
   relatedContext: {
     roomLinks?: readonly { label: string; href: string }[];
@@ -134,6 +137,41 @@ interface NativeTicketDetail {
   };
   diagnostics: readonly NativeKeyValue[];
 }
+
+interface NativeTicketDetailSection {
+  id: string;
+  label: string;
+  href: string;
+  active?: boolean;
+}
+
+type NativeTicketSectionContent =
+  | {
+      kind: 'conversation';
+      title?: string;
+      message?: string;
+      summary?: string;
+      items?: readonly NativeTicketConversationItem[];
+      totalCount?: number;
+    }
+  | {
+      kind: 'evidence';
+      title?: string;
+      items?: readonly NativeRelatedItem[];
+      emptyText?: string;
+    }
+  | {
+      kind: 'room';
+      title?: string;
+      roomLinks?: readonly { label: string; href: string }[];
+      evidenceCount?: number;
+      emptyText?: string;
+    }
+  | {
+      kind: 'source';
+      title?: string;
+      properties?: readonly NativeKeyValue[];
+    };
 
 interface NativeTicketInboxSurface extends NativeRouteSurfaceBase {
   kind: 'portarium.native.ticketInbox.v1';
@@ -239,11 +277,38 @@ interface NativeDataExplorerInsight {
   href?: string;
 }
 
+interface NativeSnapshotPort {
+  id: string;
+  label: string;
+  sourceSystem: string;
+  state: string;
+  sourceSystemAccess?: string;
+  writebackEnabled?: boolean;
+  rawPayloadsIncluded?: boolean;
+  credentialsIncluded?: boolean;
+  capabilityIds?: readonly string[];
+  mockDataPlane?: string;
+  livePromotionGate?: string;
+}
+
+interface NativeSourcePostureSummary {
+  generatedAt?: string;
+  sourceSystemAccess?: string;
+  dataOrigin?: string;
+  sourceCount?: number;
+  readOnlySourceCount?: number;
+  localSnapshotCount?: number;
+  restrictedOrSensitiveCount?: number;
+  staleOrUnknownCount?: number;
+}
+
 interface NativeDataExplorerSurface extends NativeRouteSurfaceBase {
   kind: 'portarium.native.dataExplorer.v1';
   explorer: {
     metrics: readonly NativeDataExplorerMetric[];
+    sourcePosture?: NativeSourcePostureSummary;
     sources: readonly NativeDataExplorerSource[];
+    snapshotPorts?: readonly NativeSnapshotPort[];
     insights: readonly NativeDataExplorerInsight[];
     integrationNotes?: readonly string[];
   };
@@ -387,6 +452,29 @@ function NativeDataExplorerSurfaceRenderer({
             detail="Approximate static inventory size"
           />
         </section>
+
+        {surface.explorer.sourcePosture ? (
+          <SourcePostureSummaryCard posture={surface.explorer.sourcePosture} />
+        ) : null}
+
+        {surface.explorer.snapshotPorts && surface.explorer.snapshotPorts.length > 0 ? (
+          <section className="space-y-3" aria-label="Snapshot mock ports">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-base font-semibold">Snapshot Mock Ports</h2>
+                <p className="text-xs text-muted-foreground">
+                  Extension-provided read models that can be exercised without source-system access.
+                </p>
+              </div>
+              <Badge variant="outline">No live calls</Badge>
+            </div>
+            <div className="grid gap-3 xl:grid-cols-2">
+              {surface.explorer.snapshotPorts.map((port) => (
+                <SnapshotPortCard key={port.id} port={port} />
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         <section className="space-y-3" aria-label="Data insights">
           <div className="flex items-center gap-2">
@@ -561,6 +649,85 @@ function OperationalSnapshotItem({
       <p className="mt-2 text-xs font-medium">{label}</p>
       <p className="text-[11px] text-muted-foreground">{detail}</p>
     </div>
+  );
+}
+
+function SourcePostureSummaryCard({ posture }: { posture: NativeSourcePostureSummary }) {
+  const stats = [
+    { label: 'Sources', value: posture.sourceCount },
+    { label: 'Read-only', value: posture.readOnlySourceCount },
+    { label: 'Local snapshots', value: posture.localSnapshotCount },
+    { label: 'Restricted', value: posture.restrictedOrSensitiveCount },
+    { label: 'Stale/unknown', value: posture.staleOrUnknownCount },
+  ];
+
+  return (
+    <Card className="shadow-none">
+      <CardHeader className="pb-3">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <ShieldCheck className="h-4 w-4" />
+              Source Posture
+            </CardTitle>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {posture.dataOrigin ?? 'Extension supplied read model'}
+              {posture.generatedAt ? ` · generated ${posture.generatedAt}` : ''}
+            </p>
+          </div>
+          <Badge variant="outline">{posture.sourceSystemAccess ?? 'read-only'}</Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="grid gap-2 sm:grid-cols-5">
+        {stats.map((stat) => (
+          <DataSourceStat key={stat.label} label={stat.label} value={stat.value} />
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
+function SnapshotPortCard({ port }: { port: NativeSnapshotPort }) {
+  const accessLabel = port.sourceSystemAccess ?? 'none';
+
+  return (
+    <Card className="shadow-none">
+      <CardContent className="space-y-3 p-3">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <Database className="h-4 w-4 text-primary" />
+              <h3 className="truncate text-sm font-semibold">{port.label}</h3>
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {port.sourceSystem} · {port.id}
+            </p>
+          </div>
+          <Badge variant={snapshotPortStateVariant(port.state)}>{port.state}</Badge>
+        </div>
+
+        <div className="grid gap-2 text-xs sm:grid-cols-3">
+          <DataSourceStat label="Source access" value={accessLabel} />
+          <DataSourceStat label="Writeback" value={port.writebackEnabled ? 'enabled' : 'off'} />
+          <DataSourceStat
+            label="Payloads"
+            value={port.rawPayloadsIncluded || port.credentialsIncluded ? 'restricted' : 'safe'}
+          />
+        </div>
+
+        {port.mockDataPlane ? (
+          <p className="text-sm leading-6 text-muted-foreground">{port.mockDataPlane}</p>
+        ) : null}
+
+        {port.livePromotionGate ? (
+          <p className="rounded-md border bg-muted/20 px-2 py-1.5 text-xs text-muted-foreground">
+            Live gate: {port.livePromotionGate}
+          </p>
+        ) : null}
+
+        <TagList title="Capabilities" items={port.capabilityIds ?? []} />
+      </CardContent>
+    </Card>
   );
 }
 
@@ -982,26 +1149,18 @@ function TicketDetail({ detail }: { detail?: NativeTicketDetail }) {
             <p className="mt-2 text-sm leading-6">{detail.summary}</p>
           </section>
 
-          <TicketConversationPanel conversation={detail.conversation} />
+          {detail.sections && detail.sections.length > 0 ? (
+            <TicketDetailSections sections={detail.sections} activeSection={detail.activeSection} />
+          ) : null}
 
-          <section className="space-y-2">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <h3 className="text-sm font-semibold">Related Context</h3>
-              {detail.relatedContext.roomLinks && detail.relatedContext.roomLinks.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {detail.relatedContext.roomLinks.map((link) => (
-                    <Button key={link.href} asChild size="xs" variant="outline">
-                      <a href={link.href}>{link.label}</a>
-                    </Button>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-            <RelatedItems
-              items={detail.relatedContext.items}
-              emptyText="No extra redacted context item matched this ticket."
-            />
-          </section>
+          {detail.sectionContent ? (
+            <TicketSectionContent detail={detail} content={detail.sectionContent} />
+          ) : (
+            <>
+              <TicketConversationPanel conversation={detail.conversation} />
+              <TicketRelatedContext detail={detail} />
+            </>
+          )}
 
           <details className="rounded-md border bg-muted/20 p-3">
             <summary className="cursor-pointer text-sm font-semibold">Diagnostics</summary>
@@ -1015,6 +1174,128 @@ function TicketDetail({ detail }: { detail?: NativeTicketDetail }) {
           <KeyValueSection title="Ticket fields" items={detail.properties} />
         </aside>
       </div>
+    </section>
+  );
+}
+
+function TicketDetailSections({
+  sections,
+  activeSection,
+}: {
+  sections: readonly NativeTicketDetailSection[];
+  activeSection?: string;
+}) {
+  return (
+    <nav aria-label="Selected ticket sections" className="grid gap-2 sm:grid-cols-4">
+      {sections.map((section) => {
+        const active = section.active || section.id === activeSection;
+        return (
+          <Button
+            key={section.id}
+            asChild
+            size="sm"
+            variant={active ? 'default' : 'outline'}
+            className="justify-start"
+          >
+            <a href={section.href} aria-current={active ? 'page' : undefined}>
+              {section.label}
+            </a>
+          </Button>
+        );
+      })}
+    </nav>
+  );
+}
+
+function TicketSectionContent({
+  detail,
+  content,
+}: {
+  detail: NativeTicketDetail;
+  content: NativeTicketSectionContent;
+}) {
+  if (content.kind === 'evidence') {
+    return (
+      <section className="space-y-2">
+        <h3 className="text-sm font-semibold">{content.title ?? 'Evidence'}</h3>
+        <RelatedItems
+          items={content.items ?? []}
+          emptyText={content.emptyText ?? 'No extra context matched this ticket.'}
+        />
+      </section>
+    );
+  }
+
+  if (content.kind === 'room') {
+    const links = content.roomLinks ?? detail.relatedContext.roomLinks ?? [];
+
+    return (
+      <section className="space-y-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h3 className="text-sm font-semibold">{content.title ?? 'Room Context'}</h3>
+          {content.evidenceCount !== undefined ? (
+            <Badge variant="outline">{content.evidenceCount} evidence refs</Badge>
+          ) : null}
+        </div>
+        {links.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            {links.map((link) => (
+              <Button key={link.href} asChild size="xs" variant="outline">
+                <a href={link.href}>{link.label}</a>
+              </Button>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            {content.emptyText ?? 'No room-level context matched this ticket.'}
+          </p>
+        )}
+      </section>
+    );
+  }
+
+  if (content.kind === 'source') {
+    return (
+      <section className="space-y-2">
+        <h3 className="text-sm font-semibold">{content.title ?? 'Source Posture'}</h3>
+        <KeyValueList items={content.properties ?? detail.properties} />
+      </section>
+    );
+  }
+
+  return (
+    <TicketConversationPanel
+      conversation={{
+        title: content.title ?? detail.conversation.title,
+        message: content.message ?? detail.conversation.message,
+        summary: content.summary ?? detail.conversation.summary,
+        items: content.items ?? detail.conversation.items,
+        totalCount: content.totalCount ?? detail.conversation.totalCount,
+        omittedCount: detail.conversation.omittedCount,
+      }}
+    />
+  );
+}
+
+function TicketRelatedContext({ detail }: { detail: NativeTicketDetail }) {
+  return (
+    <section className="space-y-2">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h3 className="text-sm font-semibold">Related Context</h3>
+        {detail.relatedContext.roomLinks && detail.relatedContext.roomLinks.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            {detail.relatedContext.roomLinks.map((link) => (
+              <Button key={link.href} asChild size="xs" variant="outline">
+                <a href={link.href}>{link.label}</a>
+              </Button>
+            ))}
+          </div>
+        ) : null}
+      </div>
+      <RelatedItems
+        items={detail.relatedContext.items}
+        emptyText="No extra redacted context item matched this ticket."
+      />
     </section>
   );
 }
@@ -1555,4 +1836,12 @@ function badgeVariant(
   if (tone === 'info') return 'info';
   if (tone === 'critical') return 'destructive';
   return 'outline';
+}
+
+function snapshotPortStateVariant(state: string): React.ComponentProps<typeof Badge>['variant'] {
+  if (state === 'ready') return 'success';
+  if (state === 'planned') return 'info';
+  if (state === 'privacy_gated') return 'warning';
+  if (state === 'disabled') return 'outline';
+  return 'secondary';
 }
