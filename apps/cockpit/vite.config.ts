@@ -59,6 +59,7 @@ export default defineConfig(({ mode }) => {
               ? {
                   proxy: {
                     '/auth': { target: apiBaseUrl, changeOrigin: true },
+                    '/api': { target: apiBaseUrl, changeOrigin: true },
                     '/v1': { target: apiBaseUrl, changeOrigin: true },
                   },
                 }
