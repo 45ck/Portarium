@@ -38,6 +38,7 @@ function cockpitContentSecurityPolicyPlugin(
 export default defineConfig(({ mode }) => {
   const env = { ...process.env, ...loadEnv(mode, __dirname, '') };
   const apiBaseUrl = env['VITE_PORTARIUM_API_BASE_URL']?.trim();
+  const cockpitApiProxyBaseUrl = env['VITE_COCKPIT_API_PROXY_BASE_URL']?.trim();
   const localExtensionAllowDirs = parseDelimitedPaths(
     env['VITE_COCKPIT_LOCAL_EXTENSION_ALLOW_DIRS'],
   );
@@ -53,14 +54,25 @@ export default defineConfig(({ mode }) => {
       tailwindcss(),
     ],
     server:
-      apiBaseUrl || localExtensionAllowDirs.length > 0
+      apiBaseUrl || cockpitApiProxyBaseUrl || localExtensionAllowDirs.length > 0
         ? {
-            ...(apiBaseUrl
+            ...(apiBaseUrl || cockpitApiProxyBaseUrl
               ? {
                   proxy: {
-                    '/auth': { target: apiBaseUrl, changeOrigin: true },
-                    '/api': { target: apiBaseUrl, changeOrigin: true },
-                    '/v1': { target: apiBaseUrl, changeOrigin: true },
+                    ...(apiBaseUrl
+                      ? {
+                          '/auth': { target: apiBaseUrl, changeOrigin: true },
+                          '/v1': { target: apiBaseUrl, changeOrigin: true },
+                        }
+                      : {}),
+                    ...(cockpitApiProxyBaseUrl
+                      ? {
+                          '/api': {
+                            target: cockpitApiProxyBaseUrl,
+                            changeOrigin: true,
+                          },
+                        }
+                      : {}),
                   },
                 }
               : {}),
