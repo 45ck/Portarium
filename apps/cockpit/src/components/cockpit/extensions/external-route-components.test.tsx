@@ -102,6 +102,21 @@ describe('hosted external route components', () => {
     const fetchMock = vi.fn(async () =>
       Response.json({
         ok: true,
+        meta: {
+          scopeId: 'example.read-model',
+          dataOrigin: 'host-bff-read-model',
+          freshness: 'fresh',
+          privacyClass: 'restricted',
+          sourceRefs: [
+            {
+              id: 'source:example',
+              label: 'Example source',
+              sourceSystem: 'example',
+              sourceMode: 'read-model',
+              observedAtIso: '2026-05-08T00:00:00.000Z',
+            },
+          ],
+        },
         data: {
           title: 'BFF Backed Overview',
           status: 'snapshot_mock',
@@ -129,6 +144,18 @@ describe('hosted external route components', () => {
         hostReadModel: expect.objectContaining({
           status: 'loaded',
           endpoint: '/api/example/read-model',
+          routeId: route.id,
+          scopeId: 'example.read-model',
+          contentType: 'application/json',
+          freshness: 'fresh',
+          privacyClass: 'restricted',
+          dataOrigin: 'host-bff-read-model',
+          sourceRefs: [
+            expect.objectContaining({
+              id: 'source:example',
+              label: 'Example source',
+            }),
+          ],
           data: expect.objectContaining({ title: 'BFF Backed Overview' }),
         }),
       }),
@@ -163,6 +190,8 @@ describe('hosted external route components', () => {
         hostReadModel: expect.objectContaining({
           status: 'failed',
           endpoint: '/api/example/read-model',
+          routeId: route.id,
+          scopeId: route.id,
           message: 'endpoint unavailable',
         }),
       }),

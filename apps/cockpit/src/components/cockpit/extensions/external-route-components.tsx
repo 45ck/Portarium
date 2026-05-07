@@ -5,6 +5,9 @@ import {
 } from '@/lib/extensions/installed';
 import type {
   CockpitExtensionHostReadModelContext,
+  CockpitExtensionHostReadModelMetadata,
+  CockpitExtensionHostReadModelSourceRef,
+  CockpitExtensionPrivacyClass,
   CockpitExtensionRouteLoaderContext,
   CockpitExtensionRouteModuleLoader,
 } from '@/lib/extensions/types';
@@ -108,16 +111,18 @@ async function loadConfiguredHostReadModel(
   if (routeDataLoader) {
     try {
       const data = await routeDataLoader(context);
-      return {
-        status: 'loaded',
+      return buildLoadedHostReadModelContext({
+        routeId,
         endpoint: `host-loader:${routeId}`,
         response: data,
-        data,
-      };
+        data: unwrapHostReadModelData(data),
+      });
     } catch (error) {
       return {
         status: 'failed',
         endpoint: `host-loader:${routeId}`,
+        routeId,
+        scopeId: routeId,
         message: error instanceof Error ? error.message : 'Host route read model loader failed.',
       };
     }
@@ -137,20 +142,25 @@ async function loadConfiguredHostReadModel(
       return {
         status: 'failed',
         endpoint,
-        message: readHostReadModelError(payload) ?? `Read model endpoint returned ${response.status}.`,
+        routeId,
+        scopeId: routeId,
+        message:
+          readHostReadModelError(payload) ?? `Read model endpoint returned ${response.status}.`,
       };
     }
 
-    return {
-      status: 'loaded',
+    return buildLoadedHostReadModelContext({
+      routeId,
       endpoint,
       response: payload,
       data: unwrapHostReadModelData(payload),
-    };
+    });
   } catch (error) {
     return {
       status: 'failed',
       endpoint,
+      routeId,
+      scopeId: routeId,
       message: error instanceof Error ? error.message : 'Host read model endpoint failed.',
     };
   }
@@ -176,6 +186,120 @@ function unwrapHostReadModelData(payload: unknown): unknown {
   if (!isRecord(payload)) return payload;
   if (payload.ok === true && 'data' in payload) return payload.data;
   return payload;
+}
+
+function buildLoadedHostReadModelContext({
+  routeId,
+  endpoint,
+  response,
+  data,
+}: {
+  routeId: string;
+  endpoint: string;
+  response: unknown;
+  data: unknown;
+}): CockpitExtensionHostReadModelContext {
+  const metadata = readHostReadModelMetadata(response);
+  return {
+    status: 'loaded',
+    routeId,
+    scopeId: metadata.scopeId ?? routeId,
+    contentType: metadata.contentType ?? 'application/json',
+    freshness: metadata.freshness ?? 'unknown',
+    loadedAtIso: metadata.loadedAtIso ?? new Date().toISOString(),
+    endpoint,
+    response,
+    data,
+    ...(metadata.dataOrigin ? { dataOrigin: metadata.dataOrigin } : {}),
+    ...(metadata.privacyClass ? { privacyClass: metadata.privacyClass } : {}),
+    ...(metadata.sourceRefs ? { sourceRefs: metadata.sourceRefs } : {}),
+  };
+}
+
+function readHostReadModelMetadata(payload: unknown): CockpitExtensionHostReadModelMetadata {
+  if (!isRecord(payload)) return {};
+  const metadata = isRecord(payload.meta)
+    ? payload.meta
+    : isRecord(payload.readModel)
+      ? payload.readModel
+      : payload;
+
+  const scopeId = readOptionalString(metadata.scopeId);
+  const contentType = readOptionalString(metadata.contentType);
+  const dataOrigin = readOptionalString(metadata.dataOrigin);
+  const freshness = readFreshness(metadata.freshness);
+  const privacyClass = readPrivacyClass(metadata.privacyClass);
+  const loadedAtIso = readOptionalString(metadata.loadedAtIso ?? metadata.generatedAtIso);
+  const sourceRefs = readSourceRefs(metadata.sourceRefs);
+
+  return {
+    ...(scopeId ? { scopeId } : {}),
+    ...(contentType ? { contentType } : {}),
+    ...(dataOrigin ? { dataOrigin } : {}),
+    ...(freshness ? { freshness } : {}),
+    ...(privacyClass ? { privacyClass } : {}),
+    ...(loadedAtIso ? { loadedAtIso } : {}),
+    ...(sourceRefs ? { sourceRefs } : {}),
+  };
+}
+
+function readOptionalString(value: unknown): string | undefined {
+  return typeof value === 'string' && value.trim().length > 0 ? value : undefined;
+}
+
+function readFreshness(
+  value: unknown,
+): CockpitExtensionHostReadModelMetadata['freshness'] | undefined {
+  if (
+    value === 'live' ||
+    value === 'fresh' ||
+    value === 'stale' ||
+    value === 'expired' ||
+    value === 'snapshot' ||
+    value === 'unknown'
+  ) {
+    return value;
+  }
+  return undefined;
+}
+
+function readPrivacyClass(value: unknown): CockpitExtensionPrivacyClass | undefined {
+  if (
+    value === 'public' ||
+    value === 'internal' ||
+    value === 'restricted' ||
+    value === 'sensitive' ||
+    value === 'highly_restricted'
+  ) {
+    return value;
+  }
+  return undefined;
+}
+
+function readSourceRefs(
+  value: unknown,
+): readonly CockpitExtensionHostReadModelSourceRef[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+
+  const refs = value.flatMap((item) => {
+    if (!isRecord(item) || typeof item.id !== 'string' || item.id.trim().length === 0) return [];
+    const label = readOptionalString(item.label);
+    const sourceSystem = readOptionalString(item.sourceSystem);
+    const sourceMode = readOptionalString(item.sourceMode);
+    const observedAtIso = readOptionalString(item.observedAtIso);
+
+    return [
+      {
+        id: item.id,
+        ...(label ? { label } : {}),
+        ...(sourceSystem ? { sourceSystem } : {}),
+        ...(sourceMode ? { sourceMode } : {}),
+        ...(observedAtIso ? { observedAtIso } : {}),
+      },
+    ];
+  });
+
+  return refs.length > 0 ? refs : undefined;
 }
 
 function readHostReadModelError(payload: unknown): string | undefined {

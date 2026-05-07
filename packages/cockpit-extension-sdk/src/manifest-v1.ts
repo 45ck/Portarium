@@ -312,16 +312,45 @@ export interface CockpitExtensionRouteLoaderContext<
   hostReadModel?: CockpitExtensionHostReadModelContext;
 }
 
+export type CockpitExtensionHostReadModelFreshness =
+  | 'live'
+  | 'fresh'
+  | 'stale'
+  | 'expired'
+  | 'snapshot'
+  | 'unknown';
+
+export interface CockpitExtensionHostReadModelSourceRef {
+  id: string;
+  label?: string;
+  sourceSystem?: string;
+  sourceMode?: string;
+  observedAtIso?: string;
+}
+
+export interface CockpitExtensionHostReadModelMetadata {
+  routeId?: string;
+  scopeId?: string;
+  contentType?: 'application/json' | string;
+  dataOrigin?: string;
+  freshness?: CockpitExtensionHostReadModelFreshness;
+  privacyClass?: CockpitExtensionPrivacyClass;
+  loadedAtIso?: string;
+  sourceRefs?: readonly CockpitExtensionHostReadModelSourceRef[];
+}
+
 export type CockpitExtensionHostReadModelContext =
-  | {
+  | ({
       status: 'loaded';
       endpoint: string;
       data: unknown;
       response: unknown;
-    }
+    } & CockpitExtensionHostReadModelMetadata)
   | {
       status: 'failed';
       endpoint: string;
+      routeId?: string;
+      scopeId?: string;
       message: string;
     };
 
