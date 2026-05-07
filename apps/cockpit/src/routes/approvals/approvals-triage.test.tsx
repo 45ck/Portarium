@@ -7,6 +7,8 @@ import { RouterProvider, createMemoryHistory } from '@tanstack/react-router';
 import { createCockpitRouter } from '@/router';
 import { queryClient } from '@/lib/query-client';
 import { APPROVALS } from '@/mocks/fixtures/demo';
+import { usePlan } from '@/hooks/queries/use-plan';
+import { useRun } from '@/hooks/queries/use-runs';
 import type { OfflineQueryMeta } from '@/hooks/queries/use-offline-query';
 import type { ApprovalSummary } from '@portarium/cockpit-types';
 
@@ -153,6 +155,8 @@ beforeEach(() => {
   _mockPendingCount = 0;
   _mockRefetch.mockClear();
   _mockSubmitDecision.mockClear();
+  vi.mocked(usePlan).mockClear();
+  vi.mocked(useRun).mockClear();
   queryClient.clear();
   localStorage.clear();
 });
@@ -510,6 +514,34 @@ describe('Approvals triage page', () => {
     expect(await screen.findByText('1 of 1 pending')).toBeTruthy();
     const matchingPrompts = await screen.findAllByText(focused.prompt, { exact: false });
     expect(matchingPrompts.length).toBeGreaterThan(0);
+  });
+
+  it('does not fetch linked run or plan records for agent-action proposal approvals', async () => {
+    const base = ALL_PENDING[0]!;
+    const focused: ApprovalSummary = {
+      ...base,
+      approvalId: 'appr-agent-action-1',
+      runId: 'proposal-agent-action-1',
+      planId: 'proposal-agent-action-1',
+      prompt: 'Review governed agent action proposal',
+      agentActionProposal: {
+        proposalId: 'proposal-agent-action-1',
+        agentId: 'agent-1',
+        toolName: 'tool.snapshot.review',
+        toolCategory: 'Unknown',
+        blastRadiusTier: 'HumanApprove',
+        rationale: 'Review snapshot-backed proposal before action.',
+      },
+    };
+    _mockApprovals = [focused];
+
+    await renderApprovalsRoute(
+      `/approvals?focus=${encodeURIComponent(focused.approvalId)}&from=notification`,
+    );
+
+    expect(await screen.findByText(/focused approval review/i)).toBeTruthy();
+    expect(vi.mocked(usePlan).mock.calls.every(([, planId]) => planId === undefined)).toBe(true);
+    expect(vi.mocked(useRun).mock.calls.every(([, runId]) => runId === '')).toBe(true);
   });
 
   it('opens direct approval links as a single-case notification review', async () => {

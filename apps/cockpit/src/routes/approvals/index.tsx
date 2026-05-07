@@ -111,12 +111,16 @@ function ApprovalsPage() {
         ? `Approval ${focusedApproval.approvalId} is ${focusedApproval.status}. The staged Policy Studio draft is still preserved on the return path.`
         : 'The original live card is no longer active in the queue, but the staged Policy Studio draft is still preserved on the return path.';
 
-  const { data: planData } = usePlan(wsId, currentApproval?.planId);
+  const hasAgentActionProposal = currentApproval?.agentActionProposal !== undefined;
+  const linkedPlanId = hasAgentActionProposal ? undefined : currentApproval?.planId;
+  const linkedRunId = hasAgentActionProposal ? '' : (currentApproval?.runId ?? '');
+
+  const { data: planData } = usePlan(wsId, linkedPlanId);
   const { data: evidenceData } = useEvidence(wsId);
   const filteredEvidence = (evidenceData?.items ?? []).filter(
     (e) => e.links?.runId === currentApproval?.runId,
   );
-  const { data: runData } = useRun(wsId, currentApproval?.runId ?? '');
+  const { data: runData } = useRun(wsId, linkedRunId);
   const { data: workflowData } = useWorkflow(wsId, runData?.workflowId ?? '');
 
   const commitAction = useCallback(
