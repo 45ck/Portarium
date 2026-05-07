@@ -12,7 +12,7 @@ interface LocalInstallCollection {
 
 type LocalInstallModuleLoader = () => Promise<LocalInstallModule>;
 
-const localInstallCollection = await loadConfiguredLocalInstallModules();
+const localInstallCollection = collectConfiguredLocalInstallModules();
 
 export const LOCAL_COCKPIT_EXTENSION_MODULES = localInstallCollection.extensions;
 
@@ -21,13 +21,14 @@ export const LOCAL_COCKPIT_EXTENSION_INSTALL_PROBLEMS = localInstallCollection.p
 export const LOCAL_COCKPIT_EXTENSION_FIXTURE_ACCESS_ENABLED =
   isLocalExtensionFixtureAccessEnabled();
 
-async function loadConfiguredLocalInstallModules(): Promise<LocalInstallCollection> {
+function collectConfiguredLocalInstallModules(): LocalInstallCollection {
   if (!isLocalExtensionInstallEnabled()) return { extensions: [], problems: [] };
 
-  const discoveredLocalInstallModuleLoaders = import.meta.glob<LocalInstallModule>(
+  const discoveredLocalInstallModules = import.meta.glob<LocalInstallModule>(
     './local-installed/*.local.ts',
+    { eager: true },
   );
-  return loadLocalInstallModules(discoveredLocalInstallModuleLoaders, { enabled: true });
+  return collectLocalInstallModules(discoveredLocalInstallModules);
 }
 
 export async function loadLocalInstallModules(

@@ -11,6 +11,7 @@ import { useUIStore } from '@/stores/ui-store';
 import {
   createHostedExternalRouteComponent,
   HOSTED_EXTERNAL_ROUTE_COMPONENTS,
+  readConfiguredHostReadModelEndpoint,
 } from './external-route-components';
 
 const route = EXAMPLE_REFERENCE_EXTENSION.routes[0]!;
@@ -91,6 +92,91 @@ describe('hosted external route components', () => {
     expect(screen.getByText('Rooms')).toBeTruthy();
     expect(screen.getByText('Open map')).toBeTruthy();
     expect(screen.getByText('rooms: 1')).toBeTruthy();
+  });
+
+  it('passes configured host read model data into host-native route loaders', async () => {
+    vi.stubEnv(
+      'VITE_COCKPIT_ROUTE_READ_MODEL_ENDPOINTS',
+      `${route.id}=/api/example/read-model;other-route=/api/other`,
+    );
+    const fetchMock = vi.fn(async () =>
+      Response.json({
+        ok: true,
+        data: {
+          title: 'BFF Backed Overview',
+          status: 'snapshot_mock',
+          message: 'Loaded from a configured host read model endpoint.',
+          data: { source: 'host-read-model' },
+        },
+      }),
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    const loader = vi.fn(async (context) => context.hostReadModel?.data);
+    const Component = createHostedExternalRouteComponent({
+      hostRendering: { mode: 'host-native' },
+      loader,
+    });
+
+    render(<Component route={route} extension={resolvedExtension} params={{}} />);
+
+    expect(await screen.findByRole('heading', { name: 'BFF Backed Overview' })).toBeTruthy();
+    expect(fetchMock).toHaveBeenCalledWith('/api/example/read-model', {
+      credentials: 'include',
+      headers: { Accept: 'application/json' },
+    });
+    expect(loader).toHaveBeenCalledWith(
+      expect.objectContaining({
+        hostReadModel: expect.objectContaining({
+          status: 'loaded',
+          endpoint: '/api/example/read-model',
+          data: expect.objectContaining({ title: 'BFF Backed Overview' }),
+        }),
+      }),
+    );
+  });
+
+  it('passes host read model failures to route loaders for static fallback', async () => {
+    vi.stubEnv('VITE_COCKPIT_ROUTE_READ_MODEL_ENDPOINTS', `${route.id}=/api/example/read-model`);
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => {
+        throw new Error('endpoint unavailable');
+      }),
+    );
+    const loader = vi.fn(async (context) => ({
+      title: 'Fallback Overview',
+      status: context.hostReadModel?.status ?? 'no-host-read-model',
+      message: context.hostReadModel?.status === 'failed' ? context.hostReadModel.message : '',
+      data: { source: 'static-fallback' },
+    }));
+    const Component = createHostedExternalRouteComponent({
+      hostRendering: { mode: 'host-native' },
+      loader,
+    });
+
+    render(<Component route={route} extension={resolvedExtension} params={{}} />);
+
+    expect(await screen.findByRole('heading', { name: 'Fallback Overview' })).toBeTruthy();
+    expect(screen.getByText('endpoint unavailable')).toBeTruthy();
+    expect(loader).toHaveBeenCalledWith(
+      expect.objectContaining({
+        hostReadModel: expect.objectContaining({
+          status: 'failed',
+          endpoint: '/api/example/read-model',
+          message: 'endpoint unavailable',
+        }),
+      }),
+    );
+  });
+
+  it('reads route-specific host read model endpoint config', () => {
+    vi.stubEnv(
+      'VITE_COCKPIT_ROUTE_READ_MODEL_ENDPOINTS',
+      'first-route=/api/first;second-route=/api/second',
+    );
+
+    expect(readConfiguredHostReadModelEndpoint('second-route')).toBe('/api/second');
+    expect(readConfiguredHostReadModelEndpoint('missing-route')).toBeUndefined();
   });
 
   it('prefers a custom route renderer when the module also exports a data loader', async () => {

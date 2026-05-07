@@ -351,6 +351,18 @@ function toPolicyV1(policy: PolicySummary, workspaceId: string, index: number): 
 }
 
 export const handlers = [
+  http.get('*/auth/session', () =>
+    HttpResponse.json(
+      {
+        type: 'about:blank',
+        title: 'Unauthorized',
+        status: 401,
+        detail: 'Cockpit web session is not authenticated.',
+      },
+      { status: 401 },
+    ),
+  ),
+
   // Workspace list
   http.get('/v1/workspaces', () => {
     const workspaceId = runs[0]?.workspaceId ?? data?.RUNS[0]?.workspaceId ?? 'ws-demo';

@@ -9,6 +9,7 @@ import {
   INSTALLED_COCKPIT_ROUTE_HOST_PROBLEMS,
   INSTALLED_COCKPIT_ROUTE_LOADERS,
   INSTALLED_COCKPIT_ROUTE_PATHS,
+  buildInstalledCockpitRouteDataLoaders,
   validateInstalledCockpitExtensionModules,
   resolveInstalledCockpitExtensionRegistry,
 } from './installed';
@@ -46,6 +47,30 @@ describe('installed cockpit extension catalog', () => {
       'example-reference-overview',
       'example-reference-detail',
     ]);
+  });
+
+  it('preserves host-owned route read model loaders separately from route modules', async () => {
+    const hostReadModelLoader = vi.fn(async () => ({ routeKind: 'read-model' }));
+    const routeDataLoaders = buildInstalledCockpitRouteDataLoaders([
+      {
+        ...buildInstalledExtension(buildLocalReferenceExtension()),
+        routeModules: [
+          {
+            routeId: 'local-reference-overview',
+            loadModule: () => Promise.resolve({}),
+            loader: hostReadModelLoader,
+          },
+        ],
+      },
+    ]);
+
+    await expect(
+      routeDataLoaders['local-reference-overview']?.({
+        manifest: buildLocalReferenceExtension(),
+        route: buildLocalReferenceExtension().routes[0]!,
+        workspacePackRefs: [],
+      }),
+    ).resolves.toEqual({ routeKind: 'read-model' });
   });
 
   it('registers local install modules without fixture auto-activation grants by default', async () => {

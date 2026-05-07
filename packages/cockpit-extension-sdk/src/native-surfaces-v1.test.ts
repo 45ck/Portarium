@@ -6,6 +6,7 @@ import {
   hasCockpitNativeRouteSurface,
   isCockpitNativeRouteSurface,
   type CockpitNativeDataExplorerSurface,
+  type CockpitNativeGovernedActionReviewSurface,
   type CockpitNativeMapWorkbenchSurface,
   type CockpitNativeTicketInboxSurface,
 } from './index.js';
@@ -16,6 +17,7 @@ describe('native route surface descriptors', () => {
       'portarium.native.dataExplorer.v1',
       'portarium.native.ticketInbox.v1',
       'portarium.native.mapWorkbench.v1',
+      'portarium.native.governedActionReview.v1',
     ]);
   });
 
@@ -92,6 +94,44 @@ describe('native route surface descriptors', () => {
 
     expect(isCockpitNativeRouteSurface(dataExplorer)).toBe(true);
     expect(isCockpitNativeRouteSurface(mapWorkbench)).toBe(true);
+  });
+
+  it('builds governed action review descriptors', () => {
+    const review = defineCockpitNativeRouteSurface({
+      kind: 'portarium.native.governedActionReview.v1',
+      title: 'Governed Action Review',
+      proposal: {
+        reference: 'proposal-1',
+        reviewMode: 'read-only',
+        approvalState: 'not-loaded',
+        executionDisabled: true,
+        reviewOnly: true,
+        minimumExecutionTier: 'manual-only',
+        rationale: 'Review-only descriptor.',
+      },
+      evidence: {
+        referencedEvidenceCount: 1,
+        sourceBodiesIncluded: false,
+        refs: [
+          {
+            id: 'evidence-1',
+            summary: 'Redacted evidence reference',
+            sourceSystem: 'ticketing',
+            sourceMode: 'snapshot',
+            sourceRef: 'ticket:1',
+          },
+        ],
+      },
+      actions: [{ id: 'review', label: 'Review', disabled: true }],
+      execution: {
+        available: false,
+        adapterInstalled: false,
+        writebackEnabled: false,
+        sourceSystemAccess: 'none',
+      },
+    } satisfies CockpitNativeGovernedActionReviewSurface);
+
+    expect(isCockpitNativeRouteSurface(review)).toBe(true);
   });
 
   it('keeps runtime detection narrow to registered surface kinds', () => {

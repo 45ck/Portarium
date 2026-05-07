@@ -2,6 +2,7 @@ export const COCKPIT_NATIVE_ROUTE_SURFACE_KINDS = [
   'portarium.native.dataExplorer.v1',
   'portarium.native.ticketInbox.v1',
   'portarium.native.mapWorkbench.v1',
+  'portarium.native.governedActionReview.v1',
 ] as const;
 
 export type CockpitNativeRouteSurfaceKind = (typeof COCKPIT_NATIVE_ROUTE_SURFACE_KINDS)[number];
@@ -321,6 +322,80 @@ export interface CockpitNativeDataExplorerSurface extends CockpitNativeRouteSurf
   };
 }
 
+export interface CockpitNativeGovernedActionReviewSurface extends CockpitNativeRouteSurfaceBase {
+  kind: 'portarium.native.governedActionReview.v1';
+  proposal: {
+    reference: string;
+    reviewMode: string;
+    approvalState: string;
+    executionDisabled: boolean;
+    reviewOnly: boolean;
+    minimumExecutionTier: string;
+    rationale: string;
+  };
+  evidence: {
+    referencedEvidenceCount: number;
+    sourceBodiesIncluded: boolean;
+    refs: readonly CockpitNativeGovernedActionEvidenceRef[];
+  };
+  roomHealth?: {
+    roomCode: string;
+    status: string;
+    score: number;
+    summary: string;
+    generatedAt?: string;
+    signalCount?: number;
+    evidenceCount?: number;
+    signals?: readonly CockpitNativeGovernedActionSignal[];
+  };
+  connectors?: readonly CockpitNativeGovernedActionConnector[];
+  actions: readonly CockpitNativeGovernedActionReviewAction[];
+  execution: {
+    available: boolean;
+    adapterInstalled: boolean;
+    writebackEnabled: boolean;
+    sourceSystemAccess: string;
+  };
+}
+
+export interface CockpitNativeGovernedActionEvidenceRef {
+  id: string;
+  summary: string;
+  sourceSystem: string;
+  sourceMode: string;
+  sourceRef: string;
+  observedAt?: string;
+  privacyClass?: string;
+  redactionState?: string;
+}
+
+export interface CockpitNativeGovernedActionSignal {
+  id: string;
+  status?: string;
+  summary: string;
+  freshness?: string;
+  observedAt?: string;
+}
+
+export interface CockpitNativeGovernedActionConnector {
+  id: string;
+  name: string;
+  sourceSystem: string;
+  sourceMode: string;
+  phaseGate?: string;
+  state: string;
+  enabled: boolean;
+  capabilityIds?: readonly string[];
+  message?: string;
+}
+
+export interface CockpitNativeGovernedActionReviewAction {
+  id: string;
+  label: string;
+  disabled: boolean;
+  reason?: string;
+}
+
 export interface CockpitNativeReadOnlyGroup {
   id: string;
   label: string;
@@ -355,7 +430,8 @@ export interface CockpitNativeSelectOption {
 export type CockpitNativeRouteSurface =
   | CockpitNativeDataExplorerSurface
   | CockpitNativeTicketInboxSurface
-  | CockpitNativeMapWorkbenchSurface;
+  | CockpitNativeMapWorkbenchSurface
+  | CockpitNativeGovernedActionReviewSurface;
 
 export function defineCockpitNativeRouteSurface<const TSurface extends CockpitNativeRouteSurface>(
   surface: TSurface,

@@ -16,6 +16,7 @@ import type {
   CockpitInstalledExtension,
   CockpitExtensionManifest,
   CockpitExtensionRegistryProblem,
+  CockpitExtensionRouteLoader,
   CockpitExtensionRouteModuleLoader,
   ResolvedCockpitExtensionRegistry,
 } from './types';
@@ -60,6 +61,10 @@ export const INSTALLED_COCKPIT_EXTENSIONS: readonly CockpitExtensionManifest[] =
   INSTALLED_COCKPIT_EXTENSION_MODULES.map((extension) => extension.manifest);
 
 export const INSTALLED_COCKPIT_ROUTE_LOADERS = buildInstalledCockpitRouteLoaders(
+  INSTALLED_COCKPIT_EXTENSION_MODULES,
+);
+
+export const INSTALLED_COCKPIT_ROUTE_DATA_LOADERS = buildInstalledCockpitRouteDataLoaders(
   INSTALLED_COCKPIT_EXTENSION_MODULES,
 );
 
@@ -209,6 +214,21 @@ export function buildInstalledCockpitRouteLoaders(
     for (const routeModule of extension.routeModules) {
       if (typeof routeModule.loadModule !== 'function' || loaders[routeModule.routeId]) continue;
       loaders[routeModule.routeId] = routeModule.loadModule;
+    }
+  }
+
+  return loaders;
+}
+
+export function buildInstalledCockpitRouteDataLoaders(
+  installedModules: readonly CockpitInstalledExtension[],
+): Readonly<Record<string, CockpitExtensionRouteLoader>> {
+  const loaders: Record<string, CockpitExtensionRouteLoader> = {};
+
+  for (const extension of installedModules) {
+    for (const routeModule of extension.routeModules) {
+      if (typeof routeModule.loader !== 'function' || loaders[routeModule.routeId]) continue;
+      loaders[routeModule.routeId] = routeModule.loader;
     }
   }
 

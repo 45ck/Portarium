@@ -108,7 +108,7 @@ npm run -w apps/cockpit build
 Scan the generic Cockpit boundary:
 
 ```bash
-rg -n "Macquarie|MacquarieCollege|MQC|\bMC\b|mc-school-ops|@macquarie" apps/cockpit packages/cockpit-extension-sdk -g "!node_modules"
+rg -n "CustomerName|CustomerCollege|customer-extension|@customer" apps/cockpit packages/cockpit-extension-sdk -g "!node_modules"
 ```
 
 ## Beads-Style Backlog

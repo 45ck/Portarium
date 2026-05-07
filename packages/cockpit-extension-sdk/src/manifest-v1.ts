@@ -309,7 +309,21 @@ export interface CockpitExtensionRouteLoaderContext<
   pathname?: string;
   searchParams?: Readonly<Record<string, string | undefined>>;
   hash?: string;
+  hostReadModel?: CockpitExtensionHostReadModelContext;
 }
+
+export type CockpitExtensionHostReadModelContext =
+  | {
+      status: 'loaded';
+      endpoint: string;
+      data: unknown;
+      response: unknown;
+    }
+  | {
+      status: 'failed';
+      endpoint: string;
+      message: string;
+    };
 
 export type CockpitExtensionRouteLoader<
   TData = unknown,

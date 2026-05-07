@@ -8,6 +8,7 @@ import {
   type CockpitNativeDataExplorerMetric as NativeDataExplorerMetric,
   type CockpitNativeDataExplorerSource as NativeDataExplorerSource,
   type CockpitNativeDataExplorerSurface as NativeDataExplorerSurface,
+  type CockpitNativeGovernedActionReviewSurface as NativeGovernedActionReviewSurface,
   type CockpitNativeKeyValue as NativeKeyValue,
   type CockpitNativeLinkAction as NativeLinkAction,
   type CockpitNativeMapEntity as NativeMapEntity,
@@ -95,8 +96,189 @@ export function ExternalRouteNativeSurfaceRenderer({
     );
   }
 
+  if (surface.kind === 'portarium.native.governedActionReview.v1') {
+    return (
+      <NativeGovernedActionReviewSurfaceRenderer
+        surface={surface}
+        extension={extension}
+        routeId={route.id}
+      />
+    );
+  }
+
   return (
     <NativeTicketInboxSurfaceRenderer surface={surface} extension={extension} routeId={route.id} />
+  );
+}
+
+function NativeGovernedActionReviewSurfaceRenderer({
+  surface,
+  extension,
+  routeId,
+}: {
+  surface: NativeGovernedActionReviewSurface;
+  extension: ResolvedCockpitExtension;
+  routeId: string;
+}) {
+  return (
+    <NativeSurfaceShell surface={surface} extension={extension} routeId={routeId}>
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="space-y-4">
+          <Card className="shadow-none">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <ShieldCheck className="h-4 w-4 text-primary" />
+                Proposal
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-3 sm:grid-cols-2">
+              <ReviewKeyValue label="Reference" value={surface.proposal.reference} />
+              <ReviewKeyValue label="Review mode" value={surface.proposal.reviewMode} />
+              <ReviewKeyValue label="Approval state" value={surface.proposal.approvalState} />
+              <ReviewKeyValue label="Minimum tier" value={surface.proposal.minimumExecutionTier} />
+              <p className="sm:col-span-2 rounded-md border bg-muted/30 p-3 text-sm text-muted-foreground">
+                {surface.proposal.rationale}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-none">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <FileText className="h-4 w-4 text-primary" />
+                Evidence
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="outline">
+                  {surface.evidence.referencedEvidenceCount} refs
+                </Badge>
+                <Badge variant={surface.evidence.sourceBodiesIncluded ? 'warning' : 'success'}>
+                  {surface.evidence.sourceBodiesIncluded ? 'Bodies included' : 'Refs only'}
+                </Badge>
+              </div>
+              <div className="grid gap-2">
+                {surface.evidence.refs.map((evidence) => (
+                  <article key={evidence.id} className="rounded-md border p-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="text-sm font-medium">{evidence.id}</p>
+                      {evidence.privacyClass ? (
+                        <Badge variant="outline">{evidence.privacyClass}</Badge>
+                      ) : null}
+                    </div>
+                    <p className="mt-1 text-sm text-muted-foreground">{evidence.summary}</p>
+                    <p className="mt-2 text-xs text-muted-foreground">
+                      {evidence.sourceSystem} / {evidence.sourceMode} / {evidence.sourceRef}
+                    </p>
+                  </article>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-none">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <CheckCircle2 className="h-4 w-4 text-primary" />
+                Review Actions
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-2 sm:grid-cols-2">
+              {surface.actions.map((action) => (
+                <Button
+                  key={action.id}
+                  className="h-auto justify-start whitespace-normal"
+                  disabled={action.disabled}
+                  type="button"
+                  variant="outline"
+                >
+                  <span className="grid gap-1 text-left">
+                    <span>{action.label}</span>
+                    {action.reason ? (
+                      <span className="text-xs font-normal text-muted-foreground">
+                        {action.reason}
+                      </span>
+                    ) : null}
+                  </span>
+                </Button>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+
+        <aside className="space-y-4">
+          {surface.roomHealth ? (
+            <Card className="shadow-none">
+              <CardHeader>
+                <CardTitle className="text-base">Room Health</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <strong>{surface.roomHealth.roomCode}</strong>
+                  <Badge variant="outline">{surface.roomHealth.status}</Badge>
+                </div>
+                <p className="text-3xl font-semibold tabular-nums">{surface.roomHealth.score}</p>
+                <p className="text-sm text-muted-foreground">{surface.roomHealth.summary}</p>
+                {surface.roomHealth.signals && surface.roomHealth.signals.length > 0 ? (
+                  <div className="grid gap-2">
+                    {surface.roomHealth.signals.slice(0, 4).map((signal) => (
+                      <div key={signal.id} className="rounded-md border p-2">
+                        <p className="text-xs font-medium">{signal.id}</p>
+                        <p className="text-xs text-muted-foreground">{signal.summary}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+              </CardContent>
+            </Card>
+          ) : null}
+
+          <Card className="shadow-none">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Database className="h-4 w-4 text-primary" />
+                Connectors
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-2">
+              {(surface.connectors ?? []).map((connector) => (
+                <article key={connector.id} className="rounded-md border p-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-sm font-medium">{connector.name}</p>
+                    <Badge variant="outline">{connector.state}</Badge>
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {connector.sourceSystem} / {connector.sourceMode}
+                  </p>
+                  {connector.message ? (
+                    <p className="mt-2 text-xs text-muted-foreground">{connector.message}</p>
+                  ) : null}
+                </article>
+              ))}
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-none">
+            <CardHeader>
+              <CardTitle className="text-base">Execution Boundary</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-2 text-sm">
+              <ReviewKeyValue label="Available" value={surface.execution.available ? 'yes' : 'no'} />
+              <ReviewKeyValue
+                label="Adapter installed"
+                value={surface.execution.adapterInstalled ? 'yes' : 'no'}
+              />
+              <ReviewKeyValue
+                label="Writeback"
+                value={surface.execution.writebackEnabled ? 'enabled' : 'disabled'}
+              />
+              <ReviewKeyValue label="Source access" value={surface.execution.sourceSystemAccess} />
+            </CardContent>
+          </Card>
+        </aside>
+      </div>
+    </NativeSurfaceShell>
   );
 }
 
@@ -360,6 +542,15 @@ function OperationalSnapshotItem({
       </div>
       <p className="mt-2 text-xs font-medium">{label}</p>
       <p className="text-[11px] text-muted-foreground">{detail}</p>
+    </div>
+  );
+}
+
+function ReviewKeyValue({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="grid gap-1 rounded-md border p-3">
+      <span className="text-xs font-medium text-muted-foreground">{label}</span>
+      <span className="text-sm font-semibold">{value}</span>
     </div>
   );
 }
