@@ -13,6 +13,7 @@
 import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -200,21 +201,23 @@ function toJson(entries, since) {
 // CLI
 // ---------------------------------------------------------------------------
 
-const args = process.argv.slice(2);
-const jsonMode = args.includes('--json');
-const sinceIdx = args.indexOf('--since');
-const since = sinceIdx >= 0 ? args[sinceIdx + 1] : undefined;
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  const args = process.argv.slice(2);
+  const jsonMode = args.includes('--json');
+  const sinceIdx = args.indexOf('--since');
+  const since = sinceIdx >= 0 ? args[sinceIdx + 1] : undefined;
 
-const { since: resolvedSince, entries } = collectEntries(since);
+  const { since: resolvedSince, entries } = collectEntries(since);
 
-if (jsonMode) {
-  console.log(toJson(entries, resolvedSince));
-} else {
-  const md = toMarkdown(entries);
-  if (md) {
-    console.log(md);
+  if (jsonMode) {
+    console.log(toJson(entries, resolvedSince));
   } else {
-    console.log('No changelog entries found.');
+    const md = toMarkdown(entries);
+    if (md) {
+      console.log(md);
+    } else {
+      console.log('No changelog entries found.');
+    }
   }
 }
 

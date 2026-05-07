@@ -24,6 +24,7 @@ Architecture Decision Records live in `docs/internal/adr/`.
 - Host-native Cockpit extension surfaces: `docs/internal/adr/ADR-0149-host-native-extension-surfaces.md`
 - Host-native extension suggestions and governed proposals: `docs/internal/adr/ADR-0150-host-native-extension-suggestions-and-governed-proposals.md`
 - Observation-only extension mode: `docs/internal/adr/ADR-0151-observation-only-extension-mode.md`
+- Public repo customer boundary gate: `docs/internal/adr/ADR-0152-public-repo-customer-boundary-gate.md`
 
 ## Working rule
 

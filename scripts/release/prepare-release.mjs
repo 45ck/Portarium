@@ -89,6 +89,9 @@ const tagName = `v${newVersion}`;
 
 console.log(`Version: ${currentVersion} → ${newVersion} (${bumpType})`);
 console.log(`Tag:     ${tagName}`);
+if (dryRun) {
+  console.log('[dry-run] No changes will be made.');
+}
 
 // Check tag doesn't already exist
 try {
@@ -115,10 +118,7 @@ if (!skipChangelog) {
   }
 }
 
-if (dryRun) {
-  console.log('\n[dry-run] No changes made.');
-  process.exit(0);
-}
+if (dryRun) process.exit(0);
 
 // ---------------------------------------------------------------------------
 // Apply changes
