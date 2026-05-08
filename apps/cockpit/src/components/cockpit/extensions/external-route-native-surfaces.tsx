@@ -160,20 +160,29 @@ function NativeGovernedActionReviewSurfaceRenderer({
                 </Badge>
               </div>
               <div className="grid gap-2">
-                {surface.evidence.refs.map((evidence) => (
-                  <article key={evidence.id} className="rounded-md border p-3">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <p className="text-sm font-medium">{evidence.id}</p>
-                      {evidence.privacyClass ? (
-                        <Badge variant="outline">{evidence.privacyClass}</Badge>
-                      ) : null}
-                    </div>
-                    <p className="mt-1 text-sm text-muted-foreground">{evidence.summary}</p>
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      {evidence.sourceSystem} / {evidence.sourceMode} / {evidence.sourceRef}
+                {surface.evidence.refs.length > 0 ? (
+                  surface.evidence.refs.map((evidence) => (
+                    <article key={evidence.id} className="rounded-md border p-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <p className="text-sm font-medium">{evidence.id}</p>
+                        {evidence.privacyClass ? (
+                          <Badge variant="outline">{evidence.privacyClass}</Badge>
+                        ) : null}
+                      </div>
+                      <p className="mt-1 text-sm text-muted-foreground">{evidence.summary}</p>
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        {evidence.sourceSystem} / {evidence.sourceMode} / {evidence.sourceRef}
+                      </p>
+                    </article>
+                  ))
+                ) : (
+                  <article className="rounded-md border border-dashed p-3">
+                    <p className="text-sm font-medium">No proposal evidence refs</p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      This proposal does not have linked evidence refs in the loaded read model.
                     </p>
                   </article>
-                ))}
+                )}
               </div>
             </CardContent>
           </Card>

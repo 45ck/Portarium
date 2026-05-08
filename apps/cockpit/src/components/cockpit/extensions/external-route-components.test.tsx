@@ -684,4 +684,50 @@ describe('hosted external route components', () => {
     expect(screen.getAllByText('Read-only context')).not.toHaveLength(0);
     expect(screen.getAllByText('Room 1')).not.toHaveLength(0);
   });
+
+  it('renders an explicit empty state for host-native action review evidence', async () => {
+    const Component = createHostedExternalRouteComponent({
+      hostRendering: { mode: 'host-native' },
+      loader: async () => ({
+        nativeSurface: {
+          kind: 'portarium.native.governedActionReview.v1',
+          title: 'Governed Action Review',
+          description: 'Read-only action review.',
+          badges: [{ label: 'Read only' }],
+          proposal: {
+            reference: 'proposal-without-evidence',
+            reviewMode: 'read-only',
+            approvalState: 'not-loaded',
+            minimumExecutionTier: 'manual-only',
+            rationale: 'No proposal evidence refs are available.',
+          },
+          evidence: {
+            referencedEvidenceCount: 0,
+            sourceBodiesIncluded: false,
+            refs: [],
+          },
+          connectors: [],
+          actions: [],
+          execution: {
+            available: false,
+            adapterInstalled: false,
+            writebackEnabled: false,
+            sourceSystemAccess: 'none',
+          },
+        },
+      }),
+    });
+
+    render(
+      <Component
+        route={route}
+        extension={resolvedExtension}
+        params={{}}
+        pathname="/external/native/actions/proposal-without-evidence"
+      />,
+    );
+
+    expect(await screen.findByText('No proposal evidence refs')).toBeTruthy();
+    expect(screen.getByText('This proposal does not have linked evidence refs in the loaded read model.')).toBeTruthy();
+  });
 });
