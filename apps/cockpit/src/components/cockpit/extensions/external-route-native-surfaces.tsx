@@ -14,6 +14,7 @@ import {
   type CockpitNativeAutomationProposal as NativeAutomationProposal,
   type CockpitNativeBaseMap as NativeBaseMap,
   type CockpitNativeDataExplorerInsight as NativeDataExplorerInsight,
+  type CockpitNativeDataExplorerIntelligence as NativeDataExplorerIntelligence,
   type CockpitNativeDataExplorerMetric as NativeDataExplorerMetric,
   type CockpitNativeDataExplorerObservation as NativeDataExplorerObservation,
   type CockpitNativeDataExplorerSource as NativeDataExplorerSource,
@@ -48,6 +49,7 @@ import {
   ArrowRight,
   Activity,
   Bot,
+  Brain,
   CheckCircle2,
   Database,
   FileText,
@@ -405,6 +407,20 @@ function NativeDataExplorerSurfaceRenderer({
           </section>
         ) : null}
 
+        {surface.explorer.intelligence && surface.explorer.intelligence.length > 0 ? (
+          <section className="space-y-3" aria-label="Intelligence">
+            <div className="flex items-center gap-2">
+              <Brain className="h-4 w-4 text-primary" />
+              <h2 className="text-base font-semibold">Intelligence</h2>
+            </div>
+            <div className="grid gap-3 lg:grid-cols-3">
+              {surface.explorer.intelligence.map((item) => (
+                <IntelligenceCard key={item.id} item={item} />
+              ))}
+            </div>
+          </section>
+        ) : null}
+
         <section className="space-y-3" aria-label="Data insights">
           <div className="flex items-center gap-2">
             <Lightbulb className="h-4 w-4 text-primary" />
@@ -699,6 +715,52 @@ function ObservationCard({ observation }: { observation: NativeDataExplorerObser
         {observation.href ? (
           <Button asChild size="xs" variant="outline">
             <a href={observation.href}>
+              Open context
+              <ArrowRight className="h-3 w-3" />
+            </a>
+          </Button>
+        ) : null}
+      </CardContent>
+    </Card>
+  );
+}
+
+function IntelligenceCard({ item }: { item: NativeDataExplorerIntelligence }) {
+  return (
+    <Card className="shadow-none">
+      <CardHeader className="space-y-2 pb-3">
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <CardTitle className="text-sm">{item.title}</CardTitle>
+          {item.tone ? <Badge variant={badgeVariant(item.tone)}>{item.tone}</Badge> : null}
+        </div>
+        {item.confidence ? (
+          <Badge variant="outline" className="w-fit">
+            {item.confidence}
+          </Badge>
+        ) : null}
+      </CardHeader>
+      <CardContent className="space-y-3 text-sm text-muted-foreground">
+        <p>{item.summary}</p>
+        {item.signals && item.signals.length > 0 ? (
+          <div className="grid gap-2 text-xs sm:grid-cols-2">
+            {item.signals.map((signal) => (
+              <DataSourceStat
+                key={`${signal.label}:${signal.value}`}
+                label={signal.label}
+                value={signal.value}
+              />
+            ))}
+          </div>
+        ) : null}
+        {item.nextStep ? (
+          <p className="rounded-md border bg-muted/20 px-2 py-1.5 text-xs">{item.nextStep}</p>
+        ) : null}
+        {item.sourceIds && item.sourceIds.length > 0 ? (
+          <p className="text-[11px]">Sources: {item.sourceIds.join(', ')}</p>
+        ) : null}
+        {item.href ? (
+          <Button asChild size="xs" variant="outline">
+            <a href={item.href}>
               Open context
               <ArrowRight className="h-3 w-3" />
             </a>

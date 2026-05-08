@@ -427,6 +427,21 @@ describe('hosted external route components', () => {
                 sourceIds: ['service-desk'],
               },
             ],
+            intelligence: [
+              {
+                id: 'ticket-cluster',
+                title: 'Ticket cluster',
+                summary: 'A room-linked ticket cluster is ready for human review.',
+                tone: 'warning',
+                confidence: 'medium',
+                nextStep: 'Open the review route before proposing any action.',
+                signals: [
+                  { label: 'Tickets', value: '5' },
+                  { label: 'Rooms', value: '1' },
+                ],
+                sourceIds: ['service-desk'],
+              },
+            ],
             sources: [
               {
                 id: 'service-desk',
@@ -483,6 +498,8 @@ describe('hosted external route components', () => {
     expect(screen.getByText('Source Posture')).toBeTruthy();
     expect(screen.getByLabelText('Observability')).toBeTruthy();
     expect(screen.getByText('Snapshot coverage')).toBeTruthy();
+    expect(screen.getByLabelText('Intelligence')).toBeTruthy();
+    expect(screen.getByText('Ticket cluster')).toBeTruthy();
     expect(screen.getByLabelText('Snapshot mock ports')).toBeTruthy();
     expect(screen.getByText('Service desk mock')).toBeTruthy();
     expect(screen.getByText('Local redacted ticket snapshot.')).toBeTruthy();

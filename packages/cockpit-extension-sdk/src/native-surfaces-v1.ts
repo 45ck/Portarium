@@ -337,6 +337,23 @@ export interface CockpitNativeDataExplorerObservation {
   href?: string;
 }
 
+export interface CockpitNativeDataExplorerIntelligenceSignal {
+  label: string;
+  value: string;
+}
+
+export interface CockpitNativeDataExplorerIntelligence {
+  id: string;
+  title: string;
+  summary: string;
+  tone?: CockpitNativeStatusBadge['tone'];
+  confidence?: string;
+  nextStep?: string;
+  signals?: readonly CockpitNativeDataExplorerIntelligenceSignal[];
+  sourceIds?: readonly string[];
+  href?: string;
+}
+
 export interface CockpitNativeSnapshotPort {
   id: string;
   label: string;
@@ -370,6 +387,7 @@ export interface CockpitNativeDataExplorerSurface extends CockpitNativeRouteSurf
     sources: readonly CockpitNativeDataExplorerSource[];
     snapshotPorts?: readonly CockpitNativeSnapshotPort[];
     observability?: readonly CockpitNativeDataExplorerObservation[];
+    intelligence?: readonly CockpitNativeDataExplorerIntelligence[];
     insights: readonly CockpitNativeDataExplorerInsight[];
     integrationNotes?: readonly string[];
   };

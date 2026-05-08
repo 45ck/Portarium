@@ -81,6 +81,15 @@ describe('native route surface descriptors', () => {
             metrics: [{ label: 'Rows', value: '1' }],
           },
         ],
+        intelligence: [
+          {
+            id: 'next-review',
+            title: 'Next review',
+            summary: 'A human review candidate is available.',
+            confidence: 'medium',
+            signals: [{ label: 'Items', value: '1' }],
+          },
+        ],
         insights: [{ id: 'insight-1', title: 'Ready', summary: 'Descriptor accepted.' }],
       },
     } satisfies CockpitNativeDataExplorerSurface);
