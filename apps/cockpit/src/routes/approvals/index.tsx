@@ -25,6 +25,7 @@ import { FreshnessBadge } from '@/components/cockpit/freshness-badge';
 import { NotificationBanner } from '@/components/cockpit/notification-banner';
 import { CheckSquare, AlertCircle, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { CockpitApiError } from '@/lib/control-plane-client';
 import type { ApprovalDecisionRequest } from '@portarium/cockpit-types';
 import {
   fromApprovalReturnSearch,
@@ -34,6 +35,39 @@ import {
 import { shouldShowInternalCockpitSurfaces } from '@/lib/shell/navigation';
 
 const UNDO_DELAY_MS = 5_000;
+
+function approvalLoadErrorCopy(error: unknown): { title: string; detail: string } {
+  if (error instanceof CockpitApiError) {
+    if (error.status === 401) {
+      return {
+        title: 'Approval session is not signed in',
+        detail: 'Start or refresh the Cockpit session, then retry loading approvals.',
+      };
+    }
+    if (error.status === 403) {
+      return {
+        title: 'Approval access is not available for this workspace',
+        detail: 'Your current workspace session does not have permission to review approvals.',
+      };
+    }
+    return {
+      title: `Approval service returned ${error.status}`,
+      detail: error.problem?.detail ?? error.message,
+    };
+  }
+
+  if (error instanceof TypeError) {
+    return {
+      title: 'Approval service is unreachable',
+      detail: 'Check that the Portarium control plane is running, then retry.',
+    };
+  }
+
+  return {
+    title: 'Failed to load approvals',
+    detail: error instanceof Error ? error.message : 'An unexpected error occurred.',
+  };
+}
 
 interface PendingAction {
   approvalId: string;
@@ -58,7 +92,7 @@ function ApprovalsPage() {
   const singleCaseMode = singleCaseApprovalId !== undefined;
   const policyLinkedSingleCaseMode = policyLinkedMode && singleCaseMode;
   const { activeWorkspaceId: wsId } = useUIStore();
-  const { data, isLoading, isError, refetch, offlineMeta } = useApprovals(wsId);
+  const { data, isLoading, isError, error, refetch, offlineMeta } = useApprovals(wsId);
   const { submitDecision, pendingCount, isFlushing } = useApprovalDecisionOutbox(wsId);
   const rawItems = data?.items ?? [];
   const items = rawItems;
@@ -513,6 +547,7 @@ function ApprovalsPage() {
   const triageContent = <AnimatePresence mode="wait">{triageChild}</AnimatePresence>;
 
   if (isError) {
+    const errorCopy = approvalLoadErrorCopy(error);
     return (
       <div className="p-6 space-y-4">
         <PageHeader
@@ -529,8 +564,8 @@ function ApprovalsPage() {
         <div className="rounded-md border border-destructive/50 bg-destructive/5 p-4 flex items-center gap-3">
           <AlertCircle className="h-5 w-5 text-destructive shrink-0" />
           <div className="flex-1">
-            <p className="text-sm font-medium">Failed to load approvals</p>
-            <p className="text-xs text-muted-foreground">An error occurred while fetching data.</p>
+            <p className="text-sm font-medium">{errorCopy.title}</p>
+            <p className="text-xs text-muted-foreground">{errorCopy.detail}</p>
           </div>
           <Button variant="outline" size="sm" onClick={() => refetch()}>
             <RotateCcw className="h-3.5 w-3.5 mr-1.5" />

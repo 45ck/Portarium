@@ -8,17 +8,32 @@
  * Bead: bead-0721
  */
 
-import { createRoute } from '@tanstack/react-router';
+import { useEffect } from 'react';
+import { createRoute, useNavigate } from '@tanstack/react-router';
 import { Route as rootRoute } from '../__root';
 import { useAuthStore } from '@/stores/auth-store';
 import { loadOidcConfig, isOidcConfigured } from '@/lib/oidc-client';
 import { Button } from '@/components/ui/button';
 import { ShieldCheck, LogIn, AlertCircle } from 'lucide-react';
 
+interface LoginSearch {
+  next?: string;
+}
+
+function safeNextPath(value: unknown): string {
+  if (typeof value !== 'string') return '/';
+  if (!value.startsWith('/') || value.startsWith('//')) return '/';
+  if (value.startsWith('/auth/')) return '/';
+  return value;
+}
+
 function LoginPage() {
+  const search = Route.useSearch();
+  const navigate = useNavigate();
   const { status, error, login } = useAuthStore();
   const config = loadOidcConfig();
   const oidcEnabled = isOidcConfigured(config);
+  const nextPath = safeNextPath(search.next);
   const loginLabel =
     status === 'authenticating'
       ? oidcEnabled
@@ -27,6 +42,12 @@ function LoginPage() {
       : oidcEnabled
         ? 'Sign in'
         : 'Continue';
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      void navigate({ to: nextPath });
+    }
+  }, [navigate, nextPath, status]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground p-6">
@@ -80,5 +101,8 @@ function LoginPage() {
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
   path: '/auth/login',
+  validateSearch: (search: Record<string, unknown>): LoginSearch => ({
+    next: typeof search.next === 'string' ? search.next : undefined,
+  }),
   component: LoginPage,
 });

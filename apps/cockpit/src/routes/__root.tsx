@@ -31,6 +31,7 @@ import { KeyboardCheatsheet } from '@/components/cockpit/keyboard-cheatsheet';
 import { RuntimeStatusStrip } from '@/components/cockpit/runtime-status-strip';
 import { StartRunDialog } from '@/components/cockpit/start-run-dialog';
 import { IntentPlanSheet } from '@/components/cockpit/intent-plan-sheet';
+import { resolveCockpitRuntime } from '@/lib/cockpit-runtime';
 import {
   isCockpitShellGlobalActionVisible,
   isCockpitShellCoreItemVisible,
@@ -151,14 +152,24 @@ function RootShell() {
   } = useUIStore();
   const [workspaceOptions, setWorkspaceOptions] = useState<WorkspaceOption[]>([]);
   const oidcEnabled = isOidcConfigured(loadOidcConfig());
+  const cockpitRuntime = resolveCockpitRuntime();
+  const bypassAuthGate = import.meta.env.MODE === 'test';
   const hasBearerToken = Boolean(readBearerToken());
-  const pendingApprovalCount = usePendingCount(activeWorkspaceId);
   const currentPath = location.pathname;
   const isAuthRoute = currentPath.startsWith('/auth/');
   const shouldRedirectToLogin =
-    authStatus === 'unauthenticated' && oidcEnabled && !hasBearerToken && !isAuthRoute;
+    authStatus === 'unauthenticated' &&
+    cockpitRuntime.usesLiveTenantData &&
+    !hasBearerToken &&
+    !bypassAuthGate &&
+    !isAuthRoute;
   const apiAccessReady =
-    !isAuthRoute && (!oidcEnabled || authStatus === 'authenticated' || hasBearerToken);
+    !isAuthRoute &&
+    (bypassAuthGate ||
+      !cockpitRuntime.usesLiveTenantData ||
+      authStatus === 'authenticated' ||
+      hasBearerToken);
+  const pendingApprovalCount = usePendingCount(activeWorkspaceId);
   const { registry: extensionRegistry, serverAccess: extensionServerAccess } =
     useCockpitExtensionRegistry({
       workspaceId: activeWorkspaceId,
@@ -225,9 +236,10 @@ function RootShell() {
   // Redirect to login when unauthenticated (OIDC configured, no dev token).
   useEffect(() => {
     if (shouldRedirectToLogin) {
-      void navigate({ to: '/auth/login' });
+      const next = `${currentPath}${window.location.search}`;
+      void navigate({ to: '/auth/login', search: { next } });
     }
-  }, [navigate, shouldRedirectToLogin]);
+  }, [currentPath, navigate, shouldRedirectToLogin]);
 
   useEffect(() => {
     if (!shellProfile.defaultRoutePath || isAuthRoute) return;

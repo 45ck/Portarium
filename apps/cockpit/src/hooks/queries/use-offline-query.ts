@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery, type QueryKey, type UseQueryOptions } from '@tanstack/react-query';
+import { resolveCockpitRuntime } from '@/lib/cockpit-runtime';
 import { CockpitApiError } from '@/lib/control-plane-client';
 import { readOfflineCache, writeOfflineCache } from '@/lib/offline-cache';
+import { useAuthStore } from '@/stores/auth-store';
 
 type OfflineDataSource = 'network' | 'cache' | 'none';
 
@@ -29,6 +31,11 @@ export function useOfflineQuery<TData, TQueryKey extends QueryKey>(
   options: UseOfflineQueryOptions<TData, TQueryKey>,
 ) {
   const { cacheKey, queryFn, ...queryOptions } = options;
+  const authStatus = useAuthStore((state) => state.status);
+  const runtime = resolveCockpitRuntime();
+  const authReady =
+    import.meta.env.MODE === 'test' || !runtime.usesLiveTenantData || authStatus === 'authenticated';
+  const enabled = (queryOptions.enabled ?? true) && authReady;
 
   const cached = useMemo(() => readOfflineCache<TData>(cacheKey), [cacheKey]);
   const [isOffline, setIsOffline] = useState<boolean>(
@@ -57,6 +64,7 @@ export function useOfflineQuery<TData, TQueryKey extends QueryKey>(
 
   const query = useQuery<TData, Error, TData, TQueryKey>({
     ...queryOptions,
+    enabled,
     initialData: cached?.data,
     queryFn: async () => {
       try {
