@@ -1724,13 +1724,14 @@ function sanitizeInlineSvgSource(svgSource: string | undefined): string {
         }
       });
     document.querySelectorAll('*').forEach((element) => {
+      const elementName = element.localName.toLowerCase();
       for (const attribute of [...element.attributes]) {
         const attributeName = attribute.name.toLowerCase();
         const attributeValue = attribute.value.trim().toLowerCase();
         if (
           attributeName.startsWith('on') ||
-          !allowedInlineSvgAttributeNames.has(attributeName) ||
-          hasUnsafeInlineSvgAttributeValue(attributeName, attributeValue)
+          !isAllowedInlineSvgAttribute(elementName, attributeName, attributeValue) ||
+          hasUnsafeInlineSvgAttributeValue(elementName, attributeName, attributeValue)
         ) {
           element.removeAttribute(attribute.name);
         }
@@ -1749,9 +1750,13 @@ const allowedInlineSvgElementNames = new Set([
   'defs',
   'desc',
   'ellipse',
+  'fecolormatrix',
+  'filter',
   'g',
+  'image',
   'line',
   'lineargradient',
+  'mask',
   'path',
   'polygon',
   'polyline',
@@ -1762,11 +1767,14 @@ const allowedInlineSvgElementNames = new Set([
   'text',
   'title',
   'tspan',
+  'use',
 ]);
 
 const allowedInlineSvgAttributeNames = new Set([
   'aria-label',
   'class',
+  'clip-path',
+  'color-interpolation-filters',
   'cx',
   'cy',
   'd',
@@ -1774,14 +1782,18 @@ const allowedInlineSvgAttributeNames = new Set([
   'fill',
   'fill-opacity',
   'fill-rule',
+  'filter',
   'font-family',
+  'font-stretch',
   'font-size',
   'font-style',
   'font-weight',
   'height',
   'id',
+  'mask',
   'offset',
   'opacity',
+  'paint-order',
   'points',
   'preserveaspectratio',
   'r',
@@ -1790,6 +1802,7 @@ const allowedInlineSvgAttributeNames = new Set([
   'stroke-dasharray',
   'stroke-linecap',
   'stroke-linejoin',
+  'stroke-miterlimit',
   'stroke-opacity',
   'stroke-width',
   'style',
@@ -1797,8 +1810,11 @@ const allowedInlineSvgAttributeNames = new Set([
   'text-anchor',
   'transform',
   'version',
+  'values',
+  'vector-effect',
   'viewbox',
   'width',
+  'writing-mode',
   'x',
   'x1',
   'x2',
@@ -1809,17 +1825,66 @@ const allowedInlineSvgAttributeNames = new Set([
   'y2',
 ]);
 
-function hasUnsafeInlineSvgAttributeValue(attributeName: string, attributeValue: string): boolean {
+function isAllowedInlineSvgAttribute(
+  elementName: string,
+  attributeName: string,
+  attributeValue: string,
+): boolean {
+  if (allowedInlineSvgAttributeNames.has(attributeName)) return true;
+  if (attributeName === 'href' || attributeName === 'xlink:href' || attributeName.endsWith(':href')) {
+    if (elementName === 'use') return isSafeInlineSvgFragmentReference(attributeValue);
+    if (elementName === 'image') return isSafeInlineSvgDataImageReference(attributeValue);
+  }
+
+  return false;
+}
+
+function hasUnsafeInlineSvgAttributeValue(
+  elementName: string,
+  attributeName: string,
+  attributeValue: string,
+): boolean {
+  if (
+    (attributeName === 'href' ||
+      attributeName === 'xlink:href' ||
+      attributeName.endsWith(':href')) &&
+    ((elementName === 'use' && isSafeInlineSvgFragmentReference(attributeValue)) ||
+      (elementName === 'image' && isSafeInlineSvgDataImageReference(attributeValue)))
+  ) {
+    return false;
+  }
+
+  if (
+    (attributeName === 'filter' ||
+      attributeName === 'mask' ||
+      attributeName === 'clip-path' ||
+      attributeName === 'style') &&
+    attributeValue.includes('url(') &&
+    !isSafeInlineSvgUrlReference(attributeValue)
+  ) {
+    return true;
+  }
+
   if (
     attributeName === 'style' &&
-    (attributeValue.includes('url(') ||
-      attributeValue.includes('expression(') ||
-      attributeValue.includes('@import'))
+    (attributeValue.includes('expression(') || attributeValue.includes('@import'))
   ) {
     return true;
   }
 
   return /(?:javascript|data|vbscript)\s*:/iu.test(attributeValue);
+}
+
+function isSafeInlineSvgFragmentReference(attributeValue: string): boolean {
+  return /^#[a-z0-9_.:-]+$/iu.test(attributeValue);
+}
+
+function isSafeInlineSvgUrlReference(attributeValue: string): boolean {
+  return /^url\(\s*#[a-z0-9_.:-]+\s*\)$/iu.test(attributeValue);
+}
+
+function isSafeInlineSvgDataImageReference(attributeValue: string): boolean {
+  return /^data:image\/(?:png|jpeg|jpg|gif|webp);base64,[a-z0-9+/=]+$/iu.test(attributeValue);
 }
 
 function safeNativeSurfacePath(href: string | undefined): string | undefined {

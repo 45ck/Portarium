@@ -601,7 +601,7 @@ describe('hosted external route components', () => {
 
   it('renders host-native map workbench surfaces inside shared extension chrome', async () => {
     const svgSource =
-      '<svg viewBox="0 0 10 10"><defs><style>@import url(https://example.com/bad.css)</style></defs><rect data-room="room-1" x="0" y="0" width="10" height="10" /><image href="https://example.com/bad.svg" /><foreignObject><iframe src="https://example.com"></iframe></foreignObject><script>alert("blocked")</script></svg>';
+      '<svg viewBox="0 0 10 10"><defs><style>@import url(https://example.com/bad.css)</style><path id="glyph-1" d="M0 0h1v1H0z" /><filter id="safe-filter"><feColorMatrix values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 1 0" /></filter><mask id="safe-mask"><rect width="10" height="10" fill="#fff" /></mask></defs><rect data-room="room-1" x="0" y="0" width="10" height="10" mask="url(#safe-mask)" filter="url(#safe-filter)" /><use href="#glyph-1" x="1" y="1" /><image href="data:image/png;base64,iVBORw0KGgo=" /><image href="https://example.com/bad.svg" /><foreignObject><iframe src="https://example.com"></iframe></foreignObject><script>alert("blocked")</script></svg>';
     const Component = createHostedExternalRouteComponent({
       hostRendering: { mode: 'host-native' },
       loader: async () => ({
@@ -704,7 +704,11 @@ describe('hosted external route components', () => {
     const renderedSvg = svgRoom?.closest('svg');
     expect(renderedSvg?.querySelector('script')).toBeNull();
     expect(renderedSvg?.querySelector('style')).toBeNull();
-    expect(renderedSvg?.querySelector('image')).toBeNull();
+    expect(renderedSvg?.querySelector('image[href^="https"]')).toBeNull();
+    expect(renderedSvg?.querySelector('image[href^="data:image/png"]')).toBeTruthy();
+    expect(renderedSvg?.querySelector('use[href="#glyph-1"]')).toBeTruthy();
+    expect(renderedSvg?.querySelector('filter')).toBeTruthy();
+    expect(renderedSvg?.querySelector('mask')).toBeTruthy();
     expect(renderedSvg?.querySelector('foreignObject')).toBeNull();
     expect(
       screen
