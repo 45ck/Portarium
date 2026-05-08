@@ -1,4 +1,13 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type MouseEvent,
+  type ReactNode,
+} from 'react';
 import {
   hasCockpitNativeRouteSurface as hasNativeRouteSurface,
   isCockpitNativeRouteSurface as isNativeRouteSurface,
@@ -1547,6 +1556,65 @@ function NativeMapCanvas({
   layers: readonly NativeMapLayer[];
   entities: readonly NativeMapEntity[];
 }) {
+  const svgHostRef = useRef<HTMLDivElement | null>(null);
+  const sanitizedSvgSource = useMemo(
+    () => sanitizeInlineSvgSource(activeBaseMap?.svgSource),
+    [activeBaseMap?.svgSource],
+  );
+  const resolveRoomEntity = useCallback(
+    (roomRef: string | null | undefined) =>
+      roomRef ? resolveMapEntityForRoomRef(roomRef, entities) : undefined,
+    [entities],
+  );
+
+  useEffect(() => {
+    const svgHost = svgHostRef.current;
+    if (!svgHost || sanitizedSvgSource.length === 0) return;
+
+    svgHost.querySelectorAll<SVGElement>('[data-room]').forEach((element) => {
+      const entity = resolveRoomEntity(element.getAttribute('data-room'));
+      if (!entity) return;
+      const href = safeNativeSurfacePath(entity.href);
+      if (!href) return;
+
+      element.setAttribute('role', 'link');
+      element.setAttribute('tabindex', '0');
+      element.setAttribute('aria-label', `Open ${entity.label}`);
+      element.style.cursor = 'pointer';
+    });
+  }, [resolveRoomEntity, sanitizedSvgSource]);
+
+  const openRoomFromTarget = useCallback(
+    (target: EventTarget | null) => {
+      if (!(target instanceof Element)) return false;
+      const roomElement = target.closest<SVGElement>('[data-room]');
+      const entity = resolveRoomEntity(roomElement?.getAttribute('data-room'));
+      const href = safeNativeSurfacePath(entity?.href);
+      if (!href) return false;
+
+      window.location.assign(href);
+      return true;
+    },
+    [resolveRoomEntity],
+  );
+
+  const handleSvgClick = useCallback(
+    (event: MouseEvent<HTMLDivElement>) => {
+      openRoomFromTarget(event.target);
+    },
+    [openRoomFromTarget],
+  );
+
+  const handleSvgKeyDown = useCallback(
+    (event: KeyboardEvent<HTMLDivElement>) => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      if (openRoomFromTarget(event.target)) {
+        event.preventDefault();
+      }
+    },
+    [openRoomFromTarget],
+  );
+
   return (
     <div className="relative h-full min-h-[420px] overflow-hidden bg-muted">
       <div
@@ -1558,7 +1626,16 @@ function NativeMapCanvas({
         )}
       />
       <div className="absolute inset-6 rounded-xl border border-border bg-card/70 shadow-inner">
-        {activeBaseMap?.imageHref ? (
+        {sanitizedSvgSource.length > 0 ? (
+          <div
+            ref={svgHostRef}
+            className="h-full w-full overflow-hidden p-4 [&_svg]:h-full [&_svg]:w-full [&_svg]:max-w-full"
+            onClick={handleSvgClick}
+            onKeyDown={handleSvgKeyDown}
+            // The SVG is supplied by an installed extension read model and sanitized before render.
+            dangerouslySetInnerHTML={{ __html: sanitizedSvgSource }}
+          />
+        ) : activeBaseMap?.imageHref ? (
           <img
             src={activeBaseMap.imageHref}
             alt={activeBaseMap.imageAlt ?? activeBaseMap.label}
@@ -1597,17 +1674,177 @@ function NativeMapCanvas({
         ))}
       </div>
       <div className="absolute right-4 bottom-4 grid max-w-xs gap-2">
-        {entities.slice(0, 4).map((entity) => (
-          <div key={entity.id} className="rounded-md border bg-background/95 px-3 py-2 shadow-sm">
-            <p className="text-xs font-semibold">{entity.label}</p>
-            <p className="text-[11px] text-muted-foreground">
-              {entity.kind}
-              {entity.locationLabel ? ` · ${entity.locationLabel}` : ''}
-            </p>
-          </div>
-        ))}
+        {entities.slice(0, 4).map((entity) => {
+          const href = safeNativeSurfacePath(entity.href);
+          const content = (
+            <>
+              <p className="text-xs font-semibold">{entity.label}</p>
+              <p className="text-[11px] text-muted-foreground">
+                {entity.kind}
+                {entity.locationLabel ? ` · ${entity.locationLabel}` : ''}
+              </p>
+            </>
+          );
+
+          return href ? (
+            <a
+              key={entity.id}
+              href={href}
+              className="rounded-md border bg-background/95 px-3 py-2 text-foreground no-underline shadow-sm hover:border-primary/60 hover:bg-background"
+            >
+              {content}
+            </a>
+          ) : (
+            <div
+              key={entity.id}
+              className="rounded-md border bg-background/95 px-3 py-2 text-foreground shadow-sm"
+            >
+              {content}
+            </div>
+          );
+        })}
       </div>
     </div>
+  );
+}
+
+function sanitizeInlineSvgSource(svgSource: string | undefined): string {
+  if (!svgSource || typeof DOMParser === 'undefined') return '';
+
+  try {
+    const document = new DOMParser().parseFromString(svgSource, 'image/svg+xml');
+    const root = document.documentElement;
+    if (document.querySelector('parsererror') || root.localName.toLowerCase() !== 'svg') return '';
+
+    document
+      .querySelectorAll('*')
+      .forEach((element) => {
+        if (!allowedInlineSvgElementNames.has(element.localName.toLowerCase())) {
+          element.remove();
+        }
+      });
+    document.querySelectorAll('*').forEach((element) => {
+      for (const attribute of [...element.attributes]) {
+        const attributeName = attribute.name.toLowerCase();
+        const attributeValue = attribute.value.trim().toLowerCase();
+        if (
+          attributeName.startsWith('on') ||
+          !allowedInlineSvgAttributeNames.has(attributeName) ||
+          hasUnsafeInlineSvgAttributeValue(attributeName, attributeValue)
+        ) {
+          element.removeAttribute(attribute.name);
+        }
+      }
+    });
+
+    return document.documentElement.outerHTML;
+  } catch {
+    return '';
+  }
+}
+
+const allowedInlineSvgElementNames = new Set([
+  'circle',
+  'clippath',
+  'defs',
+  'desc',
+  'ellipse',
+  'g',
+  'line',
+  'lineargradient',
+  'path',
+  'polygon',
+  'polyline',
+  'radialgradient',
+  'rect',
+  'stop',
+  'svg',
+  'text',
+  'title',
+  'tspan',
+]);
+
+const allowedInlineSvgAttributeNames = new Set([
+  'aria-label',
+  'class',
+  'cx',
+  'cy',
+  'd',
+  'data-room',
+  'fill',
+  'fill-opacity',
+  'fill-rule',
+  'font-family',
+  'font-size',
+  'font-style',
+  'font-weight',
+  'height',
+  'id',
+  'offset',
+  'opacity',
+  'points',
+  'preserveaspectratio',
+  'r',
+  'role',
+  'stroke',
+  'stroke-dasharray',
+  'stroke-linecap',
+  'stroke-linejoin',
+  'stroke-opacity',
+  'stroke-width',
+  'style',
+  'tabindex',
+  'text-anchor',
+  'transform',
+  'version',
+  'viewbox',
+  'width',
+  'x',
+  'x1',
+  'x2',
+  'xml:space',
+  'xmlns',
+  'y',
+  'y1',
+  'y2',
+]);
+
+function hasUnsafeInlineSvgAttributeValue(attributeName: string, attributeValue: string): boolean {
+  if (
+    attributeName === 'style' &&
+    (attributeValue.includes('url(') ||
+      attributeValue.includes('expression(') ||
+      attributeValue.includes('@import'))
+  ) {
+    return true;
+  }
+
+  return /(?:javascript|data|vbscript)\s*:/iu.test(attributeValue);
+}
+
+function safeNativeSurfacePath(href: string | undefined): string | undefined {
+  if (!href) return undefined;
+  const trimmedHref = href.trim();
+  if (!trimmedHref.startsWith('/') || trimmedHref.startsWith('//')) return undefined;
+
+  try {
+    const parsedUrl = new URL(trimmedHref, 'https://portarium.local');
+    if (parsedUrl.origin !== 'https://portarium.local') return undefined;
+    return `${parsedUrl.pathname}${parsedUrl.search}${parsedUrl.hash}`;
+  } catch {
+    return undefined;
+  }
+}
+
+function resolveMapEntityForRoomRef(
+  roomRef: string,
+  entities: readonly NativeMapEntity[],
+): NativeMapEntity | undefined {
+  const normalizedRoomRef = roomRef.trim().toLowerCase();
+  return entities.find((entity) =>
+    [entity.mapFeatureId, entity.id, entity.label, entity.sourceRef]
+      .filter((value): value is string => typeof value === 'string')
+      .some((value) => value.toLowerCase() === normalizedRoomRef),
   );
 }
 

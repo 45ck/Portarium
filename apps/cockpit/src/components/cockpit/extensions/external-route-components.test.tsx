@@ -600,6 +600,8 @@ describe('hosted external route components', () => {
   });
 
   it('renders host-native map workbench surfaces inside shared extension chrome', async () => {
+    const svgSource =
+      '<svg viewBox="0 0 10 10"><defs><style>@import url(https://example.com/bad.css)</style></defs><rect data-room="room-1" x="0" y="0" width="10" height="10" /><image href="https://example.com/bad.svg" /><foreignObject><iframe src="https://example.com"></iframe></foreignObject><script>alert("blocked")</script></svg>';
     const Component = createHostedExternalRouteComponent({
       hostRendering: { mode: 'host-native' },
       loader: async () => ({
@@ -627,7 +629,7 @@ describe('hosted external route components', () => {
                 kind: 'provider',
                 provider: 'leaflet-compatible',
               },
-              { id: 'custom', label: 'Indoor map', kind: 'custom' },
+              { id: 'custom', label: 'Indoor map', kind: 'custom', svgSource },
             ],
             layers: [
               {
@@ -646,6 +648,18 @@ describe('hosted external route components', () => {
                 status: 'normal',
                 locationLabel: 'L1',
                 sourceRef: 'map/room-1',
+                mapFeatureId: 'room-1',
+                href: '/external/native/map?room=room-1',
+              },
+              {
+                id: 'unsafe-room',
+                label: 'Unsafe room',
+                kind: 'room',
+                status: 'normal',
+                locationLabel: 'L2',
+                sourceRef: 'map/unsafe-room',
+                mapFeatureId: 'unsafe-room',
+                href: 'javascript:alert(1)',
               },
             ],
             selectionLabel: 'Room 1',
@@ -683,6 +697,22 @@ describe('hosted external route components', () => {
     expect(screen.getAllByText('Indoor map')).not.toHaveLength(0);
     expect(screen.getAllByText('Read-only context')).not.toHaveLength(0);
     expect(screen.getAllByText('Room 1')).not.toHaveLength(0);
+    const svgRoom = document.querySelector('[data-room="room-1"]');
+    expect(svgRoom?.getAttribute('role')).toBe('link');
+    expect(svgRoom?.getAttribute('tabindex')).toBe('0');
+    expect(svgRoom?.getAttribute('aria-label')).toBe('Open Room 1');
+    const renderedSvg = svgRoom?.closest('svg');
+    expect(renderedSvg?.querySelector('script')).toBeNull();
+    expect(renderedSvg?.querySelector('style')).toBeNull();
+    expect(renderedSvg?.querySelector('image')).toBeNull();
+    expect(renderedSvg?.querySelector('foreignObject')).toBeNull();
+    expect(
+      screen
+        .getAllByRole('link', { name: /Room 1/ })
+        .some((link) => link.getAttribute('href') === '/external/native/map?room=room-1'),
+    ).toBe(true);
+    expect(screen.queryByRole('link', { name: /Unsafe room/ })).toBeNull();
+    expect(screen.getAllByText('Unsafe room')).not.toHaveLength(0);
   });
 
   it('renders an explicit empty state for host-native action review evidence', async () => {

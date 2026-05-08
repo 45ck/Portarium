@@ -241,6 +241,7 @@ export interface CockpitNativeBaseMap {
   description?: string;
   imageHref?: string;
   imageAlt?: string;
+  svgSource?: string;
   active?: boolean;
 }
 
@@ -260,6 +261,9 @@ export interface CockpitNativeMapEntity {
   status?: string;
   locationLabel?: string;
   sourceRef?: string;
+  mapFeatureId?: string;
+  floorId?: string;
+  href?: string;
 }
 
 export interface CockpitNativeMapWorkbenchSurface extends CockpitNativeRouteSurfaceBase {
