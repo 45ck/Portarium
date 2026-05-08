@@ -7,6 +7,7 @@ import { RouterProvider, createMemoryHistory } from '@tanstack/react-router';
 import { createCockpitRouter } from '@/router';
 import { queryClient } from '@/lib/query-client';
 import { APPROVALS } from '@/mocks/fixtures/demo';
+import { useApproval } from '@/hooks/queries/use-approvals';
 import { usePlan } from '@/hooks/queries/use-plan';
 import { useRun } from '@/hooks/queries/use-runs';
 import type { OfflineQueryMeta } from '@/hooks/queries/use-offline-query';
@@ -21,6 +22,7 @@ const ALL_PENDING = APPROVALS.filter((a) => a.status === 'Pending');
 
 // Mutable state shared with the mock factory below
 let _mockApprovals: ApprovalSummary[] = [...APPROVALS];
+let _mockApprovalDetails: Record<string, ApprovalSummary> = {};
 let _mockIsLoading = false;
 let _mockIsError = false;
 let _mockOfflineMeta: OfflineQueryMeta = {
@@ -40,8 +42,12 @@ vi.mock('@/hooks/queries/use-approvals', () => ({
     refetch: _mockRefetch,
     offlineMeta: _mockOfflineMeta,
   })),
-  // useApproval not called by the triage page
-  useApproval: vi.fn(),
+  useApproval: vi.fn((_: string, id: string) => ({
+    data: id ? _mockApprovalDetails[id] : undefined,
+    isLoading: false,
+    isError: false,
+    error: null,
+  })),
   useApprovalDecision: vi.fn(),
 }));
 
@@ -145,6 +151,7 @@ beforeAll(() => {
 
 beforeEach(() => {
   _mockApprovals = [...APPROVALS];
+  _mockApprovalDetails = {};
   _mockIsLoading = false;
   _mockIsError = false;
   _mockOfflineMeta = {
@@ -155,6 +162,7 @@ beforeEach(() => {
   _mockPendingCount = 0;
   _mockRefetch.mockClear();
   _mockSubmitDecision.mockClear();
+  vi.mocked(useApproval).mockClear();
   vi.mocked(usePlan).mockClear();
   vi.mocked(useRun).mockClear();
   queryClient.clear();
@@ -540,6 +548,37 @@ describe('Approvals triage page', () => {
     );
 
     expect(await screen.findByText(/focused approval review/i)).toBeTruthy();
+    expect(vi.mocked(usePlan).mock.calls.every(([, planId]) => planId === undefined)).toBe(true);
+    expect(vi.mocked(useRun).mock.calls.every(([, runId]) => runId === '')).toBe(true);
+  });
+
+  it('hydrates a focused agent-action approval when it is missing from the queue list', async () => {
+    const base = ALL_PENDING[0]!;
+    const focused: ApprovalSummary = {
+      ...base,
+      approvalId: 'appr-agent-action-detail-1',
+      runId: 'proposal-agent-action-detail-1',
+      planId: 'proposal-agent-action-detail-1',
+      prompt: 'Review newly proposed governed snapshot action',
+      agentActionProposal: {
+        proposalId: 'proposal-agent-action-detail-1',
+        agentId: 'agent-1',
+        toolName: 'tool.snapshot.review',
+        toolCategory: 'Unknown',
+        blastRadiusTier: 'HumanApprove',
+        rationale: 'Review snapshot-backed proposal before action.',
+      },
+    };
+    _mockApprovals = ALL_PENDING.filter((approval) => approval.approvalId !== base.approvalId);
+    _mockApprovalDetails = { [focused.approvalId]: focused };
+
+    await renderApprovalsRoute(
+      `/approvals?focus=${encodeURIComponent(focused.approvalId)}&from=notification`,
+    );
+
+    expect(await screen.findByText(/focused approval review/i)).toBeTruthy();
+    expect(await screen.findAllByText(focused.prompt, { exact: false })).toBeTruthy();
+    expect(await screen.findByText('1 of 1 pending')).toBeTruthy();
     expect(vi.mocked(usePlan).mock.calls.every(([, planId]) => planId === undefined)).toBe(true);
     expect(vi.mocked(useRun).mock.calls.every(([, runId]) => runId === '')).toBe(true);
   });

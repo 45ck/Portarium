@@ -353,6 +353,32 @@ describe('hosted external route components', () => {
           title: 'Native Data Explorer',
           description: 'Read-only data source landscape.',
           badges: [{ label: 'Read only' }, { label: 'Snapshot data' }],
+          snapshotRecommendations: [
+            {
+              id: 'snapshot-ticket-focus',
+              title: 'Review highest-risk ticket refs',
+              summary: 'Five redacted ticket refs are ready for operator triage.',
+              priority: 'review-next',
+              confidence: 'medium',
+              sourceRefs: ['source:ticket-snapshot'],
+              reasons: ['Open tickets exist in the redacted snapshot'],
+              nextHumanStep: 'Open the review route before proposing any action.',
+              approvalGate: {
+                approvalRequired: true,
+                minimumExecutionTier: 'HumanApprove',
+                reviewPath: '/external/example/actions/snapshot-ticket-focus',
+                mutationAvailable: false,
+                executionAdapterInstalled: false,
+              },
+              safety: {
+                snapshotOnly: true,
+                sourceSystemAccess: 'none',
+                writebackEnabled: false,
+                rawPayloadsIncluded: false,
+                credentialsIncluded: false,
+              },
+            },
+          ],
           explorer: {
             metrics: [
               {
@@ -434,6 +460,12 @@ describe('hosted external route components', () => {
     );
 
     expect(await screen.findByRole('heading', { name: 'Native Data Explorer' })).toBeTruthy();
+    expect(screen.getByText('Snapshot Recommendations')).toBeTruthy();
+    expect(screen.getByText('Review highest-risk ticket refs')).toBeTruthy();
+    expect(screen.getByText('HumanApprove')).toBeTruthy();
+    expect(screen.getByRole('link', { name: /Open review/i }).getAttribute('href')).toBe(
+      '/external/example/actions/snapshot-ticket-focus',
+    );
     expect(screen.getByLabelText('Operational snapshot')).toBeTruthy();
     expect(screen.getByText('Source Posture')).toBeTruthy();
     expect(screen.getByLabelText('Snapshot mock ports')).toBeTruthy();
@@ -543,7 +575,7 @@ describe('hosted external route components', () => {
 
     await waitFor(() => expect(fetchImpl).toHaveBeenCalledTimes(1));
     const [url, init] = fetchImpl.mock.calls[0] as unknown as [string, RequestInit];
-    expect(url).toBe('/v1/workspaces/ws-demo/agent-actions:propose');
+    expect(url).toMatch(/\/v1\/workspaces\/ws-demo\/agent-actions:propose$/);
     expect(init.method).toBe('POST');
     expect(JSON.parse(String(init.body))).toEqual({
       agentId: 'ops-reference-snapshot-agent',
@@ -563,7 +595,7 @@ describe('hosted external route components', () => {
     });
     expect(await screen.findByText('Proposal proposal-1')).toBeTruthy();
     expect(screen.getByRole('link', { name: /Open approval/i }).getAttribute('href')).toBe(
-      '/approvals?focus=approval-1',
+      '/approvals?focus=approval-1&from=notification',
     );
   });
 

@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { Route as rootRoute } from '../__root';
 import { useUIStore } from '@/stores/ui-store';
-import { useApprovals } from '@/hooks/queries/use-approvals';
+import { useApproval, useApprovals } from '@/hooks/queries/use-approvals';
 import { usePlan } from '@/hooks/queries/use-plan';
 import { useEvidence } from '@/hooks/queries/use-evidence';
 import { useRun } from '@/hooks/queries/use-runs';
@@ -93,9 +93,23 @@ function ApprovalsPage() {
   const policyLinkedSingleCaseMode = policyLinkedMode && singleCaseMode;
   const { activeWorkspaceId: wsId } = useUIStore();
   const { data, isLoading, isError, error, refetch, offlineMeta } = useApprovals(wsId);
+  const focusedApprovalQuery = useApproval(wsId, singleCaseApprovalId ?? '');
   const { submitDecision, pendingCount, isFlushing } = useApprovalDecisionOutbox(wsId);
   const rawItems = data?.items ?? [];
-  const items = rawItems;
+  const focusedDetailApproval =
+    singleCaseMode && focusedApprovalQuery.data?.approvalId === singleCaseApprovalId
+      ? focusedApprovalQuery.data
+      : null;
+  const items =
+    focusedDetailApproval &&
+    !rawItems.some((approval) => approval.approvalId === focusedDetailApproval.approvalId)
+      ? [...rawItems, focusedDetailApproval]
+      : rawItems;
+  const isFocusedApprovalLoading =
+    singleCaseMode &&
+    focusedApprovalQuery.isLoading &&
+    !focusedDetailApproval &&
+    !rawItems.some((approval) => approval.approvalId === singleCaseApprovalId);
   const pendingItems = items.filter((a) => a.status === 'Pending');
 
   const [triageSkipped, setTriageSkipped] = useState<Set<string>>(new Set());
@@ -328,7 +342,7 @@ function ApprovalsPage() {
 
   let triageChild: React.ReactNode;
 
-  if (isLoading) {
+  if (isLoading || isFocusedApprovalLoading) {
     triageChild = (
       <motion.div
         key="loading"

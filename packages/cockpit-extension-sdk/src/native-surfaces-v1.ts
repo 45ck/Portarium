@@ -32,11 +32,41 @@ export interface CockpitNativeRouteSurfaceBase {
   description?: string;
   badges?: readonly CockpitNativeStatusBadge[];
   automationProposals?: readonly CockpitNativeAutomationProposal[];
+  snapshotRecommendations?: readonly CockpitNativeSnapshotRecommendation[];
   area?: {
     label: string;
     title: string;
     navItems: readonly CockpitNativeAreaNavItem[];
     boundary?: readonly string[];
+  };
+}
+
+export interface CockpitNativeSnapshotRecommendation {
+  id: string;
+  title: string;
+  summary: string;
+  priority?: string;
+  confidence?: string;
+  proposalId?: string;
+  scope?: string;
+  sourceRefs?: readonly string[];
+  ticketRefs?: readonly string[];
+  roomRefs?: readonly string[];
+  reasons?: readonly string[];
+  nextHumanStep?: string;
+  approvalGate?: {
+    approvalRequired?: boolean;
+    minimumExecutionTier?: string;
+    reviewPath?: string;
+    mutationAvailable?: boolean;
+    executionAdapterInstalled?: boolean;
+  };
+  safety?: {
+    snapshotOnly?: boolean;
+    sourceSystemAccess?: string;
+    writebackEnabled?: boolean;
+    rawPayloadsIncluded?: boolean;
+    credentialsIncluded?: boolean;
   };
 }
 

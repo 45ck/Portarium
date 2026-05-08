@@ -20,6 +20,7 @@ import {
   type CockpitNativeRouteSurfaceData as NativeRouteSurfaceData,
   type CockpitNativeSelectOption as NativeSelectOption,
   type CockpitNativeSnapshotPort as NativeSnapshotPort,
+  type CockpitNativeSnapshotRecommendation as NativeSnapshotRecommendation,
   type CockpitNativeSourcePostureSummary as NativeSourcePostureSummary,
   type CockpitNativeStatusBadge as NativeStatusBadge,
   type CockpitNativeTicketConversationBlock as NativeTicketConversationBlock,
@@ -1619,6 +1620,10 @@ function NativeSurfaceShell({
         extension={extension}
       />
     ) : null;
+  const recommendationPanel =
+    surface.snapshotRecommendations && surface.snapshotRecommendations.length > 0 ? (
+      <NativeSnapshotRecommendationPanel recommendations={surface.snapshotRecommendations} />
+    ) : null;
   const areaNav = surface.area ? (
     <section className="flex flex-wrap items-center gap-3 rounded-md border bg-card px-3 py-2">
       <div className="mr-1 min-w-fit">
@@ -1673,9 +1678,97 @@ function NativeSurfaceShell({
         status={<StatusBadges badges={surface.badges ?? [{ label: routeId, tone: 'neutral' }]} />}
       />
       {areaNav}
+      {recommendationPanel}
       {automationPanel}
       {children}
     </div>
+  );
+}
+
+function NativeSnapshotRecommendationPanel({
+  recommendations,
+}: {
+  recommendations: readonly NativeSnapshotRecommendation[];
+}) {
+  return (
+    <section className="rounded-md border bg-muted/10 px-3 py-3" aria-label="Snapshot recommendations">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="text-sm font-semibold">Snapshot Recommendations</h2>
+          <p className="text-xs text-muted-foreground">
+            Read-only recommendations from packaged or host-provided read models.
+          </p>
+        </div>
+        <Badge variant="outline">Review only</Badge>
+      </div>
+      <div className="mt-3 grid gap-2 xl:grid-cols-3">
+        {recommendations.map((recommendation) => (
+          <Card key={recommendation.id} className="bg-background/80 shadow-none">
+            <CardContent className="space-y-3 p-3">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <Lightbulb className="h-4 w-4 text-primary" />
+                    <h3 className="text-sm font-semibold">{recommendation.title}</h3>
+                  </div>
+                  {recommendation.confidence ? (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {recommendation.confidence}
+                    </p>
+                  ) : null}
+                </div>
+                {recommendation.priority ? (
+                  <Badge variant="outline">{recommendation.priority}</Badge>
+                ) : null}
+              </div>
+
+              <p className="text-sm leading-6 text-muted-foreground">{recommendation.summary}</p>
+
+              {recommendation.reasons && recommendation.reasons.length > 0 ? (
+                <ul className="space-y-1 text-xs text-muted-foreground">
+                  {recommendation.reasons.slice(0, 3).map((reason) => (
+                    <li key={reason}>{reason}</li>
+                  ))}
+                </ul>
+              ) : null}
+
+              {recommendation.nextHumanStep ? (
+                <p className="rounded-md border bg-muted/20 p-2 text-xs text-muted-foreground">
+                  {recommendation.nextHumanStep}
+                </p>
+              ) : null}
+
+              <div className="flex flex-wrap gap-1.5">
+                {recommendation.approvalGate?.minimumExecutionTier ? (
+                  <Badge variant="secondary">
+                    {recommendation.approvalGate.minimumExecutionTier}
+                  </Badge>
+                ) : null}
+                {recommendation.safety?.sourceSystemAccess ? (
+                  <Badge variant="outline">
+                    Source access {recommendation.safety.sourceSystemAccess}
+                  </Badge>
+                ) : null}
+                {recommendation.safety?.writebackEnabled === false ? (
+                  <Badge variant="outline">No writeback</Badge>
+                ) : null}
+              </div>
+
+              <SourceRefList refs={recommendation.sourceRefs ?? []} />
+
+              {recommendation.approvalGate?.reviewPath ? (
+                <Button asChild size="xs" variant="outline">
+                  <a href={recommendation.approvalGate.reviewPath}>
+                    Open review
+                    <ArrowRight className="h-3 w-3" />
+                  </a>
+                </Button>
+              ) : null}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -1801,7 +1894,11 @@ function NativeAutomationProposalPanel({
                     <p className="mt-1 text-muted-foreground">Proposal {result.proposalId}</p>
                     {result.approvalId ? (
                       <Button asChild size="xs" variant="outline" className="mt-2">
-                        <a href={`/approvals?focus=${encodeURIComponent(result.approvalId)}`}>
+                        <a
+                          href={`/approvals?focus=${encodeURIComponent(
+                            result.approvalId,
+                          )}&from=notification`}
+                        >
                           Open approval
                           <ArrowRight className="h-3 w-3" />
                         </a>
