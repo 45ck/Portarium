@@ -61,7 +61,10 @@ export default defineConfig(({ mode }) => {
                   proxy: {
                     ...(apiBaseUrl
                       ? {
-                          '/auth': { target: apiBaseUrl, changeOrigin: true },
+                          '/auth/session': { target: apiBaseUrl, changeOrigin: true },
+                          '/auth/dev-session': { target: apiBaseUrl, changeOrigin: true },
+                          '/auth/logout': { target: apiBaseUrl, changeOrigin: true },
+                          '/auth/oidc': { target: apiBaseUrl, changeOrigin: true },
                           '/v1': { target: apiBaseUrl, changeOrigin: true },
                         }
                       : {}),
