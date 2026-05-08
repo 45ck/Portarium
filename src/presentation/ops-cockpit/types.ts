@@ -144,6 +144,55 @@ export interface IntentPlanResponse {
   artifact: PlanArtifact;
 }
 
+export type CockpitExtensionBackendHttpMethod = 'GET' | 'POST';
+
+export type CockpitExtensionBackendIsolation =
+  | 'workspace-scoped'
+  | 'workspace-and-principal-scoped';
+
+export type CockpitExtensionBackendPolicySemantics =
+  | 'authorization-required'
+  | 'policy-approval-evidence-required';
+
+export type CockpitExtensionBackendEvidenceSemantics =
+  | 'read-audited-by-control-plane'
+  | 'evidence-required-before-response';
+
+export interface CockpitExtensionBackendSurfaceContract {
+  kind: 'data-query' | 'governed-command-request';
+  id: string;
+  method: CockpitExtensionBackendHttpMethod;
+  pathTemplate: string;
+  requiredApiScopes: string[];
+  requiredCapabilities: string[];
+  requiredAppActions: string[];
+  isolation: CockpitExtensionBackendIsolation;
+  policySemantics: CockpitExtensionBackendPolicySemantics;
+  evidenceSemantics: CockpitExtensionBackendEvidenceSemantics;
+  failClosed: true;
+}
+
+export interface CockpitExtensionDataQueryContract
+  extends CockpitExtensionBackendSurfaceContract {
+  kind: 'data-query';
+}
+
+export interface CockpitExtensionGovernedCommandContract
+  extends CockpitExtensionBackendSurfaceContract {
+  kind: 'governed-command-request';
+  approvalSemantics: 'policy-determined';
+  idempotency: 'caller-or-host-key-required';
+}
+
+export interface CockpitExtensionHostContract {
+  schemaVersion: 1;
+  browserEgress: 'host-api-origins-only';
+  credentialAccess: 'none';
+  failureMode: 'fail-closed';
+  dataQueries: CockpitExtensionDataQueryContract[];
+  governedCommandRequests: CockpitExtensionGovernedCommandContract[];
+}
+
 export interface CockpitExtensionContextResponse {
   schemaVersion: 1;
   workspaceId: string;
@@ -156,6 +205,7 @@ export interface CockpitExtensionContextResponse {
   activePackIds: string[];
   quarantinedExtensionIds: string[];
   emergencyDisabledExtensionIds?: string[];
+  hostContract?: CockpitExtensionHostContract;
   issuedAtIso: string;
   expiresAtIso: string;
 }

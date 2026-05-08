@@ -324,6 +324,7 @@ describe('createControlPlaneHandler', () => {
     expect(body.hostContract.dataQueries.map((query) => query.id)).toEqual([
       'cockpit.extensionContext.get',
       'approvals.list',
+      'approvals.get',
       'evidence.list',
     ]);
     expect(body.hostContract.dataQueries.every((query) => query.failClosed)).toBe(true);

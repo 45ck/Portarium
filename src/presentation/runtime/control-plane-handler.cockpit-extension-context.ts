@@ -293,6 +293,8 @@ function isDataQueryConfigured(deps: ControlPlaneDeps, contractId: string): bool
       return deps.workItemStore !== undefined;
     case 'approvals.list':
       return deps.approvalQueryStore !== undefined;
+    case 'approvals.get':
+      return deps.approvalStore !== undefined;
     case 'evidence.list':
       return deps.evidenceQueryStore !== undefined;
     default:
