@@ -229,7 +229,7 @@ export function ApprovalTriageDeck({
 
       {/* Draggable card */}
       <motion.div
-        className="relative cursor-grab active:cursor-grabbing"
+        className="relative overflow-hidden cursor-grab active:cursor-grabbing"
         style={{
           x,
           rotate,
@@ -256,7 +256,7 @@ export function ApprovalTriageDeck({
 
         {/* Approved stamp */}
         <motion.div
-          className="absolute top-6 right-4 sm:top-8 sm:right-6 z-10 pointer-events-none select-none"
+          className="absolute top-6 right-4 sm:top-8 sm:right-6 z-10 pointer-events-none select-none max-w-[calc(100%-2rem)]"
           style={{ opacity: approveStampOpacity }}
         >
           <span
@@ -269,7 +269,7 @@ export function ApprovalTriageDeck({
 
         {/* Denied stamp */}
         <motion.div
-          className="absolute top-6 left-4 sm:top-8 sm:left-6 z-10 pointer-events-none select-none"
+          className="absolute top-6 left-4 sm:top-8 sm:left-6 z-10 pointer-events-none select-none max-w-[calc(100%-2rem)]"
           style={{ opacity: denyStampOpacity }}
         >
           <span
@@ -282,7 +282,7 @@ export function ApprovalTriageDeck({
 
         {/* Blocked stamp — replaces approve stamp when SoD-blocked */}
         <motion.div
-          className="absolute top-6 right-4 sm:top-8 sm:right-6 z-10 pointer-events-none select-none"
+          className="absolute top-6 right-4 sm:top-8 sm:right-6 z-10 pointer-events-none select-none max-w-[calc(100%-2rem)]"
           style={{ opacity: blockedStampOpacity }}
         >
           <span

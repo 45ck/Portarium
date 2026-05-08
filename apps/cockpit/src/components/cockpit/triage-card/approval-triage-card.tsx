@@ -109,7 +109,7 @@ export function ApprovalTriageCard({
       : 'Review the evidence packet, then approve only if the proposed Action matches policy and intent.';
 
   return (
-    <div className="w-full max-w-2xl mx-auto space-y-4">
+    <div className="mx-auto w-full max-w-2xl min-w-0 space-y-4">
       <TriageProgressDots
         approvalId={approval.approvalId}
         index={index}

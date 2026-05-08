@@ -69,10 +69,12 @@ export function EvidenceTimeline({ entries, loading }: EvidenceTimelineProps) {
             {i < entries.length - 1 && <div className="w-px flex-1 bg-border mt-1" />}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium">{entry.summary}</p>
-            <div className="flex items-center gap-2 mt-0.5">
-              <span className="text-[11px] text-muted-foreground">{actorLabel(entry.actor)}</span>
-              <span className="text-[11px] text-muted-foreground">
+            <p className="break-words text-xs font-medium">{entry.summary}</p>
+            <div className="mt-0.5 flex flex-wrap items-center gap-2">
+              <span className="break-all text-[11px] text-muted-foreground">
+                {actorLabel(entry.actor)}
+              </span>
+              <span className="shrink-0 text-[11px] text-muted-foreground">
                 {formatDistanceToNow(new Date(entry.occurredAtIso), { addSuffix: true })}
               </span>
               {entry.previousHash && (

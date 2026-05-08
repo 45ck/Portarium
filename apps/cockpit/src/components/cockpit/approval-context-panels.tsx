@@ -51,17 +51,17 @@ export function ApprovalContextPanels({
   const timeline = buildRunTimelinePanelSummary(approval, run);
   const agentAction = buildAgentActionPanelSummary(approval);
 
-  const gridCols = agentAction ? 'md:grid-cols-2 lg:grid-cols-4' : 'md:grid-cols-3';
+  const gridCols = agentAction ? 'md:grid-cols-2 2xl:grid-cols-4' : 'md:grid-cols-3';
 
   return (
     <section
       aria-label="Cross-layer context"
-      className={cn('grid gap-2 rounded-lg border border-border bg-muted/15 p-2', gridCols)}
+      className={cn('grid min-w-0 gap-2 rounded-lg border border-border bg-muted/15 p-2', gridCols)}
     >
-      <article className="rounded-md border border-border bg-background/80 p-3 space-y-2">
-        <div className="flex items-center gap-2">
+      <article className="min-w-0 rounded-md border border-border bg-background/80 p-3 space-y-2">
+        <div className="flex min-w-0 items-center gap-2">
           <ShieldCheck className="h-4 w-4 text-primary" />
-          <h3 className="text-xs font-semibold">Policy Context</h3>
+          <h3 className="min-w-0 text-xs font-semibold">Policy Context</h3>
         </div>
         <div className="space-y-1 text-[11px] text-muted-foreground">
           <p>
@@ -88,11 +88,11 @@ export function ApprovalContextPanels({
         </Button>
       </article>
 
-      <article className="rounded-md border border-border bg-background/80 p-3 space-y-2">
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
+      <article className="min-w-0 rounded-md border border-border bg-background/80 p-3 space-y-2">
+        <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-2">
             <Link2 className="h-4 w-4 text-primary" />
-            <h3 className="text-xs font-semibold">Evidence Context</h3>
+            <h3 className="min-w-0 text-xs font-semibold">Evidence Context</h3>
           </div>
           <ChainStatusBadge chainStatus={evidence.chainStatus} />
         </div>
@@ -124,10 +124,10 @@ export function ApprovalContextPanels({
         </Button>
       </article>
 
-      <article className="rounded-md border border-border bg-background/80 p-3 space-y-2">
-        <div className="flex items-center gap-2">
+      <article className="min-w-0 rounded-md border border-border bg-background/80 p-3 space-y-2">
+        <div className="flex min-w-0 items-center gap-2">
           <Clock3 className="h-4 w-4 text-primary" />
-          <h3 className="text-xs font-semibold">Run Timeline</h3>
+          <h3 className="min-w-0 text-xs font-semibold">Run Timeline</h3>
         </div>
         <div className="space-y-1 text-[11px] text-muted-foreground">
           <p>
@@ -160,11 +160,11 @@ export function ApprovalContextPanels({
       </article>
 
       {agentAction && (
-        <article className="rounded-md border border-border bg-background/80 p-3 space-y-2">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
+        <article className="min-w-0 rounded-md border border-border bg-background/80 p-3 space-y-2">
+          <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
+            <div className="flex min-w-0 items-center gap-2">
               <Bot className="h-4 w-4 text-primary" />
-              <h3 className="text-xs font-semibold">Agent Action</h3>
+              <h3 className="min-w-0 text-xs font-semibold">Agent Action</h3>
             </div>
             <Badge variant={agentAction.categoryVariant} className="text-[11px] h-5">
               {agentAction.categoryLabel}

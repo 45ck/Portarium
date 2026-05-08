@@ -625,7 +625,7 @@ function ApprovalsPage() {
           className={
             policyLinkedMode || singleCaseMode
               ? 'grid gap-4'
-              : 'grid gap-4 lg:grid-cols-[320px_minmax(0,1fr)]'
+              : 'grid min-w-0 gap-4 overflow-hidden lg:grid-cols-[320px_minmax(0,1fr)]'
           }
         >
           {!policyLinkedMode && !singleCaseMode ? (
@@ -638,7 +638,7 @@ function ApprovalsPage() {
               />
             </aside>
           ) : null}
-          <section>{triageContent}</section>
+          <section className="min-w-0 overflow-hidden">{triageContent}</section>
         </div>
       ) : (
         triageContent

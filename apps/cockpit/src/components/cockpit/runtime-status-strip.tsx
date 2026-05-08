@@ -90,9 +90,9 @@ export function RuntimeStatusStrip({ className }: { className?: string }) {
       </span>
       <span className="text-muted-foreground">{status.modeLabel}</span>
       <span className="font-mono text-muted-foreground">{status.workspaceId}</span>
-      <span className="min-w-0 flex-1 text-muted-foreground">{status.detail}</span>
+      <span className="min-w-[8rem] flex-1 text-muted-foreground">{status.detail}</span>
       {status.ageLabel ? (
-        <span className="text-muted-foreground" title={absoluteUpdatedAt}>
+        <span className="shrink-0 whitespace-nowrap text-muted-foreground" title={absoluteUpdatedAt}>
           {status.ageLabel}
         </span>
       ) : null}

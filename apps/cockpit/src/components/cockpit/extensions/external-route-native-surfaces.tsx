@@ -710,7 +710,11 @@ function TagList({ title, items }: { title: string; items: readonly string[] }) 
       <p className="text-[11px] font-medium text-muted-foreground">{title}</p>
       <div className="flex flex-wrap gap-1.5">
         {items.slice(0, 6).map((item) => (
-          <Badge key={item} variant="outline">
+          <Badge
+            key={item}
+            variant="outline"
+            className="h-auto max-w-full justify-start whitespace-normal break-words text-left leading-4"
+          >
             {item}
           </Badge>
         ))}
@@ -986,13 +990,13 @@ function TicketQueueList({ tickets }: { tickets: readonly NativeTicketRecord[] }
               ticket.selected ? `Selected ticket ${ticket.label}` : `Select ticket ${ticket.label}`
             }
             className={cn(
-              'grid gap-2 border-l-2 px-3 py-3 text-sm transition-colors hover:bg-accent/60',
+              'grid min-w-0 max-w-full gap-2 overflow-hidden border-l-2 px-3 py-3 text-sm transition-colors hover:bg-accent/60',
               ticket.selected
                 ? 'border-l-primary bg-accent text-accent-foreground'
                 : 'border-l-transparent',
             )}
           >
-            <span className="flex items-start justify-between gap-3">
+            <span className="flex min-w-0 items-start justify-between gap-3">
               <span className="min-w-0">
                 <strong className="block truncate">{ticket.label}</strong>
                 <span className="mt-1 line-clamp-2 block text-xs leading-5 text-muted-foreground">
@@ -1008,22 +1012,24 @@ function TicketQueueList({ tickets }: { tickets: readonly NativeTicketRecord[] }
                 </span>
               </span>
             </span>
-            <span className="grid gap-1 text-[11px] text-muted-foreground sm:grid-cols-2">
-              <span>
+            <span className="grid min-w-0 gap-1 text-[11px] text-muted-foreground sm:grid-cols-2">
+              <span className="min-w-0 break-words">
                 {ticket.typeLabel ?? 'Unspecified'} · {ticket.category ?? 'Uncategorised'}
               </span>
-              <span>
+              <span className="min-w-0 break-words">
                 {ticket.updatedAtLabel}
                 {ticket.dueLabel ? ` · ${ticket.dueLabel}` : ''}
               </span>
-              <span>{ticket.requesterLabel ?? 'Requester unknown'}</span>
-              <span>{ticket.ownerLabel ?? 'No responder'}</span>
+              <span className="min-w-0 break-words">{ticket.requesterLabel ?? 'Requester unknown'}</span>
+              <span className="min-w-0 break-words">{ticket.ownerLabel ?? 'No responder'}</span>
             </span>
-            <span className="flex items-center justify-between gap-3 text-[11px]">
-              <span className="rounded-sm bg-primary/10 px-1.5 py-0.5 font-medium text-primary">
+            <span className="flex min-w-0 flex-wrap items-center justify-between gap-3 text-[11px]">
+              <span className="min-w-0 max-w-full rounded-sm bg-primary/10 px-1.5 py-0.5 font-medium text-primary">
                 {ticket.roomLabel ?? 'No room hint'}
               </span>
-              <code className="truncate text-muted-foreground">{ticket.sourceRef}</code>
+              <code className="min-w-0 max-w-full truncate text-muted-foreground">
+                {ticket.sourceRef}
+              </code>
             </span>
           </a>
         ))}
@@ -1850,9 +1856,9 @@ function KeyValueList({ items }: { items: readonly NativeKeyValue[] }) {
       {items.map((item) => (
         <div
           key={item.label}
-          className="grid grid-cols-[minmax(96px,0.42fr)_minmax(0,1fr)] gap-3 px-3 py-2 text-xs"
+          className="grid gap-1 px-3 py-2 text-xs sm:grid-cols-[minmax(96px,0.42fr)_minmax(0,1fr)] sm:gap-3"
         >
-          <dt className="text-muted-foreground">{item.label}</dt>
+          <dt className="min-w-0 break-words text-muted-foreground">{item.label}</dt>
           <dd className="font-medium break-words">{item.value}</dd>
         </div>
       ))}
