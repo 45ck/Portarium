@@ -73,6 +73,14 @@ describe('native route surface descriptors', () => {
             summary: 'Read-only source descriptor',
           },
         ],
+        observability: [
+          {
+            id: 'coverage',
+            title: 'Coverage',
+            summary: 'Snapshot coverage is available.',
+            metrics: [{ label: 'Rows', value: '1' }],
+          },
+        ],
         insights: [{ id: 'insight-1', title: 'Ready', summary: 'Descriptor accepted.' }],
       },
     } satisfies CockpitNativeDataExplorerSurface);

@@ -414,6 +414,19 @@ describe('hosted external route components', () => {
                 livePromotionGate: 'Governed read-only adapter review.',
               },
             ],
+            observability: [
+              {
+                id: 'snapshot-coverage',
+                title: 'Snapshot coverage',
+                summary: 'Static records are available for operator review.',
+                tone: 'info',
+                metrics: [
+                  { label: 'Rows', value: '743' },
+                  { label: 'Sources', value: '2' },
+                ],
+                sourceIds: ['service-desk'],
+              },
+            ],
             sources: [
               {
                 id: 'service-desk',
@@ -468,6 +481,8 @@ describe('hosted external route components', () => {
     );
     expect(screen.getByLabelText('Operational snapshot')).toBeTruthy();
     expect(screen.getByText('Source Posture')).toBeTruthy();
+    expect(screen.getByLabelText('Observability')).toBeTruthy();
+    expect(screen.getByText('Snapshot coverage')).toBeTruthy();
     expect(screen.getByLabelText('Snapshot mock ports')).toBeTruthy();
     expect(screen.getByText('Service desk mock')).toBeTruthy();
     expect(screen.getByText('Local redacted ticket snapshot.')).toBeTruthy();

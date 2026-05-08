@@ -15,6 +15,7 @@ import {
   type CockpitNativeBaseMap as NativeBaseMap,
   type CockpitNativeDataExplorerInsight as NativeDataExplorerInsight,
   type CockpitNativeDataExplorerMetric as NativeDataExplorerMetric,
+  type CockpitNativeDataExplorerObservation as NativeDataExplorerObservation,
   type CockpitNativeDataExplorerSource as NativeDataExplorerSource,
   type CockpitNativeDataExplorerSurface as NativeDataExplorerSurface,
   type CockpitNativeGovernedActionReviewSurface as NativeGovernedActionReviewSurface,
@@ -45,6 +46,7 @@ import {
 } from '@portarium/cockpit-extension-sdk';
 import {
   ArrowRight,
+  Activity,
   Bot,
   CheckCircle2,
   Database,
@@ -389,6 +391,20 @@ function NativeDataExplorerSurfaceRenderer({
           </section>
         ) : null}
 
+        {surface.explorer.observability && surface.explorer.observability.length > 0 ? (
+          <section className="space-y-3" aria-label="Observability">
+            <div className="flex items-center gap-2">
+              <Activity className="h-4 w-4 text-primary" />
+              <h2 className="text-base font-semibold">Observability</h2>
+            </div>
+            <div className="grid gap-3 lg:grid-cols-2">
+              {surface.explorer.observability.map((observation) => (
+                <ObservationCard key={observation.id} observation={observation} />
+              ))}
+            </div>
+          </section>
+        ) : null}
+
         <section className="space-y-3" aria-label="Data insights">
           <div className="flex items-center gap-2">
             <Lightbulb className="h-4 w-4 text-primary" />
@@ -648,6 +664,46 @@ function SnapshotPortCard({ port }: { port: NativeSnapshotPort }) {
         ) : null}
 
         <TagList title="Capabilities" items={port.capabilityIds ?? []} />
+      </CardContent>
+    </Card>
+  );
+}
+
+function ObservationCard({ observation }: { observation: NativeDataExplorerObservation }) {
+  return (
+    <Card className="shadow-none">
+      <CardHeader className="space-y-2 pb-3">
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <CardTitle className="text-sm">{observation.title}</CardTitle>
+          {observation.tone ? (
+            <Badge variant={badgeVariant(observation.tone)}>{observation.tone}</Badge>
+          ) : null}
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-3 text-sm text-muted-foreground">
+        <p>{observation.summary}</p>
+        {observation.metrics && observation.metrics.length > 0 ? (
+          <div className="grid gap-2 text-xs sm:grid-cols-3">
+            {observation.metrics.map((metric) => (
+              <DataSourceStat
+                key={metric.id ?? `${metric.label}:${metric.value}`}
+                label={metric.label}
+                value={metric.value}
+              />
+            ))}
+          </div>
+        ) : null}
+        {observation.sourceIds && observation.sourceIds.length > 0 ? (
+          <p className="text-[11px]">Sources: {observation.sourceIds.join(', ')}</p>
+        ) : null}
+        {observation.href ? (
+          <Button asChild size="xs" variant="outline">
+            <a href={observation.href}>
+              Open context
+              <ArrowRight className="h-3 w-3" />
+            </a>
+          </Button>
+        ) : null}
       </CardContent>
     </Card>
   );
