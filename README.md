@@ -159,7 +159,9 @@ Evaluate in 15-30 min: `docs/getting-started/hello-portarium.md`
 
 Portarium is early and actively built. The core control-plane foundations are present: domain contracts, approval flows, policy tiers, evidence, OpenClaw/plugin integration, SDK surfaces, Cockpit reference UI, tests, migrations, and production scaffolding.
 
-Remaining core work is mostly production hardening, security closeout, release hygiene, mobile Cockpit approval polish, live/eval proof, and keeping the tested agent-governance loop reliable. Larger demos, Growth Studio, mission-control UI, prompt-language experiments, and pilot research are future work, not core blockers.
+Remaining core work is mostly production hardening, security closeout, release hygiene, mobile Cockpit approval polish, live/eval proof, and keeping the tested agent-governance loop reliable. Larger demos, Growth Studio, mission-control UI, and pilot research are future work, not core blockers.
+
+The [`@45ck/prompt-language`](https://github.com/45ck/prompt-language) verification-first runtime is a sister project Portarium is being designed to operate eventually. PL is in active experimental work (HA-HR1 hybrid local/frontier orchestration; see `prompt-language/docs/strategy/program-status.md`). The Portarium ↔ PL integration contract is **not yet started** by design — the trigger is portfolio-level positive evidence on PL's hybrid-efficiency tracker. Surface mapping and contract gaps are documented in [`docs/integration/prompt-language-runtime.md`](docs/integration/prompt-language-runtime.md).
 
 See [project scope](docs/project-scope.md) and [roadmap](docs/roadmap.md).
 
