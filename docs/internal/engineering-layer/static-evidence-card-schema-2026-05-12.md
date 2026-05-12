@@ -74,12 +74,25 @@ oracle. The static schema remains useful, but the selected route for this
 validator shape is `frontier-baseline`; runtime ingestion and live Cockpit cards
 remain blocked.
 
+GSLR-9 follow-up on 2026-05-13: Portarium added a docs/test-only static
+projection from checked-in GSLR route evidence into this card contract:
+`src/domain/evidence/gslr-engineering-evidence-card-projection-v1.ts`. The
+projector turns passing GSLR-8 evidence into a `research-only` card and failed
+GSLR-7 evidence into a `blocked` card. Runtime ingestion, live Cockpit cards,
+queues, database tables, and MC connector work remain blocked.
+
 ## Validation
 
 Focused validation:
 
 ```sh
 npm run test -- src/domain/evidence/engineering-evidence-card-v1.test.ts
+```
+
+Projection validation:
+
+```sh
+npm run test -- src/domain/evidence/gslr-engineering-evidence-card-projection-v1.test.ts
 ```
 
 The tests prove:
@@ -101,3 +114,5 @@ The tests prove:
 - Recorded the GSLR-4 follow-up as a validator scaffold only, not product
   ingestion.
 - Recorded the GSLR-4 live result as frontier-baseline for this validator shape.
+- Added the GSLR-9 static projection follow-up after GSLR-8 made route-record
+  evidence card projection product-relevant but still non-runtime.

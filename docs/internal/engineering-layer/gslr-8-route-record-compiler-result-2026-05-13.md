@@ -82,3 +82,8 @@ The blocked steps remain:
 - Unblocked only the next static evidence-card projection candidate.
 - Kept runtime ingestion, live Cockpit cards, route-record persistence, and MC
   connector work blocked.
+
+Follow-up on 2026-05-13: GSLR-9 added that static projection candidate at
+`src/domain/evidence/gslr-engineering-evidence-card-projection-v1.ts`. It maps
+passing GSLR-8 evidence to a `research-only` card and failed GSLR-7 evidence to
+a `blocked` card. Runtime ingestion and live Cockpit cards remain blocked.

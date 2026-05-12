@@ -8,5 +8,6 @@ export * from './evidence-entry-v1.js';
 export * from './evidence-governance-v1.js';
 export * from './evidence-hasher.js';
 export * from './evidence-privacy-v1.js';
+export * from './gslr-engineering-evidence-card-projection-v1.js';
 export * from './presentation-blocks-v1.js';
 export * from './retention-schedule-v1.js';
