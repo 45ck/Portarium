@@ -106,3 +106,6 @@ No production Portarium action path should consume GSLR manifests yet.
   internal GSLR evidence.
 - Kept runtime ingestion, live Cockpit cards, and MC connector observation
   blocked.
+- Follow-up: prompt-language live GSLR-3 evidence is now negative for
+  local-screen and positive for frontier-only. Portarium should treat the static
+  evidence-card transform as frontier-baseline until new local evidence exists.
