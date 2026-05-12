@@ -1,7 +1,7 @@
 # GSLR Progress Checkpoint: 2026-05-13
 
-Status: post-GSLR-10 progress checkpoint  
-Tracking bead: `bead-1251`
+Status: post-GSLR-11 progress checkpoint
+Tracking beads: `bead-1251`, `bead-1252`
 
 ## Short Version
 
@@ -38,12 +38,14 @@ GSLR-6 through GSLR-8 found the useful pattern:
 - a PL-owned route-record compiler passed three local repeats when the local
   model only filled generic predicate hooks.
 
-GSLR-9 and GSLR-10 moved the result toward Portarium:
+GSLR-9 through GSLR-11 moved the result toward Portarium:
 
 - GSLR route evidence can become a docs/test-only
   `EngineeringEvidenceCardInputV1`;
 - validated cards can become frozen Cockpit-facing view models with route,
   model, gate, cost, artifact-ref, and boundary-warning fields;
+- Cockpit can render checked-in static GSLR-8 and GSLR-7 evidence fixtures at
+  `/engineering/evidence-cards/static`;
 - failed evidence stays visible as `blocked` instead of disappearing.
 
 ## Current Conclusion
@@ -75,30 +77,33 @@ Do not build these yet:
 - MC connector observation or school-data movement;
 - production action paths based on GSLR evidence.
 
-The reason is simple: GSLR-10 proves static operator legibility, not runtime
+The reason is simple: GSLR-11 proves static operator legibility, not runtime
 trust.
 
 ## Next Product-Safe Step
 
-The next step should be GSLR-11: a static Cockpit fixture/view proof.
+GSLR-11 completed the static Cockpit fixture/view proof.
 
-That means:
+It now:
 
-- use checked-in static GSLR-8 and GSLR-7 card/export fixtures only;
-- render or snapshot the operator-facing shape without runtime ingestion;
-- verify the view makes `research-only`, `blocked`, route, model, gate, cost,
+- uses checked-in static GSLR-8 and GSLR-7 card/export fixtures only;
+- renders the operator-facing shape without runtime ingestion;
+- verifies the view makes `research-only`, `blocked`, route, model, gate, cost,
   artifacts, and warnings obvious;
-- keep all action controls disabled or absent.
+- keeps all action controls absent.
 
-This would prove whether the Cockpit surface communicates the evidence honestly.
-Only after that should we consider manual import, signed bundles, or live
-ingestion design.
+The next safe step is a manual signed-bundle proof/design, not live ingestion.
+Define how a checked-in or uploaded GSLR evidence bundle would be authenticated,
+parsed, displayed as static evidence, and explicitly kept separate from runtime
+action execution.
 
 ## Progress Record
 
 2026-05-13:
 
 - Portarium reached GSLR-10 with static Cockpit export support.
+- Portarium reached GSLR-11 with a static Cockpit route/view for GSLR evidence
+  fixtures.
 - prompt-language recorded GSLR-8 as the strongest positive local-screen result
   so far.
 - MacquarieCollege remains a reference vertical and boundary test only.
