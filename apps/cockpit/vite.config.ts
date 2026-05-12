@@ -17,6 +17,8 @@ const cockpitExtensionSdkSource = resolve(
   __dirname,
   '../../packages/cockpit-extension-sdk/src/index.ts',
 );
+const portariumDomainEvidenceSource = resolve(__dirname, '../../src/domain/evidence/index.ts');
+const portariumDomainPrimitivesSource = resolve(__dirname, '../../src/domain/primitives/index.ts');
 
 function cockpitContentSecurityPolicyPlugin(
   apiBaseUrl: string | undefined,
@@ -94,6 +96,8 @@ export default defineConfig(({ mode }) => {
       dedupe: ['react', 'react-dom', 'react/jsx-runtime'],
       alias: {
         '@': resolve(__dirname, 'src'),
+        '@portarium/domain-evidence': portariumDomainEvidenceSource,
+        '@portarium/domain-primitives': portariumDomainPrimitivesSource,
         '@portarium/cockpit-extension-sdk': cockpitExtensionSdkSource,
         '@portarium/cockpit-types': resolve(
           __dirname,

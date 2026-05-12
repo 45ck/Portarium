@@ -2,6 +2,7 @@ import { AlertTriangle, FileCheck2, ShieldCheck } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import type { EngineeringEvidenceCardCockpitExportV1 } from '@portarium/domain-evidence';
 
 export type GslrStaticTone = 'success' | 'warning' | 'danger' | 'neutral' | 'info';
 
@@ -29,7 +30,7 @@ export interface GslrStaticEvidenceCardExport {
   source: {
     system: string;
     area: string;
-    manifestSchemaVersion: number;
+    manifestSchemaVersion: string | number | boolean | null;
   };
   title: string;
   subtitle: string;
@@ -46,6 +47,8 @@ export interface GslrStaticEvidenceCardExport {
 
 interface GslrStaticEvidenceCardViewProps {
   cards: readonly GslrStaticEvidenceCardExport[];
+  introTitle?: string;
+  introDescription?: string;
 }
 
 function badgeVariant(tone: GslrStaticTone) {
@@ -167,17 +170,56 @@ function EvidenceCard({ card }: { card: GslrStaticEvidenceCardExport }) {
   );
 }
 
-export function GslrStaticEvidenceCardView({ cards }: GslrStaticEvidenceCardViewProps) {
+export function toGslrStaticEvidenceCardExport(
+  card: EngineeringEvidenceCardCockpitExportV1,
+): GslrStaticEvidenceCardExport {
+  return {
+    contentType: card.contentType,
+    routeHint: card.routeHint,
+    source: card.source,
+    title: card.title,
+    subtitle: card.subtitle,
+    actionStatus: card.actionStatus,
+    operatorDecision: card.operatorDecision,
+    routeBadge: card.routeBadge,
+    modelBadge: card.modelBadge,
+    actionBadge: card.actionBadge,
+    metricRows: card.metricRows.map((row) => ({
+      label: row.label,
+      value: formatMetricValue(row.value, row.unit),
+      tone: row.tone,
+    })),
+    gateRows: card.gateRows.map((row) => ({
+      label: row.label,
+      value: row.value,
+      tone: row.tone,
+      ...(row.details.length > 0 ? { detail: row.details.join('; ') } : {}),
+    })),
+    artifactRefs: card.artifactRefs.map((ref) => ({
+      label: ref.label,
+      path: ref.ref ?? 'not supplied',
+    })),
+    boundaryWarnings: card.boundaryWarnings,
+  };
+}
+
+function formatMetricValue(value: number, unit: string) {
+  if (unit === 'usd') return `$${value.toFixed(2)}`;
+  if (unit === 'seconds') return `${value.toFixed(3)}s`;
+  return value;
+}
+
+export function GslrStaticEvidenceCardView({
+  cards,
+  introTitle = 'Fixture-backed Cockpit proof',
+  introDescription = 'These cards are checked-in static exports only. They prove the operator-facing shape for GSLR evidence without live prompt-language ingestion, Cockpit queues, runtime actions, or MacquarieCollege connector access.',
+}: GslrStaticEvidenceCardViewProps) {
   return (
     <div className="space-y-4">
       <Alert variant="info">
         <ShieldCheck aria-hidden="true" />
-        <AlertTitle>Fixture-backed Cockpit proof</AlertTitle>
-        <AlertDescription>
-          These cards are checked-in static exports only. They prove the operator-facing shape for
-          GSLR evidence without live prompt-language ingestion, Cockpit queues, runtime actions, or
-          MacquarieCollege connector access.
-        </AlertDescription>
+        <AlertTitle>{introTitle}</AlertTitle>
+        <AlertDescription>{introDescription}</AlertDescription>
       </Alert>
       <div className="grid gap-4">
         {cards.map((card) => (

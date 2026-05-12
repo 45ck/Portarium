@@ -5,6 +5,7 @@ import {
   Boxes,
   ClipboardCheck,
   ExternalLink,
+  FileJson2,
   GitBranch,
   Inbox,
   LayoutDashboard,
@@ -208,6 +209,12 @@ const CORE_SHELL_SECTIONS: readonly CockpitShellNavigationSection[] = [
         icon: <LayoutDashboard className="h-4 w-4" />,
       },
       {
+        id: 'engineering-gslr-bundle-preview',
+        label: 'GSLR Preview',
+        to: '/engineering/evidence-cards/bundle-preview',
+        icon: <FileJson2 className="h-4 w-4" />,
+      },
+      {
         id: 'engineering-autonomy',
         label: 'Autonomy',
         to: '/engineering/autonomy',
@@ -381,18 +388,13 @@ const CORE_SHELL_SECTIONS: readonly CockpitShellNavigationSection[] = [
 ];
 
 const MOBILE_PRIMARY_ITEM_IDS = ['inbox', 'approvals', 'runs', 'dashboard'] as const;
-const MOBILE_MORE_SECTION_IDS = new Set([
-  'workspace',
-  'work',
-  'workforce',
-  'config',
-  'explore',
-]);
+const MOBILE_MORE_SECTION_IDS = new Set(['workspace', 'work', 'workforce', 'config', 'explore']);
 const COMMAND_EXCLUDED_ITEM_IDS = new Set([
   'search',
   'workflow-builder',
   'engineering-beads',
   'engineering-mission-control',
+  'engineering-gslr-bundle-preview',
   'engineering-autonomy',
   'config-blast-radius',
   'config-policies',
@@ -448,8 +450,7 @@ export function resolveCockpitShellProfile(
   return {
     ...baseProfile,
     coreSections: projectProfileCoreSections(baseProfile.coreSections, contribution),
-    mobilePrimaryItemIds:
-      contribution.mobilePrimaryCoreItemIds ?? baseProfile.mobilePrimaryItemIds,
+    mobilePrimaryItemIds: contribution.mobilePrimaryCoreItemIds ?? baseProfile.mobilePrimaryItemIds,
     globalActionExcludedIds: projectGlobalActionExclusions(
       baseProfile.globalActionExcludedIds,
       contribution,
@@ -823,7 +824,9 @@ function canAccessShellContribution(
 
   const context = { ...accessContext, persona };
   if (contribution.defaultRoute) {
-    const route = registry.routes.find((candidate) => candidate.id === contribution.defaultRoute?.routeId);
+    const route = registry.routes.find(
+      (candidate) => candidate.id === contribution.defaultRoute?.routeId,
+    );
     if (!route || !canAccessExtensionRoute(route, context).allowed) return false;
   }
 
@@ -842,9 +845,7 @@ function projectProfileCoreSections(
   const sectionPreferences = new Map(
     contribution.coreSections?.map((section) => [section.sectionId, section]) ?? [],
   );
-  const itemPreferences = new Map(
-    contribution.coreItems?.map((item) => [item.itemId, item]) ?? [],
-  );
+  const itemPreferences = new Map(contribution.coreItems?.map((item) => [item.itemId, item]) ?? []);
 
   return sections
     .map((section, index) => ({
@@ -855,8 +856,7 @@ function projectProfileCoreSections(
     .filter(({ preference }) => preference?.visibility !== 'hidden')
     .sort(
       (a, b) =>
-        readContributionOrder(a.preference, a.index) -
-        readContributionOrder(b.preference, b.index),
+        readContributionOrder(a.preference, a.index) - readContributionOrder(b.preference, b.index),
     )
     .map(({ section }) => ({
       ...section,

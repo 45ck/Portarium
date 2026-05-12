@@ -1,7 +1,7 @@
 # GSLR Current Progress: 2026-05-13
 
-Status: post-GSLR-12.5 progress update
-Tracking beads: `bead-1253`, `bead-1254`, `bead-1255`
+Status: post-GSLR-13 progress update
+Tracking beads: `bead-1253`, `bead-1254`, `bead-1255`, `bead-1256`
 
 ## Where We Are
 
@@ -15,6 +15,7 @@ prompt-language experiment evidence
   -> static Cockpit operator view
   -> signed/static evidence-bundle verification before projection
   -> checked-in prompt-language bundle fixtures verified across the repo boundary
+  -> manual Cockpit bundle preview before any runtime import
 ```
 
 The loop is intentionally static. It proves that evidence can be shaped and
@@ -56,7 +57,11 @@ Portarium now has:
   payload hash, signature, validity window, artifact hashes, and static-only
   constraints before projecting evidence to an engineering card;
 - a sibling-repo compatibility test that verifies the prompt-language GSLR-8 and
-  GSLR-7 static bundle fixtures when that checkout is present.
+  GSLR-7 static bundle fixtures when that checkout is present;
+- an internal manual Cockpit preview at
+  `/engineering/evidence-cards/bundle-preview` that loads or accepts pasted
+  bundle JSON, verifies it with an explicit `nowIso`, shows the verification
+  status, and renders the static evidence card only after verification passes.
 
 prompt-language now records GSLR-8 as the strongest local-screen result and
 publishes checked-in static bundle fixtures for GSLR-8 and GSLR-7.
@@ -91,6 +96,15 @@ GSLR-12.5 proves the handoff shape:
 - verifier calls must pass an explicit `nowIso`;
 - the cross-repo boundary remains manual/static only.
 
+GSLR-13 proves static manual preview legibility:
+
+- Cockpit can expose bundle verification as an operator-visible manual check;
+- GSLR-8 positive evidence and GSLR-7 blocked evidence can both pass through the
+  same bundle preview without creating runtime authority;
+- tampered or malformed bundles become rejected evidence, not runtime errors;
+- the route does not request live run, evidence, work-item, human-task, or
+  workforce queue endpoints.
+
 This is enough to continue toward a governed engineering cockpit. It is not
 enough to create runtime automation.
 
@@ -110,15 +124,16 @@ Still blocked:
 
 ## Next Step
 
-The next safe work item is GSLR-13: a manual Cockpit bundle preview.
+The next safe work item is GSLR-14: an adversarial static bundle corpus and
+review checklist.
 
 It should:
 
-- let an operator paste or load a GSLR evidence bundle fixture;
-- run the GSLR-12 verifier locally in the static route;
-- show hash/signature/provenance/expiry status;
-- render the static evidence card only if verification passes;
-- show rejected bundles as rejected evidence, not as runtime errors;
-- keep persistence, queues, tables, SSE, and action controls absent.
+- add checked-in rejected bundles for expiry, not-yet-valid windows, payload hash
+  tampering, invalid signatures, missing artifact hashes, provenance mismatches,
+  raw payload keys, and runtime-authority claims;
+- run those examples through the same verifier and manual preview tests;
+- record an operator review checklist for deciding whether the next step is
+  still static import design or broader verifier hardening.
 
 Do this before building any live ingestion path.

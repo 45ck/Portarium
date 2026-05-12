@@ -8,9 +8,12 @@
     "jsx": "react-jsx",
     "strict": true,
     "noUncheckedIndexedAccess": true,
+    "noEmit": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
+      "@portarium/domain-evidence": ["../../src/domain/evidence/index.ts"],
+      "@portarium/domain-primitives": ["../../src/domain/primitives/index.ts"],
       "@portarium/cockpit-extension-sdk": ["../../packages/cockpit-extension-sdk/src/index.ts"],
       "@portarium/cockpit-types": ["../../src/presentation/ops-cockpit/types.ts"],
       "@capacitor/app": ["./src/lib/capacitor-stubs.ts"],
