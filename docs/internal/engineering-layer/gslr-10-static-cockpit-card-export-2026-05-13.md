@@ -101,3 +101,8 @@ Tests       14 passed (14)
 - Exported the contract from the domain evidence barrel.
 - Kept runtime ingestion, live Cockpit cards, queues, database tables, and MC
   connector work blocked.
+
+Progress checkpoint follow-up:
+`gslr-progress-checkpoint-2026-05-13.md` summarizes the current conclusion across
+GSLR-1 through GSLR-10 and names GSLR-11 static Cockpit fixture/view proof as the
+next product-safe step.
