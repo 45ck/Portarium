@@ -298,6 +298,16 @@ describe('verifyGslrEvidenceBundleV1', () => {
     ).toThrow(/verification window/);
   });
 
+  it('rejects invalid explicit verification time', () => {
+    expect(() =>
+      verifyGslrEvidenceBundleV1(signedBundle(), {
+        hasher,
+        signatureVerifier,
+        nowIso: 'not-an-iso-date',
+      }),
+    ).toThrow(/nowIso/);
+  });
+
   it('rejects bundles that omit artifact hashes for referenced artifacts', () => {
     const bundle = signedBundle({
       artifactHashes: [

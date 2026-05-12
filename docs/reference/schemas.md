@@ -29,6 +29,11 @@ Portarium contracts are versioned and source-controlled.
   `src/domain/evidence/engineering-evidence-card-cockpit-export-v1.ts`.
 - It is a docs/test-only static Cockpit export contract for already-validated
   engineering evidence-card inputs.
+- `GslrEvidenceBundleV1` lives in
+  `src/domain/evidence/gslr-evidence-bundle-v1.ts`.
+- It verifies prompt-language static evidence bundles with explicit `nowIso`,
+  payload hash, signature, provenance cross-links, artifact refs, and
+  static-only constraints before projection.
 - It is not wired to runtime ingestion, Cockpit live cards, storage, or approval
   execution.
 

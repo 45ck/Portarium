@@ -13,8 +13,9 @@ src/domain/evidence/gslr-evidence-bundle-v1.ts
 
 The verifier accepts `unknown`, parses a strict `GslrEvidenceBundleV1`, checks
 bundle provenance, verifies the canonical payload hash and signature through
-domain ports, enforces a validity window, rejects raw/secret fields, and only
-then projects the evidence into the existing `EngineeringEvidenceCardInputV1`.
+domain ports, enforces a validity window against an explicit caller-provided
+`nowIso`, rejects raw/secret fields, and only then projects the evidence into
+the existing `EngineeringEvidenceCardInputV1`.
 
 This is still not live ingestion. It is a manual/static proof that an evidence
 bundle can be authenticated before Cockpit displays it.
@@ -117,3 +118,7 @@ GSLR-12 proves the first verifier step. The safe follow-up is GSLR-13: a manual
 Cockpit preview/import screen that lets an operator paste or load a bundle,
 shows verification status, renders the static card if valid, and still does not
 persist anything or create runtime actions.
+
+Follow-up GSLR-12.5 adds checked-in prompt-language bundle fixtures and a
+sibling-repo compatibility test. See
+`docs/internal/engineering-layer/gslr-12-5-prompt-language-bundle-fixture-handoff-2026-05-13.md`.

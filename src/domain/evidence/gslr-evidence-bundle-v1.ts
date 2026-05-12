@@ -73,7 +73,7 @@ export function verifyGslrEvidenceBundleV1(
   deps: {
     hasher: EvidenceHasher;
     signatureVerifier: EvidenceSignatureVerifier;
-    nowIso?: string;
+    nowIso: string;
   },
 ): VerifiedGslrEvidenceBundleV1 {
   const bundle = parseGslrEvidenceBundleV1(value);
@@ -233,16 +233,19 @@ function readSelectedRun(record: Record<string, unknown>): GslrMeasuredArmEviden
   };
 }
 
-function validateTemporalWindow(bundle: GslrEvidenceBundleV1, nowIso?: string) {
+function validateTemporalWindow(bundle: GslrEvidenceBundleV1, nowIso: string) {
   const createdAt = Date.parse(bundle.createdAtIso);
   const notBefore = Date.parse(bundle.verification.notBeforeIso);
   const expiresAt = Date.parse(bundle.verification.expiresAtIso);
-  const now = Date.parse(nowIso ?? bundle.createdAtIso);
+  const now = Date.parse(nowIso);
 
   if (expiresAt <= notBefore) {
     throw new GslrEvidenceBundleVerificationError(
       'verification.expiresAtIso must be after notBeforeIso',
     );
+  }
+  if (Number.isNaN(now)) {
+    throw new GslrEvidenceBundleVerificationError('nowIso must be a valid ISO date');
   }
   if (createdAt < notBefore || createdAt > expiresAt) {
     throw new GslrEvidenceBundleVerificationError(

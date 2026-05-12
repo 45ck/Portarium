@@ -1,7 +1,7 @@
 # GSLR Current Progress: 2026-05-13
 
-Status: post-GSLR-12 progress update
-Tracking beads: `bead-1253`, `bead-1254`
+Status: post-GSLR-12.5 progress update
+Tracking beads: `bead-1253`, `bead-1254`, `bead-1255`
 
 ## Where We Are
 
@@ -14,6 +14,7 @@ prompt-language experiment evidence
   -> frozen Cockpit export model
   -> static Cockpit operator view
   -> signed/static evidence-bundle verification before projection
+  -> checked-in prompt-language bundle fixtures verified across the repo boundary
 ```
 
 The loop is intentionally static. It proves that evidence can be shaped and
@@ -53,10 +54,12 @@ Portarium now has:
   action controls;
 - a docs/test-only `GslrEvidenceBundleV1` verifier that checks provenance,
   payload hash, signature, validity window, artifact hashes, and static-only
-  constraints before projecting evidence to an engineering card.
+  constraints before projecting evidence to an engineering card;
+- a sibling-repo compatibility test that verifies the prompt-language GSLR-8 and
+  GSLR-7 static bundle fixtures when that checkout is present.
 
 prompt-language now records GSLR-8 as the strongest local-screen result and
-tracks GSLR-11 as a downstream Cockpit proof.
+publishes checked-in static bundle fixtures for GSLR-8 and GSLR-7.
 
 MacquarieCollege now records the same boundary: MC remains a reference vertical
 only, with no connector observation, source-system reads or writes, raw payload
@@ -80,6 +83,13 @@ GSLR-12 proves static verifier legibility:
   payload fields, provenance mismatches, and runtime-authority claims are
   rejected;
 - verified failed evidence still projects as `blocked`.
+
+GSLR-12.5 proves the handoff shape:
+
+- prompt-language can produce static bundles that satisfy Portarium's verifier;
+- artifact refs can be hash-checked against prompt-language files;
+- verifier calls must pass an explicit `nowIso`;
+- the cross-repo boundary remains manual/static only.
 
 This is enough to continue toward a governed engineering cockpit. It is not
 enough to create runtime automation.
