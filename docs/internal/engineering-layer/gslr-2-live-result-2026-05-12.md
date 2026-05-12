@@ -64,6 +64,12 @@ Portarium should wait for a route policy that can say when to use local-only,
 advisor-only, or frontier review. The product card should show evidence and
 route decisions only after that policy survives more than one fixture.
 
+Follow-up on 2026-05-12: prompt-language codified the first route policy. The
+exact GSLR-2 task is `local-screen`, not a broad local promotion and not a
+hybrid-router success. Portarium should still keep runtime ingestion and Cockpit
+evidence-card work blocked until the nearby fixture family produces more than
+one clean route-policy datapoint.
+
 ## Execution Record
 
 2026-05-12:
@@ -71,3 +77,5 @@ route decisions only after that policy survives more than one fixture.
 - Created and claimed `bead-1232`.
 - Recorded the GSLR-2 live result and route-policy implication.
 - Kept runtime ingestion and Cockpit product-card work blocked.
+- Recorded the follow-up route-policy boundary: local-screen for the exact tiny
+  schema task, with product ingestion still blocked.
