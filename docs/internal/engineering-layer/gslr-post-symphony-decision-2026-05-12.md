@@ -4,6 +4,11 @@ Status: R&D decision record, not product integration
 Tracking bead: `bead-1230`  
 Companion prompt-language bead: `prompt-language-gslr5`
 
+Update: companion bead `bead-1231` records that prompt-language has now
+scaffolded GSLR-2 as a policy-schema fixture with public/private gates and a
+deterministic fake-live proof. This is not enough to unblock product ingestion.
+Portarium still waits for positive live model evidence.
+
 ## Decision
 
 Continue the governed-Symphony local/frontier routing track, but do not build
@@ -120,3 +125,5 @@ building product ingestion.
 - Kept runtime ingestion and product evidence-card work blocked on positive
   GSLR-2 manifest evidence.
 - Closed `bead-1230` after the decision record and links were added.
+- Follow-up: `bead-1231` records the GSLR-2 fixture scaffold and keeps the
+  product card blocked until a live manifest passes with matched cost evidence.
