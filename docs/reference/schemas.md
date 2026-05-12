@@ -15,8 +15,18 @@ Portarium contracts are versioned and source-controlled.
 - `ApprovalV1`
 - `PlanV1`
 - `EvidenceEntryV1`
+- `EngineeringEvidenceCardInputV1`
 - `LocationEventV1`
 - `MapLayerV1`
+
+## Engineering R&D Contracts
+
+- `EngineeringEvidenceCardInputV1` lives in
+  `src/domain/evidence/engineering-evidence-card-v1.ts`.
+- It is a docs/test-only static input contract for prompt-language Harness Arena
+  evidence cards.
+- It is not wired to runtime ingestion, Cockpit live cards, storage, or approval
+  execution.
 
 ## Change policy
 

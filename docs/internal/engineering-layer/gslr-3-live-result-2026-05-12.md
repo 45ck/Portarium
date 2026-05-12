@@ -52,6 +52,11 @@ A docs/test-only static evidence-card schema is now reasonable follow-on work,
 but it must assume a frontier-baseline transform route until new local evidence
 exists.
 
+Follow-up: the docs/test-only static contract now exists at
+`src/domain/evidence/engineering-evidence-card-v1.ts`. It validates the
+frontier-baseline card shape and blocked local/advisor evidence without creating
+runtime ingestion.
+
 ## Sources
 
 - Prompt-language live result:
@@ -68,3 +73,4 @@ exists.
 - Created and closed `bead-1237`.
 - Recorded the live GSLR-3 result and route-policy boundary.
 - Kept runtime ingestion and live Cockpit evidence-card work blocked.
+- Recorded the follow-up static schema bead as docs/test-only work.
