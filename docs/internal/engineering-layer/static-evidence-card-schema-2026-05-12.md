@@ -81,6 +81,13 @@ projector turns passing GSLR-8 evidence into a `research-only` card and failed
 GSLR-7 evidence into a `blocked` card. Runtime ingestion, live Cockpit cards,
 queues, database tables, and MC connector work remain blocked.
 
+GSLR-10 follow-up on 2026-05-13: Portarium added a docs/test-only static Cockpit
+export for validated engineering evidence cards:
+`src/domain/evidence/engineering-evidence-card-cockpit-export-v1.ts`. The export
+turns a static card into a frozen operator view model with route, model, gate,
+cost, artifact-ref, and boundary-warning fields. Runtime ingestion and live
+Cockpit cards remain blocked.
+
 ## Validation
 
 Focused validation:

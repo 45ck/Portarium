@@ -25,6 +25,10 @@ Portarium contracts are versioned and source-controlled.
   `src/domain/evidence/engineering-evidence-card-v1.ts`.
 - It is a docs/test-only static input contract for prompt-language Harness Arena
   evidence cards.
+- `EngineeringEvidenceCardCockpitExportV1` lives in
+  `src/domain/evidence/engineering-evidence-card-cockpit-export-v1.ts`.
+- It is a docs/test-only static Cockpit export contract for already-validated
+  engineering evidence-card inputs.
 - It is not wired to runtime ingestion, Cockpit live cards, storage, or approval
   execution.
 
