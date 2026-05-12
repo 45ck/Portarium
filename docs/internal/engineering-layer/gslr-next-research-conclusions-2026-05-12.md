@@ -129,3 +129,6 @@ prompt-language runs the fixture family and records stable route-policy fields.
   fixture-family ladder.
 - Kept runtime ingestion, live Cockpit evidence cards, and MC connector
   observation blocked.
+- Recorded the first fixture-family rung: GSLR-3 now has a deterministic
+  manifest-to-static-evidence-card scaffold, but live model evidence is still
+  required before product work.
