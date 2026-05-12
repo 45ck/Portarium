@@ -43,6 +43,7 @@ Portarium's wedge: **policy evaluation at the action boundary, not the commit bo
 | [ux-layout.md](./ux-layout.md)                                     | The cockpit UI — T3 Code base layout + Mission Control operational awareness                                                        |
 | [cockpit-integration.md](./cockpit-integration.md)                 | Exact routes, new components, what to reuse from existing cockpit                                                                   |
 | [system-architecture.md](./system-architecture.md)                 | Full pipeline: IntentRouter → BeadPlanner → SandboxExecutor → ArtifactCollector → DiffApprovalSurface → MergeExecutor               |
+| [symphony-pl-local-routing.md](./symphony-pl-local-routing.md)     | R&D direction for OpenAI Symphony-style scheduling, prompt-language contracts, local/frontier model routing, and evidence manifests |
 | [vm-sandbox-execution-plan.md](./vm-sandbox-execution-plan.md)     | VM-first sandbox execution plane, provider ports, execution modes, and rollout path                                                 |
 | [inspiration-validation-plan.md](./inspiration-validation-plan.md) | How Portarium takes inspiration from T3 Code, Vibe Kanban, and OpenCode, plus validation gates                                      |
 | [hci-principles.md](./hci-principles.md)                           | HCI/HAI grounding — levels of automation, trust calibration, operator state machine, "I can sleep" checklist, ironies of automation |
