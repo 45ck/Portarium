@@ -1,7 +1,7 @@
 # GSLR Progress Checkpoint: 2026-05-13
 
-Status: post-GSLR-11 progress checkpoint
-Tracking beads: `bead-1251`, `bead-1252`, `bead-1253`
+Status: post-GSLR-12 progress checkpoint
+Tracking beads: `bead-1251`, `bead-1252`, `bead-1253`, `bead-1254`
 
 ## Short Version
 
@@ -38,7 +38,7 @@ GSLR-6 through GSLR-8 found the useful pattern:
 - a PL-owned route-record compiler passed three local repeats when the local
   model only filled generic predicate hooks.
 
-GSLR-9 through GSLR-11 moved the result toward Portarium:
+GSLR-9 through GSLR-12 moved the result toward Portarium:
 
 - GSLR route evidence can become a docs/test-only
   `EngineeringEvidenceCardInputV1`;
@@ -46,6 +46,9 @@ GSLR-9 through GSLR-11 moved the result toward Portarium:
   model, gate, cost, artifact-ref, and boundary-warning fields;
 - Cockpit can render checked-in static GSLR-8 and GSLR-7 evidence fixtures at
   `/engineering/evidence-cards/static`;
+- static GSLR evidence bundles can verify payload hash, signature, provenance,
+  artifact hashes, validity window, and static-only constraints before
+  projection;
 - failed evidence stays visible as `blocked` instead of disappearing.
 
 ## Current Conclusion
@@ -77,12 +80,13 @@ Do not build these yet:
 - MC connector observation or school-data movement;
 - production action paths based on GSLR evidence.
 
-The reason is simple: GSLR-11 proves static operator legibility, not runtime
+The reason is simple: GSLR-12 proves static bundle verification, not runtime
 trust.
 
 ## Next Product-Safe Step
 
-GSLR-11 completed the static Cockpit fixture/view proof.
+GSLR-11 completed the static Cockpit fixture/view proof. GSLR-12 completed the
+static signed-bundle verifier proof.
 
 It now:
 
@@ -91,11 +95,13 @@ It now:
 - verifies the view makes `research-only`, `blocked`, route, model, gate, cost,
   artifacts, and warnings obvious;
 - keeps all action controls absent.
+- verifies static GSLR evidence bundles before projection and rejects tampering,
+  invalid signatures, expired bundles, missing artifact hashes, raw payloads,
+  provenance mismatches, and runtime-authority claims.
 
-The next safe step is a manual signed-bundle proof/design, not live ingestion.
-Define how a checked-in or uploaded GSLR evidence bundle would be authenticated,
-parsed, displayed as static evidence, and explicitly kept separate from runtime
-action execution.
+The next safe step is GSLR-13: a manual Cockpit bundle preview that runs the
+verifier and renders static evidence without persistence, queues, tables, SSE,
+or actions.
 
 ## Progress Record
 
@@ -106,8 +112,10 @@ action execution.
   fixtures.
 - Portarium added a current progress update that separates the proven static
   evidence loop from the still-blocked runtime ingestion path.
+- Portarium reached GSLR-12 with a docs/test-only signed GSLR evidence-bundle
+  verifier.
 - prompt-language recorded GSLR-8 as the strongest positive local-screen result
   so far.
 - MacquarieCollege remains a reference vertical and boundary test only.
-- The next real work item is a manual signed-bundle proof/design, not more
-  routing automation or live ingestion.
+- The next real work item is a manual Cockpit bundle preview, not more routing
+  automation or live ingestion.

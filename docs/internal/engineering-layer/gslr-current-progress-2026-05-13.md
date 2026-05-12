@@ -1,7 +1,7 @@
 # GSLR Current Progress: 2026-05-13
 
-Status: post-GSLR-11 progress update  
-Tracking bead: `bead-1253`
+Status: post-GSLR-12 progress update
+Tracking beads: `bead-1253`, `bead-1254`
 
 ## Where We Are
 
@@ -13,6 +13,7 @@ prompt-language experiment evidence
   -> static Portarium evidence-card contract
   -> frozen Cockpit export model
   -> static Cockpit operator view
+  -> signed/static evidence-bundle verification before projection
 ```
 
 The loop is intentionally static. It proves that evidence can be shaped and
@@ -49,7 +50,10 @@ Portarium now has:
 - a static Cockpit route at `/engineering/evidence-cards/static`;
 - checked-in static GSLR-8 and GSLR-7 evidence fixtures;
 - tests proving the static view renders promoted and blocked evidence without
-  action controls.
+  action controls;
+- a docs/test-only `GslrEvidenceBundleV1` verifier that checks provenance,
+  payload hash, signature, validity window, artifact hashes, and static-only
+  constraints before projecting evidence to an engineering card.
 
 prompt-language now records GSLR-8 as the strongest local-screen result and
 tracks GSLR-11 as a downstream Cockpit proof.
@@ -68,6 +72,14 @@ GSLR-11 proves static operator legibility:
   operator surface;
 - Cockpit can show the mixed frontier/PL/local-model decision boundary without
   live ingestion.
+
+GSLR-12 proves static verifier legibility:
+
+- externally shaped GSLR evidence can be authenticated before projection;
+- tampering, invalid signatures, expired bundles, missing artifact hashes, raw
+  payload fields, provenance mismatches, and runtime-authority claims are
+  rejected;
+- verified failed evidence still projects as `blocked`.
 
 This is enough to continue toward a governed engineering cockpit. It is not
 enough to create runtime automation.
@@ -88,16 +100,15 @@ Still blocked:
 
 ## Next Step
 
-The next safe work item is a manual signed-bundle proof/design.
+The next safe work item is GSLR-13: a manual Cockpit bundle preview.
 
-It should answer:
+It should:
 
-- what exactly is inside a GSLR evidence bundle;
-- how the bundle is signed or otherwise authenticated;
-- how Portarium parses it without trusting arbitrary payload fields;
-- how Cockpit displays it as static evidence;
-- how the bundle is kept separate from runtime action execution;
-- what human review or approval is needed before any later move toward live
-  ingestion.
+- let an operator paste or load a GSLR evidence bundle fixture;
+- run the GSLR-12 verifier locally in the static route;
+- show hash/signature/provenance/expiry status;
+- render the static evidence card only if verification passes;
+- show rejected bundles as rejected evidence, not as runtime errors;
+- keep persistence, queues, tables, SSE, and action controls absent.
 
 Do this before building any live ingestion path.
