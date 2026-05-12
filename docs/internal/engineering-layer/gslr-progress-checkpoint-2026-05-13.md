@@ -1,7 +1,7 @@
 # GSLR Progress Checkpoint: 2026-05-13
 
 Status: post-GSLR-11 progress checkpoint
-Tracking beads: `bead-1251`, `bead-1252`
+Tracking beads: `bead-1251`, `bead-1252`, `bead-1253`
 
 ## Short Version
 
@@ -104,8 +104,10 @@ action execution.
 - Portarium reached GSLR-10 with static Cockpit export support.
 - Portarium reached GSLR-11 with a static Cockpit route/view for GSLR evidence
   fixtures.
+- Portarium added a current progress update that separates the proven static
+  evidence loop from the still-blocked runtime ingestion path.
 - prompt-language recorded GSLR-8 as the strongest positive local-screen result
   so far.
 - MacquarieCollege remains a reference vertical and boundary test only.
-- The next real question is human/operator comprehension, not more routing
-  automation.
+- The next real work item is a manual signed-bundle proof/design, not more
+  routing automation or live ingestion.
