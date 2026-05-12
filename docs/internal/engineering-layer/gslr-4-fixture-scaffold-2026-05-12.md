@@ -32,6 +32,12 @@ work.
 
 The live hypothesis is therefore `advisor-only`, not product integration.
 
+Live update on 2026-05-12: GSLR-4 has now run. Advisor-only passed, but used
+more frontier tokens than frontier-only; local-only failed the private oracle.
+The route is now `frontier-baseline` for this two-file validator under the
+current lanes. See
+[gslr-4-live-result-2026-05-12.md](./gslr-4-live-result-2026-05-12.md).
+
 ## Product Boundary
 
 Runtime ingestion remains blocked.
@@ -85,3 +91,4 @@ hardening step, not service ingestion.
 - Kept runtime ingestion and live Cockpit cards blocked.
 - Recorded the live hypothesis as `advisor-only`, with `frontier-only` baseline
   after an advisor pass.
+- Follow-up: recorded the live result as frontier-baseline, not advisor-only.

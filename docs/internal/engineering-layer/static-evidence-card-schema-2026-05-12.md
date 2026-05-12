@@ -68,6 +68,12 @@ separate action-boundary helper and validator. The result is deterministic
 fake-live harness evidence only; runtime ingestion and live Cockpit cards remain
 blocked.
 
+Live follow-up on 2026-05-12: GSLR-4 advisor-only and frontier-only both passed,
+but frontier-only used fewer frontier tokens. Local-only failed the private
+oracle. The static schema remains useful, but the selected route for this
+validator shape is `frontier-baseline`; runtime ingestion and live Cockpit cards
+remain blocked.
+
 ## Validation
 
 Focused validation:
@@ -94,3 +100,4 @@ The tests prove:
   ingestion.
 - Recorded the GSLR-4 follow-up as a validator scaffold only, not product
   ingestion.
+- Recorded the GSLR-4 live result as frontier-baseline for this validator shape.
