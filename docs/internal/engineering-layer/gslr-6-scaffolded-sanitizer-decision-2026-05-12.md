@@ -2,18 +2,17 @@
 
 # GSLR-6 Scaffolded Sanitizer Decision: 2026-05-12
 
-Status: R&D decision, not runtime ingestion  
-Tracking bead: `bead-1244`  
-Companion prompt-language bead: `prompt-language-gslr19`
+Status: exact local-screen R&D result, not runtime ingestion
+Tracking bead: `bead-1246`
+Companion prompt-language bead: `prompt-language-gslr21`
 
 ## Decision
 
-Portarium should keep privacy-sensitive evidence-card sanitization on
-`frontier-baseline`.
+Portarium should treat `gslr6-scaffolded-sanitizer` as an exact `local-screen`
+R&D route.
 
-The next prompt-language experiment is GSLR-6: a scaffolded sanitizer contract.
-That means the local model should fill fixed helper predicates or small policy
-tables, not write the whole sanitizer from a free-form prompt.
+Portarium should still keep broader privacy-sensitive, free-form, runtime, or
+product-ingestion evidence-card sanitization on `frontier-baseline`.
 
 ## Why
 
@@ -68,6 +67,30 @@ Prompt-language now has the GSLR-6 scaffold and deterministic fake-live proof:
 This is harness-plumbing evidence only. It is not local-model evidence and does
 not change the Portarium product boundary.
 
+## Live Local Repeat Update
+
+Prompt-language then ran the live local lane.
+
+The first two local attempts failed before the clean repeat set:
+
+- v1 implemented helpers but did not export them;
+- v2 exported helpers but copied the public-gate import into the target file,
+  creating a self-import and duplicate declarations.
+
+After the lane made those model-visible boundaries explicit, the v3 lane passed
+all three local repeats:
+
+| Repeat | Final verdict | Private oracle | Frontier tokens | Step wall time |
+| ------ | ------------- | -------------- | --------------- | -------------- |
+| 1      | pass          | pass           | 0               | 75.301s        |
+| 2      | pass          | pass           | 0               | 51.215s        |
+| 3      | pass          | pass           | 0               | 52.569s        |
+
+Portarium meaning: this supports the engineering-system pattern of local
+bounded implementation under fixed helper contracts, with frontier/Codex as the
+advisor or escalation route on first failure. It does not authorize runtime
+manifest ingestion, live Cockpit cards, queues, tables, or MC connector work.
+
 ## Acceptance Bar Before Product Work
 
 Portarium should consider a static evidence-card follow-up only if
@@ -93,6 +116,8 @@ Anything weaker keeps the result as research only.
   `experiments/harness-arena/GSLR-6-SCAFFOLDED-SANITIZER-RUNBOOK.md`
 - Prompt-language GSLR-6 fake-live result:
   `experiments/harness-arena/results/gslr6-fake-live-2026-05-13/report.md`
+- Prompt-language GSLR-6 local-repeat result:
+  `experiments/harness-arena/results/gslr6-local-repeat-2026-05-13/report.md`
 - Prompt-language GSLR-5R repeat result:
   `experiments/harness-arena/results/gslr5r-local-repeat-2026-05-12/report.md`
 
@@ -107,5 +132,8 @@ Anything weaker keeps the result as research only.
 2026-05-13:
 
 - Recorded the GSLR-6 deterministic scaffold proof.
-- Kept live local repeats, route promotion, runtime ingestion, and live Cockpit
-  cards blocked.
+- Recorded the GSLR-6 live local repeat result: v3 passed three repeats with
+  zero frontier tokens, promoting the exact scaffolded static sanitizer shape to
+  R&D `local-screen`.
+- Kept runtime ingestion, live Cockpit cards, services, queues, database tables,
+  and MC connector work blocked.
