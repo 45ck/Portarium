@@ -46,6 +46,10 @@ The next research step is to test a scaffolded sanitizer contract where the
 local model fills isolated predicates or policy tables rather than writing the
 whole sanitizer from scratch.
 
+Follow-up: `gslr-6-scaffolded-sanitizer-decision-2026-05-12.md` records that
+next step as a docs/R&D contract-shape test only. It does not authorize runtime
+ingestion, live Cockpit cards, or MC connector work.
+
 ## Sources
 
 - Prompt-language GSLR-5R repeat result:
