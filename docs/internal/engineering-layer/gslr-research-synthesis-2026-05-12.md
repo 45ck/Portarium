@@ -110,6 +110,12 @@ The next product-adjacent artifact should be a static Cockpit evidence card only
 after a prompt-language live run produces a positive manifest. GSLR-1 live did
 not meet that bar; see `gslr-1-live-result-2026-05-12.md`.
 
+Follow-up after current OpenAI Symphony and routing-literature review:
+`gslr-post-symphony-decision-2026-05-12.md`. That record keeps the same product
+boundary but sharpens the next run: GSLR-2 must use a code/schema task, matched
+frontier-review cost accounting, manifest route-policy reasons, and token
+telemetry before Portarium renders product evidence.
+
 ## Next Build Sequence
 
 1. prompt-language locks the GSLR-1 private oracle outside model-visible input.
@@ -166,3 +172,6 @@ Stop or narrow the track if:
 - Closed `bead-1227` after the synthesis docs were added and linked.
 - Added GSLR-1 live-result follow-up under `bead-1228`; product integration
   remains blocked.
+- Added post-Symphony decision follow-up under `bead-1230`; board-level
+  orchestration is now treated as validated prior art, while Portarium's
+  differentiator remains governed evidence at the action boundary.
