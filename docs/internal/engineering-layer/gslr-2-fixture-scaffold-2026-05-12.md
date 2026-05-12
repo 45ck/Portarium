@@ -51,6 +51,11 @@ Portarium work remains blocked until a live four-arm GSLR-2 run shows:
 - frontier token telemetry for every frontier step;
 - matched-cost comparison that shows hybrid value over frontier-only.
 
+Live update on 2026-05-12: the hardened GSLR-2 four-arm run has now completed.
+All arms passed, but hybrid did not show matched-cost value. Local-only was the
+best route for this exact tiny validator shape. See
+[gslr-2-live-result-2026-05-12.md](./gslr-2-live-result-2026-05-12.md).
+
 ## What This Would Prove If Positive
 
 A positive live GSLR-2 result would support a narrow claim:
@@ -80,3 +85,5 @@ building product surfaces.
 - Recorded the GSLR-2 fixture scaffold and Portarium product boundary.
 - Kept runtime ingestion and Cockpit evidence-card work blocked on positive live
   model evidence.
+- Follow-up: GSLR-2 live evidence arrived, but it supports local-only screening
+  for this task shape rather than hybrid product ingestion.
