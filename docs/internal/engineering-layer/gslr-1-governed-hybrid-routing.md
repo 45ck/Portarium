@@ -4,6 +4,7 @@ Status: R&D handoff, not product integration
 Date: 2026-05-12
 Tracking bead: `bead-1226`
 Companion prompt-language bead: `prompt-language-gslr1`
+Follow-up synthesis: `gslr-research-synthesis-2026-05-12.md`
 
 ## Why This Exists
 
@@ -113,6 +114,9 @@ If that run produces a positive manifest, the next Portarium bead should create 
 static Cockpit/evidence mock from the manifest. Only after the mock is useful
 should Portarium implement runtime ingestion.
 
+The 2026-05-12 synthesis keeps this decision in place: current evidence proves
+the scaffold shape, not cost savings or local-model autonomy.
+
 ## Execution Record
 
 2026-05-12:
@@ -123,3 +127,5 @@ should Portarium implement runtime ingestion.
 - Kept the next step as a live four-arm experiment, not product integration.
 - Closed `bead-1226` after the handoff docs and companion prompt-language
   fixture/runbook were in place.
+- Added follow-up synthesis under `bead-1227`; Portarium runtime ingestion
+  remains blocked on a positive live four-arm manifest.

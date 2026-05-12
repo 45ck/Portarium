@@ -38,18 +38,19 @@ Portarium's wedge: **policy evaluation at the action boundary, not the commit bo
 
 ## Document map
 
-| Document                                                                 | What it covers                                                                                                                      |
-| ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
-| [ux-layout.md](./ux-layout.md)                                           | The cockpit UI — T3 Code base layout + Mission Control operational awareness                                                        |
-| [cockpit-integration.md](./cockpit-integration.md)                       | Exact routes, new components, what to reuse from existing cockpit                                                                   |
-| [system-architecture.md](./system-architecture.md)                       | Full pipeline: IntentRouter → BeadPlanner → SandboxExecutor → ArtifactCollector → DiffApprovalSurface → MergeExecutor               |
-| [symphony-pl-local-routing.md](./symphony-pl-local-routing.md)           | R&D direction for OpenAI Symphony-style scheduling, prompt-language contracts, local/frontier model routing, and evidence manifests |
-| [gslr-1-governed-hybrid-routing.md](./gslr-1-governed-hybrid-routing.md) | First claim-shaped micro-experiment handoff: MC projection fixture, four routing arms, evidence package, and Cockpit card fields    |
-| [vm-sandbox-execution-plan.md](./vm-sandbox-execution-plan.md)           | VM-first sandbox execution plane, provider ports, execution modes, and rollout path                                                 |
-| [inspiration-validation-plan.md](./inspiration-validation-plan.md)       | How Portarium takes inspiration from T3 Code, Vibe Kanban, and OpenCode, plus validation gates                                      |
-| [hci-principles.md](./hci-principles.md)                                 | HCI/HAI grounding — levels of automation, trust calibration, operator state machine, "I can sleep" checklist, ironies of automation |
-| [artifacts.md](./artifacts.md)                                           | Artifact system — Run/Plan/Approval/Demo/Digest artifacts, demo-machine integration, markdown-first with embedded mp4/gif           |
-| [build-plan.md](./build-plan.md)                                         | What to build in what order, with bead assignments                                                                                  |
+| Document                                                                         | What it covers                                                                                                                      |
+| -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| [ux-layout.md](./ux-layout.md)                                                   | The cockpit UI — T3 Code base layout + Mission Control operational awareness                                                        |
+| [cockpit-integration.md](./cockpit-integration.md)                               | Exact routes, new components, what to reuse from existing cockpit                                                                   |
+| [system-architecture.md](./system-architecture.md)                               | Full pipeline: IntentRouter → BeadPlanner → SandboxExecutor → ArtifactCollector → DiffApprovalSurface → MergeExecutor               |
+| [symphony-pl-local-routing.md](./symphony-pl-local-routing.md)                   | R&D direction for OpenAI Symphony-style scheduling, prompt-language contracts, local/frontier model routing, and evidence manifests |
+| [gslr-1-governed-hybrid-routing.md](./gslr-1-governed-hybrid-routing.md)         | First claim-shaped micro-experiment handoff: MC projection fixture, four routing arms, evidence package, and Cockpit card fields    |
+| [gslr-research-synthesis-2026-05-12.md](./gslr-research-synthesis-2026-05-12.md) | Research synthesis and product decision after the GSLR-1 scaffold; blocks runtime ingestion until live four-arm evidence exists     |
+| [vm-sandbox-execution-plan.md](./vm-sandbox-execution-plan.md)                   | VM-first sandbox execution plane, provider ports, execution modes, and rollout path                                                 |
+| [inspiration-validation-plan.md](./inspiration-validation-plan.md)               | How Portarium takes inspiration from T3 Code, Vibe Kanban, and OpenCode, plus validation gates                                      |
+| [hci-principles.md](./hci-principles.md)                                         | HCI/HAI grounding — levels of automation, trust calibration, operator state machine, "I can sleep" checklist, ironies of automation |
+| [artifacts.md](./artifacts.md)                                                   | Artifact system — Run/Plan/Approval/Demo/Digest artifacts, demo-machine integration, markdown-first with embedded mp4/gif           |
+| [build-plan.md](./build-plan.md)                                                 | What to build in what order, with bead assignments                                                                                  |
 
 ---
 

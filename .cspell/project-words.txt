@@ -1123,3 +1123,9 @@ vibekanban
 webfetch
 webrtc
 websearch
+
+# Governed Symphony / Prompt Language routing research
+GSLR
+gslr
+handoffs
+LMQL
