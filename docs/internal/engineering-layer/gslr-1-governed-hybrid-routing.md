@@ -5,6 +5,7 @@ Date: 2026-05-12
 Tracking bead: `bead-1226`
 Companion prompt-language bead: `prompt-language-gslr1`
 Follow-up synthesis: `gslr-research-synthesis-2026-05-12.md`
+Live result follow-up: `gslr-1-live-result-2026-05-12.md`
 
 ## Why This Exists
 
@@ -117,6 +118,10 @@ should Portarium implement runtime ingestion.
 The 2026-05-12 synthesis keeps this decision in place: current evidence proves
 the scaffold shape, not cost savings or local-model autonomy.
 
+The 2026-05-12 live run keeps it in place again: the harness produced live
+evidence, but the hybrid arm used more frontier work than the frontier-only
+control and had an unresolved blocking review defect.
+
 ## Execution Record
 
 2026-05-12:
@@ -129,3 +134,5 @@ the scaffold shape, not cost savings or local-model autonomy.
   fixture/runbook were in place.
 - Added follow-up synthesis under `bead-1227`; Portarium runtime ingestion
   remains blocked on a positive live four-arm manifest.
+- Added live-result follow-up under `bead-1228`; static Cockpit card work
+  remains blocked.

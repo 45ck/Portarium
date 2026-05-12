@@ -107,9 +107,8 @@ It does not prove:
 Do not build runtime ingestion yet.
 
 The next product-adjacent artifact should be a static Cockpit evidence card only
-after the prompt-language live run produces a positive manifest. This keeps
-Portarium focused on evidence consumption and operator trust rather than
-premature runner integration.
+after a prompt-language live run produces a positive manifest. GSLR-1 live did
+not meet that bar; see `gslr-1-live-result-2026-05-12.md`.
 
 ## Next Build Sequence
 
@@ -165,3 +164,5 @@ Stop or narrow the track if:
 - Recorded the research synthesis and product decision.
 - Kept Portarium runtime ingestion blocked on a positive live GSLR-1 manifest.
 - Closed `bead-1227` after the synthesis docs were added and linked.
+- Added GSLR-1 live-result follow-up under `bead-1228`; product integration
+  remains blocked.
