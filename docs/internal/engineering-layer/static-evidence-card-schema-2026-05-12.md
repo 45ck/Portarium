@@ -62,6 +62,12 @@ No production service should consume prompt-language manifests yet.
 This schema is a stable R&D contract for tests, docs, and future design work.
 The current transform route remains `frontier-baseline`.
 
+Follow-up on 2026-05-12: prompt-language added the GSLR-4 two-file validator
+fixture. That fixture tests validation of this static card shape across a
+separate action-boundary helper and validator. The result is deterministic
+fake-live harness evidence only; runtime ingestion and live Cockpit cards remain
+blocked.
+
 ## Validation
 
 Focused validation:
@@ -85,4 +91,6 @@ The tests prove:
 - Created and closed `bead-1238`.
 - Added `EngineeringEvidenceCardInputV1` and parser tests.
 - Recorded that the contract is docs/test-only and does not authorize runtime
+  ingestion.
+- Recorded the GSLR-4 follow-up as a validator scaffold only, not product
   ingestion.
