@@ -54,6 +54,20 @@ It is not allowed to create:
 - runtime policy decisions based on prompt-language manifests;
 - MC connector observation or school-data movement.
 
+## Scaffold Proof Update
+
+Prompt-language now has the GSLR-6 scaffold and deterministic fake-live proof:
+
+- model-visible fixture;
+- fixed helper-boundary public gate;
+- private oracle checking helper exports and sanitizer behavior;
+- deterministic lane;
+- runner coverage;
+- fake-live result with private oracle pass and final verdict pass.
+
+This is harness-plumbing evidence only. It is not local-model evidence and does
+not change the Portarium product boundary.
+
 ## Acceptance Bar Before Product Work
 
 Portarium should consider a static evidence-card follow-up only if
@@ -77,6 +91,8 @@ Anything weaker keeps the result as research only.
   `docs/evaluation/2026-05-12-post-gslr5r-scaffolded-sanitizer-decision.md`
 - Prompt-language GSLR-6 runbook:
   `experiments/harness-arena/GSLR-6-SCAFFOLDED-SANITIZER-RUNBOOK.md`
+- Prompt-language GSLR-6 fake-live result:
+  `experiments/harness-arena/results/gslr6-fake-live-2026-05-13/report.md`
 - Prompt-language GSLR-5R repeat result:
   `experiments/harness-arena/results/gslr5r-local-repeat-2026-05-12/report.md`
 
@@ -87,3 +103,9 @@ Anything weaker keeps the result as research only.
 - Recorded GSLR-6 as the next research step.
 - Kept Portarium product work docs/test-only.
 - Kept runtime ingestion and live Cockpit cards blocked.
+
+2026-05-13:
+
+- Recorded the GSLR-6 deterministic scaffold proof.
+- Kept live local repeats, route promotion, runtime ingestion, and live Cockpit
+  cards blocked.
