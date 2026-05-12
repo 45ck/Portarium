@@ -44,8 +44,17 @@ The blocking evidence is:
 
 - the hybrid route used more frontier calls than the frontier-only control;
 - the hybrid route was slower than both local-only and frontier-only;
-- review defects are not yet folded into a manifest-level final verdict;
-- token/cost telemetry is not yet parsed into manifest cost fields.
+- the GSLR-1 archived manifests did not yet fold review defects into a
+  manifest-level final verdict;
+- the GSLR-1 archived manifests did not yet parse token/cost telemetry into
+  manifest cost fields.
+
+Follow-up hardening for new prompt-language runs has now started under
+companion bead `bead-1229` / `prompt-language-gslr4`: generated manifests now
+include a top-level `finalVerdict`, blocking review defects fail that verdict,
+and Codex-style `tokens used` summaries are promoted into step cost telemetry.
+This improves the next evidence packet, but it does not retroactively make
+GSLR-1 product-positive.
 
 ## Product Boundary
 
@@ -84,3 +93,5 @@ Recommended GSLR-2 shape:
 - Kept Portarium static evidence-card work blocked on a positive GSLR-2 or
   revised hybrid result.
 - Closed `bead-1228` after the result docs were added and linked.
+- Created and claimed `bead-1229` for the first post-GSLR-1 hardening step:
+  manifest final verdict plus frontier token telemetry before GSLR-2.
