@@ -43,6 +43,7 @@ import { Route as engineeringBeadApprovalRoute } from './routes/engineering/bead
 import { Route as engineeringBeadArtifactRoute } from './routes/engineering/beads/$beadId/artifact';
 import { Route as engineeringStaticEvidenceCardsRoute } from './routes/engineering/evidence-cards/static';
 import { Route as engineeringBundlePreviewRoute } from './routes/engineering/evidence-cards/bundle-preview';
+import { Route as engineeringEvidenceWorkbenchRoute } from './routes/engineering/evidence-cards/workbench';
 
 // Search (retrieval)
 import { Route as searchRoute } from './routes/search/index';
@@ -117,6 +118,7 @@ export const routeTree = rootRoute.addChildren([
   engineeringBeadArtifactRoute,
   engineeringStaticEvidenceCardsRoute,
   engineeringBundlePreviewRoute,
+  engineeringEvidenceWorkbenchRoute,
   searchRoute,
   workforceRoute,
   workforceMemberRoute,

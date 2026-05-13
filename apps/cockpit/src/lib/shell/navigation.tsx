@@ -4,6 +4,7 @@ import {
   BarChart3,
   Boxes,
   ClipboardCheck,
+  ClipboardList,
   ExternalLink,
   FileJson2,
   GitBranch,
@@ -215,6 +216,12 @@ const CORE_SHELL_SECTIONS: readonly CockpitShellNavigationSection[] = [
         icon: <FileJson2 className="h-4 w-4" />,
       },
       {
+        id: 'engineering-gslr-workbench',
+        label: 'GSLR Workbench',
+        to: '/engineering/evidence-cards/workbench',
+        icon: <ClipboardList className="h-4 w-4" />,
+      },
+      {
         id: 'engineering-autonomy',
         label: 'Autonomy',
         to: '/engineering/autonomy',
@@ -395,6 +402,7 @@ const COMMAND_EXCLUDED_ITEM_IDS = new Set([
   'engineering-beads',
   'engineering-mission-control',
   'engineering-gslr-bundle-preview',
+  'engineering-gslr-workbench',
   'engineering-autonomy',
   'config-blast-radius',
   'config-policies',

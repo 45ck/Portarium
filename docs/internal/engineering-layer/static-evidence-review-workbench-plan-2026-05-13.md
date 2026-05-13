@@ -150,7 +150,7 @@ Acceptance:
 
 ### Milestone 2: Cockpit Workbench Route
 
-Status: next.
+Status: complete in `bead-1265`.
 
 Build the internal route and operator view.
 
@@ -163,6 +163,8 @@ Acceptance:
 - route tests prove no live/runtime/action endpoints are called.
 
 ### Milestone 3: Operator Report
+
+Status: next.
 
 Add a static export/report packet.
 

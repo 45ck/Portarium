@@ -23,6 +23,7 @@ prompt-language experiment evidence
   -> append-only static imported-record repository contract
   -> manual static imported-record append planner
   -> static importer dry-run fixture
+  -> internal Static Evidence Review Workbench route
 ```
 
 The loop is intentionally static. It proves that evidence can be shaped and
@@ -97,6 +98,11 @@ Portarium now has:
   verification, imported-record building, append planning, in-memory repository
   append, idempotent replay, structured quarantine, and no-runtime boundary
   warnings in one route-independent result.
+- an internal Cockpit Static Evidence Review Workbench route at
+  `/engineering/evidence-cards/workbench` that runs the GSLR-20 dry-run in
+  memory and shows accepted, blocked, quarantined, signer-trust,
+  artifact-byte-status, append-plan, repository/audit, and static report state
+  without making additional live endpoint calls during the dry-run interaction.
 
 prompt-language now records GSLR-8 as the strongest local-screen result and
 publishes checked-in static bundle fixtures for GSLR-8 and GSLR-7.
@@ -214,6 +220,16 @@ GSLR-20 proves static importer dry-run composition:
 - runtime-authority adversarial bundles are quarantined and cannot gain runtime
   authority through the repository.
 
+`bead-1265` proves static operator review:
+
+- the GSLR-20 dry-run result is visible in Cockpit;
+- accepted, blocked, and quarantined cases are legible to an operator;
+- signer trust, artifact byte status, structured rejection, append blockers,
+  repository dry-run state, and audit event are visible;
+- the workbench interaction makes no live run, evidence, work-item, human-task,
+  workforce, route-record, SSE, action, prompt-language polling, importer,
+  connector, Macquarie, or school endpoint calls.
+
 This is enough to continue toward a governed engineering cockpit. It is not
 enough to create runtime automation.
 
@@ -225,7 +241,7 @@ Still blocked:
 - signed-bundle import into production state;
 - production static imported-record repository implementation;
 - static imported-record importer implementation;
-- Cockpit Static Evidence Review Workbench route;
+- explicit static operator report export artifact;
 - runtime Cockpit engineering cards;
 - route-record queues;
 - route-record database tables;
@@ -238,18 +254,17 @@ Still blocked:
 
 ## Next Step
 
-The next safe work item is the Static Evidence Review Workbench route. GSLR-20
-has now supplied the route-independent dry-run core for that workbench.
+The next safe work item is the static operator report export. GSLR-20 supplied
+the route-independent dry-run core, and `bead-1265` supplied the internal
+Workbench route.
 
 See
 [`static-evidence-review-workbench-plan-2026-05-13.md`](./static-evidence-review-workbench-plan-2026-05-13.md).
 
-Proceed to `bead-1265`: build the internal Cockpit workbench route over the
-GSLR-20 dry-run result. The route should show verified, blocked, and adversarial
-outcomes; append plan blockers; idempotent dry-run audit; and report export
-affordance while proving it calls no live run, evidence, work-item, human-task,
-workforce queue, route-record, SSE, action, prompt-language polling, importer
-runtime, or MC connector/source-system endpoints.
+Proceed to `bead-1266`: turn the current static report text into an explicit
+exportable operator report packet suitable for attaching to a bead or review
+note. It should stay static-only and must not add persistence, live endpoints,
+production actions, or MC connector/source-system access.
 
 Production keyring, artifact byte fetching, persistent storage, live routing,
 runtime cards, and MC connector work remain separate gated follow-ups.
