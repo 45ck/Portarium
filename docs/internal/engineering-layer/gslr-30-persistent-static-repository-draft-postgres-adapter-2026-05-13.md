@@ -146,3 +146,6 @@ written.
 
 Do not add a database connection, apply migrations, create production tables, or
 enable production writes in the next bead.
+
+The draft SQL review packet is recorded in
+[`gslr-31-persistent-static-repository-draft-sql-review-2026-05-13.md`](./gslr-31-persistent-static-repository-draft-sql-review-2026-05-13.md).
