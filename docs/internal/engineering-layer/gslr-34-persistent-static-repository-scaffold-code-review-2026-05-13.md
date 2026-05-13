@@ -136,3 +136,6 @@ Open `bead-1282` for an unbound adapter shell contract. That shell must still
 avoid database clients, connection config, generated SQL files, secrets, applied
 migrations, production tables, read/write execution, runtime cards, production
 actions, and MC connector access.
+
+The unbound adapter shell contract is recorded in
+[`gslr-35-persistent-static-repository-unbound-adapter-shell-2026-05-13.md`](./gslr-35-persistent-static-repository-unbound-adapter-shell-2026-05-13.md).

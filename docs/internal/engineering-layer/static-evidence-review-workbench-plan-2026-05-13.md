@@ -205,6 +205,10 @@ Candidate follow-ups:
   database client binding, connection config, generated SQL, secrets, applied
   migrations, production tables, read/write execution, runtime cards, actions,
   or MC connector access;
+- `bead-1283`: unbound adapter shell review, blocked by `bead-1282`, before any
+  database client binding, connection config, generated SQL, secrets, applied
+  migrations, production tables, reads, writes, runtime cards, actions, or MC
+  connector access;
 - authz and tenancy for imported static evidence;
 - operator review workflow over persisted imported records.
 
@@ -354,6 +358,8 @@ Recommended next beads:
   the shell remains unbound and non-operational.
 - `bead-1282`: Unbound adapter shell contract, blocked by `bead-1281`, before
   database client binding or executable persistence behavior.
+- `bead-1283`: Unbound adapter shell review, blocked by `bead-1282`, before any
+  database-bound adapter behavior.
 
 Do not create beads for live PL polling, runtime cards, route-record queues,
 production actions, or MC connector/data engineering from this plan.
