@@ -132,3 +132,6 @@ Open a review checkpoint before any database adapter. The checkpoint should
 decide whether the harness adapter is sufficient for now or whether a draft
 Postgres adapter should be built behind the same contract with migrations still
 unapplied.
+
+That checkpoint is recorded in
+[`gslr-29-persistent-static-repository-database-adapter-review-2026-05-13.md`](./gslr-29-persistent-static-repository-database-adapter-review-2026-05-13.md).

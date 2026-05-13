@@ -186,6 +186,9 @@ Candidate follow-ups:
 - production keyring and signature trust;
 - artifact byte fetch and hash verification;
 - persistent append-only static imported-record storage;
+- `bead-1277`: draft PostgreSQL adapter contract/scaffold, blocked by
+  `bead-1276` approval and required to keep migrations unapplied plus
+  production writes disabled;
 - authz and tenancy for imported static evidence;
 - operator review workflow over persisted imported records.
 
