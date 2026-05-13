@@ -1,7 +1,7 @@
 # GSLR Progress Checkpoint: 2026-05-13
 
-Status: post-GSLR-14 progress checkpoint
-Tracking beads: `bead-1251`, `bead-1252`, `bead-1253`, `bead-1254`, `bead-1257`
+Status: post-GSLR-15 progress checkpoint
+Tracking beads: `bead-1251`, `bead-1252`, `bead-1253`, `bead-1254`, `bead-1257`, `bead-1258`
 
 ## Short Version
 
@@ -38,7 +38,7 @@ GSLR-6 through GSLR-8 found the useful pattern:
 - a PL-owned route-record compiler passed three local repeats when the local
   model only filled generic predicate hooks.
 
-GSLR-9 through GSLR-14 moved the result toward Portarium:
+GSLR-9 through GSLR-15 moved the result toward Portarium:
 
 - GSLR route evidence can become a docs/test-only
   `EngineeringEvidenceCardInputV1`;
@@ -52,7 +52,11 @@ GSLR-9 through GSLR-14 moved the result toward Portarium:
 - failed evidence stays visible as `blocked` instead of disappearing;
 - manual Cockpit preview can verify static bundle JSON before rendering a card;
 - adversarial static bundles reject with targeted check rows and no live
-  engineering endpoint calls.
+  engineering endpoint calls;
+- static import readiness is now captured as a test-backed gate, requiring
+  production keyring trust, artifact byte verification, append-only static
+  storage, operator review states, and structured rejection codes before any
+  persistent import implementation.
 
 ## Current Conclusion
 
@@ -75,6 +79,7 @@ and use local compute where the risk has been structurally removed.
 Do not build these yet:
 
 - live prompt-language manifest ingestion;
+- persistent signed-bundle import;
 - live Cockpit engineering cards;
 - Cockpit routes backed by GSLR runtime data;
 - route-record queues;
@@ -83,14 +88,16 @@ Do not build these yet:
 - MC connector observation or school-data movement;
 - production action paths based on GSLR evidence.
 
-The reason is simple: GSLR-12 proves static bundle verification, not runtime
-trust.
+The reason is simple: GSLR-12 proves static bundle verification, GSLR-14 proves
+static rejection behavior, and GSLR-15 proves the import-readiness gate. None
+of those creates production trust or runtime authority.
 
 ## Next Product-Safe Step
 
 GSLR-11 completed the static Cockpit fixture/view proof. GSLR-12 completed the
 static signed-bundle verifier proof. GSLR-13 completed the manual Cockpit bundle
 preview. GSLR-14 completed the adversarial static rejection corpus.
+GSLR-15 completed the static import readiness design gate.
 
 It now:
 
@@ -104,11 +111,15 @@ It now:
   provenance mismatches, and runtime-authority claims.
 - rejects the GSLR-14 adversarial corpus in the manual preview without rendering
   static cards or calling live engineering endpoints.
+- blocks the current manual preview shape from persistent import until
+  production keyring trust, artifact byte verification, append-only static
+  storage, operator review states, and structured verifier rejection codes are
+  designed.
 
-The next safe step is GSLR-15: static import readiness design. That should
-define production signature/keyring requirements, artifact byte verification,
-future storage boundaries, and operator review states before any persistent
-import workflow is considered.
+The next safe step is GSLR-16: structured rejection codes and portable static
+fixture corpus. That should remove UI regex mapping over verifier messages and
+decide whether adversarial bundles need standalone `.bundle.json` files before
+any importer-level tests are written.
 
 ## Progress Record
 
@@ -123,8 +134,9 @@ import workflow is considered.
   verifier.
 - Portarium reached GSLR-13 with a manual Cockpit bundle preview.
 - Portarium reached GSLR-14 with an adversarial static bundle rejection corpus.
+- Portarium reached GSLR-15 with a static import readiness design gate.
 - prompt-language recorded GSLR-8 as the strongest positive local-screen result
   so far.
 - MacquarieCollege remains a reference vertical and boundary test only.
-- The next real work item is static import readiness design, not more routing
-  automation or live ingestion.
+- The next real work item is structured rejection codes and portable static
+  corpus evidence, not more routing automation or live ingestion.

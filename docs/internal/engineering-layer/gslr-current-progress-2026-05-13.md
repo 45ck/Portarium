@@ -1,7 +1,7 @@
 # GSLR Current Progress: 2026-05-13
 
-Status: post-GSLR-14 progress update
-Tracking beads: `bead-1253`, `bead-1254`, `bead-1255`, `bead-1256`, `bead-1257`
+Status: post-GSLR-15 progress update
+Tracking beads: `bead-1253`, `bead-1254`, `bead-1255`, `bead-1256`, `bead-1257`, `bead-1258`
 
 ## Where We Are
 
@@ -17,6 +17,7 @@ prompt-language experiment evidence
   -> checked-in prompt-language bundle fixtures verified across the repo boundary
   -> manual Cockpit bundle preview before any runtime import
   -> adversarial static bundle rejection corpus
+  -> static import readiness design gate
 ```
 
 The loop is intentionally static. It proves that evidence can be shaped and
@@ -66,7 +67,11 @@ Portarium now has:
 - a checked-in adversarial static bundle corpus that covers expired,
   not-yet-valid, payload-hash-tampered, invalid-signature, missing-artifact,
   raw-payload, provenance-mismatch, runtime-authority, and action-controls
-  rejection cases through the same preview path.
+  rejection cases through the same preview path;
+- a test-backed static import readiness gate that blocks import work unless a
+  design defines production keyring trust, artifact byte verification,
+  append-only static storage, no runtime authority, no action controls,
+  operator review states, and structured verifier rejection codes.
 
 prompt-language now records GSLR-8 as the strongest local-screen result and
 publishes checked-in static bundle fixtures for GSLR-8 and GSLR-7.
@@ -119,6 +124,18 @@ GSLR-14 proves static rejection legibility:
 - the route still avoids live engineering endpoints while exercising the
   rejection path.
 
+GSLR-15 proves static import readiness can be judged before import exists:
+
+- the current manual preview shape is explicitly blocked from persistent import;
+- a future static import design must replace test signatures with production
+  keyring trust;
+- a future design must verify artifact bytes instead of only declared refs;
+- imported evidence needs append-only static storage and operator review states;
+- structured rejection codes are required before import UI or storage depends on
+  verifier failures;
+- any plan with runtime authority, action controls, or live endpoints remains
+  blocked.
+
 This is enough to continue toward a governed engineering cockpit. It is not
 enough to create runtime automation.
 
@@ -135,18 +152,21 @@ Still blocked:
 - automatic route decisions from GSLR manifests;
 - production actions based on GSLR evidence;
 - MC connector observation or raw school-data movement.
+- persistent signed-bundle import until a separate implementation bead satisfies
+  the GSLR-15 readiness gate.
 
 ## Next Step
 
-The next safe work item is GSLR-15: static import readiness design.
+The next safe work item is GSLR-16: structured rejection codes and portable
+static fixture corpus.
 
 It should:
 
-- remain a design/test-gate step, not live import;
-- define production keyring/signature trust requirements;
-- define artifact byte verification and artifact-content hashing requirements;
-- define the no-runtime storage boundary for any future persistent import;
-- define the operator review state machine needed before imported evidence can
-  become visible beyond a manual/static preview.
+- add structured verifier rejection categories/codes;
+- remove the preview's dependency on regex mapping over verifier error text;
+- decide whether the adversarial corpus should be materialized as standalone
+  `.bundle.json` files for importer-level tests;
+- remain static/test-only with no persistent import, queues, tables, SSE,
+  runtime cards, production actions, or MC connector/data movement.
 
 Do this before building any live ingestion path.
