@@ -1,7 +1,7 @@
 # GSLR Current Progress: 2026-05-13
 
-Status: post-GSLR-18 progress update
-Tracking beads: `bead-1253`, `bead-1254`, `bead-1255`, `bead-1256`, `bead-1257`, `bead-1258`, `bead-1259`, `bead-1260`, `bead-1261`
+Status: post-GSLR-19 progress update
+Tracking beads: `bead-1253`, `bead-1254`, `bead-1255`, `bead-1256`, `bead-1257`, `bead-1258`, `bead-1259`, `bead-1260`, `bead-1261`, `bead-1262`
 
 ## Where We Are
 
@@ -21,6 +21,7 @@ prompt-language experiment evidence
   -> structured rejection codes and portable adversarial bundle files
   -> static imported-record contract
   -> append-only static imported-record repository contract
+  -> manual static imported-record append planner
 ```
 
 The loop is intentionally static. It proves that evidence can be shaped and
@@ -86,7 +87,11 @@ Portarium now has:
   timestamps, and fixed no-runtime authority;
 - a docs/test-only static imported-record repository contract with append-only
   entries, idempotency keys, duplicate conflict rejection, constrained
-  review-state transitions, audit events, and no runtime operation surface.
+  review-state transitions, audit events, and no runtime operation surface;
+- a docs/test-only static imported-record importer planner that turns manual
+  verified/rejected outcomes into repository append plans only after artifact
+  byte policy, production keyring requirement, review defaults, failure
+  reporting, and no-runtime authority pass.
 
 prompt-language now records GSLR-8 as the strongest local-screen result and
 publishes checked-in static bundle fixtures for GSLR-8 and GSLR-7.
@@ -181,6 +186,17 @@ GSLR-18 proves static repository behavior:
 - the repository contract has no update, delete, queue, stream, subscribe, or
   execute operation.
 
+GSLR-19 proves static importer planning:
+
+- verified outcomes can become accepted append plans when production trust and
+  artifact byte verification are present;
+- rejected outcomes can become quarantined append plans with structured failure
+  reports;
+- readiness blockers prevent append input creation;
+- live polling, production database targets, runtime authority, action
+  controls, and live endpoints block planning;
+- records that claim live authority are rejected by the planner.
+
 This is enough to continue toward a governed engineering cockpit. It is not
 enough to create runtime automation.
 
@@ -192,6 +208,7 @@ Still blocked:
 - signed-bundle import into production state;
 - production static imported-record repository implementation;
 - static imported-record importer planning and implementation;
+- static importer dry-run fixture over checked-in bundles;
 - runtime Cockpit engineering cards;
 - route-record queues;
 - route-record database tables;
@@ -204,14 +221,13 @@ Still blocked:
 
 ## Next Step
 
-The next safe work item is GSLR-19: static imported-record importer planning.
+The next safe work item is GSLR-20: static importer dry-run fixture.
 
 It should:
 
-- define how manual verified/rejected bundle outcomes would become repository
-  append requests;
-- define artifact-byte fetch policy and production keyring requirements;
-- define operator review defaults and importer failure reporting;
+- exercise the planner against checked-in verified and rejected bundle fixtures;
+- prove dry-run repository append inputs without writing persistent state;
+- preserve structured failure reporting for rejected fixtures;
 - remain a design/test step, not live PL ingestion or runtime import;
 - continue to block queues, tables, SSE, runtime cards, production actions, and
   MC connector/data movement.

@@ -1,7 +1,7 @@
 # GSLR Progress Checkpoint: 2026-05-13
 
-Status: post-GSLR-18 progress checkpoint
-Tracking beads: `bead-1251`, `bead-1252`, `bead-1253`, `bead-1254`, `bead-1257`, `bead-1258`, `bead-1259`, `bead-1260`, `bead-1261`
+Status: post-GSLR-19 progress checkpoint
+Tracking beads: `bead-1251`, `bead-1252`, `bead-1253`, `bead-1254`, `bead-1257`, `bead-1258`, `bead-1259`, `bead-1260`, `bead-1261`, `bead-1262`
 
 ## Short Version
 
@@ -38,7 +38,7 @@ GSLR-6 through GSLR-8 found the useful pattern:
 - a PL-owned route-record compiler passed three local repeats when the local
   model only filled generic predicate hooks.
 
-GSLR-9 through GSLR-18 moved the result toward Portarium:
+GSLR-9 through GSLR-19 moved the result toward Portarium:
 
 - GSLR route evidence can become a docs/test-only
   `EngineeringEvidenceCardInputV1`;
@@ -65,7 +65,10 @@ GSLR-9 through GSLR-18 moved the result toward Portarium:
   state, rejection code/category, and fixed no-runtime authority;
 - static imported-record repository behavior now exists as a docs/test-only
   contract with append-only entries, idempotency, duplicate rejection,
-  constrained review transitions, and audit events.
+  constrained review transitions, and audit events;
+- static importer planning now turns manual verified/rejected outcomes into
+  repository append plans only when trust, artifact byte policy, review
+  defaults, failure reporting, and no-runtime authority pass.
 
 ## Current Conclusion
 
@@ -101,7 +104,8 @@ The reason is simple: GSLR-12 proves static bundle verification, GSLR-14 proves
 static rejection behavior, GSLR-15 proves the import-readiness gate, and
 GSLR-16 proves structured rejection portability. GSLR-17 defines a static record
 shape. GSLR-18 defines repository behavior. None of those creates production
-trust or runtime authority.
+trust or runtime authority. GSLR-19 defines importer planning without creating
+an importer runtime.
 
 ## Next Product-Safe Step
 
@@ -112,6 +116,7 @@ GSLR-15 completed the static import readiness design gate.
 GSLR-16 completed structured rejection codes and portable adversarial files.
 GSLR-17 completed the static imported-record contract.
 GSLR-18 completed the static imported-record repository contract.
+GSLR-19 completed static imported-record importer planning.
 
 It now:
 
@@ -138,13 +143,14 @@ It now:
 - defines append-only static repository behavior without adding a production
   database table, live importer, queue, SSE stream, runtime card, or action
   path.
+- defines manual importer append planning without fetching artifacts, polling
+  manifests, writing repository state, creating runtime cards, or making route
+  decisions.
 
-The next safe step is GSLR-19: static imported-record importer planning. That
-should define how manual verified/rejected bundle outcomes become append
-requests, including artifact-byte fetch policy, production keyring
-requirements, operator review defaults, and failure reporting, without wiring
-live PL ingestion, runtime cards, queues, tables, SSE, production actions, or MC
-connector/data movement.
+The next safe step is GSLR-20: static importer dry-run fixture. That should
+exercise the planner against checked-in verified and rejected bundle fixtures
+and repository contracts without wiring live PL ingestion, runtime cards,
+queues, tables, SSE, production actions, or MC connector/data movement.
 
 ## Progress Record
 
@@ -164,8 +170,9 @@ connector/data movement.
   portable adversarial bundle corpus.
 - Portarium reached GSLR-17 with a static imported-record contract.
 - Portarium reached GSLR-18 with a static imported-record repository contract.
+- Portarium reached GSLR-19 with static imported-record importer planning.
 - prompt-language recorded GSLR-8 as the strongest positive local-screen result
   so far.
 - MacquarieCollege remains a reference vertical and boundary test only.
-- The next real work item is static imported-record importer planning, not more
+- The next real work item is a static importer dry-run fixture, not more
   routing automation or live ingestion.
