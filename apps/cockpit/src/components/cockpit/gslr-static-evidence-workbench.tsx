@@ -75,9 +75,35 @@ export type GslrStaticEvidenceWorkbenchOperatorReportPacketV1 = Readonly<{
   reportText: string;
 }>;
 
+export const GSLR_STATIC_EVIDENCE_REVIEW_NOTE_DECISIONS_V1 = [
+  'attach_static_report_only',
+  'accept_static_evidence_no_runtime',
+  'block_static_import',
+  'quarantine_static_rejected',
+] as const;
+
+export type GslrStaticEvidenceReviewNoteDecisionV1 =
+  (typeof GSLR_STATIC_EVIDENCE_REVIEW_NOTE_DECISIONS_V1)[number];
+
+export type GslrStaticEvidenceReviewNoteV1 = Readonly<{
+  schemaVersion: 'portarium.gslr-static-evidence-review-note.v1';
+  beadId: string;
+  reviewer: string;
+  decision: GslrStaticEvidenceReviewNoteDecisionV1;
+  createdAtIso: string;
+  reportSchemaVersion: GslrStaticEvidenceWorkbenchOperatorReportPacketV1['schemaVersion'];
+  reportFilename: string;
+  reportRecordId: string;
+  reportDryRunStatus: GslrStaticImporterDryRunResultV1['status'];
+  rationale: string;
+  markdown: string;
+}>;
+
 const DEFAULT_NOW_ISO = '2026-05-13T04:30:00.000Z';
 const DEFAULT_DRY_RUN_AT_ISO = '2026-05-13T05:00:00.000Z';
 const DEFAULT_ACTOR = 'operator:gslr-workbench';
+const DEFAULT_REVIEW_BEAD_ID = 'bead-1267';
+const DEFAULT_REVIEWER = 'operator:gslr-workbench';
 
 const workbenchFixtures: readonly WorkbenchFixture[] = [
   {
@@ -211,6 +237,35 @@ export function serializeGslrStaticEvidenceWorkbenchOperatorReportPacketV1(
   packet: GslrStaticEvidenceWorkbenchOperatorReportPacketV1,
 ) {
   return `${JSON.stringify(packet, null, 2)}\n`;
+}
+
+export function buildGslrStaticEvidenceReviewNoteV1(input: {
+  packet: GslrStaticEvidenceWorkbenchOperatorReportPacketV1;
+  beadId: string;
+  reviewer: string;
+  decision: GslrStaticEvidenceReviewNoteDecisionV1;
+  rationale: string;
+}): GslrStaticEvidenceReviewNoteV1 {
+  const beadId = input.beadId.trim();
+  const reviewer = input.reviewer.trim();
+  const rationale = input.rationale.trim();
+  const noteBase = {
+    schemaVersion: 'portarium.gslr-static-evidence-review-note.v1' as const,
+    beadId: beadId.length === 0 ? DEFAULT_REVIEW_BEAD_ID : beadId,
+    reviewer: reviewer.length === 0 ? DEFAULT_REVIEWER : reviewer,
+    decision: input.decision,
+    createdAtIso: input.packet.generatedAtIso,
+    reportSchemaVersion: input.packet.schemaVersion,
+    reportFilename: input.packet.filename,
+    reportRecordId: input.packet.recordId,
+    reportDryRunStatus: input.packet.dryRunStatus,
+    rationale: rationale.length === 0 ? 'No additional rationale supplied.' : rationale,
+  };
+
+  return deepFreeze({
+    ...noteBase,
+    markdown: reviewNoteMarkdown(noteBase, input.packet),
+  });
 }
 
 export function GslrStaticEvidenceWorkbench() {
@@ -523,6 +578,8 @@ function WorkbenchResultPanel({ result }: { result: WorkbenchResult }) {
           </pre>
         </CardContent>
       </Card>
+
+      <StaticReviewNoteComposer packet={reportPacket} />
     </>
   );
 }
@@ -573,6 +630,103 @@ function OperatorReportActions({
   );
 }
 
+function StaticReviewNoteComposer({
+  packet,
+}: {
+  packet: GslrStaticEvidenceWorkbenchOperatorReportPacketV1;
+}) {
+  const [beadId, setBeadId] = useState(DEFAULT_REVIEW_BEAD_ID);
+  const [reviewer, setReviewer] = useState(DEFAULT_REVIEWER);
+  const [decision, setDecision] = useState<GslrStaticEvidenceReviewNoteDecisionV1>(
+    suggestedReviewDecision(packet),
+  );
+  const [rationale, setRationale] = useState(defaultReviewRationale(packet));
+  const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle');
+  const note = buildGslrStaticEvidenceReviewNoteV1({
+    packet,
+    beadId,
+    reviewer,
+    decision,
+    rationale,
+  });
+
+  async function copyReviewNote() {
+    try {
+      await navigator.clipboard.writeText(note.markdown);
+      setCopyState('copied');
+    } catch {
+      setCopyState('failed');
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <CardTitle className="text-base">Static review note</CardTitle>
+          <Button type="button" variant="outline" onClick={copyReviewNote}>
+            <Copy className="h-4 w-4" aria-hidden="true" />
+            {copyState === 'copied'
+              ? 'Copied note'
+              : copyState === 'failed'
+                ? 'Copy failed'
+                : 'Copy note'}
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div className="grid gap-3 md:grid-cols-2">
+          <div className="grid gap-2">
+            <Label htmlFor="gslr-review-note-bead">Bead or review ref</Label>
+            <Input
+              id="gslr-review-note-bead"
+              value={beadId}
+              onChange={(event) => setBeadId(event.currentTarget.value)}
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="gslr-review-note-reviewer">Reviewer</Label>
+            <Input
+              id="gslr-review-note-reviewer"
+              value={reviewer}
+              onChange={(event) => setReviewer(event.currentTarget.value)}
+            />
+          </div>
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="gslr-review-note-decision">Decision label</Label>
+          <select
+            id="gslr-review-note-decision"
+            value={decision}
+            onChange={(event) =>
+              setDecision(event.currentTarget.value as GslrStaticEvidenceReviewNoteDecisionV1)
+            }
+            className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm"
+          >
+            {GSLR_STATIC_EVIDENCE_REVIEW_NOTE_DECISIONS_V1.map((item) => (
+              <option key={item} value={item}>
+                {item}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="gslr-review-note-rationale">Rationale</Label>
+          <Textarea
+            id="gslr-review-note-rationale"
+            value={rationale}
+            onChange={(event) => setRationale(event.currentTarget.value)}
+            className="min-h-[96px]"
+          />
+        </div>
+        <pre className="max-h-[300px] overflow-auto rounded-md border bg-muted/30 p-3 text-xs">
+          {note.markdown}
+        </pre>
+      </CardContent>
+    </Card>
+  );
+}
+
 function KeyValue({ label, value }: { label: string; value: string }) {
   return (
     <div className="grid gap-1">
@@ -616,6 +770,73 @@ function operatorReport(result: GslrStaticImporterDryRunResultV1) {
     `liveEndpoints: ${record.authority.liveEndpoints}`,
     `boundary: static review only; no persistence, polling, queues, SSE, runtime cards, production actions, or MC connector access`,
   ].join('\n');
+}
+
+function reviewNoteMarkdown(
+  note: Omit<GslrStaticEvidenceReviewNoteV1, 'markdown'>,
+  packet: GslrStaticEvidenceWorkbenchOperatorReportPacketV1,
+) {
+  return [
+    `## Static Evidence Review Note`,
+    ``,
+    `schemaVersion: ${note.schemaVersion}`,
+    `beadId: ${note.beadId}`,
+    `reviewer: ${note.reviewer}`,
+    `createdAtIso: ${note.createdAtIso}`,
+    `decision: ${note.decision}`,
+    ``,
+    `### Attached Report`,
+    ``,
+    `- schema: ${note.reportSchemaVersion}`,
+    `- filename: ${note.reportFilename}`,
+    `- route: ${packet.route}`,
+    `- recordId: ${note.reportRecordId}`,
+    `- dryRunStatus: ${note.reportDryRunStatus}`,
+    `- sourceRef: ${packet.sourceRef}`,
+    ``,
+    `### Evidence Summary`,
+    ``,
+    `- recordStatus: ${packet.recordStatus}`,
+    `- reviewState: ${packet.reviewState}`,
+    `- signerTrust: ${packet.signerTrust}`,
+    `- artifactByteStatus: ${packet.artifactByteStatuses.join(', ') || 'none'}`,
+    `- verification: ${
+      packet.verification.status === 'verified'
+        ? 'verified'
+        : `${packet.verification.rejection.code}/${packet.verification.rejection.category}`
+    }`,
+    `- blockers: ${packet.plan.blockers.length === 0 ? 'none' : packet.plan.blockers.join(' | ')}`,
+    `- auditEvent: ${packet.repository.auditEvent ?? 'none'}`,
+    ``,
+    `### Rationale`,
+    ``,
+    note.rationale,
+    ``,
+    `### Boundary`,
+    ``,
+    `Static review note only. Does not persist evidence, poll prompt-language, create queues, open SSE streams, create runtime cards, execute production actions, or access MC connectors/source systems.`,
+  ].join('\n');
+}
+
+function suggestedReviewDecision(
+  packet: GslrStaticEvidenceWorkbenchOperatorReportPacketV1,
+): GslrStaticEvidenceReviewNoteDecisionV1 {
+  if (packet.recordStatus === 'quarantined_rejected') return 'quarantine_static_rejected';
+  if (packet.plan.blockers.length > 0) return 'block_static_import';
+  if (packet.dryRunStatus === 'stored' || packet.dryRunStatus === 'replayed') {
+    return 'accept_static_evidence_no_runtime';
+  }
+  return 'attach_static_report_only';
+}
+
+function defaultReviewRationale(packet: GslrStaticEvidenceWorkbenchOperatorReportPacketV1) {
+  if (packet.recordStatus === 'quarantined_rejected') {
+    return 'Attach the quarantined static evidence report for review. Do not import or create runtime authority.';
+  }
+  if (packet.plan.blockers.length > 0) {
+    return 'Attach the blocked static evidence report and keep import blocked until all listed blockers are resolved.';
+  }
+  return 'Attach the accepted static evidence report as review evidence only. Do not create runtime authority from this report.';
 }
 
 function productionTrustedBundleJson(bundleJson: string) {

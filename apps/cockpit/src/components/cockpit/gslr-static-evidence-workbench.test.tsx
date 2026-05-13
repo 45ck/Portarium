@@ -4,7 +4,9 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   buildGslrStaticEvidenceWorkbenchOperatorReportPacketV1,
+  buildGslrStaticEvidenceReviewNoteV1,
   GslrStaticEvidenceWorkbench,
+  GSLR_STATIC_EVIDENCE_REVIEW_NOTE_DECISIONS_V1,
   runGslrStaticEvidenceWorkbenchDryRun,
   serializeGslrStaticEvidenceWorkbenchOperatorReportPacketV1,
 } from './gslr-static-evidence-workbench';
@@ -104,6 +106,43 @@ describe('GslrStaticEvidenceWorkbench', () => {
     expect(Object.isFrozen(packet.repository)).toBe(true);
   });
 
+  it('builds a static review note with constrained operator decision labels', () => {
+    const result = runGslrStaticEvidenceWorkbenchDryRun({
+      bundleText: GSLR_MANUAL_BUNDLE_PREVIEW_FIXTURES[0].bundleJson,
+      sourceRef: 'fixtures/gslr20/gslr8-route-record-compiler-test-fixture.bundle.json',
+      nowIso: NOW_ISO,
+      dryRunAtIso: DRY_RUN_AT_ISO,
+      actor: 'operator:test',
+    });
+
+    expect(result.kind).toBe('dry-run');
+    if (result.kind !== 'dry-run') return;
+
+    const packet = buildGslrStaticEvidenceWorkbenchOperatorReportPacketV1(result.result);
+    const note = buildGslrStaticEvidenceReviewNoteV1({
+      packet,
+      beadId: 'bead-1267',
+      reviewer: 'operator:test',
+      decision: 'block_static_import',
+      rationale: 'Keep import blocked until production signer trust exists.',
+    });
+
+    expect(GSLR_STATIC_EVIDENCE_REVIEW_NOTE_DECISIONS_V1).toEqual([
+      'attach_static_report_only',
+      'accept_static_evidence_no_runtime',
+      'block_static_import',
+      'quarantine_static_rejected',
+    ]);
+    expect(note.schemaVersion).toBe('portarium.gslr-static-evidence-review-note.v1');
+    expect(note.reportSchemaVersion).toBe(packet.schemaVersion);
+    expect(note.reportDryRunStatus).toBe('planned-blocked');
+    expect(note.markdown).toContain('decision: block_static_import');
+    expect(note.markdown).toContain('beadId: bead-1267');
+    expect(note.markdown).toContain('Static review note only.');
+    expect(note.markdown).toContain(packet.filename);
+    expect(Object.isFrozen(note)).toBe(true);
+  });
+
   it('copies and prepares the operator report export without live endpoint calls', () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, 'clipboard', {
@@ -148,6 +187,30 @@ describe('GslrStaticEvidenceWorkbench', () => {
     expect(createObjectURL).toHaveBeenCalledTimes(1);
     expect(anchorClick).toHaveBeenCalledTimes(1);
     expect(revokeObjectURL).toHaveBeenCalledWith('blob:operator-report');
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it('copies the static review note without live endpoint calls', () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText },
+    });
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
+
+    render(<GslrStaticEvidenceWorkbench />);
+
+    fireEvent.click(screen.getByRole('button', { name: /GSLR-8 test-signature blocked/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Run dry-run/i }));
+    fireEvent.change(screen.getByLabelText(/Decision label/i), {
+      target: { value: 'block_static_import' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Copy note/i }));
+
+    expect(writeText).toHaveBeenCalledWith(
+      expect.stringContaining('decision: block_static_import'),
+    );
+    expect(writeText).toHaveBeenCalledWith(expect.stringContaining('Static review note only.'));
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 });

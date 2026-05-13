@@ -46,6 +46,8 @@ The UI exposes:
 
 - `Copy JSON`, for attaching the packet to a bead or review note;
 - `Download JSON`, for saving the packet as a local static artifact.
+- `Static review note`, for turning the packet into constrained bead/review
+  Markdown with an explicit operator decision label.
 
 ## What It Proves
 
@@ -97,7 +99,5 @@ The focused tests prove:
 
 ## Next Step
 
-The next safe item is a static review-note workflow: define how a copied report
-packet is attached to a bead/review note and what operator decision labels are
-allowed. That should still be docs/test-only and must not add persistence,
-runtime cards, live endpoints, actions, or MC connector/source-system access.
+Update: `bead-1267` has now implemented the static review-note workflow. See
+[`static-evidence-review-note-workflow-2026-05-13.md`](./static-evidence-review-note-workflow-2026-05-13.md).
