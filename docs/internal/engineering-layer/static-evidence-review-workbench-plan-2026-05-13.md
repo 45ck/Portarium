@@ -302,9 +302,10 @@ Recommended next beads:
 - `bead-1264`: GSLR-20 static importer dry-run acceptance fixture.
 - `bead-1265`: Static Evidence Review Workbench internal Cockpit route.
 - `bead-1266`: Workbench operator report export.
-- `bead-1267`: Production keyring and artifact-byte verification design split.
-- `bead-1268`: Persistent static imported-record storage design, blocked by
-  `bead-1267`.
+- `bead-1267`: Static evidence review-note workflow.
+- `bead-1268`: Production keyring and artifact-byte verification design split.
+- `bead-1269`: Persistent static imported-record storage design, blocked by
+  `bead-1268`.
 
 Do not create beads for live PL polling, runtime cards, route-record queues,
 production actions, or MC connector/data engineering from this plan.

@@ -26,6 +26,7 @@ prompt-language experiment evidence
   -> internal Static Evidence Review Workbench route
   -> static operator report export packet
   -> static review-note workflow
+  -> production-keyring/artifact-byte verification design split
 ```
 
 The loop is intentionally static. It proves that evidence can be shaped and
@@ -110,6 +111,10 @@ Portarium now has:
   persistence, live endpoints, runtime cards, actions, or MC connector access.
 - a static review-note composer that turns an exported report packet into
   copyable bead/review Markdown with constrained operator decision labels.
+- a docs/test-only static verification design evaluator that separately reports
+  production-keyring readiness and artifact-byte readiness while blocking live
+  source fetches, runtime authority, actions, live endpoints, and MC connector
+  access.
 
 prompt-language now records GSLR-8 as the strongest local-screen result and
 publishes checked-in static bundle fixtures for GSLR-8 and GSLR-7.
@@ -257,6 +262,18 @@ GSLR-20 proves static importer dry-run composition:
 - copying the note uses browser-local clipboard APIs and makes no live endpoint
   calls.
 
+`bead-1268` proves static verification design readiness:
+
+- production-keyring readiness and artifact-byte readiness are evaluated
+  separately;
+- the recommended design requires pinned production keyring trust, `ed25519`
+  only, documented revocation/rotation, operator-supplied artifact bytes,
+  SHA-256 hashing, missing-byte blocking, mismatch quarantine, and raw-payload
+  rejection;
+- test fixtures, network-discovered keyrings, declared-hash-only artifacts,
+  live-source artifact fetches, runtime authority, actions, live endpoints, and
+  MC connector access are blocked.
+
 This is enough to continue toward a governed engineering cockpit. It is not
 enough to create runtime automation.
 
@@ -266,6 +283,9 @@ Still blocked:
 
 - live prompt-language manifest ingestion;
 - signed-bundle import into production state;
+- production keyring implementation;
+- live artifact byte fetching from source systems;
+- artifact byte storage;
 - production static imported-record repository implementation;
 - static imported-record importer implementation;
 - persistent storage of static operator reports;
@@ -281,18 +301,18 @@ Still blocked:
 
 ## Next Step
 
-The next safe work item is the production-keyring and artifact-byte verification
-design split. GSLR-20 supplied the route-independent dry-run core, `bead-1265`
-supplied the internal Workbench route, `bead-1266` supplied the portable
-operator report packet, and `bead-1267` supplied constrained static
-review-note capture.
+The next safe work item is persistent static imported-record storage design.
+GSLR-20 supplied the route-independent dry-run core, `bead-1265` supplied the
+internal Workbench route, `bead-1266` supplied the portable operator report
+packet, `bead-1267` supplied constrained static review-note capture, and
+`bead-1268` supplied the production-keyring/artifact-byte verification design
+gate.
 
 See
 [`static-evidence-review-workbench-plan-2026-05-13.md`](./static-evidence-review-workbench-plan-2026-05-13.md).
 
-Proceed to `bead-1268`: define production keyring and artifact-byte
-verification interfaces, blockers, and test boundaries. It should stay
-design/test-only and must not add live polling, persistence, runtime cards,
+Proceed to `bead-1269`: persistent static imported-record storage design. It
+should stay design/test-only and must not add live polling, runtime cards,
 production actions, or MC connector/source-system access.
 
 Production keyring, artifact byte fetching, persistent storage, live routing,

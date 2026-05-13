@@ -125,7 +125,6 @@ The focused tests prove:
 
 ## Next Step
 
-The next safe item is to split production keyring and artifact-byte verification
-design. That work should define interfaces and blockers only. It must not add
-live polling, production persistence, runtime cards, actions, or MC connector
-access.
+Update: `bead-1268` has now implemented the production-keyring and
+artifact-byte verification design split. See
+[`gslr-21-static-verification-design-split-2026-05-13.md`](./gslr-21-static-verification-design-split-2026-05-13.md).
