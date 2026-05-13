@@ -221,7 +221,14 @@ Still blocked:
 
 ## Next Step
 
-The next safe work item is GSLR-20: static importer dry-run fixture.
+The next safe work item is the Static Evidence Review Workbench, with GSLR-20
+serving as its acceptance fixture rather than as another broad research step.
+
+See
+[`static-evidence-review-workbench-plan-2026-05-13.md`](./static-evidence-review-workbench-plan-2026-05-13.md).
+
+GSLR-20 should be implemented as the route-independent dry-run core for that
+workbench.
 
 It should:
 
@@ -232,4 +239,8 @@ It should:
 - continue to block queues, tables, SSE, runtime cards, production actions, and
   MC connector/data movement.
 
-Do this before building any live ingestion path.
+Do this before building any live ingestion path. Once GSLR-20 passes, product
+engineering should continue with the static workbench route, operator review
+state, audit trail, and exportable report. Production keyring, artifact byte
+fetching, persistent storage, live routing, runtime cards, and MC connector work
+remain separate gated follow-ups.
