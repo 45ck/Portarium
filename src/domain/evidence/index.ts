@@ -15,6 +15,7 @@ export * from './gslr-persistent-static-imported-record-storage-design-v1.js';
 export * from './gslr-persistent-static-repository-adapter-contract-v1.js';
 export * from './gslr-persistent-static-repository-contract-harness-adapter-v1.js';
 export * from './gslr-persistent-static-repository-database-adapter-review-v1.js';
+export * from './gslr-persistent-static-repository-draft-postgres-adapter-v1.js';
 export * from './gslr-persistent-static-repository-implementation-readiness-v1.js';
 export * from './gslr-persistent-static-repository-implementation-v1.js';
 export * from './gslr-persistent-static-repository-review-packet-v1.js';

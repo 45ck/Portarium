@@ -172,3 +172,6 @@ runtime cards absent, production actions blocked, and MC connector access
 blocked.
 
 If review does not approve the adapter, stop at the contract-harness adapter.
+
+The draft scaffold is recorded in
+[`gslr-30-persistent-static-repository-draft-postgres-adapter-2026-05-13.md`](./gslr-30-persistent-static-repository-draft-postgres-adapter-2026-05-13.md).

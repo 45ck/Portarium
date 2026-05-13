@@ -1,7 +1,7 @@
 # GSLR Current Progress: 2026-05-13
 
-Status: post-GSLR-29 progress update
-Tracking beads: `bead-1253`, `bead-1254`, `bead-1255`, `bead-1256`, `bead-1257`, `bead-1258`, `bead-1259`, `bead-1260`, `bead-1261`, `bead-1262`, `bead-1263`, `bead-1264`, `bead-1265`, `bead-1266`, `bead-1267`, `bead-1268`, `bead-1269`, `bead-1270`, `bead-1271`, `bead-1272`, `bead-1273`, `bead-1274`, `bead-1275`, `bead-1276`
+Status: post-GSLR-30 progress update
+Tracking beads: `bead-1253`, `bead-1254`, `bead-1255`, `bead-1256`, `bead-1257`, `bead-1258`, `bead-1259`, `bead-1260`, `bead-1261`, `bead-1262`, `bead-1263`, `bead-1264`, `bead-1265`, `bead-1266`, `bead-1267`, `bead-1268`, `bead-1269`, `bead-1270`, `bead-1271`, `bead-1272`, `bead-1273`, `bead-1274`, `bead-1275`, `bead-1276`, `bead-1277`
 
 ## Where We Are
 
@@ -35,6 +35,7 @@ prompt-language experiment evidence
   -> persistent static repository adapter contract harness
   -> persistent static repository contract-harness adapter
   -> persistent static repository database-adapter review checkpoint
+  -> persistent static repository draft PostgreSQL adapter scaffold
 ```
 
 The loop is intentionally static. It proves that evidence can be shaped and
@@ -153,6 +154,11 @@ Portarium now has:
   treats decline as a valid stop decision, and blocks production adapter scope,
   applied migrations, production tables/writes, runtime surfaces, actions, and
   MC connector access.
+- a docs/test-only persistent static repository draft PostgreSQL adapter
+  scaffold that is gated by the GSLR-29 review, keeps connection config absent,
+  migrations unapplied, production tables absent, production writes disabled,
+  SQL statements non-executable, raw payload columns forbidden, and runtime
+  surfaces blocked.
 
 prompt-language now records GSLR-8 as the strongest local-screen result and
 publishes checked-in static bundle fixtures for GSLR-8 and GSLR-7.
@@ -348,6 +354,18 @@ GSLR-20 proves static importer dry-run composition:
   production tables/writes, missing safeguards, runtime surfaces, actions, and
   MC connector access block.
 
+`bead-1277` proves a database adapter can be made reviewable before it becomes
+executable:
+
+- the scaffold opens only from a ready GSLR-29 review checkpoint;
+- adapter mode remains `contract-scaffold-only`;
+- connection configuration is absent;
+- migrations are draft-not-applied;
+- production tables and writes remain disabled;
+- SQL statements are parameterized but non-executable;
+- raw payload columns, missing constraints, missing assertion plans, and runtime
+  authority block.
+
 This is enough to continue toward a governed engineering cockpit. It is not
 enough to create runtime automation.
 
@@ -361,7 +379,8 @@ Still blocked:
 - live artifact byte fetching from source systems;
 - artifact byte storage;
 - production static imported-record repository implementation;
-- draft PostgreSQL adapter implementation until `bead-1276` review approves it;
+- executable PostgreSQL adapter implementation until the draft scaffold SQL
+  review passes;
 - production database migrations for imported records;
 - static imported-record importer implementation;
 - persistent storage of static operator reports;
@@ -377,9 +396,8 @@ Still blocked:
 
 ## Next Step
 
-The latest safe work item is a draft PostgreSQL adapter contract/scaffold only
-if the GSLR-29 review approves database-adapter value. GSLR-20 supplied the
-route-independent dry-run core,
+The latest safe work item is a draft SQL review packet over the GSLR-30
+scaffold. GSLR-20 supplied the route-independent dry-run core,
 `bead-1265` supplied the internal Workbench route, `bead-1266` supplied the
 portable operator report packet, `bead-1267` supplied constrained static
 review-note capture, `bead-1268` supplied the production-keyring/artifact byte
@@ -388,19 +406,18 @@ design gate, `bead-1270` supplied the implementation-readiness checklist, and
 `bead-1271` supplied the stop-review checkpoint, `bead-1272` supplied the
 operator/product static-only review packet, `bead-1273` supplied the persistent
 static repository port plus draft migration contract, `bead-1274` supplied the
-adapter contract harness, `bead-1275` supplied the contract-harness adapter, and
-`bead-1276` supplied the database-adapter review checkpoint.
+adapter contract harness, `bead-1275` supplied the contract-harness adapter,
+`bead-1276` supplied the database-adapter review checkpoint, and `bead-1277`
+supplied the draft PostgreSQL adapter scaffold.
 
 See
 [`static-evidence-review-workbench-plan-2026-05-13.md`](./static-evidence-review-workbench-plan-2026-05-13.md).
 
-Proceed to `bead-1277` only if the review outcome is
-`ready-to-open-draft-postgres-adapter-bead`: draft PostgreSQL adapter
-contract/scaffold behind the same contract, with migrations unapplied,
-production writes disabled, live polling absent, runtime cards absent,
-production actions blocked, and MC connector/source-system access blocked.
-
-If review does not approve the adapter, stop at the contract-harness adapter.
+Proceed to `bead-1278`: draft SQL review packet for table mapping, statement
+plan, constraints, rollback posture, and GSLR-27 contract assertion coverage. It
+must not add a database connection, apply migrations, create production tables,
+enable production writes, poll prompt-language, create runtime cards, execute
+production actions, or access MC connectors/source systems.
 
 Production keyring, artifact byte fetching, persistent storage, live routing,
 runtime cards, and MC connector work remain separate gated follow-ups.

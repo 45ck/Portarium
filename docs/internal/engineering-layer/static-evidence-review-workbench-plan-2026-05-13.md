@@ -189,6 +189,8 @@ Candidate follow-ups:
 - `bead-1277`: draft PostgreSQL adapter contract/scaffold, blocked by
   `bead-1276` approval and required to keep migrations unapplied plus
   production writes disabled;
+- `bead-1278`: draft SQL review packet over the GSLR-30 scaffold before any
+  executable PostgreSQL adapter code;
 - authz and tenancy for imported static evidence;
 - operator review workflow over persisted imported records.
 
@@ -323,6 +325,11 @@ Recommended next beads:
   with migrations still unapplied and production writes disabled.
 - `bead-1276`: Review checkpoint before any database adapter, blocked by
   `bead-1275`.
+- `bead-1277`: Draft PostgreSQL adapter scaffold, blocked by a ready GSLR-29
+  review outcome, with no connection config, applied migration, production
+  tables, or production writes.
+- `bead-1278`: Draft SQL review packet, blocked by `bead-1277`, before any
+  executable PostgreSQL adapter code.
 
 Do not create beads for live PL polling, runtime cards, route-record queues,
 production actions, or MC connector/data engineering from this plan.
