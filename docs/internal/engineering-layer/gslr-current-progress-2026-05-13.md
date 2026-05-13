@@ -1,7 +1,7 @@
 # GSLR Current Progress: 2026-05-13
 
-Status: post-GSLR-19 progress update
-Tracking beads: `bead-1253`, `bead-1254`, `bead-1255`, `bead-1256`, `bead-1257`, `bead-1258`, `bead-1259`, `bead-1260`, `bead-1261`, `bead-1262`, `bead-1263`, `bead-1264`
+Status: post-GSLR-24 progress update
+Tracking beads: `bead-1253`, `bead-1254`, `bead-1255`, `bead-1256`, `bead-1257`, `bead-1258`, `bead-1259`, `bead-1260`, `bead-1261`, `bead-1262`, `bead-1263`, `bead-1264`, `bead-1265`, `bead-1266`, `bead-1267`, `bead-1268`, `bead-1269`, `bead-1270`, `bead-1271`
 
 ## Where We Are
 
@@ -29,6 +29,7 @@ prompt-language experiment evidence
   -> production-keyring/artifact-byte verification design split
   -> persistent static imported-record storage design gate
   -> persistent static repository implementation-readiness checklist
+  -> persistent static repository stop-review checkpoint
 ```
 
 The loop is intentionally static. It proves that evidence can be shaped and
@@ -124,6 +125,9 @@ Portarium now has:
   checklist that blocks already-applied migrations/tables/writes and requires
   contract, migration, audit, backup, retention, observability, and security
   plans before a future implementation bead can open.
+- a docs/test-only stop-review checkpoint that pauses real persistent storage
+  implementation until operator and product review complete a static-only
+  decision.
 
 prompt-language now records GSLR-8 as the strongest local-screen result and
 publishes checked-in static bundle fixtures for GSLR-8 and GSLR-7.
@@ -336,21 +340,23 @@ Still blocked:
 
 ## Next Step
 
-The next safe work item is a stop-and-review checkpoint before real persistent
+The latest safe work item is a stop-and-review checkpoint before real persistent
 storage implementation. GSLR-20 supplied the route-independent dry-run core,
 `bead-1265` supplied the internal Workbench route, `bead-1266` supplied the
 portable operator report packet, `bead-1267` supplied constrained static
 review-note capture, `bead-1268` supplied the production-keyring/artifact byte
 verification design gate, `bead-1269` supplied the persistent static storage
-design gate, and `bead-1270` supplied the implementation-readiness checklist.
+design gate, `bead-1270` supplied the implementation-readiness checklist, and
+`bead-1271` supplied the stop-review checkpoint.
 
 See
 [`static-evidence-review-workbench-plan-2026-05-13.md`](./static-evidence-review-workbench-plan-2026-05-13.md).
 
-Proceed to `bead-1271`: stop-and-review checkpoint. It should decide whether to
-open a real implementation bead or pause for operator/product review; it must
-not add live polling, database migrations, runtime cards, production actions, or
-MC connector/source-system access.
+Proceed to `bead-1272`: operator/product static-only review packet. It should
+attach the current static operator report/review note, confirm whether persistent
+storage is useful before runtime ingestion, and decide whether to open a real
+implementation bead. It must not add live polling, database migrations, runtime
+cards, production actions, or MC connector/source-system access.
 
 Production keyring, artifact byte fetching, persistent storage, live routing,
 runtime cards, and MC connector work remain separate gated follow-ups.

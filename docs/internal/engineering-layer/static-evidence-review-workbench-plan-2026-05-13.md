@@ -310,6 +310,8 @@ Recommended next beads:
   blocked by `bead-1269`.
 - `bead-1271`: Stop-and-review checkpoint before real persistent storage
   implementation.
+- `bead-1272`: Operator/product static-only review packet before opening real
+  persistent storage implementation.
 
 Do not create beads for live PL polling, runtime cards, route-record queues,
 production actions, or MC connector/data engineering from this plan.

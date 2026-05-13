@@ -138,3 +138,6 @@ The focused tests prove:
 The next safe item is a stop-and-review checkpoint. The project now has enough
 static gates to decide whether to open a real implementation bead or pause for
 operator/product review.
+
+Update: `bead-1271` has now implemented that stop-review checkpoint in
+[`gslr-24-persistent-static-repository-stop-review-checkpoint-2026-05-13.md`](./gslr-24-persistent-static-repository-stop-review-checkpoint-2026-05-13.md).
