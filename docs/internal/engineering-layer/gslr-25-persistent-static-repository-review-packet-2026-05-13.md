@@ -150,3 +150,7 @@ If operator and product approve the packet, open a narrow implementation bead
 for a persistent static repository port and draft migration. The implementation
 bead must still be static-only and must not add live ingestion, runtime cards,
 production actions, or MC connector/source-system access.
+
+Update: `bead-1273` has now implemented that port and draft migration contract
+in
+[`gslr-26-persistent-static-repository-port-draft-migration-2026-05-13.md`](./gslr-26-persistent-static-repository-port-draft-migration-2026-05-13.md).

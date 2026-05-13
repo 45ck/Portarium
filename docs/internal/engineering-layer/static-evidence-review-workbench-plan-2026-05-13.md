@@ -314,6 +314,8 @@ Recommended next beads:
   persistent storage implementation.
 - `bead-1273`: Persistent static repository port and draft migration contract,
   blocked unless `bead-1272` records approval.
+- `bead-1274`: Persistent static repository adapter contract tests, blocked by
+  `bead-1273`, with migrations still unapplied.
 
 Do not create beads for live PL polling, runtime cards, route-record queues,
 production actions, or MC connector/data engineering from this plan.
