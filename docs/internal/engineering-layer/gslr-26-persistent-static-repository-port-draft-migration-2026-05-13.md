@@ -154,3 +154,6 @@ The focused tests prove:
 Open a follow-up adapter-contract bead only after this contract is reviewed. The
 adapter bead should test an implementation against this port and draft migration
 shape without applying migrations or enabling production writes.
+
+Update: `bead-1274` has now implemented that adapter contract harness in
+[`gslr-27-persistent-static-repository-adapter-contract-2026-05-13.md`](./gslr-27-persistent-static-repository-adapter-contract-2026-05-13.md).

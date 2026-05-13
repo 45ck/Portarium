@@ -1,7 +1,7 @@
 # GSLR Current Progress: 2026-05-13
 
-Status: post-GSLR-26 progress update
-Tracking beads: `bead-1253`, `bead-1254`, `bead-1255`, `bead-1256`, `bead-1257`, `bead-1258`, `bead-1259`, `bead-1260`, `bead-1261`, `bead-1262`, `bead-1263`, `bead-1264`, `bead-1265`, `bead-1266`, `bead-1267`, `bead-1268`, `bead-1269`, `bead-1270`, `bead-1271`, `bead-1272`, `bead-1273`
+Status: post-GSLR-27 progress update
+Tracking beads: `bead-1253`, `bead-1254`, `bead-1255`, `bead-1256`, `bead-1257`, `bead-1258`, `bead-1259`, `bead-1260`, `bead-1261`, `bead-1262`, `bead-1263`, `bead-1264`, `bead-1265`, `bead-1266`, `bead-1267`, `bead-1268`, `bead-1269`, `bead-1270`, `bead-1271`, `bead-1272`, `bead-1273`, `bead-1274`
 
 ## Where We Are
 
@@ -32,6 +32,7 @@ prompt-language experiment evidence
   -> persistent static repository stop-review checkpoint
   -> persistent static repository operator/product review packet
   -> persistent static repository port and draft migration contract
+  -> persistent static repository adapter contract harness
 ```
 
 The loop is intentionally static. It proves that evidence can be shaped and
@@ -138,6 +139,9 @@ Portarium now has:
   defines the port surface and unapplied draft migration while keeping
   production tables, production writes, live ingestion, runtime cards, actions,
   and MC connector access blocked.
+- a docs/test-only persistent static repository adapter contract harness that
+  defines required adapter assertions while keeping migrations unapplied and
+  production writes disabled.
 
 prompt-language now records GSLR-8 as the strongest local-screen result and
 publishes checked-in static bundle fixtures for GSLR-8 and GSLR-7.
@@ -358,16 +362,18 @@ review-note capture, `bead-1268` supplied the production-keyring/artifact byte
 verification design gate, `bead-1269` supplied the persistent static storage
 design gate, `bead-1270` supplied the implementation-readiness checklist, and
 `bead-1271` supplied the stop-review checkpoint, `bead-1272` supplied the
-operator/product static-only review packet, and `bead-1273` supplied the
-persistent static repository port plus draft migration contract.
+operator/product static-only review packet, `bead-1273` supplied the persistent
+static repository port plus draft migration contract, and `bead-1274` supplied
+the adapter contract harness.
 
 See
 [`static-evidence-review-workbench-plan-2026-05-13.md`](./static-evidence-review-workbench-plan-2026-05-13.md).
 
-Proceed to `bead-1274`: adapter contract tests for the persistent static
-repository port, still without applying migrations or enabling production
-writes. It must not add live polling, production writes, runtime cards,
-production actions, or MC connector/source-system access.
+Proceed to `bead-1275`: contract-harness adapter implementation for the
+persistent static repository port. It should satisfy the GSLR-27 assertions
+while migrations remain unapplied and production writes remain disabled. It must
+not add live polling, production writes, runtime cards, production actions, or
+MC connector/source-system access.
 
 Production keyring, artifact byte fetching, persistent storage, live routing,
 runtime cards, and MC connector work remain separate gated follow-ups.

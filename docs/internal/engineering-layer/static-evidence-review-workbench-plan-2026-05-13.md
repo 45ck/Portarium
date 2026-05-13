@@ -316,6 +316,8 @@ Recommended next beads:
   blocked unless `bead-1272` records approval.
 - `bead-1274`: Persistent static repository adapter contract tests, blocked by
   `bead-1273`, with migrations still unapplied.
+- `bead-1275`: Contract-harness adapter implementation, blocked by `bead-1274`,
+  with migrations still unapplied and production writes disabled.
 
 Do not create beads for live PL polling, runtime cards, route-record queues,
 production actions, or MC connector/data engineering from this plan.

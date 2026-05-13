@@ -12,6 +12,7 @@ export * from './engineering-evidence-card-cockpit-export-v1.js';
 export * from './gslr-evidence-bundle-v1.js';
 export * from './gslr-engineering-evidence-card-projection-v1.js';
 export * from './gslr-persistent-static-imported-record-storage-design-v1.js';
+export * from './gslr-persistent-static-repository-adapter-contract-v1.js';
 export * from './gslr-persistent-static-repository-implementation-readiness-v1.js';
 export * from './gslr-persistent-static-repository-implementation-v1.js';
 export * from './gslr-persistent-static-repository-review-packet-v1.js';
