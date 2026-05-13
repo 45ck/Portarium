@@ -510,3 +510,23 @@ connector/source-system access.
 
 Production keyring, artifact byte fetching, persistent storage, live routing,
 runtime cards, and MC connector work remain separate gated follow-ups.
+
+## Repository Sweep
+
+The 2026-05-13 repository sweep checked the accessible local repositories:
+
+- `Portarium`;
+- `prompt-language`;
+- `MacquarieCollege`;
+- `.codex/.tmp/plugins`.
+
+No pending project changes were found outside Portarium at sweep time. Portarium
+remains the active engineering repository for the current GSLR chain, and the
+next safe gated step is still `bead-1284`: database-binding design review. That
+review may design the future binding boundary, but it must not add database
+clients, connection config, generated SQL, secrets, applied migrations,
+production tables, reads, writes, runtime cards, production actions, or MC
+connector/source-system access.
+
+The `.codex/memories` path contains an empty `.git` directory and is not a valid
+git repository, so it is excluded from commit and push actions.
