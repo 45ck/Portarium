@@ -138,3 +138,6 @@ Open `bead-1283` for unbound adapter shell review. That review should verify the
 shell remains non-operational before any database client binding, connection
 config, generated SQL, secrets, applied migrations, production tables,
 read/write execution, runtime cards, production actions, or MC connector access.
+
+The unbound adapter shell review is recorded in
+[`gslr-36-persistent-static-repository-unbound-adapter-shell-review-2026-05-13.md`](./gslr-36-persistent-static-repository-unbound-adapter-shell-review-2026-05-13.md).

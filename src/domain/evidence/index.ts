@@ -21,6 +21,7 @@ export * from './gslr-persistent-static-repository-executable-adapter-design-rev
 export * from './gslr-persistent-static-repository-executable-adapter-scaffold-v1.js';
 export * from './gslr-persistent-static-repository-scaffold-code-review-v1.js';
 export * from './gslr-persistent-static-repository-unbound-adapter-shell-v1.js';
+export * from './gslr-persistent-static-repository-unbound-adapter-shell-review-v1.js';
 export * from './gslr-persistent-static-repository-implementation-readiness-v1.js';
 export * from './gslr-persistent-static-repository-implementation-v1.js';
 export * from './gslr-persistent-static-repository-review-packet-v1.js';
