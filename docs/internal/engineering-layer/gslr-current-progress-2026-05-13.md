@@ -1,7 +1,7 @@
 # GSLR Current Progress: 2026-05-13
 
 Status: post-GSLR-19 progress update
-Tracking beads: `bead-1253`, `bead-1254`, `bead-1255`, `bead-1256`, `bead-1257`, `bead-1258`, `bead-1259`, `bead-1260`, `bead-1261`, `bead-1262`
+Tracking beads: `bead-1253`, `bead-1254`, `bead-1255`, `bead-1256`, `bead-1257`, `bead-1258`, `bead-1259`, `bead-1260`, `bead-1261`, `bead-1262`, `bead-1263`, `bead-1264`
 
 ## Where We Are
 
@@ -22,6 +22,7 @@ prompt-language experiment evidence
   -> static imported-record contract
   -> append-only static imported-record repository contract
   -> manual static imported-record append planner
+  -> static importer dry-run fixture
 ```
 
 The loop is intentionally static. It proves that evidence can be shaped and
@@ -92,6 +93,10 @@ Portarium now has:
   verified/rejected outcomes into repository append plans only after artifact
   byte policy, production keyring requirement, review defaults, failure
   reporting, and no-runtime authority pass.
+- a docs/test-only static importer dry-run contract that composes bundle
+  verification, imported-record building, append planning, in-memory repository
+  append, idempotent replay, structured quarantine, and no-runtime boundary
+  warnings in one route-independent result.
 
 prompt-language now records GSLR-8 as the strongest local-screen result and
 publishes checked-in static bundle fixtures for GSLR-8 and GSLR-7.
@@ -197,6 +202,18 @@ GSLR-19 proves static importer planning:
   controls, and live endpoints block planning;
 - records that claim live authority are rejected by the planner.
 
+GSLR-20 proves static importer dry-run composition:
+
+- verified production-trusted GSLR-8-shaped evidence can become an accepted
+  static append result in an in-memory repository;
+- repeated dry-runs replay idempotently instead of duplicating repository state;
+- invalid-signature GSLR-7-shaped evidence becomes quarantined static evidence
+  with structured rejection code/category and failure report;
+- test-signature verified fixtures and artifact bytes that are not fetched remain blocked
+  from accepted import;
+- runtime-authority adversarial bundles are quarantined and cannot gain runtime
+  authority through the repository.
+
 This is enough to continue toward a governed engineering cockpit. It is not
 enough to create runtime automation.
 
@@ -207,8 +224,8 @@ Still blocked:
 - live prompt-language manifest ingestion;
 - signed-bundle import into production state;
 - production static imported-record repository implementation;
-- static imported-record importer planning and implementation;
-- static importer dry-run fixture over checked-in bundles;
+- static imported-record importer implementation;
+- Cockpit Static Evidence Review Workbench route;
 - runtime Cockpit engineering cards;
 - route-record queues;
 - route-record database tables;
@@ -221,26 +238,18 @@ Still blocked:
 
 ## Next Step
 
-The next safe work item is the Static Evidence Review Workbench, with GSLR-20
-serving as its acceptance fixture rather than as another broad research step.
+The next safe work item is the Static Evidence Review Workbench route. GSLR-20
+has now supplied the route-independent dry-run core for that workbench.
 
 See
 [`static-evidence-review-workbench-plan-2026-05-13.md`](./static-evidence-review-workbench-plan-2026-05-13.md).
 
-GSLR-20 should be implemented as the route-independent dry-run core for that
-workbench.
+Proceed to `bead-1265`: build the internal Cockpit workbench route over the
+GSLR-20 dry-run result. The route should show verified, blocked, and adversarial
+outcomes; append plan blockers; idempotent dry-run audit; and report export
+affordance while proving it calls no live run, evidence, work-item, human-task,
+workforce queue, route-record, SSE, action, prompt-language polling, importer
+runtime, or MC connector/source-system endpoints.
 
-It should:
-
-- exercise the planner against checked-in verified and rejected bundle fixtures;
-- prove dry-run repository append inputs without writing persistent state;
-- preserve structured failure reporting for rejected fixtures;
-- remain a design/test step, not live PL ingestion or runtime import;
-- continue to block queues, tables, SSE, runtime cards, production actions, and
-  MC connector/data movement.
-
-Do this before building any live ingestion path. Once GSLR-20 passes, product
-engineering should continue with the static workbench route, operator review
-state, audit trail, and exportable report. Production keyring, artifact byte
-fetching, persistent storage, live routing, runtime cards, and MC connector work
-remain separate gated follow-ups.
+Production keyring, artifact byte fetching, persistent storage, live routing,
+runtime cards, and MC connector work remain separate gated follow-ups.

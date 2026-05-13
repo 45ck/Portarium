@@ -14,6 +14,7 @@ export * from './gslr-engineering-evidence-card-projection-v1.js';
 export * from './gslr-static-imported-record-importer-plan-v1.js';
 export * from './gslr-static-imported-record-repository-v1.js';
 export * from './gslr-static-imported-record-v1.js';
+export * from './gslr-static-importer-dry-run-v1.js';
 export * from './gslr-static-import-readiness-v1.js';
 export * from './presentation-blocks-v1.js';
 export * from './retention-schedule-v1.js';

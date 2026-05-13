@@ -136,6 +136,8 @@ approved.
 
 ### Milestone 1: Static Dry-Run Core
 
+Status: complete in GSLR-20.
+
 Build the GSLR-20 test fixture and route-independent service shape.
 
 Acceptance:
@@ -147,6 +149,8 @@ Acceptance:
 - no persistent writes or live endpoints are introduced.
 
 ### Milestone 2: Cockpit Workbench Route
+
+Status: next.
 
 Build the internal route and operator view.
 
