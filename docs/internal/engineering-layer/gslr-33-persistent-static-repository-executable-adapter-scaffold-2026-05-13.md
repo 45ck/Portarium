@@ -144,3 +144,6 @@ Open `bead-1281` for scaffold code-review evidence. That review should verify
 the adapter shell still has no database client, connection config, generated SQL
 files, secrets, applied migrations, production tables, read/write execution,
 runtime cards, production actions, or MC connector access.
+
+The scaffold code-review evidence is recorded in
+[`gslr-34-persistent-static-repository-scaffold-code-review-2026-05-13.md`](./gslr-34-persistent-static-repository-scaffold-code-review-2026-05-13.md).

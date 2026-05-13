@@ -1,7 +1,7 @@
 # GSLR Current Progress: 2026-05-13
 
-Status: post-GSLR-33 progress update
-Tracking beads: `bead-1253`, `bead-1254`, `bead-1255`, `bead-1256`, `bead-1257`, `bead-1258`, `bead-1259`, `bead-1260`, `bead-1261`, `bead-1262`, `bead-1263`, `bead-1264`, `bead-1265`, `bead-1266`, `bead-1267`, `bead-1268`, `bead-1269`, `bead-1270`, `bead-1271`, `bead-1272`, `bead-1273`, `bead-1274`, `bead-1275`, `bead-1276`, `bead-1277`, `bead-1278`, `bead-1279`, `bead-1280`
+Status: post-GSLR-34 progress update
+Tracking beads: `bead-1253`, `bead-1254`, `bead-1255`, `bead-1256`, `bead-1257`, `bead-1258`, `bead-1259`, `bead-1260`, `bead-1261`, `bead-1262`, `bead-1263`, `bead-1264`, `bead-1265`, `bead-1266`, `bead-1267`, `bead-1268`, `bead-1269`, `bead-1270`, `bead-1271`, `bead-1272`, `bead-1273`, `bead-1274`, `bead-1275`, `bead-1276`, `bead-1277`, `bead-1278`, `bead-1279`, `bead-1280`, `bead-1281`
 
 ## Where We Are
 
@@ -39,6 +39,7 @@ prompt-language experiment evidence
   -> persistent static repository draft SQL review packet
   -> persistent static repository executable adapter design review
   -> persistent static repository executable adapter scaffold
+  -> persistent static repository scaffold code-review evidence
 ```
 
 The loop is intentionally static. It proves that evidence can be shaped and
@@ -416,6 +417,16 @@ binding exists:
   references, applied migrations, production tables, read/write execution,
   database-executed contract harness binding, and runtime authority block.
 
+`bead-1281` proves scaffold review can catch operational drift before unbound
+shell work:
+
+- the review opens only from a ready GSLR-33 scaffold;
+- adapter shell, port method surface, transaction boundary, contract harness,
+  and boundary warnings must be reviewed;
+- database client binding, connection config, generated SQL files, secrets,
+  applied migrations, production tables, read/write execution, reviewer change
+  requests, and runtime authority block.
+
 This is enough to continue toward a governed engineering cockpit. It is not
 enough to create runtime automation.
 
@@ -429,8 +440,8 @@ Still blocked:
 - live artifact byte fetching from source systems;
 - artifact byte storage;
 - production static imported-record repository implementation;
-- executable PostgreSQL adapter implementation until scaffold code-review
-  evidence passes;
+- database-bound PostgreSQL adapter implementation until unbound adapter shell
+  review passes;
 - production database migrations for imported records;
 - static imported-record importer implementation;
 - persistent storage of static operator reports;
@@ -446,29 +457,30 @@ Still blocked:
 
 ## Next Step
 
-The latest safe work item is scaffold code-review evidence that verifies the
-adapter shell remains unbound. GSLR-20 supplied the route-independent dry-run core,
-`bead-1265` supplied the internal Workbench route, `bead-1266` supplied the
-portable operator report packet, `bead-1267` supplied constrained static
-review-note capture, `bead-1268` supplied the production-keyring/artifact byte
-verification design gate, `bead-1269` supplied the persistent static storage
-design gate, `bead-1270` supplied the implementation-readiness checklist, and
-`bead-1271` supplied the stop-review checkpoint, `bead-1272` supplied the
-operator/product static-only review packet, `bead-1273` supplied the persistent
-static repository port plus draft migration contract, `bead-1274` supplied the
-adapter contract harness, `bead-1275` supplied the contract-harness adapter,
-`bead-1276` supplied the database-adapter review checkpoint, `bead-1277`
-supplied the draft PostgreSQL adapter scaffold, `bead-1278` supplied the draft
-SQL review packet, and `bead-1279` supplied the executable adapter design
-review, and `bead-1280` supplied the executable adapter scaffold.
+The latest safe work item is an unbound adapter shell contract that stays
+non-operational while making the port shape concrete. GSLR-20 supplied the
+route-independent dry-run core, `bead-1265` supplied the internal Workbench
+route, `bead-1266` supplied the portable operator report packet, `bead-1267`
+supplied constrained static review-note capture, `bead-1268` supplied the
+production-keyring/artifact byte verification design gate, `bead-1269` supplied
+the persistent static storage design gate, `bead-1270` supplied the
+implementation-readiness checklist, and `bead-1271` supplied the stop-review
+checkpoint, `bead-1272` supplied the operator/product static-only review packet,
+`bead-1273` supplied the persistent static repository port plus draft migration
+contract, `bead-1274` supplied the adapter contract harness, `bead-1275`
+supplied the contract-harness adapter, `bead-1276` supplied the database-adapter
+review checkpoint, `bead-1277` supplied the draft PostgreSQL adapter scaffold,
+`bead-1278` supplied the draft SQL review packet, `bead-1279` supplied the
+executable adapter design review, `bead-1280` supplied the executable adapter
+scaffold, and `bead-1281` supplied the scaffold code-review evidence.
 
 See
 [`static-evidence-review-workbench-plan-2026-05-13.md`](./static-evidence-review-workbench-plan-2026-05-13.md).
 
-Proceed to `bead-1281`: scaffold code-review evidence. It must verify the
-adapter shell still has no database client binding, connection config, generated
-SQL files, secrets, applied migrations, production tables, read/write execution,
-runtime cards, production actions, or MC connectors/source-system access.
+Proceed to `bead-1282`: unbound adapter shell contract. It must still avoid
+database clients, connection config, generated SQL files, secrets, applied
+migrations, production tables, read/write execution, runtime cards, production
+actions, and MC connector/source-system access.
 
 Production keyring, artifact byte fetching, persistent storage, live routing,
 runtime cards, and MC connector work remain separate gated follow-ups.
