@@ -1,7 +1,7 @@
 # GSLR Progress Checkpoint: 2026-05-13
 
-Status: post-GSLR-12 progress checkpoint
-Tracking beads: `bead-1251`, `bead-1252`, `bead-1253`, `bead-1254`
+Status: post-GSLR-14 progress checkpoint
+Tracking beads: `bead-1251`, `bead-1252`, `bead-1253`, `bead-1254`, `bead-1257`
 
 ## Short Version
 
@@ -38,7 +38,7 @@ GSLR-6 through GSLR-8 found the useful pattern:
 - a PL-owned route-record compiler passed three local repeats when the local
   model only filled generic predicate hooks.
 
-GSLR-9 through GSLR-12 moved the result toward Portarium:
+GSLR-9 through GSLR-14 moved the result toward Portarium:
 
 - GSLR route evidence can become a docs/test-only
   `EngineeringEvidenceCardInputV1`;
@@ -49,7 +49,10 @@ GSLR-9 through GSLR-12 moved the result toward Portarium:
 - static GSLR evidence bundles can verify payload hash, signature, provenance,
   artifact hashes, validity window, and static-only constraints before
   projection;
-- failed evidence stays visible as `blocked` instead of disappearing.
+- failed evidence stays visible as `blocked` instead of disappearing;
+- manual Cockpit preview can verify static bundle JSON before rendering a card;
+- adversarial static bundles reject with targeted check rows and no live
+  engineering endpoint calls.
 
 ## Current Conclusion
 
@@ -86,7 +89,8 @@ trust.
 ## Next Product-Safe Step
 
 GSLR-11 completed the static Cockpit fixture/view proof. GSLR-12 completed the
-static signed-bundle verifier proof.
+static signed-bundle verifier proof. GSLR-13 completed the manual Cockpit bundle
+preview. GSLR-14 completed the adversarial static rejection corpus.
 
 It now:
 
@@ -98,10 +102,13 @@ It now:
 - verifies static GSLR evidence bundles before projection and rejects tampering,
   invalid signatures, expired bundles, missing artifact hashes, raw payloads,
   provenance mismatches, and runtime-authority claims.
+- rejects the GSLR-14 adversarial corpus in the manual preview without rendering
+  static cards or calling live engineering endpoints.
 
-The next safe step is GSLR-13: a manual Cockpit bundle preview that runs the
-verifier and renders static evidence without persistence, queues, tables, SSE,
-or actions.
+The next safe step is GSLR-15: static import readiness design. That should
+define production signature/keyring requirements, artifact byte verification,
+future storage boundaries, and operator review states before any persistent
+import workflow is considered.
 
 ## Progress Record
 
@@ -114,8 +121,10 @@ or actions.
   evidence loop from the still-blocked runtime ingestion path.
 - Portarium reached GSLR-12 with a docs/test-only signed GSLR evidence-bundle
   verifier.
+- Portarium reached GSLR-13 with a manual Cockpit bundle preview.
+- Portarium reached GSLR-14 with an adversarial static bundle rejection corpus.
 - prompt-language recorded GSLR-8 as the strongest positive local-screen result
   so far.
 - MacquarieCollege remains a reference vertical and boundary test only.
-- The next real work item is a manual Cockpit bundle preview, not more routing
+- The next real work item is static import readiness design, not more routing
   automation or live ingestion.

@@ -18,6 +18,7 @@ import {
   GslrStaticEvidenceCardView,
   toGslrStaticEvidenceCardExport,
 } from './gslr-static-evidence-card-view';
+import { GSLR_MANUAL_BUNDLE_ADVERSARIAL_FIXTURES } from './gslr-manual-bundle-adversarial-fixtures';
 import { GSLR_MANUAL_BUNDLE_PREVIEW_FIXTURES } from './gslr-manual-bundle-preview-fixtures';
 import {
   buildEngineeringEvidenceCardCockpitExportV1,
@@ -117,15 +118,7 @@ export function verifyGslrManualBundlePreview(
           ? 'Bundle verification rejected'
           : 'Bundle preview failed',
       errorMessage: errorMessage(error),
-      checks: [
-        { label: 'JSON bundle', status: 'verified', detail: 'Bundle text parsed as JSON.' },
-        {
-          label: 'Bundle verifier',
-          status: 'rejected',
-          detail: errorMessage(error),
-        },
-        ...idleChecks.slice(2),
-      ],
+      checks: rejectedChecks(errorMessage(error)),
     };
   }
 }
@@ -175,6 +168,35 @@ function verifiedChecks(
 
 function errorMessage(error: unknown) {
   return error instanceof Error ? error.message : String(error);
+}
+
+function rejectedChecks(message: string): readonly GslrManualPreviewCheck[] {
+  const rejectedLabel = rejectedCheckLabel(message);
+  return [
+    { label: 'JSON bundle', status: 'verified', detail: 'Bundle text parsed as JSON.' },
+    ...idleChecks
+      .slice(1)
+      .map((check) =>
+        check.label === rejectedLabel
+          ? { ...check, status: 'rejected' as const, detail: message }
+          : check,
+      ),
+  ];
+}
+
+function rejectedCheckLabel(message: string): GslrManualPreviewCheck['label'] {
+  if (/payloadHashSha256/i.test(message)) return 'Payload hash';
+  if (/signature/i.test(message)) return 'Signature';
+  if (/source\.|subject\.|runId|runGroupId|policyVersion|task must match/i.test(message)) {
+    return 'Provenance';
+  }
+  if (/verification window|createdAtIso|nowIso|notBeforeIso|expiresAtIso/i.test(message)) {
+    return 'Validity window';
+  }
+  if (/artifact|missing artifact hash|repository-relative|traverse parents/i.test(message)) {
+    return 'Artifact hash coverage';
+  }
+  return 'Static constraints';
 }
 
 function base64Ascii(value: string) {
@@ -338,7 +360,10 @@ export function GslrManualBundlePreview() {
     checks: idleChecks,
   });
   const selectedFixture = useMemo(
-    () => GSLR_MANUAL_BUNDLE_PREVIEW_FIXTURES.find((fixture) => fixture.bundleJson === bundleText),
+    () =>
+      [...GSLR_MANUAL_BUNDLE_PREVIEW_FIXTURES, ...GSLR_MANUAL_BUNDLE_ADVERSARIAL_FIXTURES].find(
+        (fixture) => fixture.bundleJson === bundleText,
+      ),
     [bundleText],
   );
 
@@ -368,7 +393,9 @@ export function GslrManualBundlePreview() {
                 <Button
                   key={fixture.task}
                   type="button"
-                  variant={selectedFixture?.task === fixture.task ? 'secondary' : 'outline'}
+                  variant={
+                    selectedFixture?.sourceRef === fixture.sourceRef ? 'secondary' : 'outline'
+                  }
                   onClick={() => {
                     setBundleText(fixture.bundleJson);
                     setResult({ kind: 'idle', checks: idleChecks });
@@ -377,6 +404,29 @@ export function GslrManualBundlePreview() {
                   {fixture.label}
                 </Button>
               ))}
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Rejection corpus
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {GSLR_MANUAL_BUNDLE_ADVERSARIAL_FIXTURES.map((fixture) => (
+                  <Button
+                    key={fixture.caseId}
+                    type="button"
+                    variant={
+                      selectedFixture?.sourceRef === fixture.sourceRef ? 'secondary' : 'outline'
+                    }
+                    onClick={() => {
+                      setBundleText(fixture.bundleJson);
+                      setResult({ kind: 'idle', checks: idleChecks });
+                    }}
+                  >
+                    {fixture.label}
+                  </Button>
+                ))}
+              </div>
             </div>
 
             {selectedFixture ? (

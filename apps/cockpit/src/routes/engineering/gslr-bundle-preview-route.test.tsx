@@ -3,6 +3,7 @@
 import { RouterProvider, createMemoryHistory } from '@tanstack/react-router';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { GSLR_MANUAL_BUNDLE_ADVERSARIAL_FIXTURES } from '@/components/cockpit/gslr-manual-bundle-adversarial-fixtures';
 import { queryClient } from '@/lib/query-client';
 import { createCockpitRouter } from '@/router';
 
@@ -128,6 +129,32 @@ describe('GSLR bundle preview route', () => {
 
     expect(screen.getByText('Bundle verified')).toBeTruthy();
     expect(screen.getByText('gslr8-route-record-compiler')).toBeTruthy();
+
+    const fetchMock = vi.mocked(fetch);
+    const requestedPaths = fetchMock.mock.calls.map(([input]) => {
+      const rawUrl =
+        typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
+      return new URL(rawUrl, 'http://localhost').pathname;
+    });
+
+    expect(requestedPaths).not.toContain('/v1/workspaces/ws-demo/runs');
+    expect(requestedPaths).not.toContain('/v1/workspaces/ws-demo/evidence');
+    expect(requestedPaths).not.toContain('/v1/workspaces/ws-demo/work-items');
+    expect(requestedPaths).not.toContain('/v1/workspaces/ws-demo/human-tasks');
+    expect(requestedPaths).not.toContain('/v1/workspaces/ws-demo/workforce/queues');
+  });
+
+  it('shows every rejected adversarial bundle without calling live engineering endpoints', async () => {
+    await renderRoute();
+
+    for (const fixture of GSLR_MANUAL_BUNDLE_ADVERSARIAL_FIXTURES) {
+      fireEvent.click(await screen.findByRole('button', { name: fixture.label }));
+      fireEvent.click(screen.getByRole('button', { name: /Verify bundle/i }));
+
+      expect(screen.getByText('Bundle verification rejected')).toBeTruthy();
+      expect(screen.getByText(fixture.expectedCheckLabel)).toBeTruthy();
+      expect(screen.queryByText('Bundle verified')).toBeNull();
+    }
 
     const fetchMock = vi.mocked(fetch);
     const requestedPaths = fetchMock.mock.calls.map(([input]) => {
