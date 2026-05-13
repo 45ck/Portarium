@@ -142,3 +142,6 @@ Open a review bead, not an implementation bead. The review bead should attach
 the current static operator report/review note, confirm the static-only value of
 persistent storage, and then decide whether to open the narrow implementation
 bead.
+
+Update: `bead-1272` has now implemented that review packet in
+[`gslr-25-persistent-static-repository-review-packet-2026-05-13.md`](./gslr-25-persistent-static-repository-review-packet-2026-05-13.md).

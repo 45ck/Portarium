@@ -13,6 +13,7 @@ export * from './gslr-evidence-bundle-v1.js';
 export * from './gslr-engineering-evidence-card-projection-v1.js';
 export * from './gslr-persistent-static-imported-record-storage-design-v1.js';
 export * from './gslr-persistent-static-repository-implementation-readiness-v1.js';
+export * from './gslr-persistent-static-repository-review-packet-v1.js';
 export * from './gslr-persistent-static-repository-stop-review-checkpoint-v1.js';
 export * from './gslr-static-imported-record-importer-plan-v1.js';
 export * from './gslr-static-imported-record-repository-v1.js';
