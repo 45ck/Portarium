@@ -39,7 +39,8 @@ The workbench lets an operator:
 - inspect structured rejection code/category;
 - inspect append-plan status and blockers;
 - inspect in-memory repository entry count and audit event;
-- view a static operator report text block.
+- view a static operator report text block;
+- export a versioned static operator report packet for bead/review attachment.
 
 The route is also added to the internal engineering navigation as `GSLR
 Workbench`.
@@ -122,3 +123,6 @@ That follow-up should turn the current report text into an explicit exportable
 artifact/report packet suitable for a bead or review note. It should remain
 static and must not add persistence, live endpoints, production actions, or MC
 connector/source-system access.
+
+Update: `bead-1266` has now implemented this report packet. See
+[`static-evidence-operator-report-export-2026-05-13.md`](./static-evidence-operator-report-export-2026-05-13.md).

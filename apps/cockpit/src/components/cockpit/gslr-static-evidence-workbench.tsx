@@ -2,6 +2,8 @@ import {
   AlertCircle,
   CheckCircle2,
   ClipboardList,
+  Copy,
+  Download,
   FileJson2,
   RotateCcw,
   ShieldCheck,
@@ -38,6 +40,39 @@ type WorkbenchFixture = Readonly<{
   sourceRef: string;
   bundleJson: string;
   verifiedArtifactByteStatus?: GslrStaticImportedRecordArtifactByteStatusV1;
+}>;
+
+export type GslrStaticEvidenceWorkbenchOperatorReportPacketV1 = Readonly<{
+  schemaVersion: 'portarium.gslr-static-evidence-workbench-operator-report.v1';
+  contentType: 'application/vnd.portarium.gslr-static-evidence-workbench-report+json;version=1';
+  filename: string;
+  route: '/engineering/evidence-cards/workbench';
+  generatedAtIso: string;
+  dryRunStatus: GslrStaticImporterDryRunResultV1['status'];
+  sourceRef: string;
+  recordId: string;
+  recordStatus: GslrStaticImporterDryRunResultV1['record']['status'];
+  reviewState: GslrStaticImporterDryRunResultV1['record']['reviewState'];
+  signerTrust: GslrStaticImporterDryRunResultV1['record']['signer']['trust'];
+  artifactByteStatuses: readonly GslrStaticImportedRecordArtifactByteStatusV1[];
+  verification:
+    | Readonly<{ status: 'verified'; rejection: null }>
+    | Readonly<{
+        status: 'rejected';
+        rejection: Readonly<{ code: string; category: string }>;
+      }>;
+  plan: Readonly<{
+    status: GslrStaticImporterDryRunResultV1['plan']['status'];
+    idempotencyKey: string;
+    blockers: readonly string[];
+  }>;
+  repository: Readonly<{
+    entries: number;
+    auditEvent: string | null;
+    appendRejection: string | null;
+  }>;
+  boundaryWarnings: readonly string[];
+  reportText: string;
 }>;
 
 const DEFAULT_NOW_ISO = '2026-05-13T04:30:00.000Z';
@@ -123,6 +158,59 @@ export function runGslrStaticEvidenceWorkbenchDryRun(input: {
         : {}),
     }),
   };
+}
+
+export function buildGslrStaticEvidenceWorkbenchOperatorReportPacketV1(
+  result: GslrStaticImporterDryRunResultV1,
+): GslrStaticEvidenceWorkbenchOperatorReportPacketV1 {
+  const record = result.record;
+  const artifactByteStatuses = record.artifacts.map((artifact) => artifact.byteVerificationStatus);
+  const verification =
+    record.verification.status === 'verified'
+      ? ({ status: 'verified', rejection: null } as const)
+      : ({
+          status: 'rejected',
+          rejection: {
+            code: record.verification.rejection.code,
+            category: record.verification.rejection.category,
+          },
+        } as const);
+
+  return deepFreeze({
+    schemaVersion: 'portarium.gslr-static-evidence-workbench-operator-report.v1',
+    contentType: 'application/vnd.portarium.gslr-static-evidence-workbench-report+json;version=1',
+    filename: `${safeFilename(record.subject.task ?? record.recordId)}-${result.status}-operator-report.json`,
+    route: '/engineering/evidence-cards/workbench',
+    generatedAtIso: record.importedAtIso,
+    dryRunStatus: result.status,
+    sourceRef: result.sourceRef,
+    recordId: record.recordId,
+    recordStatus: record.status,
+    reviewState: record.reviewState,
+    signerTrust: record.signer.trust,
+    artifactByteStatuses,
+    verification,
+    plan: {
+      status: result.plan.status,
+      idempotencyKey: result.plan.idempotencyKey,
+      blockers: result.plan.blockers,
+    },
+    repository: {
+      entries: result.repositoryEntries.length,
+      auditEvent: result.appendResult?.auditEvent.eventType ?? null,
+      appendRejection: result.appendRejection
+        ? `${result.appendRejection.code}: ${result.appendRejection.message}`
+        : null,
+    },
+    boundaryWarnings: result.boundaryWarnings,
+    reportText: operatorReport(result),
+  });
+}
+
+export function serializeGslrStaticEvidenceWorkbenchOperatorReportPacketV1(
+  packet: GslrStaticEvidenceWorkbenchOperatorReportPacketV1,
+) {
+  return `${JSON.stringify(packet, null, 2)}\n`;
 }
 
 export function GslrStaticEvidenceWorkbench() {
@@ -320,6 +408,7 @@ function WorkbenchResultPanel({ result }: { result: WorkbenchResult }) {
   const dryRun = result.result;
   const record = dryRun.record;
   const appendEvent = dryRun.appendResult?.auditEvent ?? null;
+  const reportPacket = buildGslrStaticEvidenceWorkbenchOperatorReportPacketV1(dryRun);
 
   return (
     <>
@@ -419,15 +508,68 @@ function WorkbenchResultPanel({ result }: { result: WorkbenchResult }) {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Operator report</CardTitle>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <CardTitle className="text-base">Operator report export</CardTitle>
+            <OperatorReportActions packet={reportPacket} />
+          </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-3">
+          <div className="grid gap-3 text-sm md:grid-cols-2">
+            <KeyValue label="Export schema" value={reportPacket.schemaVersion} />
+            <KeyValue label="Filename" value={reportPacket.filename} />
+          </div>
           <pre className="max-h-[360px] overflow-auto rounded-md border bg-muted/30 p-3 text-xs">
-            {operatorReport(dryRun)}
+            {reportPacket.reportText}
           </pre>
         </CardContent>
       </Card>
     </>
+  );
+}
+
+function OperatorReportActions({
+  packet,
+}: {
+  packet: GslrStaticEvidenceWorkbenchOperatorReportPacketV1;
+}) {
+  const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle');
+  const serialized = serializeGslrStaticEvidenceWorkbenchOperatorReportPacketV1(packet);
+
+  async function copyReport() {
+    try {
+      await navigator.clipboard.writeText(serialized);
+      setCopyState('copied');
+    } catch {
+      setCopyState('failed');
+    }
+  }
+
+  function downloadReport() {
+    const blob = new Blob([serialized], { type: packet.contentType });
+    const href = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = href;
+    anchor.download = packet.filename;
+    anchor.rel = 'noopener';
+    anchor.click();
+    URL.revokeObjectURL(href);
+  }
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      <Button type="button" variant="outline" onClick={copyReport}>
+        <Copy className="h-4 w-4" aria-hidden="true" />
+        {copyState === 'copied'
+          ? 'Copied report'
+          : copyState === 'failed'
+            ? 'Copy failed'
+            : 'Copy JSON'}
+      </Button>
+      <Button type="button" variant="outline" onClick={downloadReport}>
+        <Download className="h-4 w-4" aria-hidden="true" />
+        Download JSON
+      </Button>
+    </div>
   );
 }
 
@@ -525,4 +667,24 @@ function base64Ascii(value: string) {
     out += index + 2 < value.length ? alphabet[packed & 63] : '=';
   }
   return out;
+}
+
+function safeFilename(value: string) {
+  const normalized = value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return normalized.length === 0 ? 'gslr-static-evidence' : normalized;
+}
+
+function deepFreeze<T>(value: T): T {
+  if (value === null || typeof value !== 'object') return value;
+  Object.freeze(value);
+  for (const key of Object.keys(value as object)) {
+    const child = (value as Record<string, unknown>)[key];
+    if (child !== null && typeof child === 'object' && !Object.isFrozen(child)) {
+      deepFreeze(child);
+    }
+  }
+  return value;
 }
