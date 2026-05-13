@@ -1,0 +1,76 @@
+{
+  "cases": [
+    {
+      "caseId": "expired-window",
+      "label": "Expired bundle",
+      "sourceRef": "gslr-14-adversarial-corpus/expired-window.bundle.json",
+      "expectedCheckLabel": "Validity window",
+      "expectedRejectionCode": "validity_window_invalid",
+      "expectedRejectionCategory": "validity_window"
+    },
+    {
+      "caseId": "not-yet-valid-window",
+      "label": "Not yet valid",
+      "sourceRef": "gslr-14-adversarial-corpus/not-yet-valid-window.bundle.json",
+      "expectedCheckLabel": "Validity window",
+      "expectedRejectionCode": "validity_window_invalid",
+      "expectedRejectionCategory": "validity_window"
+    },
+    {
+      "caseId": "payload-hash-tamper",
+      "label": "Payload tampered",
+      "sourceRef": "gslr-14-adversarial-corpus/payload-hash-tamper.bundle.json",
+      "expectedCheckLabel": "Payload hash",
+      "expectedRejectionCode": "payload_hash_mismatch",
+      "expectedRejectionCategory": "payload_hash"
+    },
+    {
+      "caseId": "invalid-signature",
+      "label": "Invalid signature",
+      "sourceRef": "gslr-14-adversarial-corpus/invalid-signature.bundle.json",
+      "expectedCheckLabel": "Signature",
+      "expectedRejectionCode": "signature_invalid",
+      "expectedRejectionCategory": "signature"
+    },
+    {
+      "caseId": "missing-artifact-hash",
+      "label": "Missing artifact hash",
+      "sourceRef": "gslr-14-adversarial-corpus/missing-artifact-hash.bundle.json",
+      "expectedCheckLabel": "Artifact hash coverage",
+      "expectedRejectionCode": "artifact_hash_missing",
+      "expectedRejectionCategory": "artifact_hash_coverage"
+    },
+    {
+      "caseId": "raw-payload-key",
+      "label": "Raw payload key",
+      "sourceRef": "gslr-14-adversarial-corpus/raw-payload-key.bundle.json",
+      "expectedCheckLabel": "Static constraints",
+      "expectedRejectionCode": "raw_payload_forbidden",
+      "expectedRejectionCategory": "static_constraints"
+    },
+    {
+      "caseId": "provenance-mismatch",
+      "label": "Provenance mismatch",
+      "sourceRef": "gslr-14-adversarial-corpus/provenance-mismatch.bundle.json",
+      "expectedCheckLabel": "Provenance",
+      "expectedRejectionCode": "provenance_mismatch",
+      "expectedRejectionCategory": "provenance"
+    },
+    {
+      "caseId": "runtime-authority-claim",
+      "label": "Runtime authority claim",
+      "sourceRef": "gslr-14-adversarial-corpus/runtime-authority-claim.bundle.json",
+      "expectedCheckLabel": "Static constraints",
+      "expectedRejectionCode": "static_constraint_violation",
+      "expectedRejectionCategory": "static_constraints"
+    },
+    {
+      "caseId": "action-controls-claim",
+      "label": "Action controls claim",
+      "sourceRef": "gslr-14-adversarial-corpus/action-controls-claim.bundle.json",
+      "expectedCheckLabel": "Static constraints",
+      "expectedRejectionCode": "static_constraint_violation",
+      "expectedRejectionCategory": "static_constraints"
+    }
+  ]
+}

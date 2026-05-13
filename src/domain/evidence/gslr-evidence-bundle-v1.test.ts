@@ -232,6 +232,8 @@ describe('verifyGslrEvidenceBundleV1', () => {
         nowIso: '2026-05-13T01:00:00.000Z',
       }),
     ).toThrow(/payloadHashSha256/);
+
+    expectVerificationError(tampered, 'payload_hash_mismatch', 'payload_hash');
   });
 
   it('rejects invalid signatures even when the payload hash matches', () => {
@@ -250,6 +252,8 @@ describe('verifyGslrEvidenceBundleV1', () => {
         nowIso: '2026-05-13T01:00:00.000Z',
       }),
     ).toThrow(/signature verification failed/);
+
+    expectVerificationError(bundle, 'signature_invalid', 'signature');
   });
 
   it('rejects raw or secret payload fields anywhere in the bundle', () => {
@@ -268,6 +272,17 @@ describe('verifyGslrEvidenceBundleV1', () => {
         },
       ),
     ).toThrow(GslrEvidenceBundleVerificationError);
+
+    expectVerificationError(
+      {
+        ...signedBundle(),
+        rawPayload: {
+          studentName: 'not allowed',
+        },
+      },
+      'raw_payload_forbidden',
+      'static_constraints',
+    );
   });
 
   it('rejects missing provenance cross-links', () => {
@@ -286,6 +301,17 @@ describe('verifyGslrEvidenceBundleV1', () => {
         },
       ),
     ).toThrow(/source.runId/);
+
+    expectVerificationError(
+      signedBundle({
+        source: {
+          ...signedBundle().source,
+          runId: 'different-run',
+        },
+      }),
+      'provenance_mismatch',
+      'provenance',
+    );
   });
 
   it('rejects expired bundles as replay-risk evidence', () => {
@@ -296,6 +322,13 @@ describe('verifyGslrEvidenceBundleV1', () => {
         nowIso: '2026-05-15T00:00:00.000Z',
       }),
     ).toThrow(/verification window/);
+
+    expectVerificationError(
+      signedBundle(),
+      'validity_window_invalid',
+      'validity_window',
+      '2026-05-15T00:00:00.000Z',
+    );
   });
 
   it('rejects invalid explicit verification time', () => {
@@ -334,6 +367,8 @@ describe('verifyGslrEvidenceBundleV1', () => {
         nowIso: '2026-05-13T01:00:00.000Z',
       }),
     ).toThrow(/missing artifact hash/);
+
+    expectVerificationError(resigned, 'artifact_hash_missing', 'artifact_hash_coverage');
   });
 
   it('rejects bundles that claim runtime authority', () => {
@@ -356,3 +391,24 @@ describe('verifyGslrEvidenceBundleV1', () => {
     ).toThrow(/runtimeAuthority/);
   });
 });
+
+function expectVerificationError(
+  value: unknown,
+  code: GslrEvidenceBundleVerificationError['code'],
+  category: GslrEvidenceBundleVerificationError['category'],
+  nowIso = '2026-05-13T01:00:00.000Z',
+) {
+  try {
+    verifyGslrEvidenceBundleV1(value, {
+      hasher,
+      signatureVerifier,
+      nowIso,
+    });
+  } catch (error) {
+    expect(error).toBeInstanceOf(GslrEvidenceBundleVerificationError);
+    expect((error as GslrEvidenceBundleVerificationError).code).toBe(code);
+    expect((error as GslrEvidenceBundleVerificationError).category).toBe(category);
+    return;
+  }
+  throw new Error('Expected GSLR verification to fail');
+}

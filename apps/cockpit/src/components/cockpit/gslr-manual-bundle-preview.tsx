@@ -24,6 +24,7 @@ import {
   buildEngineeringEvidenceCardCockpitExportV1,
   GslrEvidenceBundleVerificationError,
   verifyGslrEvidenceBundleV1,
+  type GslrEvidenceBundleRejectionCategoryV1,
   type GslrEvidenceBundleV1,
 } from '@portarium/domain-evidence';
 import { HashSha256 } from '@portarium/domain-primitives';
@@ -111,14 +112,15 @@ export function verifyGslrManualBundlePreview(
       checks: verifiedChecks(verified.bundle, nowIso),
     };
   } catch (error) {
+    const message = errorMessage(error);
     return {
       kind: 'rejected',
       errorTitle:
         error instanceof GslrEvidenceBundleVerificationError
           ? 'Bundle verification rejected'
           : 'Bundle preview failed',
-      errorMessage: errorMessage(error),
-      checks: rejectedChecks(errorMessage(error)),
+      errorMessage: message,
+      checks: rejectedChecks(message, rejectionCategory(error)),
     };
   }
 }
@@ -170,8 +172,11 @@ function errorMessage(error: unknown) {
   return error instanceof Error ? error.message : String(error);
 }
 
-function rejectedChecks(message: string): readonly GslrManualPreviewCheck[] {
-  const rejectedLabel = rejectedCheckLabel(message);
+function rejectedChecks(
+  message: string,
+  category: GslrEvidenceBundleRejectionCategoryV1,
+): readonly GslrManualPreviewCheck[] {
+  const rejectedLabel = rejectedCheckLabel(category);
   return [
     { label: 'JSON bundle', status: 'verified', detail: 'Bundle text parsed as JSON.' },
     ...idleChecks
@@ -184,18 +189,19 @@ function rejectedChecks(message: string): readonly GslrManualPreviewCheck[] {
   ];
 }
 
-function rejectedCheckLabel(message: string): GslrManualPreviewCheck['label'] {
-  if (/payloadHashSha256/i.test(message)) return 'Payload hash';
-  if (/signature/i.test(message)) return 'Signature';
-  if (/source\.|subject\.|runId|runGroupId|policyVersion|task must match/i.test(message)) {
-    return 'Provenance';
-  }
-  if (/verification window|createdAtIso|nowIso|notBeforeIso|expiresAtIso/i.test(message)) {
-    return 'Validity window';
-  }
-  if (/artifact|missing artifact hash|repository-relative|traverse parents/i.test(message)) {
-    return 'Artifact hash coverage';
-  }
+function rejectionCategory(error: unknown): GslrEvidenceBundleRejectionCategoryV1 {
+  if (error instanceof GslrEvidenceBundleVerificationError) return error.category;
+  return 'static_constraints';
+}
+
+function rejectedCheckLabel(
+  category: GslrEvidenceBundleRejectionCategoryV1,
+): GslrManualPreviewCheck['label'] {
+  if (category === 'payload_hash') return 'Payload hash';
+  if (category === 'signature') return 'Signature';
+  if (category === 'provenance') return 'Provenance';
+  if (category === 'validity_window') return 'Validity window';
+  if (category === 'artifact_hash_coverage') return 'Artifact hash coverage';
   return 'Static constraints';
 }
 

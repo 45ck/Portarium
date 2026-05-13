@@ -60,11 +60,38 @@ export type VerifiedGslrEvidenceBundleV1 = Readonly<{
   boundaryWarnings: readonly string[];
 }>;
 
+export type GslrEvidenceBundleRejectionCategoryV1 =
+  | 'payload_hash'
+  | 'signature'
+  | 'provenance'
+  | 'validity_window'
+  | 'artifact_hash_coverage'
+  | 'static_constraints';
+
+export type GslrEvidenceBundleRejectionCodeV1 =
+  | 'payload_hash_mismatch'
+  | 'signature_invalid'
+  | 'provenance_mismatch'
+  | 'validity_window_invalid'
+  | 'artifact_hash_missing'
+  | 'artifact_ref_invalid'
+  | 'raw_payload_forbidden'
+  | 'schema_invalid'
+  | 'static_constraint_violation';
+
 export class GslrEvidenceBundleVerificationError extends Error {
   public override readonly name = 'GslrEvidenceBundleVerificationError';
+  public readonly code: GslrEvidenceBundleRejectionCodeV1;
+  public readonly category: GslrEvidenceBundleRejectionCategoryV1;
 
-  public constructor(message: string) {
+  public constructor(
+    message: string,
+    code: GslrEvidenceBundleRejectionCodeV1,
+    category: GslrEvidenceBundleRejectionCategoryV1,
+  ) {
     super(message);
+    this.code = code;
+    this.category = category;
   }
 }
 
@@ -83,13 +110,19 @@ export function verifyGslrEvidenceBundleV1(
   const canonicalPayload = canonicalizeGslrEvidenceBundlePayloadV1(bundle);
   const payloadHashSha256 = HashSha256(String(deps.hasher.sha256Hex(canonicalPayload)));
   if (payloadHashSha256 !== bundle.verification.payloadHashSha256) {
-    throw new GslrEvidenceBundleVerificationError(
+    throw verificationError(
+      'payload_hash_mismatch',
+      'payload_hash',
       'payloadHashSha256 does not match bundle payload',
     );
   }
 
   if (!deps.signatureVerifier.verify(canonicalPayload, bundle.verification.signatureBase64)) {
-    throw new GslrEvidenceBundleVerificationError('bundle signature verification failed');
+    throw verificationError(
+      'signature_invalid',
+      'signature',
+      'bundle signature verification failed',
+    );
   }
 
   const card = projectGslrRouteEvidenceToEngineeringCardInputV1(bundle.evidence);
@@ -126,7 +159,9 @@ export function parseGslrEvidenceBundleV1(value: unknown): GslrEvidenceBundleV1 
 
   const schemaVersion = readString(bundle, 'schemaVersion');
   if (schemaVersion !== GSLR_EVIDENCE_BUNDLE_V1_SCHEMA_VERSION) {
-    throw new GslrEvidenceBundleVerificationError(
+    throw verificationError(
+      'schema_invalid',
+      'static_constraints',
       `schemaVersion must be ${GSLR_EVIDENCE_BUNDLE_V1_SCHEMA_VERSION}`,
     );
   }
@@ -182,7 +217,9 @@ function readProjectionInput(value: unknown): GslrEngineeringEvidenceCardProject
 
   const schemaVersion = readString(evidence, 'schemaVersion');
   if (schemaVersion !== GSLR_ENGINEERING_EVIDENCE_CARD_PROJECTION_INPUT_V1_SCHEMA_VERSION) {
-    throw new GslrEvidenceBundleVerificationError(
+    throw verificationError(
+      'schema_invalid',
+      'static_constraints',
       `evidence.schemaVersion must be ${GSLR_ENGINEERING_EVIDENCE_CARD_PROJECTION_INPUT_V1_SCHEMA_VERSION}`,
     );
   }
@@ -240,40 +277,62 @@ function validateTemporalWindow(bundle: GslrEvidenceBundleV1, nowIso: string) {
   const now = Date.parse(nowIso);
 
   if (expiresAt <= notBefore) {
-    throw new GslrEvidenceBundleVerificationError(
+    throw verificationError(
+      'validity_window_invalid',
+      'validity_window',
       'verification.expiresAtIso must be after notBeforeIso',
     );
   }
   if (Number.isNaN(now)) {
-    throw new GslrEvidenceBundleVerificationError('nowIso must be a valid ISO date');
+    throw verificationError(
+      'validity_window_invalid',
+      'validity_window',
+      'nowIso must be a valid ISO date',
+    );
   }
   if (createdAt < notBefore || createdAt > expiresAt) {
-    throw new GslrEvidenceBundleVerificationError(
+    throw verificationError(
+      'validity_window_invalid',
+      'validity_window',
       'createdAtIso must be inside the verification validity window',
     );
   }
   if (now < notBefore || now > expiresAt) {
-    throw new GslrEvidenceBundleVerificationError('bundle is outside its verification window');
+    throw verificationError(
+      'validity_window_invalid',
+      'validity_window',
+      'bundle is outside its verification window',
+    );
   }
 }
 
 function validateCrossReferences(bundle: GslrEvidenceBundleV1) {
   const selectedRun = bundle.evidence.route.selectedRun;
   if (bundle.source.runId !== selectedRun.runId) {
-    throw new GslrEvidenceBundleVerificationError(
+    throw verificationError(
+      'provenance_mismatch',
+      'provenance',
       'source.runId must match evidence selected runId',
     );
   }
   if (bundle.source.runGroupId !== selectedRun.runGroupId) {
-    throw new GslrEvidenceBundleVerificationError(
+    throw verificationError(
+      'provenance_mismatch',
+      'provenance',
       'source.runGroupId must match evidence selected runGroupId',
     );
   }
   if (bundle.subject.task !== bundle.evidence.route.task) {
-    throw new GslrEvidenceBundleVerificationError('subject.task must match evidence route.task');
+    throw verificationError(
+      'provenance_mismatch',
+      'provenance',
+      'subject.task must match evidence route.task',
+    );
   }
   if (bundle.subject.policyVersion !== bundle.evidence.policyVersion) {
-    throw new GslrEvidenceBundleVerificationError(
+    throw verificationError(
+      'provenance_mismatch',
+      'provenance',
       'subject.policyVersion must match evidence policyVersion',
     );
   }
@@ -286,14 +345,22 @@ function validateCrossReferences(bundle: GslrEvidenceBundleV1) {
   refs.delete(null);
   for (const ref of refs) {
     if (!bundle.artifactHashes.some((artifact) => artifact.ref === ref)) {
-      throw new GslrEvidenceBundleVerificationError(`missing artifact hash for ${ref}`);
+      throw verificationError(
+        'artifact_hash_missing',
+        'artifact_hash_coverage',
+        `missing artifact hash for ${ref}`,
+      );
     }
   }
 }
 
 function readArtifactHashes(value: unknown): GslrEvidenceBundleV1['artifactHashes'] {
   if (!Array.isArray(value) || value.length === 0) {
-    throw new GslrEvidenceBundleVerificationError('artifactHashes must be a non-empty array');
+    throw verificationError(
+      'artifact_hash_missing',
+      'artifact_hash_coverage',
+      'artifactHashes must be a non-empty array',
+    );
   }
   return value.map((entry, index) => {
     const record = readRecord(entry, `artifactHashes[${index}]`);
@@ -330,7 +397,9 @@ function assertNoForbiddenKeys(value: unknown) {
       if (typeof key !== 'string') continue;
       const keyPath = Array.isArray(current) ? `${path}[${key}]` : `${path}.${key}`;
       if (FORBIDDEN_KEYS.has(key.toLowerCase())) {
-        throw new GslrEvidenceBundleVerificationError(
+        throw verificationError(
+          'raw_payload_forbidden',
+          'static_constraints',
           `GSLR evidence bundle must not include raw or secret field ${keyPath}`,
         );
       }
@@ -343,7 +412,7 @@ function assertNoForbiddenKeys(value: unknown) {
 
 function readRecord(value: unknown, name: string): Record<string, unknown> {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) {
-    throw new GslrEvidenceBundleVerificationError(`${name} must be an object`);
+    throw verificationError('schema_invalid', 'static_constraints', `${name} must be an object`);
   }
   return value as Record<string, unknown>;
 }
@@ -351,7 +420,7 @@ function readRecord(value: unknown, name: string): Record<string, unknown> {
 function readString(record: Record<string, unknown>, key: string): string {
   const value = record[key];
   if (typeof value !== 'string') {
-    throw new GslrEvidenceBundleVerificationError(`${key} must be a string`);
+    throw verificationError('schema_invalid', 'static_constraints', `${key} must be a string`);
   }
   return value;
 }
@@ -359,7 +428,11 @@ function readString(record: Record<string, unknown>, key: string): string {
 function readNonEmptyString(record: Record<string, unknown>, key: string): string {
   const value = readString(record, key);
   if (!value.trim()) {
-    throw new GslrEvidenceBundleVerificationError(`${key} must be a non-empty string`);
+    throw verificationError(
+      'schema_invalid',
+      'static_constraints',
+      `${key} must be a non-empty string`,
+    );
   }
   return value;
 }
@@ -368,7 +441,11 @@ function readOptionalString(record: Record<string, unknown>, key: string): strin
   const value = record[key];
   if (value === null || value === undefined) return null;
   if (typeof value !== 'string') {
-    throw new GslrEvidenceBundleVerificationError(`${key} must be a string or null`);
+    throw verificationError(
+      'schema_invalid',
+      'static_constraints',
+      `${key} must be a string or null`,
+    );
   }
   return value;
 }
@@ -377,7 +454,11 @@ function readNullableString(record: Record<string, unknown>, key: string): strin
   const value = record[key];
   if (value === null) return null;
   if (typeof value !== 'string' || value.trim().length === 0) {
-    throw new GslrEvidenceBundleVerificationError(`${key} must be a non-empty string or null`);
+    throw verificationError(
+      'schema_invalid',
+      'static_constraints',
+      `${key} must be a non-empty string or null`,
+    );
   }
   return value;
 }
@@ -391,13 +472,21 @@ function readScalarOrNull(
   if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
     return value;
   }
-  throw new GslrEvidenceBundleVerificationError(`${key} must be a scalar or null`);
+  throw verificationError(
+    'schema_invalid',
+    'static_constraints',
+    `${key} must be a scalar or null`,
+  );
 }
 
 function readStringArray(record: Record<string, unknown>, key: string): readonly string[] {
   const value = record[key];
   if (!Array.isArray(value) || !value.every((entry) => typeof entry === 'string')) {
-    throw new GslrEvidenceBundleVerificationError(`${key} must be an array of strings`);
+    throw verificationError(
+      'schema_invalid',
+      'static_constraints',
+      `${key} must be an array of strings`,
+    );
   }
   return value;
 }
@@ -409,7 +498,9 @@ function readLiteral<T extends string>(
 ): T {
   const value = readNonEmptyString(record, key);
   if (!allowed.has(value as T)) {
-    throw new GslrEvidenceBundleVerificationError(
+    throw verificationError(
+      'static_constraint_violation',
+      'static_constraints',
       `${key} must be one of ${Array.from(allowed).join(', ')}`,
     );
   }
@@ -419,7 +510,11 @@ function readLiteral<T extends string>(
 function readNonNegativeNumber(record: Record<string, unknown>, key: string): number {
   const value = record[key];
   if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) {
-    throw new GslrEvidenceBundleVerificationError(`${key} must be a non-negative finite number`);
+    throw verificationError(
+      'schema_invalid',
+      'static_constraints',
+      `${key} must be a non-negative finite number`,
+    );
   }
   return value;
 }
@@ -436,7 +531,11 @@ function readOptionalNonNegativeNumber(
 function readIsoDate(record: Record<string, unknown>, key: string): string {
   const value = readNonEmptyString(record, key);
   if (Number.isNaN(Date.parse(value))) {
-    throw new GslrEvidenceBundleVerificationError(`${key} must be a valid ISO date`);
+    throw verificationError(
+      'validity_window_invalid',
+      'validity_window',
+      `${key} must be a valid ISO date`,
+    );
   }
   return value;
 }
@@ -444,7 +543,11 @@ function readIsoDate(record: Record<string, unknown>, key: string): string {
 function readCommit(record: Record<string, unknown>, key: string): string {
   const value = readNonEmptyString(record, key);
   if (!/^[0-9a-f]{7,40}$/i.test(value)) {
-    throw new GslrEvidenceBundleVerificationError(`${key} must be a git commit hash`);
+    throw verificationError(
+      'schema_invalid',
+      'static_constraints',
+      `${key} must be a git commit hash`,
+    );
   }
   return value;
 }
@@ -452,7 +555,11 @@ function readCommit(record: Record<string, unknown>, key: string): string {
 function readHashSha256(record: Record<string, unknown>, key: string): HashSha256Type {
   const value = readNonEmptyString(record, key);
   if (!/^[0-9a-f]{64}$/i.test(value)) {
-    throw new GslrEvidenceBundleVerificationError(`${key} must be a 64-character SHA-256 hex hash`);
+    throw verificationError(
+      'schema_invalid',
+      'static_constraints',
+      `${key} must be a 64-character SHA-256 hex hash`,
+    );
   }
   return HashSha256(value.toLowerCase());
 }
@@ -460,7 +567,7 @@ function readHashSha256(record: Record<string, unknown>, key: string): HashSha25
 function readBase64(record: Record<string, unknown>, key: string): string {
   const value = readNonEmptyString(record, key);
   if (!/^[A-Za-z0-9+/]+={0,2}$/.test(value)) {
-    throw new GslrEvidenceBundleVerificationError(`${key} must be base64 text`);
+    throw verificationError('signature_invalid', 'signature', `${key} must be base64 text`);
   }
   return value;
 }
@@ -468,17 +575,25 @@ function readBase64(record: Record<string, unknown>, key: string): string {
 function readArtifactRef(record: Record<string, unknown>, key: string): string {
   const value = readNonEmptyString(record, key);
   if (value.includes('?') || value.includes('#')) {
-    throw new GslrEvidenceBundleVerificationError(
+    throw verificationError(
+      'artifact_ref_invalid',
+      'artifact_hash_coverage',
       `${key} must be an artifact reference without query or fragment data`,
     );
   }
   if (value.startsWith('/') || /^[a-z][a-z0-9+.-]*:/i.test(value)) {
-    throw new GslrEvidenceBundleVerificationError(
+    throw verificationError(
+      'artifact_ref_invalid',
+      'artifact_hash_coverage',
       `${key} must be a repository-relative artifact reference`,
     );
   }
   if (value.split(/[\\/]+/).includes('..')) {
-    throw new GslrEvidenceBundleVerificationError(`${key} must not traverse parents`);
+    throw verificationError(
+      'artifact_ref_invalid',
+      'artifact_hash_coverage',
+      `${key} must not traverse parents`,
+    );
   }
   return value;
 }
@@ -487,9 +602,21 @@ function readNullableArtifactRef(record: Record<string, unknown>, key: string): 
   const value = record[key];
   if (value === null) return null;
   if (typeof value !== 'string' || value.trim().length === 0) {
-    throw new GslrEvidenceBundleVerificationError(`${key} must be a non-empty string or null`);
+    throw verificationError(
+      'schema_invalid',
+      'static_constraints',
+      `${key} must be a non-empty string or null`,
+    );
   }
   return readArtifactRef({ [key]: value }, key);
+}
+
+function verificationError(
+  code: GslrEvidenceBundleRejectionCodeV1,
+  category: GslrEvidenceBundleRejectionCategoryV1,
+  message: string,
+) {
+  return new GslrEvidenceBundleVerificationError(message, code, category);
 }
 
 function deepFreeze<T>(value: T): T {

@@ -1,6 +1,10 @@
 /* cspell:ignore gslr */
 
 import { GSLR_MANUAL_BUNDLE_PREVIEW_FIXTURES } from './gslr-manual-bundle-preview-fixtures';
+import type {
+  GslrEvidenceBundleRejectionCategoryV1,
+  GslrEvidenceBundleRejectionCodeV1,
+} from '@portarium/domain-evidence';
 
 export interface GslrManualBundleAdversarialFixture {
   label: string;
@@ -14,6 +18,8 @@ export interface GslrManualBundleAdversarialFixture {
     | 'Artifact hash coverage'
     | 'Static constraints';
   expectedErrorPattern: RegExp;
+  expectedRejectionCode: GslrEvidenceBundleRejectionCodeV1;
+  expectedRejectionCategory: GslrEvidenceBundleRejectionCategoryV1;
   bundleJson: string;
 }
 
@@ -27,6 +33,8 @@ export const GSLR_MANUAL_BUNDLE_ADVERSARIAL_FIXTURES = [
     caseId: 'expired-window',
     expectedCheckLabel: 'Validity window',
     expectedErrorPattern: /verification window/i,
+    expectedRejectionCode: 'validity_window_invalid',
+    expectedRejectionCategory: 'validity_window',
     mutate(bundle) {
       verification(bundle)['expiresAtIso'] = '2026-05-13T01:45:00.000Z';
     },
@@ -36,6 +44,8 @@ export const GSLR_MANUAL_BUNDLE_ADVERSARIAL_FIXTURES = [
     caseId: 'not-yet-valid-window',
     expectedCheckLabel: 'Validity window',
     expectedErrorPattern: /verification window/i,
+    expectedRejectionCode: 'validity_window_invalid',
+    expectedRejectionCategory: 'validity_window',
     mutate(bundle) {
       bundle['createdAtIso'] = '2026-05-13T03:10:00.000Z';
       verification(bundle)['notBeforeIso'] = '2026-05-13T03:00:00.000Z';
@@ -47,6 +57,8 @@ export const GSLR_MANUAL_BUNDLE_ADVERSARIAL_FIXTURES = [
     caseId: 'payload-hash-tamper',
     expectedCheckLabel: 'Payload hash',
     expectedErrorPattern: /payloadHashSha256/i,
+    expectedRejectionCode: 'payload_hash_mismatch',
+    expectedRejectionCategory: 'payload_hash',
     mutate(bundle) {
       subject(bundle)['task'] = 'gslr8-route-record-compiler-tampered';
       route(bundle)['task'] = 'gslr8-route-record-compiler-tampered';
@@ -57,8 +69,10 @@ export const GSLR_MANUAL_BUNDLE_ADVERSARIAL_FIXTURES = [
     caseId: 'invalid-signature',
     expectedCheckLabel: 'Signature',
     expectedErrorPattern: /signature verification failed/i,
+    expectedRejectionCode: 'signature_invalid',
+    expectedRejectionCategory: 'signature',
     mutate(bundle) {
-      verification(bundle)['signatureBase64'] = 'c2lnOndyb25n';
+      verification(bundle)['signatureBase64'] = 'c2ln';
     },
   }),
   adversarialFixture({
@@ -66,6 +80,8 @@ export const GSLR_MANUAL_BUNDLE_ADVERSARIAL_FIXTURES = [
     caseId: 'missing-artifact-hash',
     expectedCheckLabel: 'Artifact hash coverage',
     expectedErrorPattern: /missing artifact hash/i,
+    expectedRejectionCode: 'artifact_hash_missing',
+    expectedRejectionCategory: 'artifact_hash_coverage',
     mutate(bundle) {
       const hashes = bundle['artifactHashes'];
       if (!Array.isArray(hashes)) throw new Error('base bundle artifactHashes must be an array');
@@ -77,6 +93,8 @@ export const GSLR_MANUAL_BUNDLE_ADVERSARIAL_FIXTURES = [
     caseId: 'raw-payload-key',
     expectedCheckLabel: 'Static constraints',
     expectedErrorPattern: /raw or secret field/i,
+    expectedRejectionCode: 'raw_payload_forbidden',
+    expectedRejectionCategory: 'static_constraints',
     mutate(bundle) {
       bundle['rawPayload'] = { studentName: 'must-not-cross-boundary' };
     },
@@ -86,6 +104,8 @@ export const GSLR_MANUAL_BUNDLE_ADVERSARIAL_FIXTURES = [
     caseId: 'provenance-mismatch',
     expectedCheckLabel: 'Provenance',
     expectedErrorPattern: /source\.runId/i,
+    expectedRejectionCode: 'provenance_mismatch',
+    expectedRejectionCategory: 'provenance',
     mutate(bundle) {
       source(bundle)['runId'] = 'gslr8-route-record-compiler-different-run';
     },
@@ -95,6 +115,8 @@ export const GSLR_MANUAL_BUNDLE_ADVERSARIAL_FIXTURES = [
     caseId: 'runtime-authority-claim',
     expectedCheckLabel: 'Static constraints',
     expectedErrorPattern: /runtimeAuthority/i,
+    expectedRejectionCode: 'static_constraint_violation',
+    expectedRejectionCategory: 'static_constraints',
     mutate(bundle) {
       constraints(bundle)['runtimeAuthority'] = 'execute';
     },
@@ -104,6 +126,8 @@ export const GSLR_MANUAL_BUNDLE_ADVERSARIAL_FIXTURES = [
     caseId: 'action-controls-claim',
     expectedCheckLabel: 'Static constraints',
     expectedErrorPattern: /actionControls/i,
+    expectedRejectionCode: 'static_constraint_violation',
+    expectedRejectionCategory: 'static_constraints',
     mutate(bundle) {
       constraints(bundle)['actionControls'] = 'present';
     },
@@ -115,6 +139,8 @@ function adversarialFixture(input: {
   caseId: string;
   expectedCheckLabel: GslrManualBundleAdversarialFixture['expectedCheckLabel'];
   expectedErrorPattern: RegExp;
+  expectedRejectionCode: GslrManualBundleAdversarialFixture['expectedRejectionCode'];
+  expectedRejectionCategory: GslrManualBundleAdversarialFixture['expectedRejectionCategory'];
   mutate: (bundle: BundleRecord) => void;
 }): GslrManualBundleAdversarialFixture {
   const bundle = JSON.parse(baseFixture.bundleJson) as BundleRecord;
@@ -124,6 +150,8 @@ function adversarialFixture(input: {
     caseId: input.caseId,
     expectedCheckLabel: input.expectedCheckLabel,
     expectedErrorPattern: input.expectedErrorPattern,
+    expectedRejectionCode: input.expectedRejectionCode,
+    expectedRejectionCategory: input.expectedRejectionCategory,
     sourceRef: `gslr-14-adversarial-corpus/${input.caseId}.bundle.json`,
     bundleJson: JSON.stringify(bundle, null, 2),
   };

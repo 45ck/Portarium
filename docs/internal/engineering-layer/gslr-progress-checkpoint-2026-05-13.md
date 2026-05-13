@@ -1,7 +1,7 @@
 # GSLR Progress Checkpoint: 2026-05-13
 
-Status: post-GSLR-15 progress checkpoint
-Tracking beads: `bead-1251`, `bead-1252`, `bead-1253`, `bead-1254`, `bead-1257`, `bead-1258`
+Status: post-GSLR-16 progress checkpoint
+Tracking beads: `bead-1251`, `bead-1252`, `bead-1253`, `bead-1254`, `bead-1257`, `bead-1258`, `bead-1259`
 
 ## Short Version
 
@@ -38,7 +38,7 @@ GSLR-6 through GSLR-8 found the useful pattern:
 - a PL-owned route-record compiler passed three local repeats when the local
   model only filled generic predicate hooks.
 
-GSLR-9 through GSLR-15 moved the result toward Portarium:
+GSLR-9 through GSLR-16 moved the result toward Portarium:
 
 - GSLR route evidence can become a docs/test-only
   `EngineeringEvidenceCardInputV1`;
@@ -56,7 +56,10 @@ GSLR-9 through GSLR-15 moved the result toward Portarium:
 - static import readiness is now captured as a test-backed gate, requiring
   production keyring trust, artifact byte verification, append-only static
   storage, operator review states, and structured rejection codes before any
-  persistent import implementation.
+  persistent import implementation;
+- verifier rejection reasons now have stable machine-readable code/category
+  fields, and the adversarial corpus is materialized as portable `.bundle.json`
+  files for future importer-level tests.
 
 ## Current Conclusion
 
@@ -89,8 +92,9 @@ Do not build these yet:
 - production action paths based on GSLR evidence.
 
 The reason is simple: GSLR-12 proves static bundle verification, GSLR-14 proves
-static rejection behavior, and GSLR-15 proves the import-readiness gate. None
-of those creates production trust or runtime authority.
+static rejection behavior, GSLR-15 proves the import-readiness gate, and
+GSLR-16 proves structured rejection portability. None of those creates
+production trust or runtime authority.
 
 ## Next Product-Safe Step
 
@@ -98,6 +102,7 @@ GSLR-11 completed the static Cockpit fixture/view proof. GSLR-12 completed the
 static signed-bundle verifier proof. GSLR-13 completed the manual Cockpit bundle
 preview. GSLR-14 completed the adversarial static rejection corpus.
 GSLR-15 completed the static import readiness design gate.
+GSLR-16 completed structured rejection codes and portable adversarial files.
 
 It now:
 
@@ -115,11 +120,15 @@ It now:
   production keyring trust, artifact byte verification, append-only static
   storage, operator review states, and structured verifier rejection codes are
   designed.
+- maps preview rejection rows from verifier categories instead of regex over
+  error messages.
+- stores the adversarial corpus as standalone `.bundle.json` files plus a
+  manifest with expected rejection code/category.
 
-The next safe step is GSLR-16: structured rejection codes and portable static
-fixture corpus. That should remove UI regex mapping over verifier messages and
-decide whether adversarial bundles need standalone `.bundle.json` files before
-any importer-level tests are written.
+The next safe step is GSLR-17: persistent static imported-record design. That
+should define the stored record shape for verified and rejected static bundles
+without building live PL ingestion, runtime cards, queues, tables, SSE,
+production actions, or MC connector/data movement.
 
 ## Progress Record
 
@@ -135,8 +144,10 @@ any importer-level tests are written.
 - Portarium reached GSLR-13 with a manual Cockpit bundle preview.
 - Portarium reached GSLR-14 with an adversarial static bundle rejection corpus.
 - Portarium reached GSLR-15 with a static import readiness design gate.
+- Portarium reached GSLR-16 with structured verifier rejection codes and a
+  portable adversarial bundle corpus.
 - prompt-language recorded GSLR-8 as the strongest positive local-screen result
   so far.
 - MacquarieCollege remains a reference vertical and boundary test only.
-- The next real work item is structured rejection codes and portable static
-  corpus evidence, not more routing automation or live ingestion.
+- The next real work item is persistent static imported-record design, not more
+  routing automation or live ingestion.
