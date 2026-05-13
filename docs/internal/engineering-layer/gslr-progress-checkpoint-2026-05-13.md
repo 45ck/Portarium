@@ -1,7 +1,7 @@
 # GSLR Progress Checkpoint: 2026-05-13
 
-Status: post-GSLR-16 progress checkpoint
-Tracking beads: `bead-1251`, `bead-1252`, `bead-1253`, `bead-1254`, `bead-1257`, `bead-1258`, `bead-1259`
+Status: post-GSLR-17 progress checkpoint
+Tracking beads: `bead-1251`, `bead-1252`, `bead-1253`, `bead-1254`, `bead-1257`, `bead-1258`, `bead-1259`, `bead-1260`
 
 ## Short Version
 
@@ -38,7 +38,7 @@ GSLR-6 through GSLR-8 found the useful pattern:
 - a PL-owned route-record compiler passed three local repeats when the local
   model only filled generic predicate hooks.
 
-GSLR-9 through GSLR-16 moved the result toward Portarium:
+GSLR-9 through GSLR-17 moved the result toward Portarium:
 
 - GSLR route evidence can become a docs/test-only
   `EngineeringEvidenceCardInputV1`;
@@ -59,7 +59,10 @@ GSLR-9 through GSLR-16 moved the result toward Portarium:
   persistent import implementation;
 - verifier rejection reasons now have stable machine-readable code/category
   fields, and the adversarial corpus is materialized as portable `.bundle.json`
-  files for future importer-level tests.
+  files for future importer-level tests;
+- static imported-record shape now exists for verified and rejected bundles,
+  preserving signer trust, artifact byte-verification status, operator review
+  state, rejection code/category, and fixed no-runtime authority.
 
 ## Current Conclusion
 
@@ -93,8 +96,8 @@ Do not build these yet:
 
 The reason is simple: GSLR-12 proves static bundle verification, GSLR-14 proves
 static rejection behavior, GSLR-15 proves the import-readiness gate, and
-GSLR-16 proves structured rejection portability. None of those creates
-production trust or runtime authority.
+GSLR-16 proves structured rejection portability. GSLR-17 defines a static record
+shape. None of those creates production trust or runtime authority.
 
 ## Next Product-Safe Step
 
@@ -103,6 +106,7 @@ static signed-bundle verifier proof. GSLR-13 completed the manual Cockpit bundle
 preview. GSLR-14 completed the adversarial static rejection corpus.
 GSLR-15 completed the static import readiness design gate.
 GSLR-16 completed structured rejection codes and portable adversarial files.
+GSLR-17 completed the static imported-record contract.
 
 It now:
 
@@ -124,11 +128,14 @@ It now:
   error messages.
 - stores the adversarial corpus as standalone `.bundle.json` files plus a
   manifest with expected rejection code/category.
+- defines accepted and quarantined static imported records without adding a
+  repository, database table, queue, SSE stream, runtime card, or action path.
 
-The next safe step is GSLR-17: persistent static imported-record design. That
-should define the stored record shape for verified and rejected static bundles
-without building live PL ingestion, runtime cards, queues, tables, SSE,
-production actions, or MC connector/data movement.
+The next safe step is GSLR-18: static imported-record repository design. That
+should define an append-only repository interface, idempotency key, duplicate
+handling, review-state transitions, and audit/event boundaries without wiring
+live PL ingestion, runtime cards, queues, tables, SSE, production actions, or MC
+connector/data movement.
 
 ## Progress Record
 
@@ -146,8 +153,9 @@ production actions, or MC connector/data movement.
 - Portarium reached GSLR-15 with a static import readiness design gate.
 - Portarium reached GSLR-16 with structured verifier rejection codes and a
   portable adversarial bundle corpus.
+- Portarium reached GSLR-17 with a static imported-record contract.
 - prompt-language recorded GSLR-8 as the strongest positive local-screen result
   so far.
 - MacquarieCollege remains a reference vertical and boundary test only.
-- The next real work item is persistent static imported-record design, not more
+- The next real work item is static imported-record repository design, not more
   routing automation or live ingestion.

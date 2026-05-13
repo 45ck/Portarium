@@ -1,7 +1,7 @@
 # GSLR Current Progress: 2026-05-13
 
-Status: post-GSLR-16 progress update
-Tracking beads: `bead-1253`, `bead-1254`, `bead-1255`, `bead-1256`, `bead-1257`, `bead-1258`, `bead-1259`
+Status: post-GSLR-17 progress update
+Tracking beads: `bead-1253`, `bead-1254`, `bead-1255`, `bead-1256`, `bead-1257`, `bead-1258`, `bead-1259`, `bead-1260`
 
 ## Where We Are
 
@@ -19,6 +19,7 @@ prompt-language experiment evidence
   -> adversarial static bundle rejection corpus
   -> static import readiness design gate
   -> structured rejection codes and portable adversarial bundle files
+  -> static imported-record contract
 ```
 
 The loop is intentionally static. It proves that evidence can be shaped and
@@ -77,7 +78,11 @@ Portarium now has:
   by the Cockpit preview instead of regex mapping over error messages;
 - a portable GSLR-14 adversarial corpus directory with standalone `.bundle.json`
   files and a manifest recording expected rejection code/category for each
-  case.
+  case;
+- a docs/test-only `GslrStaticImportedRecordV1` contract for verified and
+  rejected static bundles, with source refs, signer trust, artifact
+  byte-verification status, operator review state, structured rejection fields,
+  timestamps, and fixed no-runtime authority.
 
 prompt-language now records GSLR-8 as the strongest local-screen result and
 publishes checked-in static bundle fixtures for GSLR-8 and GSLR-7.
@@ -151,6 +156,16 @@ GSLR-16 proves structured rejection portability:
 - every portable adversarial file rejects with the expected code/category;
 - the route still avoids live engineering endpoints while exercising rejection.
 
+GSLR-17 proves static imported-record shape:
+
+- verified bundles can become accepted static records;
+- rejected bundles can become quarantined records with structured rejection
+  code/category;
+- signer key identity and test-fixture trust can be represented without
+  claiming production trust;
+- artifact byte-verification status has an explicit field;
+- runtime authority or action-control claims are rejected by the record builder.
+
 This is enough to continue toward a governed engineering cockpit. It is not
 enough to create runtime automation.
 
@@ -160,6 +175,7 @@ Still blocked:
 
 - live prompt-language manifest ingestion;
 - signed-bundle import into production state;
+- static imported-record repository implementation;
 - runtime Cockpit engineering cards;
 - route-record queues;
 - route-record database tables;
@@ -172,13 +188,13 @@ Still blocked:
 
 ## Next Step
 
-The next safe work item is GSLR-17: persistent static imported-record design.
+The next safe work item is GSLR-18: static imported-record repository design.
 
 It should:
 
-- define the stored record shape for verified and rejected static bundles;
-- include production keyring identity, artifact-byte verification status,
-  review state, rejection code/category, source refs, and boundary warnings;
+- define an append-only repository interface and idempotency key;
+- define duplicate handling and review-state transitions;
+- define audit/event boundaries without wiring a production database;
 - remain a design/test step, not live PL ingestion or runtime import;
 - continue to block queues, tables, SSE, runtime cards, production actions, and
   MC connector/data movement.
