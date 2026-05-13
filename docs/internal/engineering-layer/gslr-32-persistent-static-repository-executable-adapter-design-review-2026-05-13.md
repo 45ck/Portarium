@@ -139,3 +139,6 @@ The focused tests prove:
 Open `bead-1280` for an executable adapter scaffold. That scaffold must still
 omit connection configuration, applied migrations, production tables, production
 writes, runtime cards, production actions, and MC connector access.
+
+The executable adapter scaffold is recorded in
+[`gslr-33-persistent-static-repository-executable-adapter-scaffold-2026-05-13.md`](./gslr-33-persistent-static-repository-executable-adapter-scaffold-2026-05-13.md).

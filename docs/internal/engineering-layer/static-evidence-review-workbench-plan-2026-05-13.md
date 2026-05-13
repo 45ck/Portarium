@@ -197,6 +197,10 @@ Candidate follow-ups:
 - `bead-1280`: executable adapter scaffold, blocked by `bead-1279` and still
   without connection config, applied migrations, production tables, production
   writes, runtime cards, actions, or MC connector access;
+- `bead-1281`: scaffold code-review evidence, blocked by `bead-1280` and
+  focused on proving the adapter shell still has no database client binding,
+  connection config, generated SQL files, secrets, applied migrations,
+  production tables, or read/write execution;
 - authz and tenancy for imported static evidence;
 - operator review workflow over persisted imported records.
 
@@ -342,6 +346,8 @@ Recommended next beads:
 - `bead-1280`: Executable adapter scaffold, blocked by `bead-1279`, still
   without connection config, applied migrations, production tables, production
   writes, runtime cards, actions, or MC connector access.
+- `bead-1281`: Scaffold code-review evidence, blocked by `bead-1280`, verifying
+  the shell remains unbound and non-operational.
 
 Do not create beads for live PL polling, runtime cards, route-record queues,
 production actions, or MC connector/data engineering from this plan.
