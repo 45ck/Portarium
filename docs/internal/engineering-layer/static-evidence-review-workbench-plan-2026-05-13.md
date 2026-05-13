@@ -194,6 +194,9 @@ Candidate follow-ups:
 - `bead-1279`: executable adapter design-review contract, blocked by
   `bead-1278` and still design-only with no connection config, applied
   migrations, production tables, or production writes;
+- `bead-1280`: executable adapter scaffold, blocked by `bead-1279` and still
+  without connection config, applied migrations, production tables, production
+  writes, runtime cards, actions, or MC connector access;
 - authz and tenancy for imported static evidence;
 - operator review workflow over persisted imported records.
 
@@ -336,6 +339,9 @@ Recommended next beads:
 - `bead-1279`: Executable adapter design-review contract, blocked by
   `bead-1278`, before any executable code, connection config, applied
   migration, production table, or production write path.
+- `bead-1280`: Executable adapter scaffold, blocked by `bead-1279`, still
+  without connection config, applied migrations, production tables, production
+  writes, runtime cards, actions, or MC connector access.
 
 Do not create beads for live PL polling, runtime cards, route-record queues,
 production actions, or MC connector/data engineering from this plan.

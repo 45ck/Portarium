@@ -138,3 +138,6 @@ Open `bead-1279` for an executable adapter design-review contract. That bead
 should still be design-only: no database connection config, no applied
 migrations, no production tables, no production writes, no runtime cards, no
 production actions, and no MC connector access.
+
+The executable adapter design review is recorded in
+[`gslr-32-persistent-static-repository-executable-adapter-design-review-2026-05-13.md`](./gslr-32-persistent-static-repository-executable-adapter-design-review-2026-05-13.md).
