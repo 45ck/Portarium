@@ -318,6 +318,8 @@ Recommended next beads:
   `bead-1273`, with migrations still unapplied.
 - `bead-1275`: Contract-harness adapter implementation, blocked by `bead-1274`,
   with migrations still unapplied and production writes disabled.
+- `bead-1276`: Review checkpoint before any database adapter, blocked by
+  `bead-1275`.
 
 Do not create beads for live PL polling, runtime cards, route-record queues,
 production actions, or MC connector/data engineering from this plan.

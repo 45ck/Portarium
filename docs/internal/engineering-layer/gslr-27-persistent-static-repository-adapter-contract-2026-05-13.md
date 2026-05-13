@@ -138,3 +138,6 @@ The focused tests prove:
 Open a follow-up contract-harness adapter bead. It should implement an adapter
 against the GSLR-26 port and GSLR-27 assertions while migrations remain
 unapplied and production writes remain disabled.
+
+Update: `bead-1275` has now implemented that contract-harness adapter in
+[`gslr-28-persistent-static-repository-contract-harness-adapter-2026-05-13.md`](./gslr-28-persistent-static-repository-contract-harness-adapter-2026-05-13.md).
