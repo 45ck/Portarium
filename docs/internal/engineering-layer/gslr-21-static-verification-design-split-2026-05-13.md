@@ -122,7 +122,6 @@ The focused tests prove:
 
 ## Next Step
 
-The next safe item is a persistent static imported-record storage design that
-consumes this verification-design gate as a prerequisite. It should still be
-design/test-only and must not add live polling, runtime cards, production
-actions, or MC connector/source-system access.
+Update: `bead-1269` has now implemented the persistent static imported-record
+storage design gate. See
+[`gslr-22-persistent-static-storage-design-2026-05-13.md`](./gslr-22-persistent-static-storage-design-2026-05-13.md).

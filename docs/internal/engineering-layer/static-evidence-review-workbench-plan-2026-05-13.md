@@ -306,6 +306,8 @@ Recommended next beads:
 - `bead-1268`: Production keyring and artifact-byte verification design split.
 - `bead-1269`: Persistent static imported-record storage design, blocked by
   `bead-1268`.
+- `bead-1270`: Persistent static repository implementation-readiness checklist,
+  blocked by `bead-1269`.
 
 Do not create beads for live PL polling, runtime cards, route-record queues,
 production actions, or MC connector/data engineering from this plan.
