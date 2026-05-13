@@ -127,7 +127,6 @@ The focused tests prove:
 
 ## Next Step
 
-The next safe item is an implementation-readiness checklist for the eventual
-persistent static repository. It should map this storage design to concrete
-future implementation requirements and remain docs/test-only until a separate
-implementation bead is opened.
+Update: `bead-1270` has now implemented the implementation-readiness checklist
+for the eventual persistent static repository. See
+[`gslr-23-persistent-static-repository-implementation-readiness-2026-05-13.md`](./gslr-23-persistent-static-repository-implementation-readiness-2026-05-13.md).

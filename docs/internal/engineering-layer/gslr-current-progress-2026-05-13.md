@@ -28,6 +28,7 @@ prompt-language experiment evidence
   -> static review-note workflow
   -> production-keyring/artifact-byte verification design split
   -> persistent static imported-record storage design gate
+  -> persistent static repository implementation-readiness checklist
 ```
 
 The loop is intentionally static. It proves that evidence can be shaped and
@@ -119,6 +120,10 @@ Portarium now has:
 - a docs/test-only persistent static storage design evaluator gated by
   verification readiness, requiring append-only, idempotent, fingerprinted, and
   audited storage while blocking mutable storage and runtime surfaces.
+- a docs/test-only persistent static repository implementation-readiness
+  checklist that blocks already-applied migrations/tables/writes and requires
+  contract, migration, audit, backup, retention, observability, and security
+  plans before a future implementation bead can open.
 
 prompt-language now records GSLR-8 as the strongest local-screen result and
 publishes checked-in static bundle fixtures for GSLR-8 and GSLR-7.
@@ -290,6 +295,19 @@ GSLR-20 proves static importer dry-run composition:
   raw payload storage, queues, SSE streams, live endpoints, runtime authority,
   actions, and MC connector access are blocked.
 
+`bead-1270` proves implementation readiness can be checked before implementation:
+
+- a future implementation bead is gated by the persistent static storage design;
+- already-applied migrations, production tables, or production writes block the
+  checklist;
+- repository port, append-only schema, idempotency constraint, fingerprint
+  constraint, audit-event schema, review transition table, migration draft,
+  backup/restore plan, static-only observability, delete-prohibited retention,
+  verification-gate dependency, raw payload prohibition, no runtime authority,
+  and blocked MC connector access are required;
+- the checklist outputs the implementation artifacts the future bead must
+  produce.
+
 This is enough to continue toward a governed engineering cockpit. It is not
 enough to create runtime automation.
 
@@ -318,21 +336,21 @@ Still blocked:
 
 ## Next Step
 
-The next safe work item is an implementation-readiness checklist for the
-eventual persistent static repository. GSLR-20 supplied the route-independent
-dry-run core, `bead-1265` supplied the internal Workbench route, `bead-1266`
-supplied the portable operator report packet, `bead-1267` supplied constrained
-static review-note capture, `bead-1268` supplied the production-keyring/artifact
-byte verification design gate, and `bead-1269` supplied the persistent static
-storage design gate.
+The next safe work item is a stop-and-review checkpoint before real persistent
+storage implementation. GSLR-20 supplied the route-independent dry-run core,
+`bead-1265` supplied the internal Workbench route, `bead-1266` supplied the
+portable operator report packet, `bead-1267` supplied constrained static
+review-note capture, `bead-1268` supplied the production-keyring/artifact byte
+verification design gate, `bead-1269` supplied the persistent static storage
+design gate, and `bead-1270` supplied the implementation-readiness checklist.
 
 See
 [`static-evidence-review-workbench-plan-2026-05-13.md`](./static-evidence-review-workbench-plan-2026-05-13.md).
 
-Proceed to `bead-1270`: persistent static repository implementation-readiness
-checklist. It should stay docs/test-only and must not add live polling, database
-migrations, runtime cards, production actions, or MC connector/source-system
-access.
+Proceed to `bead-1271`: stop-and-review checkpoint. It should decide whether to
+open a real implementation bead or pause for operator/product review; it must
+not add live polling, database migrations, runtime cards, production actions, or
+MC connector/source-system access.
 
 Production keyring, artifact byte fetching, persistent storage, live routing,
 runtime cards, and MC connector work remain separate gated follow-ups.
