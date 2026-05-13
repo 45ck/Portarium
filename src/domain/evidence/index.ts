@@ -11,6 +11,7 @@ export * from './evidence-privacy-v1.js';
 export * from './engineering-evidence-card-cockpit-export-v1.js';
 export * from './gslr-evidence-bundle-v1.js';
 export * from './gslr-engineering-evidence-card-projection-v1.js';
+export * from './gslr-static-imported-record-repository-v1.js';
 export * from './gslr-static-imported-record-v1.js';
 export * from './gslr-static-import-readiness-v1.js';
 export * from './presentation-blocks-v1.js';

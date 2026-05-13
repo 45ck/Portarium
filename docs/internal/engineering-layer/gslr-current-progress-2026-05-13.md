@@ -1,7 +1,7 @@
 # GSLR Current Progress: 2026-05-13
 
-Status: post-GSLR-17 progress update
-Tracking beads: `bead-1253`, `bead-1254`, `bead-1255`, `bead-1256`, `bead-1257`, `bead-1258`, `bead-1259`, `bead-1260`
+Status: post-GSLR-18 progress update
+Tracking beads: `bead-1253`, `bead-1254`, `bead-1255`, `bead-1256`, `bead-1257`, `bead-1258`, `bead-1259`, `bead-1260`, `bead-1261`
 
 ## Where We Are
 
@@ -20,6 +20,7 @@ prompt-language experiment evidence
   -> static import readiness design gate
   -> structured rejection codes and portable adversarial bundle files
   -> static imported-record contract
+  -> append-only static imported-record repository contract
 ```
 
 The loop is intentionally static. It proves that evidence can be shaped and
@@ -82,7 +83,10 @@ Portarium now has:
 - a docs/test-only `GslrStaticImportedRecordV1` contract for verified and
   rejected static bundles, with source refs, signer trust, artifact
   byte-verification status, operator review state, structured rejection fields,
-  timestamps, and fixed no-runtime authority.
+  timestamps, and fixed no-runtime authority;
+- a docs/test-only static imported-record repository contract with append-only
+  entries, idempotency keys, duplicate conflict rejection, constrained
+  review-state transitions, audit events, and no runtime operation surface.
 
 prompt-language now records GSLR-8 as the strongest local-screen result and
 publishes checked-in static bundle fixtures for GSLR-8 and GSLR-7.
@@ -166,6 +170,17 @@ GSLR-17 proves static imported-record shape:
 - artifact byte-verification status has an explicit field;
 - runtime authority or action-control claims are rejected by the record builder.
 
+GSLR-18 proves static repository behavior:
+
+- accepted records append and replay idempotently;
+- conflicting idempotency-key or record-id duplicates are rejected instead of
+  overwritten;
+- quarantined records can move through constrained review-state transitions;
+- review transitions create new revisions and audit events;
+- imported records that claim live authority are rejected;
+- the repository contract has no update, delete, queue, stream, subscribe, or
+  execute operation.
+
 This is enough to continue toward a governed engineering cockpit. It is not
 enough to create runtime automation.
 
@@ -175,7 +190,8 @@ Still blocked:
 
 - live prompt-language manifest ingestion;
 - signed-bundle import into production state;
-- static imported-record repository implementation;
+- production static imported-record repository implementation;
+- static imported-record importer planning and implementation;
 - runtime Cockpit engineering cards;
 - route-record queues;
 - route-record database tables;
@@ -188,13 +204,14 @@ Still blocked:
 
 ## Next Step
 
-The next safe work item is GSLR-18: static imported-record repository design.
+The next safe work item is GSLR-19: static imported-record importer planning.
 
 It should:
 
-- define an append-only repository interface and idempotency key;
-- define duplicate handling and review-state transitions;
-- define audit/event boundaries without wiring a production database;
+- define how manual verified/rejected bundle outcomes would become repository
+  append requests;
+- define artifact-byte fetch policy and production keyring requirements;
+- define operator review defaults and importer failure reporting;
 - remain a design/test step, not live PL ingestion or runtime import;
 - continue to block queues, tables, SSE, runtime cards, production actions, and
   MC connector/data movement.
