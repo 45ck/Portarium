@@ -43,6 +43,28 @@ export type ListMachinesRequest = CursorPaginationRequest;
 
 export type PolicyTier = 'Auto' | 'Assisted' | 'HumanApprove' | 'ManualOnly';
 
+export type AgentOperatorUiMode = 'embedded' | 'external';
+
+export type AgentOperatorUiStatus = 'available' | 'degraded' | 'disabled';
+
+export type AgentOperatorUiAccessMode = 'mediated' | 'direct-tunnel' | 'external';
+
+export interface AgentOperatorUiV1 {
+  schemaVersion: 1;
+  label: string;
+  mode: AgentOperatorUiMode;
+  status: AgentOperatorUiStatus;
+  embedUrl?: string;
+  externalUrl?: string;
+  accessMode: AgentOperatorUiAccessMode;
+  readOnly: boolean;
+  sourceSystem: string;
+  sourceRef?: string;
+  freshness?: string;
+  boundary: readonly string[];
+  deniedOperations: readonly string[];
+}
+
 export interface AgentV1 {
   schemaVersion: 1;
   agentId: string;
@@ -56,6 +78,8 @@ export interface AgentV1 {
   machineId?: string;
   /** Policy tier controlling human-oversight level for this agent */
   policyTier?: PolicyTier;
+  /** Optional human/operator console rendered from Cockpit when policy allows it */
+  operatorUi?: AgentOperatorUiV1;
 }
 
 export interface RegisterAgentRequest {

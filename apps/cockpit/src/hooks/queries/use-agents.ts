@@ -12,6 +12,7 @@ type AgentConfig = Readonly<{
   machineId?: string;
   modelId?: string;
   policyTier?: AgentV1['policyTier'];
+  operatorUi?: AgentV1['operatorUi'];
   allowedCapabilities?: AgentV1['allowedCapabilities'];
   capabilities?: readonly { capability: string }[];
   usedByWorkflowIds?: string[];
@@ -58,6 +59,7 @@ function toAgentView(agent: AgentConfig): AgentV1 {
     ...(agent.machineId ? { machineId: agent.machineId } : {}),
     ...(agent.policyTier ? { policyTier: agent.policyTier } : {}),
     ...(agent.modelId ? { modelId: agent.modelId } : {}),
+    ...(agent.operatorUi ? { operatorUi: agent.operatorUi } : {}),
   };
 }
 
