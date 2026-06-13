@@ -18,6 +18,7 @@ Current gate includes:
 - dependency-cruiser
 - knip
 - tests with coverage
+- OpenClaw adapter contract validation
 - vulnerability audit threshold
 
 ## Nightly deep checks
@@ -42,3 +43,9 @@ Includes mutation testing, dep graph generation, strict knip, and slow typecheck
 ## Related scripts
 
 See `package.json` scripts for exact command definitions.
+
+For OpenClaw-style runtime adapters, run the focused contract check with:
+
+```bash
+npm run ci:openclaw-adapter-contract
+```

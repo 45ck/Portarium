@@ -55,8 +55,7 @@ export const MOCK_POLICIES: PolicySummary[] = [
   {
     policyId: 'pol-004',
     name: 'Change Safety — External system thresholds',
-    description:
-      'High-impact external changes must remain within configured safety thresholds.',
+    description: 'High-impact external changes must remain within configured safety thresholds.',
     status: 'Active',
     tier: 'ManualOnly',
     scope: 'external changes',

@@ -87,6 +87,31 @@ describe('RunInterventionPanel', () => {
     expect(screen.getByRole('button', { name: /record resume/i })).toBeTruthy();
   });
 
+  it('applies a recovered-run recommendation after async route data settles', () => {
+    const { rerender } = render(
+      <RunInterventionPanel
+        run={{ ...runningRun, status: 'WaitingForApproval', controlState: 'waiting' }}
+        workforceMembers={[]}
+        workforceQueues={[]}
+        onSubmit={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: /record pause/i })).toBeTruthy();
+
+    rerender(
+      <RunInterventionPanel
+        run={{ ...runningRun, status: 'WaitingForApproval', controlState: 'waiting' }}
+        workforceMembers={[]}
+        workforceQueues={[]}
+        recommendedIntervention="resume"
+        onSubmit={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: /record resume/i })).toBeTruthy();
+  });
+
   it('separates request-more-evidence from generic steering actions', async () => {
     const onSubmit = vi.fn();
     render(

@@ -82,7 +82,10 @@ function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function createDevSession(request: APIRequestContext): Promise<void> {
+async function createDevSession(
+  context: BrowserContext,
+  request: APIRequestContext,
+): Promise<void> {
   const response = await request.post(`${apiBaseUrl}/auth/dev-session`, {
     headers: {
       Accept: 'application/json',
@@ -90,6 +93,26 @@ async function createDevSession(request: APIRequestContext): Promise<void> {
     },
   });
   expect(response.ok(), `dev session returned ${response.status()}`).toBe(true);
+
+  const setCookie = response.headers()['set-cookie'];
+  const sessionCookie = setCookie?.match(/^([^=]+)=([^;]+)/);
+  expect(sessionCookie, 'dev session response must set a Cockpit session cookie').not.toBeNull();
+  await context.addCookies([
+    {
+      name: sessionCookie![1]!,
+      value: sessionCookie![2]!,
+      url: 'http://localhost:5173',
+      httpOnly: true,
+      sameSite: 'Strict',
+    },
+  ]);
+}
+
+async function continueDevelopmentSessionIfPrompted(page: Page): Promise<void> {
+  const continueButton = page.getByRole('button', { name: 'Continue' });
+  if (await continueButton.isVisible({ timeout: 2_000 }).catch(() => false)) {
+    await continueButton.click();
+  }
 }
 
 async function resetBrowserStorage(context: BrowserContext, page: Page): Promise<void> {
@@ -207,7 +230,7 @@ test.describe('Cockpit live-stack smoke', () => {
   }, testInfo) => {
     const decisionRationale = `${decisionRationalePrefix} ${testInfo.workerIndex}-${Date.now()}`;
     await resetBrowserStorage(context, page);
-    await createDevSession(context.request);
+    await createDevSession(context, context.request);
     const { runtimeFailures, networkFailures } = installRuntimeGuards(page);
 
     const runsBefore = await apiGet<PageResponse<RunApiView>>(
@@ -239,6 +262,7 @@ test.describe('Cockpit live-stack smoke', () => {
     );
 
     await page.goto('/runs');
+    await continueDevelopmentSessionIfPrompted(page);
     await expect(page.getByRole('heading', { name: 'Runs' })).toBeVisible();
     await expect(page.getByText(runId, { exact: false })).toBeVisible();
     await expect(page.getByText(runningRunId, { exact: false })).toBeVisible();

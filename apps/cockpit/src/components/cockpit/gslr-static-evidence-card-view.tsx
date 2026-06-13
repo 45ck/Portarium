@@ -212,7 +212,7 @@ function formatMetricValue(value: number, unit: string) {
 export function GslrStaticEvidenceCardView({
   cards,
   introTitle = 'Fixture-backed Cockpit proof',
-  introDescription = 'These cards are checked-in static exports only. They prove the operator-facing shape for GSLR evidence without live prompt-language ingestion, Cockpit queues, runtime actions, or MacquarieCollege connector access.',
+  introDescription = 'These cards are checked-in static exports only. They prove the operator-facing shape for GSLR evidence without live prompt-language ingestion, Cockpit queues, runtime actions, or private-customer connector access.',
 }: GslrStaticEvidenceCardViewProps) {
   return (
     <div className="space-y-4">

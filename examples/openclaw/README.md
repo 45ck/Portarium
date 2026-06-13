@@ -9,13 +9,14 @@ instructed to do so.
 
 ## Contents
 
-| File / Directory        | Purpose                                                  |
-| ----------------------- | -------------------------------------------------------- |
-| `setup.md`              | Full workspace/OpenClaw setup instructions               |
-| `workspace-config.json` | Annotated OpenClaw profile configuration (portarium-dev) |
-| `experiments.md`        | Scientific methodology and experiment definitions        |
-| `findings.md`           | Results and analysis from running experiments            |
-| `results/`              | Raw experiment artefacts (JSON outcomes, logs)           |
+| File / Directory                           | Purpose                                                                   |
+| ------------------------------------------ | ------------------------------------------------------------------------- |
+| `setup.md`                                 | Full workspace/OpenClaw setup instructions                                |
+| `workspace-config.json`                    | Annotated OpenClaw profile configuration (portarium-dev)                  |
+| `portarium-openclaw-adapter.contract.json` | Generic alias/principal/approval/executor/evidence contract checked by CI |
+| `experiments.md`                           | Scientific methodology and experiment definitions                         |
+| `findings.md`                              | Results and analysis from running experiments                             |
+| `results/`                                 | Raw experiment artefacts (JSON outcomes, logs)                            |
 
 ## Quick start
 
@@ -48,6 +49,12 @@ curl -X POST "http://localhost:3000/v1/workspaces/ws-experiment/approvals/<appro
   -d '{"decision": "Approved", "rationale": "Operator approved"}'
 ```
 
+Validate the generic adapter contract before adding customer-specific aliases:
+
+```bash
+npm run ci:openclaw-adapter-contract
+```
+
 ## Key observations
 
 - Plugin intercepts **every** tool call via `before_tool_call` hook at priority 1000.
@@ -59,3 +66,4 @@ curl -X POST "http://localhost:3000/v1/workspaces/ws-experiment/approvals/<appro
   - `false` (development): agent runs with warning logged
 - The governance layer is **transparent** to the agent — it does not know the details of
   the policy evaluation, only whether its tool call was allowed or blocked.
+- Executor aliases must remain direct-only, not chat-exposed, and dry-run by default.

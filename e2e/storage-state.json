@@ -6,7 +6,7 @@
       "localStorage": [
         {
           "name": "portarium-dataset",
-          "value": "demo"
+          "value": "platform-showcase"
         },
         {
           "name": "portarium-cockpit-query-cache-v1",

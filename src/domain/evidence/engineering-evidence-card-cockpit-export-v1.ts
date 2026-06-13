@@ -86,7 +86,7 @@ export function buildEngineeringEvidenceCardCockpitExportV1(
       'Static R&D evidence only; do not execute production actions from this export.',
       'No live prompt-language manifest ingestion is implied by this export.',
       'No Cockpit runtime card, queue, database table, or SSE stream is created by this export.',
-      'No MacquarieCollege connector observation, source-system read, write, or raw data movement is authorized.',
+      'No private-customer connector observation, source-system read, write, or raw data movement is authorized.',
     ],
   } satisfies EngineeringEvidenceCardCockpitExportV1;
 

@@ -19,7 +19,8 @@ const DATASET_OPTIONS: DatasetOption[] = [
   {
     id: 'platform-showcase',
     label: 'Platform Snapshot',
-    description: 'Generic control-plane snapshot for operator, approval, evidence, and adapter flows',
+    description:
+      'Generic control-plane snapshot for operator, approval, evidence, and adapter flows',
   },
 ];
 
@@ -125,7 +126,8 @@ function SettingsPage() {
           <CardHeader>
             <CardTitle className="text-sm">Mock Dataset</CardTitle>
             <CardDescription>
-              Choose which read-only snapshot the mock API serves. Changing dataset reloads the page.
+              Choose which read-only snapshot the mock API serves. Changing dataset reloads the
+              page.
             </CardDescription>
           </CardHeader>
           <CardContent>

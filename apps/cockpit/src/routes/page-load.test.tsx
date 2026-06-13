@@ -430,14 +430,17 @@ describe('cockpit route page-load smoke', () => {
     { path: '/config/capability-posture', redirectedHeading: 'Policy Overview' },
     { path: '/config/blast-radius', redirectedHeading: 'Policy Overview' },
     { path: '/explore/pack-runtime', redirectedHeading: 'External Extensions' },
-  ])('redirects internal-only route $path in the default shell', async ({ path, redirectedHeading }) => {
-    vi.stubEnv('VITE_PORTARIUM_SHOW_INTERNAL_COCKPIT', 'false');
+  ])(
+    'redirects internal-only route $path in the default shell',
+    async ({ path, redirectedHeading }) => {
+      vi.stubEnv('VITE_PORTARIUM_SHOW_INTERNAL_COCKPIT', 'false');
 
-    await renderRoute(path);
+      await renderRoute(path);
 
-    expect(
-      (await screen.findAllByRole('heading', { name: redirectedHeading }, { timeout: 5_000 }))
-        .length,
-    ).toBeGreaterThan(0);
-  });
+      expect(
+        (await screen.findAllByRole('heading', { name: redirectedHeading }, { timeout: 5_000 }))
+          .length,
+      ).toBeGreaterThan(0);
+    },
+  );
 });

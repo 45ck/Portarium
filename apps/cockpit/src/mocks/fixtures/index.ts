@@ -47,7 +47,8 @@ export const DATASETS: DatasetEntry[] = [
   {
     id: 'platform-showcase',
     label: 'Portarium Platform Showcase',
-    description: 'Generic control-plane snapshot for operator, approval, evidence, and adapter flows',
+    description:
+      'Generic control-plane snapshot for operator, approval, evidence, and adapter flows',
     load: () =>
       import('./platform-showcase').then((m) => ({
         WORK_ITEMS: m.WORK_ITEMS,

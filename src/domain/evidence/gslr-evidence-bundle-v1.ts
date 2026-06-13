@@ -135,7 +135,7 @@ export function verifyGslrEvidenceBundleV1(
       'Verified GSLR bundle is manual static evidence only.',
       'Verification does not create live prompt-language ingestion.',
       'Verification does not create Cockpit runtime cards, queues, database tables, or SSE streams.',
-      'Verification does not authorize production action execution or MacquarieCollege connector access.',
+      'Verification does not authorize production action execution or private-customer connector access.',
     ],
   });
 }

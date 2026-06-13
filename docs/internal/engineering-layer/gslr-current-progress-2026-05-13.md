@@ -185,7 +185,7 @@ Portarium now has:
 prompt-language now records GSLR-8 as the strongest local-screen result and
 publishes checked-in static bundle fixtures for GSLR-8 and GSLR-7.
 
-MacquarieCollege now records the same boundary: MC remains a reference vertical
+private-customer now records the same boundary: MC remains a reference vertical
 only, with no connector observation, source-system reads or writes, raw payload
 movement, runtime cards, or production action paths.
 
@@ -306,7 +306,7 @@ GSLR-20 proves static importer dry-run composition:
   repository dry-run state, and audit event are visible;
 - the workbench interaction makes no live run, evidence, work-item, human-task,
   workforce, route-record, SSE, action, prompt-language polling, importer,
-  connector, Macquarie, or school endpoint calls.
+  connector, private customer, or school endpoint calls.
 
 `bead-1266` proves static operator handoff:
 
@@ -517,7 +517,7 @@ The 2026-05-13 repository sweep checked the accessible local repositories:
 
 - `Portarium`;
 - `prompt-language`;
-- `MacquarieCollege`;
+- `private-customer`;
 - `.codex/.tmp/plugins`.
 
 No pending project changes were found outside Portarium at sweep time. Portarium

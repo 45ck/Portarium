@@ -794,6 +794,10 @@ describe('hosted external route components', () => {
     );
 
     expect(await screen.findByText('No proposal evidence refs')).toBeTruthy();
-    expect(screen.getByText('This proposal does not have linked evidence refs in the loaded read model.')).toBeTruthy();
+    expect(
+      screen.getByText(
+        'This proposal does not have linked evidence refs in the loaded read model.',
+      ),
+    ).toBeTruthy();
   });
 });

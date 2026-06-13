@@ -139,6 +139,16 @@ const workbenchFixtures: readonly WorkbenchFixture[] = [
   },
 ];
 
+function getDefaultWorkbenchFixture(): WorkbenchFixture {
+  const fixture = workbenchFixtures[0];
+  if (fixture === undefined) {
+    throw new Error('GSLR static evidence workbench requires at least one fixture.');
+  }
+  return fixture;
+}
+
+const defaultWorkbenchFixture = getDefaultWorkbenchFixture();
+
 const workbenchHasher = {
   sha256Hex(input: string) {
     return HashSha256(sha256Hex(input));
@@ -269,15 +279,15 @@ export function buildGslrStaticEvidenceReviewNoteV1(input: {
 }
 
 export function GslrStaticEvidenceWorkbench() {
-  const [selectedFixtureId, setSelectedFixtureId] = useState(workbenchFixtures[0].id);
-  const [sourceRef, setSourceRef] = useState(workbenchFixtures[0].sourceRef);
-  const [bundleText, setBundleText] = useState(workbenchFixtures[0].bundleJson);
+  const [selectedFixtureId, setSelectedFixtureId] = useState(defaultWorkbenchFixture.id);
+  const [sourceRef, setSourceRef] = useState(defaultWorkbenchFixture.sourceRef);
+  const [bundleText, setBundleText] = useState(defaultWorkbenchFixture.bundleJson);
   const [nowIso, setNowIso] = useState(DEFAULT_NOW_ISO);
   const [dryRunAtIso, setDryRunAtIso] = useState(DEFAULT_DRY_RUN_AT_ISO);
   const [actor, setActor] = useState(DEFAULT_ACTOR);
   const [verifiedArtifactByteStatus, setVerifiedArtifactByteStatus] = useState<
     GslrStaticImportedRecordArtifactByteStatusV1 | undefined
-  >(workbenchFixtures[0].verifiedArtifactByteStatus);
+  >(defaultWorkbenchFixture.verifiedArtifactByteStatus);
   const [result, setResult] = useState<WorkbenchResult>({ kind: 'idle' });
 
   const selectedFixture = useMemo(
@@ -411,7 +421,7 @@ export function GslrStaticEvidenceWorkbench() {
                 type="button"
                 variant="outline"
                 onClick={() => {
-                  loadFixture(workbenchFixtures[0]);
+                  loadFixture(defaultWorkbenchFixture);
                   setNowIso(DEFAULT_NOW_ISO);
                   setDryRunAtIso(DEFAULT_DRY_RUN_AT_ISO);
                   setActor(DEFAULT_ACTOR);

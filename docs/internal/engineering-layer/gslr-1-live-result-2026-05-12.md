@@ -15,7 +15,7 @@ positive hybrid-routing result needed to justify a product-facing Portarium card
 
 ## What Happened
 
-The live run used the sanitized MacquarieCollege projection fixture across local,
+The live run used the sanitized private-customer projection fixture across local,
 frontier, advisor, and hybrid arms.
 
 Result summary:

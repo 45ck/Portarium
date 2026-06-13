@@ -74,7 +74,7 @@ interface NativeSuggestionV1 {
   claim: string;
   evidenceRefs: readonly string[];
   targetRefs: readonly string[];
-  confidence: "low" | "medium" | "high";
+  confidence: 'low' | 'medium' | 'high';
   freshnessLabel?: string;
   sourcePosture?: readonly string[];
   missingEvidence?: readonly string[];
@@ -84,7 +84,7 @@ interface NativeSuggestionV1 {
     capabilityId: string;
     actionKind: string;
     rationale: string;
-    minimumExecutionTier: "Assisted" | "HumanApprove" | "ManualOnly";
+    minimumExecutionTier: 'Assisted' | 'HumanApprove' | 'ManualOnly';
   };
 }
 ```

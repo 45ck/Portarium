@@ -106,6 +106,9 @@ function normalizePath(input) {
   if (path.startsWith('http://') || path.startsWith('https://')) {
     path = new URL(path).pathname;
   }
+  if (path.startsWith('*/')) {
+    path = path.slice(1);
+  }
   path = path.split('?')[0].split('#')[0];
   path = path.replace(/\$\{([^}]+)\}/g, (_, expression) => {
     return `{${normalizeExpressionParameter(expression)}}`;
@@ -159,7 +162,9 @@ function collectRuntimeOperations() {
   for (const match of content.matchAll(routePattern)) {
     const method = match[1].toUpperCase();
     const path = match[2];
-    if (path.startsWith('/v1/')) operations.add(operationKey(method, path));
+    if (path.startsWith('/v1/') || path === '/auth/session') {
+      operations.add(operationKey(method, path));
+    }
   }
   return operations;
 }
@@ -195,8 +200,11 @@ function loadRegistry() {
     if (!httpMethods.has(entry.method)) {
       errors.push(`${label}: method must be one of ${[...httpMethods].join(', ')}`);
     }
-    if (typeof entry.path !== 'string' || !entry.path.startsWith('/v1/')) {
-      errors.push(`${label}: path must be a /v1 path`);
+    if (
+      typeof entry.path !== 'string' ||
+      !(entry.path.startsWith('/v1/') || entry.path === '/auth/session')
+    ) {
+      errors.push(`${label}: path must be a /v1 path or /auth/session`);
     }
     for (const field of ['openapi', 'runtime', 'mock']) {
       if (!contractStates.has(entry[field])) {

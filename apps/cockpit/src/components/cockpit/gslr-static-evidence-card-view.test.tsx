@@ -25,7 +25,7 @@ describe('GslrStaticEvidenceCardView', () => {
     ).toHaveLength(2);
     expect(
       screen.getAllByText(
-        'No MacquarieCollege connector observation, source-system read, write, or raw data movement is authorized.',
+        'No private-customer connector observation, source-system read, write, or raw data movement is authorized.',
       ),
     ).toHaveLength(2);
     expect(screen.queryAllByRole('button')).toHaveLength(0);

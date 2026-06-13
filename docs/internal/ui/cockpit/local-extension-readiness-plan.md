@@ -38,19 +38,19 @@ Production activation is still control-plane work. Local activation remains deve
 
 ## Sidebar Readiness Classification
 
-| Sidebar item | Current state | Notes |
-| ------------ | ------------- | ----- |
-| Inbox, Dashboard, Projects, Work Items | API-backed core surfaces | Live-ready when the control-plane API is available. |
-| Runs, Workflows, Approvals, Evidence | API-backed core surfaces | Live-ready for read paths; mutation paths remain governed by existing approval/run contracts. |
-| Search | API-backed with fixture fallback | Live readiness depends on embedding, semantic index, and graph ports being wired. |
-| Machines, Agents, Adapters, Credentials, Users, Extensions | API-backed configuration surfaces | Live-ready for read paths where corresponding server routes are present. |
-| Policies | Mixed | Policy reads are API-backed; studio/detail editing has explicit demo or disabled live states. |
-| Capability Posture | Prototype | Static matrix until persisted capability-default and activation contracts exist. |
-| Governance | Mixed | Policy/evidence/workflow reads are API-backed; SoD fixtures are demo-only. |
-| Observability | Derived read model | Aggregates live Cockpit entities but is not yet backed by a dedicated telemetry endpoint. |
-| Workforce Coverage | Prototype | Members and queues are API-backed; coverage planning is fixture-backed in demo mode. |
-| Blast Radius, Pack Runtime, Robotics | Demo/high-fidelity prototype | These surfaces must remain demo-gated or clearly unavailable in live mode. |
-| Tenant or vertical workspaces | Extension-owned | Tenant navigation, data areas, maps, tickets, and dashboards belong in private extensions only. |
+| Sidebar item                                               | Current state                     | Notes                                                                                           |
+| ---------------------------------------------------------- | --------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Inbox, Dashboard, Projects, Work Items                     | API-backed core surfaces          | Live-ready when the control-plane API is available.                                             |
+| Runs, Workflows, Approvals, Evidence                       | API-backed core surfaces          | Live-ready for read paths; mutation paths remain governed by existing approval/run contracts.   |
+| Search                                                     | API-backed with fixture fallback  | Live readiness depends on embedding, semantic index, and graph ports being wired.               |
+| Machines, Agents, Adapters, Credentials, Users, Extensions | API-backed configuration surfaces | Live-ready for read paths where corresponding server routes are present.                        |
+| Policies                                                   | Mixed                             | Policy reads are API-backed; studio/detail editing has explicit demo or disabled live states.   |
+| Capability Posture                                         | Prototype                         | Static matrix until persisted capability-default and activation contracts exist.                |
+| Governance                                                 | Mixed                             | Policy/evidence/workflow reads are API-backed; SoD fixtures are demo-only.                      |
+| Observability                                              | Derived read model                | Aggregates live Cockpit entities but is not yet backed by a dedicated telemetry endpoint.       |
+| Workforce Coverage                                         | Prototype                         | Members and queues are API-backed; coverage planning is fixture-backed in demo mode.            |
+| Blast Radius, Pack Runtime, Robotics                       | Demo/high-fidelity prototype      | These surfaces must remain demo-gated or clearly unavailable in live mode.                      |
+| Tenant or vertical workspaces                              | Extension-owned                   | Tenant navigation, data areas, maps, tickets, and dashboards belong in private extensions only. |
 
 ## Implementation Slices
 

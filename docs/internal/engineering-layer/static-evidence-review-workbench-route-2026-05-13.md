@@ -80,7 +80,7 @@ live endpoints during the dry-run interaction.
 Focused route tests clear existing shell bootstrap calls before exercising the
 workbench and assert the workbench interaction makes no fetch calls to live run,
 evidence, work-item, human-task, workforce, route-record, SSE, action,
-prompt-language polling, importer, connector, Macquarie, or school endpoints.
+prompt-language polling, importer, connector, private customer, or school endpoints.
 
 ## What Remains Blocked
 

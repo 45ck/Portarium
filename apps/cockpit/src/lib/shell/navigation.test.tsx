@@ -29,11 +29,7 @@ function createRouteLoaders(
 const neutralRouteLoaders = createRouteLoaders(NEUTRAL_REFERENCE_EXTENSION);
 
 const allPersonas = ['Operator', 'Approver', 'Auditor', 'Admin'] as const;
-const opsReferenceCapabilities = [
-  'ops.ticket.read',
-  'ops.map.read',
-  'ops.source.read',
-] as const;
+const opsReferenceCapabilities = ['ops.ticket.read', 'ops.map.read', 'ops.source.read'] as const;
 const opsReferenceApiScopes = ['ops.read'] as const;
 const opsReferenceExtension = {
   manifestVersion: 1,
@@ -508,9 +504,7 @@ describe('projectCockpitShellNavigation', () => {
     expect(projection.sidebarSections.flatMap((section) => section.items ?? [])).not.toContainEqual(
       expect.objectContaining({ id: 'inbox' }),
     );
-    expect(projection.mobilePrimaryItems.map((item) => item.label)).toContain(
-      'Reference Overview',
-    );
+    expect(projection.mobilePrimaryItems.map((item) => item.label)).toContain('Reference Overview');
     expect(projection.mobilePrimaryItems.map((item) => item.label)).toEqual([
       'Dashboard',
       'Runs',
@@ -610,9 +604,7 @@ describe('projectCockpitShellNavigation', () => {
       'Config',
       'Explore',
     ]);
-    expect(sidebarLabels.indexOf('Ops Reference')).toBeLessThan(
-      sidebarLabels.indexOf('Workforce'),
-    );
+    expect(sidebarLabels.indexOf('Ops Reference')).toBeLessThan(sidebarLabels.indexOf('Workforce'));
     expect(
       projection.sidebarSections
         .find((section) => section.id === 'extension:reference.ops:sidebar')
@@ -622,9 +614,7 @@ describe('projectCockpitShellNavigation', () => {
       ['Campus Map', '/external/ops-reference/map'],
       ['Data Sources', '/external/ops-reference'],
     ]);
-    expect(projection.commandTargets.map((target) => target.label)).toContain(
-      'Open ops queue',
-    );
+    expect(projection.commandTargets.map((target) => target.label)).toContain('Open ops queue');
   });
 
   it('projects neutral extension navigation with stable shell ids and match paths', () => {

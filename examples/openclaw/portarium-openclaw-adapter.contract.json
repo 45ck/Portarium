@@ -1,0 +1,175 @@
+{
+  "schemaVersion": 1,
+  "contractName": "portarium.openclaw.adapter.v1",
+  "description": "Generic Portarium adapter surface for OpenClaw-style runtimes. Customer-specific aliases and policy rules must extend this shape without weakening it.",
+  "bridgePrincipalModel": {
+    "principals": [
+      {
+        "id": "read-only",
+        "authority": "observe",
+        "mayExecute": false,
+        "purpose": "Status, source inventory, capability, health, and evidence reads."
+      },
+      {
+        "id": "standing-read",
+        "authority": "bounded-read",
+        "mayExecute": false,
+        "purpose": "Pre-approved bounded reads with explicit scope, caps, redaction, and freshness rules."
+      },
+      {
+        "id": "approval-drafting",
+        "authority": "proposal",
+        "mayExecute": false,
+        "purpose": "Draft approval cards and mirror review material into Cockpit without executing effects."
+      },
+      {
+        "id": "executor",
+        "authority": "gated-execution",
+        "mayExecute": true,
+        "purpose": "Direct execution gate for allowlisted dry-run or explicitly approved scoped execution."
+      }
+    ],
+    "principalHeader": "x-portarium-bridge-principal",
+    "legacyPrincipalHeader": "x-calvin-principal",
+    "unknownPrincipalDecision": "deny"
+  },
+  "aliasManifest": [
+    {
+      "alias": "portarium_status",
+      "bridgeTool": "portarium.status",
+      "principal": "read-only",
+      "chatExposed": true,
+      "mayExecute": false,
+      "purpose": "Return runtime and policy gateway status."
+    },
+    {
+      "alias": "portarium_connector_capability_status",
+      "bridgeTool": "portarium.connector_capability_status",
+      "principal": "read-only",
+      "chatExposed": true,
+      "mayExecute": false,
+      "purpose": "Return sanitized connector and adapter capability posture."
+    },
+    {
+      "alias": "portarium_standing_read_policy_status",
+      "bridgeTool": "portarium.standing_read_policy_status",
+      "principal": "standing-read",
+      "chatExposed": true,
+      "mayExecute": false,
+      "scopeRequired": true,
+      "purpose": "Report standing-read policy scope, caps, redaction posture, and denied operations."
+    },
+    {
+      "alias": "portarium_standing_read_query",
+      "bridgeTool": "portarium.standing_read_query",
+      "principal": "standing-read",
+      "chatExposed": true,
+      "mayExecute": false,
+      "scopeRequired": true,
+      "purpose": "Run a bounded redacted read within an existing standing-read scope."
+    },
+    {
+      "alias": "portarium_approval_registry_status",
+      "bridgeTool": "portarium.approval_registry_status",
+      "principal": "approval-drafting",
+      "chatExposed": true,
+      "mayExecute": false,
+      "purpose": "Return approval registry and Cockpit mirror status without making decisions."
+    },
+    {
+      "alias": "portarium_approval_card_draft",
+      "bridgeTool": "portarium.approval_card_draft",
+      "principal": "approval-drafting",
+      "chatExposed": true,
+      "mayExecute": false,
+      "cockpitVisible": true,
+      "purpose": "Draft a Cockpit review card for an action request. This never executes the action."
+    },
+    {
+      "alias": "portarium_approval_executor_run",
+      "bridgeTool": "portarium.approval_executor_run",
+      "principal": "executor",
+      "chatExposed": false,
+      "mayExecute": true,
+      "dryRunDefault": true,
+      "requireExplicitExecute": true,
+      "requireApprovalTokenForMutation": true,
+      "cockpitVisible": true,
+      "purpose": "Direct gate for allowlisted dry-run and explicitly approved scoped execution."
+    }
+  ],
+  "approvalCardDraftFlow": {
+    "requestTool": "portarium.approval_card_draft",
+    "createsReviewArtifact": true,
+    "executesAction": false,
+    "cockpitMirrorRequired": true,
+    "supportedDecisions": ["approve", "reject", "request-changes", "park", "dry-run", "execute"],
+    "requiredFields": [
+      "action",
+      "scope",
+      "policyDecision",
+      "risk",
+      "authority",
+      "evidence",
+      "rollback",
+      "expiry"
+    ]
+  },
+  "executorGate": {
+    "requestTool": "portarium.approval_executor_run",
+    "directOnly": true,
+    "chatExposed": false,
+    "dryRunDefault": true,
+    "requireExplicitExecute": true,
+    "requireApprovalTokenForMutation": true,
+    "failClosedUnknownTool": true,
+    "allowedExecutionSources": ["policy-allowed-status", "cockpit-approved-card"]
+  },
+  "evidenceTimeline": {
+    "requiredEvents": [
+      "proposal",
+      "policy-decision",
+      "approval-card-drafted",
+      "cockpit-visible",
+      "approval-decision",
+      "execution-result",
+      "evidence-recorded"
+    ],
+    "resultStates": [
+      "allowed",
+      "denied",
+      "pending-approval",
+      "approved",
+      "rejected",
+      "dry-run",
+      "executed",
+      "blocked"
+    ],
+    "mustRecordCorrelationId": true
+  },
+  "cockpitVisibility": {
+    "reviewRouteRequired": true,
+    "mustShow": [
+      "approval-status",
+      "plan",
+      "policy-decision",
+      "evidence",
+      "execution-result",
+      "blocked-reason"
+    ],
+    "hiddenBlockedWorkProhibited": true
+  },
+  "failClosedRules": [
+    "unknown-tool",
+    "unknown-action",
+    "unknown-principal",
+    "missing-scope",
+    "missing-approval-token",
+    "executor-exposed-to-chat",
+    "executor-without-dry-run-default",
+    "approval-card-draft-executes-action",
+    "stale-cockpit-card",
+    "changed-card-without-remirror",
+    "missing-evidence-correlation"
+  ]
+}

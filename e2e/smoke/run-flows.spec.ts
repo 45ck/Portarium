@@ -30,7 +30,7 @@ test.setTimeout(60_000);
 import type { Page } from '@playwright/test';
 
 async function waitForAppShell(page: Page) {
-  await expect(page.getByRole('link', { name: 'Runs' })).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByRole('link', { name: /^Runs$/ })).toBeVisible({ timeout: 20_000 });
 }
 
 // ---------------------------------------------------------------------------
@@ -44,15 +44,15 @@ test.describe('Cancel-run flow', () => {
   });
 
   test('shows Cancel Run button for a Running run', async ({ page }) => {
-    // run-2002 has status: Running in the demo fixtures
-    await page.goto('/runs/run-2002');
+    // run-showcase-2005 has status: Running in the platform-showcase fixtures
+    await page.goto('/runs/run-showcase-2005');
 
     const cancelButton = page.getByRole('button', { name: 'Cancel Run' });
     await expect(cancelButton).toBeVisible({ timeout: 10_000 });
   });
 
   test('cancel dialog appears and can be dismissed', async ({ page }) => {
-    await page.goto('/runs/run-2002');
+    await page.goto('/runs/run-showcase-2005');
 
     const cancelButton = page.getByRole('button', { name: 'Cancel Run' });
     await expect(cancelButton).toBeVisible({ timeout: 10_000 });
@@ -76,7 +76,7 @@ test.describe('Cancel-run flow', () => {
       (req) => req.url().includes('/cancel') && req.method() === 'POST',
     );
 
-    await page.goto('/runs/run-2002');
+    await page.goto('/runs/run-showcase-2005');
 
     const cancelButton = page.getByRole('button', { name: 'Cancel Run' });
     await expect(cancelButton).toBeVisible({ timeout: 10_000 });
@@ -106,8 +106,8 @@ test.describe('Evidence chain-of-trust', () => {
   });
 
   test('run detail shows chain integrity banner', async ({ page }) => {
-    // run-2001 is WaitingForApproval and has evidence entries
-    await page.goto('/runs/run-2001');
+    // run-showcase-2001 is WaitingForApproval and has evidence entries
+    await page.goto('/runs/run-showcase-2001');
 
     // ChainIntegrityBanner renders with one of three states
     const banner = page
@@ -119,25 +119,23 @@ test.describe('Evidence chain-of-trust', () => {
   });
 
   test('Evidence tab renders timeline entries for a run with evidence', async ({ page }) => {
-    await page.goto('/runs/run-2001');
+    await page.goto('/runs/run-showcase-2001');
 
     // Click the Evidence tab
     await page.getByRole('tab', { name: 'Evidence' }).click();
 
-    // Evidence entries for run-2001 include 'Plan plan-5001 generated…'
-    // and a policy violation entry
-    await expect(page.getByText('Plan plan-5001 generated', { exact: false })).toBeVisible({
+    // Evidence entries for run-showcase-2001 include the adapter-sync start and approval request.
+    await expect(page.getByText('Adapter sync review run started', { exact: false })).toBeVisible({
       timeout: 10_000,
     });
   });
 
   test('chained evidence entries show chain-link indicator', async ({ page }) => {
-    await page.goto('/runs/run-2001');
+    await page.goto('/runs/run-showcase-2001');
     await page.getByRole('tab', { name: 'Evidence' }).click();
 
-    // evd-4005 has previousHash — should show the Link2 icon with aria-label "Chained entry"
-    // The policy violation entry is the chained one for run-2001
-    await expect(page.getByText('Policy violation detected', { exact: false })).toBeVisible({
+    // evd-showcase-4002 has previousHash and should show the chained-entry indicator.
+    await expect(page.getByText('Human approval requested', { exact: false })).toBeVisible({
       timeout: 10_000,
     });
 
@@ -146,15 +144,13 @@ test.describe('Evidence chain-of-trust', () => {
     await expect(chainIndicator).toBeVisible();
   });
 
-  test('run-2003 evidence timeline shows multiple chained entries', async ({ page }) => {
-    // run-2003 has 3 evidence entries, 2 of which are chained (evd-4002, evd-4003)
-    await page.goto('/runs/run-2003');
+  test('run-showcase-2004 evidence timeline shows multiple chained entries', async ({ page }) => {
+    // run-showcase-2004 has 2 evidence entries, both of which are chained.
+    await page.goto('/runs/run-showcase-2004');
     await page.getByRole('tab', { name: 'Evidence' }).click();
 
-    // Should see the payout reconciliation entry (multiple matches possible — just need one)
-    await expect(
-      page.getByText('Stripe payout reconciliation', { exact: false }).first(),
-    ).toBeVisible({
+    // Should see the policy exception audit entries.
+    await expect(page.getByText('Policy exception', { exact: false }).first()).toBeVisible({
       timeout: 10_000,
     });
 
@@ -213,7 +209,9 @@ test.describe('Staleness and offline banner', () => {
     await page.goto('/runs');
 
     // Wait for the runs list to load (at least one run visible)
-    await expect(page.getByText('run-2002', { exact: false })).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByText('wf-adapter-access-review', { exact: false })).toBeVisible({
+      timeout: 10_000,
+    });
 
     // Go offline — dispatch DOM event explicitly alongside CDP-level block
     await context.setOffline(true);

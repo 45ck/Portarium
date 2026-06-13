@@ -19,6 +19,9 @@ import { test, expect, type Page } from '@playwright/test';
 // Generous timeout: MSW service-worker registration can take a moment on first load.
 test.setTimeout(60_000);
 
+const inboxLinkName = /^Inbox(?:\s+\d+ pending approvals)?$/;
+const approvalsLinkName = /^Approvals(?:\s+\d+ pending approvals)?$/;
+
 async function submitApproval(page: Page) {
   await page.getByTitle('Approve (A)').click();
 
@@ -33,13 +36,15 @@ test.describe('Approval flow — smoke', () => {
     // Navigate to root; MSW boots in the background as a service worker.
     await page.goto('/');
     // Wait for the side-nav to confirm the app shell has rendered.
-    await expect(page.getByRole('link', { name: 'Approvals' })).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByRole('link', { name: approvalsLinkName })).toBeVisible({
+      timeout: 20_000,
+    });
   });
 
   test('app shell loads with navigation', async ({ page }) => {
-    await expect(page.getByRole('link', { name: 'Inbox' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Approvals' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Runs' })).toBeVisible();
+    await expect(page.getByRole('link', { name: inboxLinkName })).toBeVisible();
+    await expect(page.getByRole('link', { name: approvalsLinkName })).toBeVisible();
+    await expect(page.getByRole('link', { name: /^Runs$/ })).toBeVisible();
   });
 
   test('approvals page shows pending triage deck', async ({ page }) => {

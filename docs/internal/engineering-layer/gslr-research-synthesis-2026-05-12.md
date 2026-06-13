@@ -88,7 +88,7 @@ is weaker than governance before a consequential tool call executes.
 
 The 2026-05-12 GSLR-1 scaffold proves:
 
-- a no-mutation MacquarieCollege projection scenario can be represented without
+- a no-mutation private-customer projection scenario can be represented without
   raw vertical payloads;
 - the four-arm experiment shape is concrete;
 - the evidence package fields are named;

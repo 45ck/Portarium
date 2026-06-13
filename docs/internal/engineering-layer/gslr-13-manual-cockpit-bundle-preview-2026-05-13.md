@@ -68,7 +68,7 @@ GSLR-13 does not create or authorize:
 - SSE streams;
 - automatic route decisions from GSLR manifests;
 - production actions based on GSLR evidence;
-- MacquarieCollege connector observation, source-system reads or writes, or raw
+- private-customer connector observation, source-system reads or writes, or raw
   school-data movement.
 
 The signatures are deterministic test signatures for static fixtures. They prove

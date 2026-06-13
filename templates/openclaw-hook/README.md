@@ -9,12 +9,14 @@ through the Portarium control plane for policy checks and audit.
 - Submits each tool call to Portarium for policy evaluation before execution
 - Blocks tool calls that violate workspace policy (blast-radius tier, SoD constraints)
 - Records evidence for every tool invocation attempt
+- Keeps approval-card drafting separate from executor access
 
 ## Prerequisites
 
 - OpenClaw Gateway instance registered with Portarium
 - Portarium workspace with configured tool blast-radius policies
 - Python >= 3.10
+- Adapter aliases validated against `examples/openclaw/portarium-openclaw-adapter.contract.json`
 
 ## Project Structure
 
@@ -34,6 +36,16 @@ openclaw-hook/
 4. If the policy result is `Allow` or `HumanApprove`, the tool proceeds
 5. If `Deny`, the hook returns an error and the tool call is blocked
 6. `after_tool_call` records the execution result as evidence
+
+For OpenClaw-style adapters, also validate the generic Portarium contract:
+
+```bash
+npm run ci:openclaw-adapter-contract
+```
+
+The contract requires chat-facing aliases to be read/proposal-only, approval-card
+drafting to create Cockpit review artifacts without executing actions, and the
+executor gate to be direct-only and dry-run by default.
 
 ## Configuration
 

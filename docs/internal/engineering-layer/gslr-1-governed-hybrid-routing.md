@@ -26,7 +26,7 @@ a claim-shaped experiment about route control, evidence, and cost discipline.
 
 ## Scenario
 
-Use the MacquarieCollege reference vertical as a safe, no-mutation task:
+Use the private-customer reference vertical as a safe, no-mutation task:
 
 ```text
 MC architecture note -> refs-only Portarium evidence envelope projection

@@ -40,8 +40,9 @@ These docs focus on the core tested governance loop.
 4. [Ports and adapters](explanation/ports-and-adapters.md)
 5. [Integration ladder](integration/integration-ladder.md)
 6. [Integration demo walkthrough](integration/demo-walkthrough.md)
-7. [Generate integration scaffolds](how-to/generate-integration-scaffolds.md)
-8. [Install a Cockpit extension package](how-to/install-cockpit-extension-package.md)
+7. [OpenClaw adapter contract](integration/openclaw-adapter-contract.md)
+8. [Generate integration scaffolds](how-to/generate-integration-scaffolds.md)
+9. [Install a Cockpit extension package](how-to/install-cockpit-extension-package.md)
 
 ## Operate And Secure It
 

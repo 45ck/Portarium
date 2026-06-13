@@ -81,7 +81,7 @@ GSLR-12 does not create:
 - SSE streams;
 - automatic route decisions from GSLR manifests;
 - production action execution;
-- MacquarieCollege connector observation or raw data movement.
+- private-customer connector observation or raw data movement.
 
 ## Validation
 

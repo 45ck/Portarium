@@ -15,6 +15,8 @@ The core product is:
 - Tenant/workspace isolation, RBAC, auth boundaries, and production startup gates.
 - Adapter/port architecture so existing Systems of Record remain authoritative.
 - SDK and integration surface so agents and external tools can call Portarium.
+- OpenClaw-style adapter contract for aliases, bridge principals, approval-card
+  drafting, dry-run executor gating, evidence timelines, and Cockpit visibility.
 - Cockpit as a reference operator UI for approvals, policies, runs, evidence, and mobile-friendly decision review.
 
 ## Core Success Bar
@@ -38,6 +40,7 @@ Substantial core functionality is already present:
 - Domain models, parsers, contracts, and tests exist for the main governance objects.
 - Approval and agent-action flows are implemented and covered by tests.
 - An example OpenClaw/plugin integration exists for governed tool calls.
+- A generic OpenClaw adapter contract can be validated locally before customer-specific adapters add aliases or standing-read policy.
 - Cockpit has working operator and approval surfaces.
 - Postgres stores, migrations, health checks, rate limiting, metrics, and deployment scaffolding exist.
 - TypeScript SDK coverage has been expanded.

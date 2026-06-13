@@ -147,7 +147,7 @@ describe('GSLR evidence workbench route', () => {
     expect(requestedPaths).toEqual([]);
     expect(
       requestedPaths.some((path) =>
-        /runs|evidence|work-items|human-tasks|workforce|route-record|events:stream|agent-actions|prompt-language|importer|connector|macquarie|school/.test(
+        /runs|evidence|work-items|human-tasks|workforce|route-record|events:stream|agent-actions|prompt-language|importer|connector|private-customer|school/.test(
           path,
         ),
       ),

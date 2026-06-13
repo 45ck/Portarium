@@ -172,13 +172,11 @@ export interface CockpitExtensionBackendSurfaceContract {
   failClosed: true;
 }
 
-export interface CockpitExtensionDataQueryContract
-  extends CockpitExtensionBackendSurfaceContract {
+export interface CockpitExtensionDataQueryContract extends CockpitExtensionBackendSurfaceContract {
   kind: 'data-query';
 }
 
-export interface CockpitExtensionGovernedCommandContract
-  extends CockpitExtensionBackendSurfaceContract {
+export interface CockpitExtensionGovernedCommandContract extends CockpitExtensionBackendSurfaceContract {
   kind: 'governed-command-request';
   approvalSemantics: 'policy-determined';
   idempotency: 'caller-or-host-key-required';

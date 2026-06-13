@@ -34,7 +34,9 @@ export function useOfflineQuery<TData, TQueryKey extends QueryKey>(
   const authStatus = useAuthStore((state) => state.status);
   const runtime = resolveCockpitRuntime();
   const authReady =
-    import.meta.env.MODE === 'test' || !runtime.usesLiveTenantData || authStatus === 'authenticated';
+    import.meta.env.MODE === 'test' ||
+    !runtime.usesLiveTenantData ||
+    authStatus === 'authenticated';
   const enabled = (queryOptions.enabled ?? true) && authReady;
 
   const cached = useMemo(() => readOfflineCache<TData>(cacheKey), [cacheKey]);

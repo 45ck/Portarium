@@ -49,7 +49,7 @@
     "smoke:stack:test": "GOVERNED_RUN_INTEGRATION=true LOCAL_STACK_URL=http://localhost:8080 node node_modules/vitest/vitest.mjs run src/infrastructure/adapters/governed-run-smoke.test.ts",
     "cockpit:test:coverage": "npm run -w apps/cockpit test:coverage",
     "cockpit:dev": "npm run -w apps/cockpit dev",
-    "cockpit:dev:e2e": "npm run -w apps/cockpit dev:e2e",
+    "cockpit:dev:e2e": "node scripts/qa/start-cockpit-smoke-e2e.mjs",
     "cockpit:dev:e2e:live": "node scripts/qa/start-cockpit-live-e2e.mjs",
     "cockpit:dev:openclaw-demo": "node scripts/qa/start-cockpit-openclaw-demo.mjs",
     "cockpit:dev:e2e:openclaw-demo": "node scripts/qa/start-cockpit-openclaw-demo.mjs --e2e",
@@ -162,7 +162,7 @@
     "ci:cockpit:api-drift": "node scripts/ci/check-cockpit-api-drift.mjs",
     "ci:cockpit:extension-egress": "node scripts/ci/check-cockpit-extension-egress.mjs",
     "canonical:parity": "node scripts/ci/check-canonical-parity.mjs",
-    "ci:gates": "npm run repo:check:customer-boundary && npm run canonical:parity && node scripts/ci/check-gate-baseline.mjs",
+    "ci:gates": "npm run repo:check:customer-boundary && npm run canonical:parity && npm run ci:openclaw-adapter-contract && node scripts/ci/check-gate-baseline.mjs",
     "ci:gates:update-baseline": "node scripts/ci/update-gate-baseline.mjs",
     "migrate:check": "tsx src/infrastructure/migrations/cli.ts check",
     "migrate:plan:expand": "tsx src/infrastructure/migrations/cli.ts plan --phase expand --tenants workspace-default",
@@ -199,6 +199,7 @@
     "ci:scenario-gate": "node scripts/ci/scenario-gate.mjs",
     "ci:validate-k8s-policies": "node scripts/ci/validate-k8s-policies.mjs",
     "ci:validate-egress-env": "node scripts/ci/validate-egress-env-config.mjs",
+    "ci:openclaw-adapter-contract": "node scripts/ci/check-openclaw-adapter-contract.mjs",
     "ci:cockpit:live-stack-smoke": "node scripts/qa/run-cockpit-live-stack-smoke.mjs",
     "ci:cockpit:live-stack-smoke:required": "node scripts/qa/run-cockpit-live-stack-smoke.mjs --required",
     "mutation": "stryker run",
@@ -256,7 +257,10 @@
     "@stryker-mutator/core": {
       "ajv": "^8.18.0"
     },
+    "@grpc/grpc-js": "^1.14.4",
     "@hono/node-server": "^1.19.11",
+    "fast-uri": "^3.1.2",
+    "fast-xml-builder": "^1.2.0",
     "fast-xml-parser": "^5.5.9",
     "protobufjs": "^7.5.5"
   },
@@ -304,8 +308,8 @@
     "@temporalio/client": "^1.14.1",
     "@temporalio/worker": "^1.14.1",
     "@temporalio/workflow": "^1.14.1",
-    "esbuild": "^0.27.3",
-    "hono": "^4.12.14",
+    "esbuild": "^0.28.1",
+    "hono": "^4.12.25",
     "ioredis": "^5.9.3",
     "jose": "^6.1.3",
     "pg": "^8.18.0"

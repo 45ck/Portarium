@@ -716,8 +716,7 @@ export const handlers = [
     const toolName = body.toolName ?? 'extension.mock-automation.review';
     const executionTier = body.executionTier ?? 'HumanApprove';
     const proposalParameters = body.parameters ?? {};
-    const isHumanGatedTier =
-      executionTier === 'HumanApprove' || executionTier === 'ManualOnly';
+    const isHumanGatedTier = executionTier === 'HumanApprove' || executionTier === 'ManualOnly';
     const isSnapshotOnlyProposal =
       proposalParameters['sourceSystemAccess'] === 'none' &&
       proposalParameters['writebackEnabled'] === false &&
@@ -1259,7 +1258,11 @@ export const handlers = [
       return HttpResponse.json({ items: [], geofences: [], alerts: [] });
     }
 
-    return HttpResponse.json({ items: ROBOT_LOCATIONS, geofences: GEOFENCES, alerts: SPATIAL_ALERTS });
+    return HttpResponse.json({
+      items: ROBOT_LOCATIONS,
+      geofences: GEOFENCES,
+      alerts: SPATIAL_ALERTS,
+    });
   }),
 
   // Robotics — Robots

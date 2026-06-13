@@ -243,7 +243,7 @@ workbench.
 
 ## MC Boundary
 
-MacquarieCollege remains a reference vertical only during this milestone.
+private-customer remains a reference vertical only during this milestone.
 
 Allowed MC participation:
 

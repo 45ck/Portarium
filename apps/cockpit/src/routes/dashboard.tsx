@@ -23,11 +23,7 @@ import { isCockpitShellGlobalActionVisible } from '@/lib/shell/navigation';
 import { useActiveCockpitShellProfile } from '@/lib/shell/active-profile-context';
 
 function DashboardPage() {
-  const {
-    activeWorkspaceId: wsId,
-    startRunOpen,
-    setStartRunOpen,
-  } = useUIStore();
+  const { activeWorkspaceId: wsId, startRunOpen, setStartRunOpen } = useUIStore();
   const dashboardShellProfile = useActiveCockpitShellProfile();
   const canCreateRun =
     isCockpitShellGlobalActionVisible(dashboardShellProfile, 'create-run') &&

@@ -173,6 +173,6 @@ queues, tables, SSE, production actions, or MC connector/data movement.
 - Portarium reached GSLR-19 with static imported-record importer planning.
 - prompt-language recorded GSLR-8 as the strongest positive local-screen result
   so far.
-- MacquarieCollege remains a reference vertical and boundary test only.
+- private-customer remains a reference vertical and boundary test only.
 - The next real work item is a static importer dry-run fixture, not more
   routing automation or live ingestion.

@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
   AlertTriangle,
   BellRing,
@@ -284,6 +284,14 @@ export function RunInterventionPanel({
   const [target, setTarget] = useState('');
   const [rationale, setRationale] = useState('');
   const [acknowledged, setAcknowledged] = useState(false);
+
+  useEffect(() => {
+    if (recommendedIntervention) {
+      setInterventionType(recommendedIntervention);
+      setTarget('');
+      setAcknowledged(false);
+    }
+  }, [recommendedIntervention]);
 
   const selected = useMemo(
     () => OPTIONS.find((option) => option.value === interventionType) ?? OPTIONS[0]!,

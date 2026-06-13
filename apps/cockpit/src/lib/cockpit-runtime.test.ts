@@ -35,9 +35,7 @@ describe('cockpit runtime mode', () => {
   });
 
   it('requires explicit demo mode before enabling MSW fixtures', () => {
-    expect(
-      resolveCockpitRuntime({ DEV: true, VITE_DEMO_MODE: 'true' }),
-    ).toMatchObject({
+    expect(resolveCockpitRuntime({ DEV: true, VITE_DEMO_MODE: 'true' })).toMatchObject({
       runtimeMode: 'demo',
       mockServiceWorkerEnabled: true,
       usesLiveTenantData: false,

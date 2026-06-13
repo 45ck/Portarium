@@ -46,7 +46,9 @@ function createFetch(runtime: typeof DEMO_PACK_UI_RUNTIME) {
 
     if (pathname === '/v1/workspaces') {
       return Promise.resolve(
-        json({ items: [{ workspaceId: 'ws-platform-showcase', name: 'Platform Snapshot Workspace' }] }),
+        json({
+          items: [{ workspaceId: 'ws-platform-showcase', name: 'Platform Snapshot Workspace' }],
+        }),
       );
     }
 

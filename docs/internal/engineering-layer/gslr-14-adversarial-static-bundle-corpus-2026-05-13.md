@@ -63,7 +63,7 @@ GSLR-14 does not create or authorize:
 - production action execution;
 - production keyring/signature trust;
 - artifact byte fetching or artifact-content hashing in the browser preview;
-- MacquarieCollege connector observation, source-system reads or writes, or raw
+- private-customer connector observation, source-system reads or writes, or raw
   school-data movement.
 
 The corpus uses deterministic static fixtures and the existing test-signature

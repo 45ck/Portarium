@@ -85,8 +85,7 @@ interface ApprovalsSearch extends PolicyStudioReturnSearch {
 
 function ApprovalsPage() {
   const search = Route.useSearch();
-  const policyLinkedMode =
-    shouldShowInternalCockpitSurfaces() && search.from === 'policy-studio';
+  const policyLinkedMode = shouldShowInternalCockpitSurfaces() && search.from === 'policy-studio';
   const singleCaseApprovalId =
     (search.from === 'notification' || policyLinkedMode) && search.focus ? search.focus : undefined;
   const singleCaseMode = singleCaseApprovalId !== undefined;

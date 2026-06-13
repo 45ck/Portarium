@@ -3,6 +3,15 @@
   "description": "Single source of truth for endpoints consumed by Cockpit code and MSW handlers.",
   "endpoints": [
     {
+      "id": "auth.session.get",
+      "method": "GET",
+      "path": "/auth/session",
+      "openapi": "not-required",
+      "runtime": "required",
+      "mock": "required",
+      "consumers": ["apps/cockpit/src/lib/web-session-auth.ts"]
+    },
+    {
       "id": "workspaces.list",
       "method": "GET",
       "path": "/v1/workspaces",

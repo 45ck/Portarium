@@ -169,7 +169,7 @@ export function buildRejectedGslrStaticImportedRecordV1(
       'Rejected GSLR bundle is quarantined static evidence only.',
       'Rejected static imported record design does not create live prompt-language ingestion.',
       'Rejected static imported record design does not create Cockpit runtime cards, queues, database tables, or SSE streams.',
-      'Rejected static imported record design does not authorize production action execution or MacquarieCollege connector access.',
+      'Rejected static imported record design does not authorize production action execution or private-customer connector access.',
     ],
   });
 }

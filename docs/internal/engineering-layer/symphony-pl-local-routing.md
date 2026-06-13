@@ -423,7 +423,7 @@ That is the smallest useful proof of the architecture.
 
 The first concrete slice is now GSLR-1:
 [`gslr-1-governed-hybrid-routing.md`](./gslr-1-governed-hybrid-routing.md).
-It uses a no-mutation MacquarieCollege projection fixture in prompt-language to
+It uses a no-mutation private-customer projection fixture in prompt-language to
 test the evidence and routing loop before any Portarium runtime integration.
 
 ## Execution record
@@ -435,7 +435,7 @@ test the evidence and routing loop before any Portarium runtime integration.
 - Linked this note from the engineering-layer document map.
 - Added companion prompt-language design note
   `docs/design/governed-symphony-local-routing.md`.
-- Added MacquarieCollege reference-vertical note
+- Added private-customer reference-vertical note
   `docs/architecture/mc-governed-symphony-reference-vertical.md`.
 - Created, claimed, and closed follow-up bead `bead-1226` for the GSLR-1
   micro-experiment handoff.

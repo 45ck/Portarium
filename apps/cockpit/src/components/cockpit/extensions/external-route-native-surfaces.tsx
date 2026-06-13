@@ -165,9 +165,7 @@ function NativeGovernedActionReviewSurfaceRenderer({
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex flex-wrap gap-2">
-                <Badge variant="outline">
-                  {surface.evidence.referencedEvidenceCount} refs
-                </Badge>
+                <Badge variant="outline">{surface.evidence.referencedEvidenceCount} refs</Badge>
                 <Badge variant={surface.evidence.sourceBodiesIncluded ? 'warning' : 'success'}>
                   {surface.evidence.sourceBodiesIncluded ? 'Bodies included' : 'Refs only'}
                 </Badge>
@@ -287,7 +285,10 @@ function NativeGovernedActionReviewSurfaceRenderer({
               <CardTitle className="text-base">Execution Boundary</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-2 text-sm">
-              <ReviewKeyValue label="Available" value={surface.execution.available ? 'yes' : 'no'} />
+              <ReviewKeyValue
+                label="Available"
+                value={surface.execution.available ? 'yes' : 'no'}
+              />
               <ReviewKeyValue
                 label="Adapter installed"
                 value={surface.execution.adapterInstalled ? 'yes' : 'no'}
@@ -1157,7 +1158,9 @@ function TicketQueueList({ tickets }: { tickets: readonly NativeTicketRecord[] }
                 {ticket.updatedAtLabel}
                 {ticket.dueLabel ? ` · ${ticket.dueLabel}` : ''}
               </span>
-              <span className="min-w-0 break-words">{ticket.requesterLabel ?? 'Requester unknown'}</span>
+              <span className="min-w-0 break-words">
+                {ticket.requesterLabel ?? 'Requester unknown'}
+              </span>
               <span className="min-w-0 break-words">{ticket.ownerLabel ?? 'No responder'}</span>
             </span>
             <span className="flex min-w-0 flex-wrap items-center justify-between gap-3 text-[11px]">
@@ -1834,13 +1837,11 @@ function sanitizeInlineSvgSource(svgSource: string | undefined): string {
     const root = document.documentElement;
     if (document.querySelector('parsererror') || root.localName.toLowerCase() !== 'svg') return '';
 
-    document
-      .querySelectorAll('*')
-      .forEach((element) => {
-        if (!allowedInlineSvgElementNames.has(element.localName.toLowerCase())) {
-          element.remove();
-        }
-      });
+    document.querySelectorAll('*').forEach((element) => {
+      if (!allowedInlineSvgElementNames.has(element.localName.toLowerCase())) {
+        element.remove();
+      }
+    });
     document.querySelectorAll('*').forEach((element) => {
       const elementName = element.localName.toLowerCase();
       for (const attribute of [...element.attributes]) {
@@ -1949,7 +1950,11 @@ function isAllowedInlineSvgAttribute(
   attributeValue: string,
 ): boolean {
   if (allowedInlineSvgAttributeNames.has(attributeName)) return true;
-  if (attributeName === 'href' || attributeName === 'xlink:href' || attributeName.endsWith(':href')) {
+  if (
+    attributeName === 'href' ||
+    attributeName === 'xlink:href' ||
+    attributeName.endsWith(':href')
+  ) {
     if (elementName === 'use') return isSafeInlineSvgFragmentReference(attributeValue);
     if (elementName === 'image') return isSafeInlineSvgDataImageReference(attributeValue);
   }
@@ -2120,7 +2125,10 @@ function NativeSnapshotRecommendationPanel({
   recommendations: readonly NativeSnapshotRecommendation[];
 }) {
   return (
-    <section className="rounded-md border bg-muted/10 px-3 py-3" aria-label="Snapshot recommendations">
+    <section
+      className="rounded-md border bg-muted/10 px-3 py-3"
+      aria-label="Snapshot recommendations"
+    >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-sm font-semibold">Snapshot Recommendations</h2>

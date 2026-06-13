@@ -40,7 +40,7 @@ legibility, not more automation.
 - The static route can show promoted and blocked evidence together instead of
   hiding failed attempts.
 - The visible surface carries boundary warnings for no live ingestion, no
-  runtime queues/tables/streams, and no MacquarieCollege connector observation
+  runtime queues/tables/streams, and no private-customer connector observation
   or data movement.
 - The reusable card component renders no action buttons.
 

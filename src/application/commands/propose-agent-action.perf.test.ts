@@ -169,10 +169,7 @@ function makeSubmitDeps(approvalStore: ApprovalStore) {
   };
 }
 
-function makeExecuteDeps(
-  approvalStore: ApprovalStore,
-  proposalStore?: AgentActionProposalStore,
-) {
+function makeExecuteDeps(approvalStore: ApprovalStore, proposalStore?: AgentActionProposalStore) {
   const authorization: AuthorizationPort = { isAllowed: async () => true };
   const clock: Clock = { nowIso: () => '2026-03-10T00:02:00.000Z' };
   const idGenerator: IdGenerator = {
