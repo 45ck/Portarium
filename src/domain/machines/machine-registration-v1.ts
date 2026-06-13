@@ -319,12 +319,8 @@ function parseAgentOperatorUi(raw: unknown): AgentOperatorUiV1 | undefined {
     ['mediated', 'direct-tunnel', 'external'] as const,
     'operatorUi',
   );
-  const embedUrl = readOptionalString(record, 'embedUrl', AgentConfigParseError, {
-    path: 'operatorUi',
-  });
-  const externalUrl = readOptionalString(record, 'externalUrl', AgentConfigParseError, {
-    path: 'operatorUi',
-  });
+  const embedUrl = readOptionalOperatorUiUrl(record, 'embedUrl');
+  const externalUrl = readOptionalOperatorUiUrl(record, 'externalUrl');
   const sourceRef = readOptionalString(record, 'sourceRef', AgentConfigParseError, {
     path: 'operatorUi',
   });
@@ -366,6 +362,34 @@ function readAgentOperatorEnum<T extends string>(
     throw new AgentConfigParseError(`${path}.${key} must be one of: ${allowed.join(', ')}.`);
   }
   return value as T;
+}
+
+function readOptionalOperatorUiUrl(
+  record: Record<string, unknown>,
+  key: 'embedUrl' | 'externalUrl',
+): string | undefined {
+  const value = readOptionalString(record, key, AgentConfigParseError, {
+    path: 'operatorUi',
+  });
+  if (value === undefined) return undefined;
+  assertOperatorUiUrl(value, `operatorUi.${key}`);
+  return value;
+}
+
+function assertOperatorUiUrl(value: string, fieldName: string): void {
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new AgentConfigParseError(`${fieldName} must be a valid URL.`);
+  }
+
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+    throw new AgentConfigParseError(`${fieldName} must use an http or https URL.`);
+  }
+  if (url.username || url.password) {
+    throw new AgentConfigParseError(`${fieldName} must not include credentials.`);
+  }
 }
 
 function assertHttpsEndpoint(value: string, fieldName: string): void {

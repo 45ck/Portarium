@@ -931,7 +931,26 @@ describe('machines/agents registry endpoints', () => {
 // ---------------------------------------------------------------------------
 
 describe('OpenClaw integration: create → connect → display → run lifecycle', () => {
-  it('GET /agents/{id} preserves machineId and policyTier in response body', async () => {
+  it('GET /agents/{id} preserves machineId, policyTier, and operator UI in response body', async () => {
+    const agentWithOperatorUi: AgentConfigV1 = {
+      ...agent1,
+      operatorUi: {
+        schemaVersion: 1,
+        label: 'OpenClaw Operator UI',
+        mode: 'embedded',
+        status: 'available',
+        embedUrl: 'http://127.0.0.1:19037/chat?session=main',
+        externalUrl: 'http://127.0.0.1:19037/chat?session=main',
+        accessMode: 'direct-tunnel',
+        readOnly: true,
+        sourceSystem: 'OpenClaw',
+        sourceRef: 'openclaw-gateway-demo',
+        freshness: 'local tunnel',
+        boundary: ['Private tunnel only'],
+        deniedOperations: ['A4/A5 execution'],
+      },
+    };
+
     handle = await startHealthServer({
       role: 'control-plane',
       host: '127.0.0.1',
@@ -941,7 +960,7 @@ describe('OpenClaw integration: create → connect → display → run lifecycle
         machineQueryStore: {
           getMachineRegistrationById: vi.fn().mockResolvedValue(null),
           listMachineRegistrations: vi.fn().mockResolvedValue({ items: [], nextCursor: undefined }),
-          getAgentConfigById: vi.fn().mockResolvedValue(agent1),
+          getAgentConfigById: vi.fn().mockResolvedValue(agentWithOperatorUi),
           listAgentConfigs: vi.fn().mockResolvedValue({ items: [], nextCursor: undefined }),
         },
       }),
@@ -955,10 +974,20 @@ describe('OpenClaw integration: create → connect → display → run lifecycle
       agentId: string;
       machineId?: string;
       policyTier?: string;
+      operatorUi?: {
+        label?: string;
+        embedUrl?: string;
+        readOnly?: boolean;
+        deniedOperations?: string[];
+      };
     };
     expect(body.agentId).toBe('agent-1');
     expect(body.machineId).toBe('machine-1');
     expect(body.policyTier).toBe('HumanApprove');
+    expect(body.operatorUi?.label).toBe('OpenClaw Operator UI');
+    expect(body.operatorUi?.embedUrl).toBe('http://127.0.0.1:19037/chat?session=main');
+    expect(body.operatorUi?.readOnly).toBe(true);
+    expect(body.operatorUi?.deniedOperations).toEqual(['A4/A5 execution']);
   });
 
   it('GET /agents list with ?machineId= passes filter to the store', async () => {

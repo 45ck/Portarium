@@ -31,6 +31,22 @@ const VALID_AGENT_CONFIG = {
   registeredAtIso: '2026-02-18T00:00:00.000Z',
 };
 
+const VALID_OPERATOR_UI = {
+  schemaVersion: 1,
+  label: 'OpenClaw Operator UI',
+  mode: 'embedded',
+  status: 'available',
+  embedUrl: 'http://127.0.0.1:19037/chat?session=main',
+  externalUrl: 'http://127.0.0.1:19037/chat?session=main',
+  accessMode: 'direct-tunnel',
+  readOnly: true,
+  sourceSystem: 'OpenClaw',
+  sourceRef: 'openclaw-gateway-demo',
+  freshness: 'local tunnel',
+  boundary: ['Private tunnel only', 'No raw secrets'],
+  deniedOperations: ['A4/A5 execution'],
+};
+
 // ---------------------------------------------------------------------------
 // MachineRegistrationV1
 // ---------------------------------------------------------------------------
@@ -323,21 +339,7 @@ describe('parseAgentConfigV1: happy path', () => {
   it('preserves optional Cockpit operator UI metadata', () => {
     const agent = parseAgentConfigV1({
       ...VALID_AGENT_CONFIG,
-      operatorUi: {
-        schemaVersion: 1,
-        label: 'OpenClaw Operator UI',
-        mode: 'embedded',
-        status: 'available',
-        embedUrl: 'http://127.0.0.1:19037/chat?session=main',
-        externalUrl: 'http://127.0.0.1:19037/chat?session=main',
-        accessMode: 'direct-tunnel',
-        readOnly: true,
-        sourceSystem: 'OpenClaw',
-        sourceRef: 'openclaw-gateway-demo',
-        freshness: 'local tunnel',
-        boundary: ['Private tunnel only', 'No raw secrets'],
-        deniedOperations: ['A4/A5 execution'],
-      },
+      operatorUi: VALID_OPERATOR_UI,
     });
 
     expect(agent.operatorUi).toEqual({
@@ -426,6 +428,30 @@ describe('parseAgentConfigV1: validation', () => {
     expect(() =>
       parseAgentConfigV1({ ...VALID_AGENT_CONFIG, registeredAtIso: 'bad-date' }),
     ).toThrow(/registeredAtIso/i);
+  });
+
+  it('rejects operator UI URLs with unsafe schemes', () => {
+    expect(() =>
+      parseAgentConfigV1({
+        ...VALID_AGENT_CONFIG,
+        operatorUi: {
+          ...VALID_OPERATOR_UI,
+          embedUrl: 'javascript:alert(1)',
+        },
+      }),
+    ).toThrow(/operatorUi\.embedUrl must use an http or https URL/i);
+  });
+
+  it('rejects operator UI URLs with embedded credentials', () => {
+    expect(() =>
+      parseAgentConfigV1({
+        ...VALID_AGENT_CONFIG,
+        operatorUi: {
+          ...VALID_OPERATOR_UI,
+          externalUrl: 'https://user:pass@example.com/operator',
+        },
+      }),
+    ).toThrow(/operatorUi\.externalUrl must not include credentials/i);
   });
 });
 
