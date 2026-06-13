@@ -203,6 +203,24 @@ export type AgentConfigV1 = Readonly<{
    */
   allowedTools: readonly string[];
   registeredAtIso: string;
+  /** Optional Cockpit operator surface metadata; never contains credentials. */
+  operatorUi?: AgentOperatorUiV1;
+}>;
+
+export type AgentOperatorUiV1 = Readonly<{
+  schemaVersion: 1;
+  label: string;
+  mode: 'embedded' | 'external';
+  status: 'available' | 'degraded' | 'disabled';
+  embedUrl?: string;
+  externalUrl?: string;
+  accessMode: 'mediated' | 'direct-tunnel' | 'external';
+  readOnly: boolean;
+  sourceSystem: string;
+  sourceRef?: string;
+  freshness?: string;
+  boundary: readonly string[];
+  deniedOperations: readonly string[];
 }>;
 
 export class AgentConfigParseError extends Error {
@@ -258,6 +276,7 @@ export function parseAgentConfigV1(value: unknown): AgentConfigV1 {
   }
 
   const registeredAtIso = readIsoString(record, 'registeredAtIso', AgentConfigParseError);
+  const operatorUi = parseAgentOperatorUi(record['operatorUi']);
 
   return {
     schemaVersion: 1,
@@ -269,7 +288,84 @@ export function parseAgentConfigV1(value: unknown): AgentConfigV1 {
     policyTier,
     allowedTools,
     registeredAtIso,
+    ...(operatorUi !== undefined ? { operatorUi } : {}),
   };
+}
+
+function parseAgentOperatorUi(raw: unknown): AgentOperatorUiV1 | undefined {
+  if (raw === undefined || raw === null) return undefined;
+
+  const record = readRecord(raw, 'operatorUi', AgentConfigParseError);
+  const schemaVersion = readInteger(record, 'schemaVersion', AgentConfigParseError);
+  if (schemaVersion !== 1) {
+    throw new AgentConfigParseError(`operatorUi.schemaVersion must be 1. Got: ${schemaVersion}`);
+  }
+
+  const mode = readAgentOperatorEnum(
+    record,
+    'mode',
+    ['embedded', 'external'] as const,
+    'operatorUi',
+  );
+  const status = readAgentOperatorEnum(
+    record,
+    'status',
+    ['available', 'degraded', 'disabled'] as const,
+    'operatorUi',
+  );
+  const accessMode = readAgentOperatorEnum(
+    record,
+    'accessMode',
+    ['mediated', 'direct-tunnel', 'external'] as const,
+    'operatorUi',
+  );
+  const embedUrl = readOptionalString(record, 'embedUrl', AgentConfigParseError, {
+    path: 'operatorUi',
+  });
+  const externalUrl = readOptionalString(record, 'externalUrl', AgentConfigParseError, {
+    path: 'operatorUi',
+  });
+  const sourceRef = readOptionalString(record, 'sourceRef', AgentConfigParseError, {
+    path: 'operatorUi',
+  });
+  const freshness = readOptionalString(record, 'freshness', AgentConfigParseError, {
+    path: 'operatorUi',
+  });
+
+  return {
+    schemaVersion: 1,
+    label: readString(record, 'label', AgentConfigParseError, { path: 'operatorUi' }),
+    mode,
+    status,
+    ...(embedUrl !== undefined ? { embedUrl } : {}),
+    ...(externalUrl !== undefined ? { externalUrl } : {}),
+    accessMode,
+    readOnly: readBoolean(record, 'readOnly', AgentConfigParseError, { path: 'operatorUi' }),
+    sourceSystem: readString(record, 'sourceSystem', AgentConfigParseError, {
+      path: 'operatorUi',
+    }),
+    ...(sourceRef !== undefined ? { sourceRef } : {}),
+    ...(freshness !== undefined ? { freshness } : {}),
+    boundary: readStringArray(record, 'boundary', AgentConfigParseError, {
+      minLength: 0,
+    }),
+    deniedOperations: readStringArray(record, 'deniedOperations', AgentConfigParseError, {
+      minLength: 0,
+    }),
+  };
+}
+
+function readAgentOperatorEnum<T extends string>(
+  record: Record<string, unknown>,
+  key: string,
+  allowed: readonly T[],
+  path: string,
+): T {
+  const value = readString(record, key, AgentConfigParseError, { path });
+  if (!allowed.includes(value as T)) {
+    throw new AgentConfigParseError(`${path}.${key} must be one of: ${allowed.join(', ')}.`);
+  }
+  return value as T;
 }
 
 function assertHttpsEndpoint(value: string, fieldName: string): void {

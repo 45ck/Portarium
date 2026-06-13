@@ -20,6 +20,7 @@ import {
   AgentConfigParseError,
   type MachineRegistrationV1,
   type AgentConfigV1,
+  type AgentOperatorUiV1,
 } from '../../domain/machines/machine-registration-v1.js';
 import { AgentId, MachineId, WorkspaceId } from '../../domain/primitives/index.js';
 import type { TraceContext } from '../../application/common/trace-context.js';
@@ -65,6 +66,7 @@ type AgentApiView = Readonly<{
   machineId: string;
   policyTier: AgentConfigV1['policyTier'];
   usedByWorkflowIds: readonly string[];
+  operatorUi?: AgentOperatorUiV1;
 }>;
 
 const UI_TO_DOMAIN_CAPABILITY: Readonly<Record<AgentCapability, string>> = {
@@ -110,6 +112,7 @@ function toAgentApiView(agent: AgentConfigV1): AgentApiView {
     machineId: String(agent.machineId),
     policyTier: agent.policyTier,
     usedByWorkflowIds: [],
+    ...(agent.operatorUi ? { operatorUi: agent.operatorUi } : {}),
   };
 }
 
@@ -210,6 +213,7 @@ function normalizeAgentPayload(value: unknown, workspaceId: string): unknown {
       (capability): capability is string => typeof capability === 'string',
     ),
     registeredAtIso: new Date().toISOString(),
+    ...(record['operatorUi'] !== undefined ? { operatorUi: record['operatorUi'] } : {}),
   };
 }
 
@@ -895,6 +899,7 @@ export async function handleUpdateAgent(args: AgentItemArgs): Promise<void> {
     const updated = parseAgentConfigV1({
       ...existing,
       ...(typeof patch['name'] === 'string' ? { displayName: patch['name'] } : {}),
+      ...(patch['operatorUi'] !== undefined ? { operatorUi: patch['operatorUi'] } : {}),
       ...(rawCapabilities
         ? {
             capabilities: rawCapabilities.map((capability) => ({

@@ -319,6 +319,43 @@ describe('parseAgentConfigV1: happy path', () => {
     const agent = parseAgentConfigV1({ ...VALID_AGENT_CONFIG, allowedTools: [] });
     expect(agent.allowedTools).toEqual([]);
   });
+
+  it('preserves optional Cockpit operator UI metadata', () => {
+    const agent = parseAgentConfigV1({
+      ...VALID_AGENT_CONFIG,
+      operatorUi: {
+        schemaVersion: 1,
+        label: 'OpenClaw Operator UI',
+        mode: 'embedded',
+        status: 'available',
+        embedUrl: 'http://127.0.0.1:19037/chat?session=main',
+        externalUrl: 'http://127.0.0.1:19037/chat?session=main',
+        accessMode: 'direct-tunnel',
+        readOnly: true,
+        sourceSystem: 'OpenClaw',
+        sourceRef: 'openclaw-gateway-demo',
+        freshness: 'local tunnel',
+        boundary: ['Private tunnel only', 'No raw secrets'],
+        deniedOperations: ['A4/A5 execution'],
+      },
+    });
+
+    expect(agent.operatorUi).toEqual({
+      schemaVersion: 1,
+      label: 'OpenClaw Operator UI',
+      mode: 'embedded',
+      status: 'available',
+      embedUrl: 'http://127.0.0.1:19037/chat?session=main',
+      externalUrl: 'http://127.0.0.1:19037/chat?session=main',
+      accessMode: 'direct-tunnel',
+      readOnly: true,
+      sourceSystem: 'OpenClaw',
+      sourceRef: 'openclaw-gateway-demo',
+      freshness: 'local tunnel',
+      boundary: ['Private tunnel only', 'No raw secrets'],
+      deniedOperations: ['A4/A5 execution'],
+    });
+  });
 });
 
 describe('parseAgentConfigV1: validation', () => {
