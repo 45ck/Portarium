@@ -538,6 +538,43 @@ export const AGENTS: AgentV1[] = [
     allowedCapabilities: ['read:external', 'analyze', 'classify'],
     usedByWorkflowIds: ['wf-evidence-projection', 'wf-policy-exception-review'],
   },
+  {
+    schemaVersion: 1,
+    agentId: 'agent-openclaw-gateway-demo',
+    workspaceId: WORKSPACE_ID,
+    name: 'OpenClaw Gateway Demo',
+    modelId: 'openclaw-hosted-default',
+    endpoint: 'machine://openclaw-gateway-demo/openclaw',
+    allowedCapabilities: ['read:external', 'analyze', 'generate', 'machine:invoke'],
+    usedByWorkflowIds: [],
+    machineId: 'machine-openclaw-gateway-demo',
+    policyTier: 'HumanApprove',
+    operatorUi: {
+      schemaVersion: 1,
+      label: 'OpenClaw Operator UI',
+      mode: 'embedded',
+      status: 'available',
+      embedUrl: 'http://127.0.0.1:19037/chat?session=main',
+      externalUrl: 'http://127.0.0.1:19037/chat?session=main',
+      accessMode: 'direct-tunnel',
+      readOnly: true,
+      sourceSystem: 'OpenClaw',
+      sourceRef: 'openclaw-gateway-demo',
+      freshness: 'local tunnel',
+      boundary: [
+        'Private tunnel only',
+        'No raw secrets',
+        'No executor access from Cockpit',
+        'Proposal-only external actions',
+      ],
+      deniedOperations: [
+        'Provider mutation',
+        'DNS or firewall changes',
+        'Spend-cap changes',
+        'A4/A5 execution',
+      ],
+    },
+  },
 ];
 
 export const MACHINES: MachineV1[] = [
@@ -564,6 +601,18 @@ export const MACHINES: MachineV1[] = [
     status: 'Degraded',
     activeRunCount: 1,
     allowedCapabilities: ['read:external'],
+  },
+  {
+    schemaVersion: 1,
+    machineId: 'machine-openclaw-gateway-demo',
+    workspaceId: WORKSPACE_ID,
+    hostname: 'openclaw-gateway-demo',
+    osImage: 'debian-12',
+    registeredAtIso: '2026-06-13T00:00:00Z',
+    lastHeartbeatAtIso: '2026-06-13T00:00:00Z',
+    status: 'Online',
+    activeRunCount: 1,
+    allowedCapabilities: ['machine:invoke', 'read:external', 'analyze', 'generate'],
   },
 ];
 
