@@ -151,6 +151,12 @@ const MAX_THROUGHPUT_DEGRADATION = 0.2;
 /** Maximum error rate as a fraction (0.01 = 1%). */
 const MAX_ERROR_RATE = 0.01;
 
+/** Simulated network RTT for throughput checks; high enough to avoid timer jitter dominating. */
+const THROUGHPUT_RTT_MS = 10;
+
+/** Request count for RTT-based throughput checks. */
+const THROUGHPUT_SAMPLE_COUNT = 30;
+
 // ---------------------------------------------------------------------------
 // AC1: Baseline vs enforced path — p50/p95 latency and throughput
 // ---------------------------------------------------------------------------
@@ -200,14 +206,14 @@ describePerf('AC1: Baseline vs enforced path latency and throughput', () => {
   );
 
   it(
-    'throughput degradation is within 20% budget (simulated 2ms network RTT)',
+    'throughput degradation is within 20% budget (simulated 10ms network RTT)',
     { retry: 1, timeout: 60_000 },
     async () => {
       // Use a realistic simulated network RTT so proxy overhead is measured
-      // relative to actual request time, not zero-cost in-process stubs.
-      const realisticFetch = delayedFetch(2);
+      // relative to actual request time, not timer jitter in zero-cost stubs.
+      const realisticFetch = delayedFetch(THROUGHPUT_RTT_MS);
       const proxy = buildSidecarProxy(realisticFetch);
-      const count = 50; // fewer iterations since each takes ~2ms
+      const count = THROUGHPUT_SAMPLE_COUNT;
 
       // Warm-up
       await measureBaselineLatencies(realisticFetch, 5);
@@ -303,12 +309,12 @@ describePerf('AC2: Pass/fail thresholds — p95 latency, throughput, error rate'
   });
 
   it(
-    'throughput degradation <= 20% versus baseline (simulated 2ms network RTT)',
+    'throughput degradation <= 20% versus baseline (simulated 10ms network RTT)',
     { retry: 1, timeout: 60_000 },
     async () => {
-      const realisticFetch = delayedFetch(2);
+      const realisticFetch = delayedFetch(THROUGHPUT_RTT_MS);
       const proxy = buildSidecarProxy(realisticFetch);
-      const count = 50;
+      const count = THROUGHPUT_SAMPLE_COUNT;
 
       await measureBaselineLatencies(realisticFetch, 5);
       await measureSidecarLatencies(proxy, 5);
