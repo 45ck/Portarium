@@ -1,21 +1,12 @@
 import type { AgentActionProposalMeta, PolicyRule } from '@portarium/cockpit-types';
 import { Badge } from '@/components/ui/badge';
-import { Bot, Cpu, Shield, Wrench, AlertTriangle, CheckCircle2, FileText } from 'lucide-react';
+import { Bot, Cpu, Shield, Wrench } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getAgentActionCategoryPresentation } from '@/lib/agent-action-category';
 
 // ---------------------------------------------------------------------------
-// Visual mapping for tool category + blast-radius tier
+// Visual mapping for blast-radius tier
 // ---------------------------------------------------------------------------
-
-const CATEGORY_CONFIG: Record<
-  AgentActionProposalMeta['toolCategory'],
-  { variant: 'secondary' | 'warning' | 'destructive' | 'outline'; label: string; icon: typeof Bot }
-> = {
-  ReadOnly: { variant: 'secondary', label: 'Read-only', icon: CheckCircle2 },
-  Mutation: { variant: 'warning', label: 'Mutation', icon: AlertTriangle },
-  Dangerous: { variant: 'destructive', label: 'Dangerous', icon: AlertTriangle },
-  Unknown: { variant: 'outline', label: 'Unknown', icon: FileText },
-};
 
 const TIER_CONFIG: Record<
   AgentActionProposalMeta['blastRadiusTier'],
@@ -42,7 +33,7 @@ export interface AgentActionContextPanelProps {
 // ---------------------------------------------------------------------------
 
 export function AgentActionContextPanel({ proposal, policyRule }: AgentActionContextPanelProps) {
-  const category = CATEGORY_CONFIG[proposal.toolCategory] ?? CATEGORY_CONFIG['Unknown'];
+  const category = getAgentActionCategoryPresentation(proposal.toolCategory);
   const tier = TIER_CONFIG[proposal.blastRadiusTier] ?? TIER_CONFIG['Auto'];
 
   const isDangerous =
@@ -64,7 +55,11 @@ export function AgentActionContextPanel({ proposal, policyRule }: AgentActionCon
             Agent Action Context
           </h3>
         </div>
-        <Badge variant={category.variant} className="text-[11px] h-5 px-1.5">
+        <Badge
+          variant={category.variant}
+          className="text-[11px] h-5 px-1.5"
+          title={category.guidance}
+        >
           {category.label}
         </Badge>
       </div>

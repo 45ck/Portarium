@@ -754,8 +754,10 @@ export async function submitApproval(
   const stateError = guardPendingState(current, input.approvalId, ids.workspaceId);
   if (stateError) return stateError;
 
-  const linkedProposalError = await guardLinkedAgentActionProposal(deps, ctx, pending);
-  if (linkedProposalError) return linkedProposalError;
+  if (input.decision === 'Approved') {
+    const linkedProposalError = await guardLinkedAgentActionProposal(deps, ctx, pending);
+    if (linkedProposalError) return linkedProposalError;
+  }
 
   // Unconditional maker-checker: the deciding user must never be the requesting user.
   if (ctx.principalId.toString() === current.requestedByUserId.toString()) {

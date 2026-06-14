@@ -15,6 +15,7 @@ import { TriageDecisionArea } from './triage-decision-area';
 import { TriageKeyboardHints } from './triage-keyboard-hints';
 import type { TriageAction, DragValidation } from './types';
 import { buildApprovalCardContract } from './approval-card-contract';
+import { cn } from '@/lib/utils';
 
 export interface ApprovalTriageCardProps {
   approval: ApprovalSummary;
@@ -35,6 +36,7 @@ export interface ApprovalTriageCardProps {
   isDragging?: boolean;
   onValidationChange?: (validation: DragValidation) => void;
   dragRejection?: 'approve' | 'deny' | null;
+  compact?: boolean;
   policyLinkedMode?: boolean;
 }
 
@@ -57,6 +59,7 @@ export function ApprovalTriageCard({
   isDragging: externalIsDragging = false,
   onValidationChange,
   dragRejection = null,
+  compact = false,
   policyLinkedMode = false,
 }: ApprovalTriageCardProps) {
   const cardContract = useMemo(
@@ -86,11 +89,7 @@ export function ApprovalTriageCard({
     cardContract,
   });
 
-  const proposedAction =
-    plannedEffects[0]?.summary ??
-    (approval.agentActionProposal
-      ? `${approval.agentActionProposal.toolName} via ${approval.agentActionProposal.agentId}`
-      : approval.prompt);
+  const proposedAction = cardContract.fields.proposedAction.value;
   const gateReason = approval.policyRule?.tier
     ? `${approval.policyRule.tier} review is required for this Action.`
     : 'Policy Studio opened this live case for focused review.';
@@ -109,7 +108,7 @@ export function ApprovalTriageCard({
       : 'Review the evidence packet, then approve only if the proposed Action matches policy and intent.';
 
   return (
-    <div className="mx-auto w-full max-w-2xl min-w-0 space-y-4">
+    <div className={cn('mx-auto w-full max-w-2xl min-w-0 space-y-4', compact && 'max-w-md')}>
       <TriageProgressDots
         approvalId={approval.approvalId}
         index={index}
@@ -119,27 +118,40 @@ export function ApprovalTriageCard({
 
       <div className="relative">
         <div
-          className="relative rounded-xl border border-border bg-card shadow-md overflow-hidden flex flex-col h-[calc(100vh-12rem)] min-h-[480px]"
+          className={cn(
+            'relative rounded-xl border border-border bg-card shadow-md overflow-hidden flex flex-col h-[calc(100vh-12rem)] min-h-[480px]',
+            compact && 'h-[calc(100dvh-15.5rem)] min-h-[360px] max-h-[500px]',
+          )}
           style={{ zIndex: 2 }}
         >
           <TriageCardHeader
             approval={approval}
             evidenceEntries={evidenceEntries}
+            plannedEffects={plannedEffects}
             run={run}
             workflow={workflow}
             isOverdue={card.isOverdue}
+            compact={compact}
           />
 
-          {!policyLinkedMode ? (
+          {!policyLinkedMode && !compact ? (
             <div className="px-5 pt-3 pb-0 shrink-0">
               <ModeSwitcher context={card.approvalContext} />
             </div>
           ) : null}
 
-          <div className="px-5 py-5 flex-1 min-h-0 flex flex-col gap-4 overflow-hidden">
+          <div
+            className={cn(
+              'px-5 py-5 flex-1 min-h-0 flex flex-col gap-4 overflow-hidden',
+              compact && 'px-3 py-3 gap-3',
+            )}
+          >
             {policyLinkedMode ? (
               <>
-                <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 text-sm">
+                <div
+                  className="rounded-lg border border-primary/30 bg-primary/5 p-4 text-sm select-text cursor-auto"
+                  data-approval-copy-region
+                >
                   <div className="text-xs font-medium uppercase tracking-[0.18em] text-primary">
                     Focused policy-linked review
                   </div>
@@ -206,9 +218,13 @@ export function ApprovalTriageCard({
                   reviewFriction={cardContract.friction}
                   approveAttempted={card.approveAttempted}
                   approveConfirmArmed={card.approveConfirmArmed}
+                  compact={compact}
                 />
 
-                <div className="rounded-lg border border-border bg-muted/20 p-3">
+                <div
+                  className="rounded-lg border border-border bg-muted/20 p-3 select-text cursor-auto"
+                  data-approval-copy-region
+                >
                   <div className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                     Evidence and policy context
                   </div>
@@ -218,7 +234,10 @@ export function ApprovalTriageCard({
                   </p>
                 </div>
 
-                <div className="rounded-lg border border-border bg-background/80 p-3">
+                <div
+                  className="rounded-lg border border-border bg-background/80 p-3 select-text cursor-auto"
+                  data-approval-copy-region
+                >
                   <div className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                     Deep audit detail
                   </div>
@@ -241,19 +260,39 @@ export function ApprovalTriageCard({
               </>
             ) : (
               <>
-                <TriageCardBody
-                  approval={approval}
-                  plannedEffects={plannedEffects}
-                  evidenceEntries={evidenceEntries}
-                  run={run}
-                  workflow={workflow}
-                  triageViewMode={card.triageViewMode}
-                  setTriageViewMode={card.setTriageViewMode}
-                  sodEval={card.sodEval}
-                  flashSodBanner={card.flashSodBanner}
-                  prefersReducedMotion={card.prefersReducedMotion}
-                  cardContract={cardContract}
-                />
+                {compact ? (
+                  <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain pr-1">
+                    <div className="flex min-h-full flex-col gap-3">
+                      <TriageCardBody
+                        approval={approval}
+                        plannedEffects={plannedEffects}
+                        evidenceEntries={evidenceEntries}
+                        run={run}
+                        workflow={workflow}
+                        triageViewMode={card.triageViewMode}
+                        setTriageViewMode={card.setTriageViewMode}
+                        sodEval={card.sodEval}
+                        flashSodBanner={card.flashSodBanner}
+                        prefersReducedMotion={card.prefersReducedMotion}
+                        cardContract={cardContract}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <TriageCardBody
+                    approval={approval}
+                    plannedEffects={plannedEffects}
+                    evidenceEntries={evidenceEntries}
+                    run={run}
+                    workflow={workflow}
+                    triageViewMode={card.triageViewMode}
+                    setTriageViewMode={card.setTriageViewMode}
+                    sodEval={card.sodEval}
+                    flashSodBanner={card.flashSodBanner}
+                    prefersReducedMotion={card.prefersReducedMotion}
+                    cardContract={cardContract}
+                  />
+                )}
 
                 <TriageDecisionArea
                   approvalId={approval.approvalId}
@@ -275,6 +314,7 @@ export function ApprovalTriageCard({
                   reviewFriction={cardContract.friction}
                   approveAttempted={card.approveAttempted}
                   approveConfirmArmed={card.approveConfirmArmed}
+                  compact={compact}
                 />
               </>
             )}
@@ -282,10 +322,12 @@ export function ApprovalTriageCard({
         </div>
       </div>
 
-      <TriageKeyboardHints
-        rationaleHasFocus={card.rationaleHasFocus}
-        undoAvailable={undoAvailable}
-      />
+      {compact ? null : (
+        <TriageKeyboardHints
+          rationaleHasFocus={card.rationaleHasFocus}
+          undoAvailable={undoAvailable}
+        />
+      )}
     </div>
   );
 }

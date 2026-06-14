@@ -23,7 +23,14 @@ export interface ApprovalCardFriction {
 export interface ApprovalCardField {
   label: string;
   value: string;
-  evidenceSource: 'ApprovalSummary' | 'Plan' | 'Evidence' | 'Run' | 'Workflow' | 'Derived';
+  evidenceSource:
+    | 'ApprovalSummary'
+    | 'ApprovalPacket'
+    | 'Plan'
+    | 'Evidence'
+    | 'Run'
+    | 'Workflow'
+    | 'Derived';
 }
 
 export interface ApprovalCardContract {
@@ -60,6 +67,44 @@ function unique(values: readonly string[]): string[] {
 function compactList(values: readonly string[], empty: string): string {
   const list = unique(values);
   return list.length > 0 ? list.join(', ') : empty;
+}
+
+function compactText(value: string, maxLength: number): string {
+  const text = value.replace(/\s+/g, ' ').trim();
+  if (text.length <= maxLength) return text;
+  return `${text.slice(0, maxLength - 3)}...`;
+}
+
+function normalizedText(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function sameMeaning(left: string, right: string): boolean {
+  return normalizedText(left) === normalizedText(right);
+}
+
+export function summarizeApprovalPrompt(value: string, maxLength = 180): string {
+  const text = value.replace(/\s+/g, ' ').trim();
+  const monitorMatch = /Review latest standing-read monitor attention item:\s*([^.;]+)/i.exec(text);
+  if (monitorMatch?.[1]) {
+    return compactText(`Review monitor item: ${monitorMatch[1]}`, maxLength);
+  }
+
+  const openClawMatch = /^OpenClaw approval required:\s*([^.;]+)/i.exec(text);
+  if (openClawMatch?.[1]) {
+    return compactText(`OpenClaw approval: ${openClawMatch[1]}`, maxLength);
+  }
+
+  return compactText(text, maxLength);
+}
+
+function approvalPacketPlanSummary(approval: ApprovalSummary): string | undefined {
+  const summary = approval.approvalPacket?.planScope?.summary?.trim();
+  return summary ? summarizeApprovalPrompt(summary, 240) : undefined;
 }
 
 function policySystems(approval: ApprovalSummary): string[] {
@@ -99,7 +144,32 @@ function describeProposedAction(approval: ApprovalSummary, effects: readonly Pla
     return `${approval.agentActionProposal.toolName} via ${approval.agentActionProposal.agentId}`;
   }
 
-  return approval.prompt;
+  return summarizeApprovalPrompt(approval.prompt);
+}
+
+function describeIntent(
+  approval: ApprovalSummary,
+  workflow: WorkflowSummary | undefined,
+  proposedAction: string,
+): { value: string; evidenceSource: ApprovalCardField['evidenceSource'] } {
+  const workflowIntent = workflow?.description ?? workflow?.name;
+  if (workflowIntent) {
+    return { value: workflowIntent, evidenceSource: 'Workflow' };
+  }
+
+  const packetSummary = approvalPacketPlanSummary(approval);
+  if (packetSummary && !sameMeaning(packetSummary, proposedAction)) {
+    return { value: packetSummary, evidenceSource: 'ApprovalPacket' };
+  }
+
+  if (approval.approvalPacket) {
+    return {
+      value: 'Review packet scope and decide operator intent only.',
+      evidenceSource: 'ApprovalPacket',
+    };
+  }
+
+  return { value: summarizeApprovalPrompt(approval.prompt), evidenceSource: 'ApprovalSummary' };
 }
 
 function describeEvidence(entries: readonly EvidenceEntry[]): string {
@@ -125,6 +195,14 @@ function describePriorRelatedActions(
     .map((entry) => `${entry.type}: ${entry.message}`);
 
   return compactList([...actionEvidence, ...history], 'No prior related Actions found');
+}
+
+function describeRationale(approval: ApprovalSummary): string {
+  const rationale =
+    approval.agentActionProposal?.rationale ??
+    approval.rationale ??
+    'No rationale supplied with this Approval Gate';
+  return summarizeApprovalPrompt(rationale, 240);
 }
 
 function describePolicyResult(approval: ApprovalSummary, run?: RunSummary): string {
@@ -260,6 +338,8 @@ export function buildApprovalCardContract(
     ],
     'No external system declared',
   );
+  const proposedAction = describeProposedAction(approval, plannedEffects);
+  const intent = describeIntent(approval, workflow, proposedAction);
 
   return {
     contractName: APPROVAL_CARD_CONTRACT_NAME,
@@ -268,13 +348,13 @@ export function buildApprovalCardContract(
     fields: {
       proposedAction: {
         label: 'Proposed Action',
-        value: describeProposedAction(approval, plannedEffects),
+        value: proposedAction,
         evidenceSource: plannedEffects.length > 0 ? 'Plan' : 'ApprovalSummary',
       },
       intent: {
         label: 'Goal or intent',
-        value: workflow?.description ?? workflow?.name ?? approval.prompt,
-        evidenceSource: workflow ? 'Workflow' : 'ApprovalSummary',
+        value: intent.value,
+        evidenceSource: intent.evidenceSource,
       },
       systemsTouched: {
         label: 'Systems touched',
@@ -303,10 +383,7 @@ export function buildApprovalCardContract(
       },
       rationale: {
         label: 'Rationale',
-        value:
-          approval.agentActionProposal?.rationale ??
-          approval.rationale ??
-          'No rationale supplied with this Approval Gate',
+        value: describeRationale(approval),
         evidenceSource: approval.agentActionProposal ? 'ApprovalSummary' : 'ApprovalSummary',
       },
       priorRelatedActions: {

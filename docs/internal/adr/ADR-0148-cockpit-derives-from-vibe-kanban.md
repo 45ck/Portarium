@@ -2,7 +2,7 @@
 
 - Status: **Proposed** (pending validation spike — see `bead-spike-vk-marriage`)
 - Date: 2026-05-04
-- Deciders: ajax@aquinus.net
+- Deciders: operator@example.test
 - Related: ADR-0146 (vm-first-governed-engineering-sandboxes), ADR-0145 (generic-cockpit-plugin-host-control-plane), ADR-0117 (approval-wait-loop-mechanism), ADR-0118 (agent-action-governance), ADR-0070 (hybrid orchestration + CloudEvents)
 - Supersedes: portion of `docs/internal/engineering-layer/inspiration/README.md` (strategic shift from "concept reuse" to "hybrid integration"); strategy section in `inspiration-validation-plan.md` (updated to reference this ADR)
 
@@ -120,7 +120,7 @@ The HTTP route to create/update beads is the source of truth. The `bd` CLI becom
 
 ### D2. Actor identity is a first-class field on every bead/approval/evidence entry
 
-Not strings. Cryptographic identity: `human:ajax@aquinus.net` or `agent:triage-v1@portarium`. Without this, separation-of-duties enforcement in phase 3 is impossible.
+Not strings. Cryptographic identity: `human:operator@example.test` or `agent:triage-v1@portarium`. Without this, separation-of-duties enforcement in phase 3 is impossible.
 
 ### D3. Policy tier resolution accepts actor type as input
 

@@ -20,6 +20,7 @@ No backend field is required for review depth. Cockpit derives risk tier, review
 
 Every Approval Gate card must expose the same semantic fields on mobile and desktop:
 
+- Compact approval title
 - Proposed Action
 - Goal or intent
 - Systems touched
@@ -31,6 +32,13 @@ Every Approval Gate card must expose the same semantic fields on mobile and desk
 - Prior related Actions
 
 Desktop may show more surrounding panels and larger grids. Mobile may stack the same fields and keep decision controls sticky or nearby. Neither surface may omit the fields or change the governance meaning.
+
+The compact approval title is the top-card decision label derived from
+`Approval.prompt` or a safe summary of that prompt. It must stay short enough
+for queue, notification, mobile, and desktop review contexts. Detailed packet
+content, long rationale, policy explanation, capabilities, evidence, and review
+docs belong in the review-depth fields, packet panel, or linked tabs rather
+than being repeated in the title.
 
 ## Review depth
 

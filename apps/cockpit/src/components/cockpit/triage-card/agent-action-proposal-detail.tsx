@@ -1,20 +1,11 @@
 import type { AgentActionProposalMeta } from '@portarium/cockpit-types';
 import { Badge } from '@/components/ui/badge';
 import { Bot, Cpu, Shield, Wrench } from 'lucide-react';
+import { getAgentActionCategoryPresentation } from '@/lib/agent-action-category';
 
 // ---------------------------------------------------------------------------
 // Category / Tier visual mapping
 // ---------------------------------------------------------------------------
-
-const CATEGORY_STYLE: Record<
-  string,
-  { variant: 'secondary' | 'warning' | 'destructive' | 'outline'; label: string }
-> = {
-  ReadOnly: { variant: 'secondary', label: 'Read-only' },
-  Mutation: { variant: 'warning', label: 'Mutation' },
-  Dangerous: { variant: 'destructive', label: 'Dangerous' },
-  Unknown: { variant: 'outline', label: 'Unknown' },
-};
 
 const TIER_STYLE: Record<
   string,
@@ -38,13 +29,6 @@ const TIER_STYLE: Record<
   },
 };
 
-const CATEGORY_GUIDANCE: Record<string, string> = {
-  ReadOnly: 'Read-only tools should not change external systems.',
-  Mutation: 'Mutation tools will change a connected system or artifact.',
-  Dangerous: 'Dangerous tools can create broad or hard-to-reverse impact.',
-  Unknown: 'Unknown tools need extra scrutiny before approval.',
-};
-
 // ---------------------------------------------------------------------------
 // Component
 // ---------------------------------------------------------------------------
@@ -54,7 +38,7 @@ export interface AgentActionProposalDetailProps {
 }
 
 export function AgentActionProposalDetail({ proposal }: AgentActionProposalDetailProps) {
-  const categoryStyle = CATEGORY_STYLE[proposal.toolCategory] ?? CATEGORY_STYLE['Unknown']!;
+  const categoryStyle = getAgentActionCategoryPresentation(proposal.toolCategory);
   const tierStyle = TIER_STYLE[proposal.blastRadiusTier] ?? TIER_STYLE['Auto']!;
 
   return (
@@ -77,7 +61,11 @@ export function AgentActionProposalDetail({ proposal }: AgentActionProposalDetai
         {/* Tool category */}
         <span className="text-muted-foreground">Category</span>
         <div>
-          <Badge variant={categoryStyle.variant} className="text-[11px] h-5 px-1.5">
+          <Badge
+            variant={categoryStyle.variant}
+            className="text-[11px] h-5 px-1.5"
+            title={categoryStyle.guidance}
+          >
             {categoryStyle.label}
           </Badge>
         </div>
@@ -123,9 +111,7 @@ export function AgentActionProposalDetail({ proposal }: AgentActionProposalDetai
           Approval focus
         </p>
         <p className="text-[11px] leading-relaxed">{tierStyle.guidance}</p>
-        <p className="text-[11px] leading-relaxed">
-          {CATEGORY_GUIDANCE[proposal.toolCategory] ?? CATEGORY_GUIDANCE['Unknown']}
-        </p>
+        <p className="text-[11px] leading-relaxed">{categoryStyle.guidance}</p>
       </div>
     </div>
   );

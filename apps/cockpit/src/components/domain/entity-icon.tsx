@@ -1,16 +1,40 @@
 import type { CSSProperties } from 'react';
 import {
+  Activity,
+  BadgeCheck,
   Bot,
-  Brain,
+  Box,
+  BrainCircuit,
+  Building2,
+  CheckSquare,
+  CircleDollarSign,
+  ClipboardList,
+  CreditCard,
   FileCheck2,
+  FileText,
+  FolderKanban,
+  Handshake,
+  KeyRound,
+  Link,
+  ListChecks,
+  Map,
+  MapPin,
+  Megaphone,
   Network,
+  Package,
   Plane,
+  PlayCircle,
   Plug,
+  ReceiptText,
+  Repeat,
   Route,
   ShieldCheck,
+  ShoppingCart,
+  ServerCog,
   User,
+  Users,
+  Workflow,
 } from 'lucide-react';
-import { getDomainIcon, resolveAssetPath } from '@/assets/registry';
 import type { CockpitAssetTheme, DomainEntityType } from '@/assets/types';
 
 type EntityIconSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
@@ -23,47 +47,47 @@ const SIZE_PIXELS: Record<EntityIconSize, number> = {
   xl: 48,
 };
 
-const FALLBACK_ICON: Record<DomainEntityType, typeof Bot> = {
+const ENTITY_SYMBOL: Record<DomainEntityType, typeof Bot> = {
   robot: Bot,
   drone: Plane,
-  agent: Brain,
+  agent: BrainCircuit,
   adapter: Plug,
   mission: Route,
   evidence: FileCheck2,
   policy: ShieldCheck,
   fleet: Network,
-  'work-item': FileCheck2,
-  workflow: Route,
-  run: Route,
-  approval: ShieldCheck,
-  'human-task': FileCheck2,
-  workforce: Network,
-  queue: Network,
-  machine: Bot,
-  'map-layer': Network,
-  'location-event': Route,
+  'work-item': ClipboardList,
+  workflow: Workflow,
+  run: PlayCircle,
+  approval: BadgeCheck,
+  'human-task': CheckSquare,
+  workforce: Users,
+  queue: ListChecks,
+  machine: ServerCog,
+  'map-layer': Map,
+  'location-event': MapPin,
   port: Plug,
-  project: FileCheck2,
-  plan: FileCheck2,
-  credential: ShieldCheck,
-  tenant: Network,
+  project: FolderKanban,
+  plan: FileText,
+  credential: KeyRound,
+  tenant: Building2,
   user: User,
-  event: Route,
-  artifact: FileCheck2,
+  event: Activity,
+  artifact: Box,
   party: User,
-  ticket: FileCheck2,
-  invoice: FileCheck2,
-  payment: ShieldCheck,
-  task: FileCheck2,
-  campaign: Network,
-  asset: Bot,
-  document: FileCheck2,
-  subscription: Route,
-  opportunity: Route,
-  product: Plug,
-  order: Route,
-  account: ShieldCheck,
-  'external-object-ref': Plug,
+  ticket: ClipboardList,
+  invoice: ReceiptText,
+  payment: CreditCard,
+  task: CheckSquare,
+  campaign: Megaphone,
+  asset: Package,
+  document: FileText,
+  subscription: Repeat,
+  opportunity: Handshake,
+  product: Package,
+  order: ShoppingCart,
+  account: CircleDollarSign,
+  'external-object-ref': Link,
 };
 
 export type EntityIconProps = {
@@ -78,36 +102,19 @@ export type EntityIconProps = {
 export function EntityIcon({
   entityType,
   size = 'md',
-  theme = 'light',
   decorative = false,
   className,
   style,
 }: EntityIconProps) {
-  const iconAsset = getDomainIcon(entityType);
-  const iconPath = iconAsset ? resolveAssetPath(iconAsset, theme) : undefined;
   const pixelSize = SIZE_PIXELS[size];
-
-  if (iconAsset && iconPath) {
-    const altText = decorative ? '' : (iconAsset?.alt ?? `${entityType} icon`);
-    return (
-      <img
-        src={iconPath}
-        alt={altText}
-        className={className}
-        width={pixelSize}
-        height={pixelSize}
-        style={style}
-      />
-    );
-  }
-
-  const Fallback = FALLBACK_ICON[entityType] ?? Bot;
+  const Symbol = ENTITY_SYMBOL[entityType] ?? Bot;
   return (
-    <Fallback
+    <Symbol
       aria-hidden={decorative}
       aria-label={decorative ? undefined : `${entityType} icon`}
       className={className}
       style={{ width: pixelSize, height: pixelSize, ...style }}
+      strokeWidth={2}
     />
   );
 }

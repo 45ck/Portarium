@@ -1,17 +1,23 @@
 import { format, formatDistanceToNow } from 'date-fns';
+import { useCallback, useMemo, useState } from 'react';
 import type {
   ApprovalSummary,
   EvidenceEntry,
+  PlanEffect,
   RunSummary,
   WorkflowSummary,
 } from '@portarium/cockpit-types';
 import { EntityIcon } from '@/components/domain/entity-icon';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { writeToClipboard } from '@/lib/native-bridge';
 import {
   AlertTriangle,
   ArrowRight,
   Bot,
+  Check,
   Clock,
+  Copy,
   Mail,
   Calendar,
   MessageSquare,
@@ -21,6 +27,9 @@ import {
 import { ActorBadge } from './actor-badge';
 import { SorBadge } from './sor-badge';
 import { HeaderProvenanceTrail } from './header-provenance-trail';
+import { buildApprovalClipboardText } from './approval-clipboard';
+import { summarizeApprovalPrompt } from './approval-card-contract';
+import { cn } from '@/lib/utils';
 
 function resolveAgentDisplayName(agentId: string): string {
   return agentId;
@@ -54,24 +63,61 @@ function SorTargetPill({ name }: { name: string }) {
 export interface TriageCardHeaderProps {
   approval: ApprovalSummary;
   evidenceEntries: EvidenceEntry[];
+  plannedEffects: PlanEffect[];
   run?: RunSummary;
   workflow?: WorkflowSummary;
   isOverdue: boolean;
+  compact?: boolean;
 }
 
 export function TriageCardHeader({
   approval,
   evidenceEntries,
+  plannedEffects,
   run,
   workflow,
   isOverdue,
+  compact = false,
 }: TriageCardHeaderProps) {
+  const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle');
   const policyRule = approval.policyRule;
+  const approvalClipboardText = useMemo(
+    () =>
+      buildApprovalClipboardText({
+        approval,
+        plannedEffects,
+        evidenceEntries,
+        run,
+        workflow,
+      }),
+    [approval, evidenceEntries, plannedEffects, run, workflow],
+  );
+  const handleCopyApproval = useCallback(() => {
+    void writeToClipboard(approvalClipboardText)
+      .then(() => {
+        setCopyState('copied');
+        window.setTimeout(() => setCopyState('idle'), 2000);
+      })
+      .catch(() => {
+        setCopyState('failed');
+        window.setTimeout(() => setCopyState('idle'), 2000);
+      });
+  }, [approvalClipboardText]);
+  const CopyIcon = copyState === 'copied' ? Check : copyState === 'failed' ? AlertTriangle : Copy;
+  const copyLabel =
+    copyState === 'copied' ? 'Copied' : copyState === 'failed' ? 'Copy failed' : 'Copy approval';
+  const displayPrompt = summarizeApprovalPrompt(approval.prompt, compact ? 140 : 220);
+
   return (
     <>
       {/* Overdue stripe */}
       {isOverdue && (
-        <div className="bg-red-500 px-5 py-1.5 flex items-center gap-2">
+        <div
+          className={cn(
+            'bg-red-500 flex items-center gap-2',
+            compact ? 'px-3 py-1' : 'px-5 py-1.5',
+          )}
+        >
           <AlertTriangle className="h-3.5 w-3.5 text-white" />
           <span className="text-[11px] font-bold text-white uppercase tracking-wide">Overdue</span>
           <span className="text-[11px] text-red-100 ml-auto">
@@ -81,14 +127,21 @@ export function TriageCardHeader({
       )}
 
       {/* Header */}
-      <div className="bg-muted/20 px-5 pt-5 pb-4 border-b border-border/50 shrink-0">
+      <div
+        className={cn(
+          'bg-muted/20 border-b border-border/50 shrink-0',
+          compact ? 'px-3 pt-3 pb-2' : 'px-5 pt-5 pb-4',
+        )}
+      >
         <div className="flex min-w-0 items-start gap-3 sm:gap-4">
           {/* Icon box */}
-          <div className="shrink-0 rounded-xl bg-background border border-border p-3 w-16 h-16 flex items-center justify-center">
-            <EntityIcon entityType="approval" size="xl" decorative />
-          </div>
+          {!compact ? (
+            <div className="shrink-0 rounded-xl bg-background border border-border p-3 w-16 h-16 flex items-center justify-center">
+              <EntityIcon entityType="approval" size="xl" decorative />
+            </div>
+          ) : null}
 
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-1 select-text cursor-auto" data-approval-copy-region>
             <div className="mb-1.5 flex min-w-0 flex-wrap items-center gap-2">
               <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
                 Approval Gate
@@ -107,6 +160,21 @@ export function TriageCardHeader({
                   Agent Action
                 </Badge>
               )}
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className={cn(
+                  'ml-auto h-7 gap-1.5 px-2 text-[11px] select-none',
+                  compact && 'w-7 px-0',
+                )}
+                onClick={handleCopyApproval}
+                aria-label={copyLabel}
+                data-approval-copy-button
+              >
+                <CopyIcon className="h-3 w-3" aria-hidden="true" />
+                <span className={cn(compact && 'sr-only')}>{copyLabel}</span>
+              </Button>
             </div>
 
             {/* Agent identity + target SoR */}
@@ -129,10 +197,15 @@ export function TriageCardHeader({
               </div>
             )}
 
-            <p className="break-words text-sm font-semibold leading-snug">{approval.prompt}</p>
+            <p className="break-words text-sm font-semibold leading-snug">{displayPrompt}</p>
 
             {/* Requested by */}
-            <div className="mt-2 flex min-w-0 flex-wrap items-center gap-2">
+            <div
+              className={cn(
+                'mt-2 flex min-w-0 flex-wrap items-center gap-2',
+                compact && 'mt-1 gap-1.5',
+              )}
+            >
               <ActorBadge userId={approval.requestedByUserId} />
               {approval.assigneeUserId && (
                 <>
@@ -149,45 +222,47 @@ export function TriageCardHeader({
             </div>
 
             {/* Metadata pills */}
-            <div className="flex flex-wrap items-center gap-2 mt-2">
-              <span
-                className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground bg-background border border-border rounded-full px-2.5 py-0.5 hover:border-primary/40 transition-colors cursor-default"
-                title={`Run: ${approval.runId}`}
-              >
-                <EntityIcon entityType="run" size="xs" decorative />
-                {approval.runId.slice(0, 12)}
-              </span>
-              {approval.workItemId && (
+            {!compact ? (
+              <div className="flex flex-wrap items-center gap-2 mt-2">
                 <span
                   className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground bg-background border border-border rounded-full px-2.5 py-0.5 hover:border-primary/40 transition-colors cursor-default"
-                  title={`Work Item: ${approval.workItemId}`}
+                  title={`Run: ${approval.runId}`}
                 >
-                  <EntityIcon entityType="work-item" size="xs" decorative />
-                  {approval.workItemId.slice(0, 12)}
+                  <EntityIcon entityType="run" size="xs" decorative />
+                  {approval.runId.slice(0, 12)}
                 </span>
-              )}
-              {approval.dueAtIso && !isOverdue && (
-                <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-                  <Clock className="h-3 w-3" />
-                  Due {format(new Date(approval.dueAtIso), 'MMM d')}
-                </span>
-              )}
-              {evidenceEntries.length > 0 &&
-                (() => {
-                  const totalAttachments = evidenceEntries.reduce(
-                    (s, e) => s + (e.payloadRefs?.length ?? 0),
-                    0,
-                  );
-                  return totalAttachments > 0 ? (
-                    <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground bg-background border border-border rounded-full px-2.5 py-0.5">
-                      <Paperclip className="h-3 w-3" />
-                      {totalAttachments} file{totalAttachments !== 1 ? 's' : ''}
-                    </span>
-                  ) : null;
-                })()}
-            </div>
+                {approval.workItemId && (
+                  <span
+                    className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground bg-background border border-border rounded-full px-2.5 py-0.5 hover:border-primary/40 transition-colors cursor-default"
+                    title={`Work Item: ${approval.workItemId}`}
+                  >
+                    <EntityIcon entityType="work-item" size="xs" decorative />
+                    {approval.workItemId.slice(0, 12)}
+                  </span>
+                )}
+                {approval.dueAtIso && !isOverdue && (
+                  <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+                    <Clock className="h-3 w-3" />
+                    Due {format(new Date(approval.dueAtIso), 'MMM d')}
+                  </span>
+                )}
+                {evidenceEntries.length > 0 &&
+                  (() => {
+                    const totalAttachments = evidenceEntries.reduce(
+                      (s, e) => s + (e.payloadRefs?.length ?? 0),
+                      0,
+                    );
+                    return totalAttachments > 0 ? (
+                      <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground bg-background border border-border rounded-full px-2.5 py-0.5">
+                        <Paperclip className="h-3 w-3" />
+                        {totalAttachments} file{totalAttachments !== 1 ? 's' : ''}
+                      </span>
+                    ) : null;
+                  })()}
+              </div>
+            ) : null}
 
-            <HeaderProvenanceTrail run={run} workflow={workflow} />
+            {!compact ? <HeaderProvenanceTrail run={run} workflow={workflow} /> : null}
           </div>
         </div>
       </div>

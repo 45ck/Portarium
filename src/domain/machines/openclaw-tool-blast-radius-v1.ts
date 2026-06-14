@@ -47,6 +47,7 @@ const DANGEROUS_PATTERNS: readonly RegExp[] = [
 
 const MUTATION_PATTERNS: readonly RegExp[] = [
   /(^|[:._-])(write|create|update|delete|remove|send|post|put|patch)([:._-]|$)/i,
+  /(^|[:._-])(start|cancel|submit|register|deregister|heartbeat)([:._-]|$)/i,
   /(^|[:._-])(trigger|invoke|deploy|publish|approve|transfer|charge|refund)([:._-]|$)/i,
 ];
 

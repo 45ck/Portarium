@@ -9,6 +9,7 @@ import { SodBanner, DEFAULT_SOD_EVALUATION } from './sod-banner';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Bot, Zap, AlertTriangle, Eye } from 'lucide-react';
+import { getAgentActionCategoryPresentation } from '@/lib/agent-action-category';
 
 const TIER_CONFIG = {
   Auto: {
@@ -102,11 +103,19 @@ export function ApprovalGatePanel({ approval, onDecide, loading }: ApprovalGateP
                 );
               })()}
               {(() => {
-                const Icon = CATEGORY_ICON[approval.agentActionProposal.toolCategory] ?? Bot;
+                const category = getAgentActionCategoryPresentation(
+                  approval.agentActionProposal.toolCategory,
+                );
+                const Icon = category.isUnclassified
+                  ? Bot
+                  : (CATEGORY_ICON[approval.agentActionProposal.toolCategory] ?? Bot);
                 return (
-                  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                  <span
+                    className="inline-flex items-center gap-1 text-xs text-muted-foreground"
+                    title={category.guidance}
+                  >
                     <Icon className="h-3 w-3" />
-                    {approval.agentActionProposal.toolCategory}
+                    {category.label}
                   </span>
                 );
               })()}

@@ -208,6 +208,34 @@ export interface CockpitExtensionContextResponse {
   expiresAtIso: string;
 }
 
+export type ToolRiskCategory = 'ReadOnly' | 'Mutation' | 'Dangerous' | 'Unknown';
+
+export type ToolCatalogRecommendedDecision = 'allow' | 'sandbox' | 'approval' | 'deny';
+
+export type ToolCatalogSource = 'portarium-mcp' | string;
+
+export interface ToolCatalogItem {
+  schemaVersion: 1;
+  toolId: string;
+  toolName: string;
+  label: string;
+  provider: string;
+  description: string;
+  source: ToolCatalogSource;
+  actionClass: string;
+  riskCategory: ToolRiskCategory;
+  minimumExecutionTier: 'Auto' | 'Assisted' | 'HumanApprove' | 'ManualOnly';
+  recommendedDecision: ToolCatalogRecommendedDecision;
+  inputSchema: Record<string, unknown>;
+}
+
+export interface ToolCatalogResponse {
+  schemaVersion: 1;
+  workspaceId: string;
+  issuedAtIso: string;
+  items: ToolCatalogItem[];
+}
+
 export type RunStatus =
   | 'Pending'
   | 'Running'

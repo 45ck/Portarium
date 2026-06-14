@@ -571,6 +571,41 @@ describe('submitApproval', () => {
     expect(eventPublisher.publish).not.toHaveBeenCalled();
   });
 
+  it('allows denying orphan agent-action approvals when the linked proposal is missing', async () => {
+    approvalStore.getApprovalById = vi.fn(async () => AGENT_ACTION_APPROVAL);
+    const agentActionProposalStore = makeAgentActionProposalStore(null);
+
+    const result = await submitApproval(
+      {
+        authorization,
+        clock,
+        idGenerator,
+        approvalStore,
+        unitOfWork,
+        eventPublisher,
+        agentActionProposalStore,
+      },
+      toAppContext({
+        tenantId: 'tenant-1',
+        principalId: 'user-1',
+        correlationId: 'corr-1',
+        roles: ['approver'],
+      }),
+      {
+        workspaceId: 'ws-1',
+        approvalId: 'approval-agent-1',
+        decision: 'Denied',
+        rationale: 'Proposal link is missing; deny to clear the orphan card.',
+      },
+    );
+
+    expect(result.ok).toBe(true);
+    expect(agentActionProposalStore.getProposalById).not.toHaveBeenCalled();
+    expect(agentActionProposalStore.getProposalByApprovalId).not.toHaveBeenCalled();
+    expect(approvalStore.saveApproval).toHaveBeenCalledTimes(1);
+    expect(eventPublisher.publish).toHaveBeenCalledTimes(1);
+  });
+
   it('rejects agent-action approvals whose proposal link does not match the approval', async () => {
     approvalStore.getApprovalById = vi.fn(async () => AGENT_ACTION_APPROVAL);
     const agentActionProposalStore = makeAgentActionProposalStore(

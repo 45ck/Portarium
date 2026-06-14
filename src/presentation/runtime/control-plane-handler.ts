@@ -119,6 +119,13 @@ import {
   handleSavePolicy,
 } from './control-plane-handler.policies.js';
 import {
+  handleApprovePolicyChange,
+  handleGetPolicyChange,
+  handleListPolicyChanges,
+  handleProposePolicyChange,
+} from './control-plane-handler.policy-changes.js';
+import { handleListToolCatalog } from './control-plane-handler.tool-catalog.js';
+import {
   handleAddWorkspaceUser,
   handleGetWorkspaceUser,
   handleListWorkspaceUsers,
@@ -2032,6 +2039,49 @@ function buildRouter(deps: ControlPlaneDeps): Hono<HonoEnv> {
   app.get('/v1/workspaces/:workspaceId/policies', async (c) => {
     const ctx = c.get('ctx');
     await handleListPolicies({ ...ctx, workspaceId: c.req.param('workspaceId') });
+    return c.body(null);
+  });
+
+  // GET /v1/workspaces/:workspaceId/tool-catalog
+  app.get('/v1/workspaces/:workspaceId/tool-catalog', async (c) => {
+    const ctx = c.get('ctx');
+    await handleListToolCatalog({ ...ctx, workspaceId: c.req.param('workspaceId') });
+    return c.body(null);
+  });
+
+  // GET /v1/workspaces/:workspaceId/policy-changes
+  app.get('/v1/workspaces/:workspaceId/policy-changes', async (c) => {
+    const ctx = c.get('ctx');
+    await handleListPolicyChanges({ ...ctx, workspaceId: c.req.param('workspaceId') });
+    return c.body(null);
+  });
+
+  // GET /v1/workspaces/:workspaceId/policy-changes/:policyChangeId
+  app.get('/v1/workspaces/:workspaceId/policy-changes/:policyChangeId', async (c) => {
+    const ctx = c.get('ctx');
+    await handleGetPolicyChange({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+      policyChangeId: c.req.param('policyChangeId'),
+    });
+    return c.body(null);
+  });
+
+  // POST /v1/workspaces/:workspaceId/policy-changes/:policyChangeId/approve
+  app.post('/v1/workspaces/:workspaceId/policy-changes/:policyChangeId/approve', async (c) => {
+    const ctx = c.get('ctx');
+    await handleApprovePolicyChange({
+      ...ctx,
+      workspaceId: c.req.param('workspaceId'),
+      policyChangeId: c.req.param('policyChangeId'),
+    });
+    return c.body(null);
+  });
+
+  // POST /v1/workspaces/:workspaceId/policy-changes
+  app.post('/v1/workspaces/:workspaceId/policy-changes', async (c) => {
+    const ctx = c.get('ctx');
+    await handleProposePolicyChange({ ...ctx, workspaceId: c.req.param('workspaceId') });
     return c.body(null);
   });
 

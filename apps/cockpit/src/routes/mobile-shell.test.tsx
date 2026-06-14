@@ -231,6 +231,9 @@ describe('cockpit mobile shell', () => {
     expect(screen.getAllByText('Demo').length).toBeGreaterThan(0);
     expect(screen.queryByLabelText('Primary navigation')).toBeNull();
     expect(screen.getByRole('link', { name: 'Reference Overview' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Approvals' }).getAttribute('href')).toBe(
+      '/approvals/swipe',
+    );
     expect(screen.getByRole('button', { name: 'Open more navigation' })).toBeTruthy();
 
     await user.click(screen.getByRole('button', { name: 'Open more navigation' }));

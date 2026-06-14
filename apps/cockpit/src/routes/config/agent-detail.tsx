@@ -1,5 +1,17 @@
+import { useState } from 'react';
 import { createRoute, Link } from '@tanstack/react-router';
-import { Bot, Brain, Code2, ExternalLink, Eye, Monitor, Server, ShieldCheck } from 'lucide-react';
+import {
+  Bot,
+  Brain,
+  Code2,
+  ExternalLink,
+  Eye,
+  Monitor,
+  PanelsTopLeft,
+  RefreshCw,
+  Server,
+  ShieldCheck,
+} from 'lucide-react';
 import { Route as rootRoute } from '../__root';
 import { useUIStore } from '@/stores/ui-store';
 import { useAgents } from '@/hooks/queries/use-agents';
@@ -44,26 +56,56 @@ const OPERATOR_ACCESS_LABEL = {
   external: 'External',
 } as const;
 
+function isLoopbackHostname(hostname: string): boolean {
+  return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1';
+}
+
+function resolveLoopbackUrlForCurrentHost(rawUrl: string | undefined): string | undefined {
+  if (!rawUrl || typeof window === 'undefined') return rawUrl;
+
+  try {
+    const url = new URL(rawUrl, window.location.href);
+    if (isLoopbackHostname(url.hostname) && isLoopbackHostname(window.location.hostname)) {
+      url.hostname = window.location.hostname;
+    }
+    return url.toString();
+  } catch {
+    return rawUrl;
+  }
+}
+
 function AgentOperatorUiPanel({ agent }: { agent: AgentV1 }) {
   const operatorUi = agent.operatorUi;
+  const [iframeReloadKey, setIframeReloadKey] = useState(0);
 
   if (!operatorUi) return null;
 
-  const launchUrl = operatorUi.externalUrl ?? operatorUi.embedUrl;
+  const embedUrl = resolveLoopbackUrlForCurrentHost(operatorUi.embedUrl);
+  const launchUrl = resolveLoopbackUrlForCurrentHost(operatorUi.externalUrl ?? operatorUi.embedUrl);
   const canEmbed =
     operatorUi.mode === 'embedded' &&
     operatorUi.status !== 'disabled' &&
-    typeof operatorUi.embedUrl === 'string';
+    typeof embedUrl === 'string';
+  const iframeSandbox =
+    operatorUi.accessMode === 'direct-tunnel'
+      ? undefined
+      : 'allow-downloads allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts';
 
   return (
-    <Card className="shadow-none overflow-hidden">
-      <CardHeader className="pb-3">
-        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+    <section
+      aria-labelledby="operator-ui-heading"
+      className="overflow-hidden rounded-lg border bg-background shadow-sm"
+    >
+      <div className="border-b bg-muted/30 px-4 py-3">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0 space-y-1">
-            <CardTitle className="text-sm flex items-center gap-1.5">
-              <Monitor className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+            <h2
+              id="operator-ui-heading"
+              className="flex items-center gap-2 text-sm font-semibold"
+            >
+              <PanelsTopLeft className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
               {operatorUi.label}
-            </CardTitle>
+            </h2>
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
               <span>{operatorUi.sourceSystem}</span>
               {operatorUi.sourceRef && <span className="break-all">{operatorUi.sourceRef}</span>}
@@ -80,6 +122,18 @@ function AgentOperatorUiPanel({ agent }: { agent: AgentV1 }) {
               <ShieldCheck className="h-3 w-3" aria-hidden="true" />
               {OPERATOR_ACCESS_LABEL[operatorUi.accessMode]}
             </Badge>
+            {canEmbed && (
+              <Button
+                variant="outline"
+                size="xs"
+                type="button"
+                onClick={() => setIframeReloadKey((current) => current + 1)}
+                aria-label={`Reload ${operatorUi.label}`}
+              >
+                <RefreshCw className="h-3 w-3" aria-hidden="true" />
+                Reload
+              </Button>
+            )}
             {launchUrl && (
               <Button asChild variant="outline" size="xs">
                 <a href={launchUrl} target="_blank" rel="noreferrer">
@@ -90,31 +144,57 @@ function AgentOperatorUiPanel({ agent }: { agent: AgentV1 }) {
             )}
           </div>
         </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {canEmbed ? (
-          <div className="h-[min(68vh,680px)] min-h-[420px] overflow-hidden rounded-md border bg-muted/20">
+      </div>
+      <div className="grid min-h-[680px] bg-muted/10 lg:grid-cols-[minmax(0,1fr)_280px]">
+        <div className="min-h-[560px] border-b bg-background lg:border-b-0 lg:border-r">
+          {canEmbed ? (
             <iframe
+              key={`${embedUrl}:${iframeReloadKey}`}
               title={`${agent.name} operator UI`}
-              src={operatorUi.embedUrl}
-              sandbox="allow-forms allow-popups allow-same-origin allow-scripts"
+              src={embedUrl}
+              allow="clipboard-read; clipboard-write; fullscreen"
+              sandbox={iframeSandbox}
               referrerPolicy="no-referrer"
-              loading="lazy"
-              className="h-full w-full border-0"
+              loading="eager"
+              className="h-full min-h-[560px] w-full border-0"
+              data-testid="operator-ui-frame"
             />
+          ) : operatorUi.mode === 'embedded' ? (
+            <div className="flex h-full min-h-[420px] items-center justify-center px-6 text-center text-xs text-muted-foreground">
+              Operator surface unavailable for embedded display.
+            </div>
+          ) : null}
+        </div>
+        <aside className="space-y-5 p-4 text-xs">
+          <div className="space-y-2">
+            <h3 className="flex items-center gap-1.5 font-medium">
+              <Monitor className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+              Surface
+            </h3>
+            <dl className="space-y-2 text-muted-foreground">
+              <div className="flex justify-between gap-3">
+                <dt>Mode</dt>
+                <dd className="font-medium text-foreground">{operatorUi.mode}</dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt>Access</dt>
+                <dd className="font-medium text-foreground">
+                  {OPERATOR_ACCESS_LABEL[operatorUi.accessMode]}
+                </dd>
+              </div>
+              <div className="flex justify-between gap-3">
+                <dt>Control</dt>
+                <dd className="font-medium text-foreground">
+                  {operatorUi.readOnly ? 'Read-only' : 'Mutation-capable'}
+                </dd>
+              </div>
+            </dl>
           </div>
-        ) : (
-          <div className="rounded-md border bg-muted/20 px-3 py-4 text-xs text-muted-foreground">
-            Operator surface unavailable for embedded display.
-          </div>
-        )}
-
-        <div className="grid gap-3 text-xs md:grid-cols-2">
           <OperatorList title="Boundary" items={operatorUi.boundary} />
           <OperatorList title="Denied Operations" items={operatorUi.deniedOperations} />
-        </div>
-      </CardContent>
-    </Card>
+        </aside>
+      </div>
+    </section>
   );
 }
 
@@ -194,6 +274,8 @@ function AgentDetailPage() {
         breadcrumb={[{ label: 'Agents', to: '/config/agents' }, { label: agent.name }]}
       />
 
+      <AgentOperatorUiPanel agent={agent} />
+
       <Card className="shadow-none">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm">Agent Details</CardTitle>
@@ -245,8 +327,6 @@ function AgentDetailPage() {
           </CardContent>
         </Card>
       )}
-
-      <AgentOperatorUiPanel agent={agent} />
 
       <div className="space-y-2">
         <h3 className="text-sm font-semibold">Capabilities</h3>

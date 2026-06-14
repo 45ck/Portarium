@@ -4,12 +4,15 @@ import {
   buildCockpitContentSecurityPolicy,
   hasCockpitContentSecurityPolicy,
   localHttpApiOriginFromUrl,
+  localHttpApiOriginsFromUrl,
   normalizeCockpitCspConnectMode,
+  parseCockpitOperatorFrameOrigins,
   replaceCockpitContentSecurityPolicy,
+  safeCockpitFrameOriginFromUrl,
 } from './cockpit-csp';
 
 const DEFAULT_CSP =
-  "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.portarium.io wss://events.portarium.io; img-src 'self' data:; font-src 'self'";
+  "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.portarium.io wss://events.portarium.io; frame-src 'self'; img-src 'self' data:; font-src 'self'";
 
 describe('Cockpit CSP', () => {
   it('keeps the production default policy tight when no local API origin is configured', () => {
@@ -31,6 +34,14 @@ describe('Cockpit CSP', () => {
       'http://api.localhost:8080',
     );
     expect(localHttpApiOriginFromUrl('http://[::1]:8080')).toBe('http://[::1]:8080');
+    expect(localHttpApiOriginsFromUrl('http://127.0.0.1:18080/v1')).toEqual([
+      'http://127.0.0.1:18080',
+      'http://localhost:18080',
+    ]);
+    expect(localHttpApiOriginsFromUrl('http://localhost:18080/v1')).toEqual([
+      'http://localhost:18080',
+      'http://127.0.0.1:18080',
+    ]);
   });
 
   it('rejects broad or credential-bearing API origins', () => {
@@ -43,7 +54,32 @@ describe('Cockpit CSP', () => {
 
   it('adds the configured local API origin without broadening other directives', () => {
     expect(buildCockpitContentSecurityPolicy({ apiBaseUrl: 'http://localhost:8080' })).toBe(
-      "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.portarium.io wss://events.portarium.io http://localhost:8080; img-src 'self' data:; font-src 'self'",
+      "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.portarium.io wss://events.portarium.io http://localhost:8080 http://127.0.0.1:8080; frame-src 'self'; img-src 'self' data:; font-src 'self'",
+    );
+  });
+
+  it('adds only safe configured operator frame origins', () => {
+    expect(safeCockpitFrameOriginFromUrl('http://127.0.0.1:19037/chat')).toBe(
+      'http://127.0.0.1:19037',
+    );
+    expect(safeCockpitFrameOriginFromUrl('https://openclaw.example.test/chat')).toBe(
+      'https://openclaw.example.test',
+    );
+    expect(safeCockpitFrameOriginFromUrl('http://openclaw.example.test/chat')).toBeNull();
+    expect(safeCockpitFrameOriginFromUrl('http://user:pass@127.0.0.1:19037')).toBeNull();
+
+    expect(
+      parseCockpitOperatorFrameOrigins(
+        'http://127.0.0.1:19037/chat, http://127.0.0.1:19037, http://localhost:19037',
+      ),
+    ).toEqual(['http://127.0.0.1:19037', 'http://localhost:19037']);
+
+    expect(
+      buildCockpitContentSecurityPolicy({
+        operatorFrameOrigins: ['http://127.0.0.1:19037/chat', 'http://0.0.0.0:19037'],
+      }),
+    ).toBe(
+      "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.portarium.io wss://events.portarium.io; frame-src 'self' http://127.0.0.1:19037; img-src 'self' data:; font-src 'self'",
     );
   });
 
@@ -54,7 +90,7 @@ describe('Cockpit CSP', () => {
         connectMode: 'local-only',
       }),
     ).toBe(
-      "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' http://localhost:8080; img-src 'self' data:; font-src 'self'",
+      "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' http://localhost:8080 http://127.0.0.1:8080; frame-src 'self'; img-src 'self' data:; font-src 'self'",
     );
   });
 

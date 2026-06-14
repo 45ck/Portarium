@@ -46,6 +46,7 @@ interface UIStore {
   setIntentPlannerOpen: (v: boolean) => void;
   setActiveDataset: (id: DatasetId) => void;
   setActiveWorkspaceId: (id: string) => void;
+  setAuthenticatedWorkspaceId: (id: string) => void;
   setActivePersona: (persona: PersonaId) => void;
   setKeyboardCheatsheetOpen: (v: boolean) => void;
   setTriageViewMode: (mode: TriageViewMode) => void;
@@ -118,6 +119,18 @@ export const useUIStore = create<UIStore>((set) => ({
       }
       return { activeWorkspaceId: id };
     }),
+  setAuthenticatedWorkspaceId: (id) => {
+    const workspaceId = id.trim();
+    if (!workspaceId) return;
+
+    localStorage.setItem(DATASET_STORAGE_KEY, 'live');
+    set((state) => {
+      if (state.activeWorkspaceId !== workspaceId || state.activeDataset !== 'live') {
+        void purgeCockpitTenantData();
+      }
+      return { activeDataset: 'live', activeWorkspaceId: workspaceId };
+    });
+  },
   setActivePersona: (persona) => set({ activePersona: persona }),
   setKeyboardCheatsheetOpen: (v) => set({ keyboardCheatsheetOpen: v }),
   setTriageViewMode: (mode) => {

@@ -82,6 +82,9 @@ const AGENT_CAPABILITIES = [
   'notify',
   'machine:invoke',
 ] as const;
+const AGENT_OPERATOR_UI_MODES = ['embedded', 'external'] as const;
+const AGENT_OPERATOR_UI_STATUSES = ['available', 'degraded', 'disabled'] as const;
+const AGENT_OPERATOR_UI_ACCESS_MODES = ['mediated', 'direct-tunnel', 'external'] as const;
 const POLICY_STATUSES = ['Active', 'Draft', 'Archived'] as const;
 const POLICY_CONDITION_OPERATORS = ['eq', 'neq', 'in', 'gt', 'lt'] as const;
 const SOD_CONSTRAINT_STATUSES = ['Active', 'Inactive'] as const;
@@ -746,6 +749,7 @@ describe('Cockpit fixture parity', () => {
         'usedByWorkflowIds',
         'machineId',
         'policyTier',
+        'operatorUi',
       ]);
       expectRequiredKeys(`AGENTS[${index}]`, record, [
         'schemaVersion',
@@ -759,6 +763,50 @@ describe('Cockpit fixture parity', () => {
       expectCapabilities(`AGENTS[${index}].allowedCapabilities`, record.allowedCapabilities);
       if (record.policyTier !== undefined) {
         expectEnum(`AGENTS[${index}].policyTier`, record.policyTier, EXECUTION_TIERS);
+      }
+      if (record.operatorUi !== undefined) {
+        const operatorUi = asRecord(record.operatorUi);
+        expectExactKeys(`AGENTS[${index}].operatorUi`, operatorUi, [
+          'schemaVersion',
+          'label',
+          'mode',
+          'status',
+          'embedUrl',
+          'externalUrl',
+          'accessMode',
+          'readOnly',
+          'sourceSystem',
+          'sourceRef',
+          'freshness',
+          'boundary',
+          'deniedOperations',
+        ]);
+        expectRequiredKeys(`AGENTS[${index}].operatorUi`, operatorUi, [
+          'schemaVersion',
+          'label',
+          'mode',
+          'status',
+          'accessMode',
+          'readOnly',
+          'sourceSystem',
+          'boundary',
+          'deniedOperations',
+        ]);
+        expect(operatorUi.schemaVersion).toBe(1);
+        expectEnum(`AGENTS[${index}].operatorUi.mode`, operatorUi.mode, AGENT_OPERATOR_UI_MODES);
+        expectEnum(
+          `AGENTS[${index}].operatorUi.status`,
+          operatorUi.status,
+          AGENT_OPERATOR_UI_STATUSES,
+        );
+        expectEnum(
+          `AGENTS[${index}].operatorUi.accessMode`,
+          operatorUi.accessMode,
+          AGENT_OPERATOR_UI_ACCESS_MODES,
+        );
+        expect(typeof operatorUi.readOnly, `AGENTS[${index}].operatorUi.readOnly`).toBe('boolean');
+        asStringArray(operatorUi.boundary);
+        asStringArray(operatorUi.deniedOperations);
       }
     });
 

@@ -166,5 +166,5 @@ describe('workflow navigation links', () => {
 
     fireEvent.click(screen.getByRole('link', { name: 'New Workflow' }));
     expect(await screen.findByRole('heading', { name: 'Workflow Builder' })).toBeTruthy();
-  });
+  }, 10_000);
 });

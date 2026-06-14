@@ -17,6 +17,7 @@ import {
   type ExecutionTier,
   type PolicyPreviewFormState,
 } from '@/components/cockpit/policy-live-preview';
+import { PolicyControllerPrototype } from '@/components/cockpit/policy-controller-prototype';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -242,12 +243,12 @@ function LivePolicyStudioPage() {
     <div className="p-6 space-y-6">
       <PageHeader
         title="Policy Studio"
-        description="Stage policy posture changes against live Control Plane data without applying unavailable backend mutations."
+        description="Stage policy posture changes against live Control Plane data and submit approval-gated policy-change proposals."
         icon={<EntityIcon entityType="policy" size="md" decorative />}
         action={
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant={canStageDraft ? 'secondary' : 'outline'}>
-              {canStageDraft ? 'Draft simulation enabled' : 'Read-only simulation'}
+              {canStageDraft ? 'Proposal path enabled' : 'Read-only simulation'}
             </Badge>
             <Badge variant="outline">Workspace {wsId}</Badge>
           </div>
@@ -255,10 +256,15 @@ function LivePolicyStudioPage() {
       />
 
       <div className="rounded-md border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200">
-        Backend policy lifecycle mutation is not wired here yet. This page shows the current rule, a
-        local proposed diff, rationale, and expected impact; publishing stays disabled until the
-        Control Plane contract is available.
+        Policy Controller submissions create real Control Plane policy-change records. High-risk
+        changes remain pending approval and do not activate directly from this screen.
       </div>
+
+      <PolicyControllerPrototype
+        workspaceId={wsId}
+        selectedPolicy={selectedPolicy}
+        currentTier={currentTier}
+      />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(260px,0.65fr)_minmax(0,1.35fr)]">
         <Card className="shadow-none">
@@ -329,8 +335,8 @@ function LivePolicyStudioPage() {
                     Proposed Diff
                   </CardTitle>
                   <CardDescription>
-                    Local draft only; operators can inspect the policy change before any backend
-                    apply path exists.
+                    Local preview only; use Policy Controller above for the approval-gated backend
+                    proposal path.
                   </CardDescription>
                 </div>
                 <Badge
@@ -455,14 +461,14 @@ function LivePolicyStudioPage() {
                     Apply path
                   </div>
                   <p className="mt-2 text-muted-foreground">
-                    Publish disabled pending API contract.
+                    Apply still requires the approval workflow.
                   </p>
                 </div>
               </div>
 
               <div className="flex flex-wrap gap-2">
                 <Button type="button" disabled>
-                  Publish policy change
+                  Publish direct apply
                 </Button>
                 <Button
                   type="button"

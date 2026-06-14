@@ -48,6 +48,7 @@ import {
   logoutWebSession,
 } from '@/lib/web-session-auth';
 import { getCockpitDataRetentionPolicy } from '@/lib/cockpit-data-retention';
+import { useUIStore } from '@/stores/ui-store';
 
 // ---------------------------------------------------------------------------
 // Token storage keys
@@ -150,6 +151,10 @@ function readStringClaims(payload: Record<string, unknown>, keys: readonly strin
   ];
 }
 
+function syncAuthenticatedWorkspace(claims: ParsedAuthClaims): void {
+  useUIStore.getState().setAuthenticatedWorkspaceId(claims.workspaceId);
+}
+
 // ---------------------------------------------------------------------------
 // Store
 // ---------------------------------------------------------------------------
@@ -166,6 +171,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         clearLegacyBrowserBearerTokens();
         const session = await fetchCurrentWebSession();
         if (session) {
+          syncAuthenticatedWorkspace(session.claims);
           set({ status: 'authenticated', token: null, claims: session.claims, error: null });
           return;
         }
@@ -182,6 +188,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         const claims = extractClaims(stored);
         if (claims) {
           setNativeBearerToken(stored);
+          syncAuthenticatedWorkspace(claims);
           set({ status: 'authenticated', token: stored, claims, error: null });
           return;
         }
@@ -210,6 +217,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         await purgeCockpitTenantData();
         try {
           const session = await createDevelopmentWebSession();
+          syncAuthenticatedWorkspace(session.claims);
           set({ status: 'authenticated', token: null, claims: session.claims, error: null });
         } catch (err) {
           const message =
@@ -265,6 +273,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         const session = await establishWebSession(params);
         clearLegacyBrowserBearerTokens();
         await purgeCockpitTenantData();
+        syncAuthenticatedWorkspace(session.claims);
         set({ status: 'authenticated', token: null, claims: session.claims, error: null });
         return;
       }
@@ -289,6 +298,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       setNativeBearerToken(token);
 
       await purgeCockpitTenantData();
+      syncAuthenticatedWorkspace(claims);
       set({ status: 'authenticated', token, claims, error: null });
     } catch (err) {
       const message = err instanceof OidcError ? err.message : 'Auth callback failed';
@@ -329,6 +339,17 @@ setControlPlaneAuthFailureHandler(async () => {
     setNativeBearerToken(null);
   } else {
     clearLegacyBrowserBearerTokens();
+    const session = await fetchCurrentWebSession().catch(() => null);
+    if (session) {
+      syncAuthenticatedWorkspace(session.claims);
+      useAuthStore.setState({
+        status: 'authenticated',
+        token: null,
+        claims: session.claims,
+        error: null,
+      });
+      return;
+    }
   }
   await purgeCockpitTenantData();
   useAuthStore.setState({

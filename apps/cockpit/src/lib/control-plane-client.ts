@@ -21,6 +21,7 @@ import type {
   RunInterventionRequest,
   StartRunRequest,
   RunSummary,
+  ToolCatalogResponse,
   UpdateWorkflowRequest,
   UpdateWorkItemCommand,
   WorkflowDetail,
@@ -47,6 +48,82 @@ export type ProposeAgentActionResponse = Readonly<{
   decision: 'Allow' | 'NeedsApproval' | 'Denied';
   approvalId?: string;
   message?: string;
+}>;
+
+export type PolicyInlineRuleV1 = Readonly<{
+  ruleId: string;
+  condition: string;
+  effect: 'Allow' | 'Deny';
+}>;
+
+export type PolicyV1 = Readonly<{
+  schemaVersion: 1;
+  policyId: string;
+  workspaceId: string;
+  name: string;
+  description?: string;
+  active: boolean;
+  priority: number;
+  version: number;
+  createdAtIso: string;
+  createdByUserId: string;
+  rules?: readonly PolicyInlineRuleV1[];
+}>;
+
+export type PolicyChangeDiffEntryV1 = Readonly<{
+  path: string;
+  before?: unknown;
+  after?: unknown;
+}>;
+
+export type ProposePolicyChangeRequest = Readonly<{
+  policyId: string;
+  operation: 'Create' | 'Update' | 'Deactivate' | 'Rollback';
+  risk: 'Standard' | 'High';
+  scope:
+    | Readonly<{ targetKind: 'Workspace'; workspaceId: string }>
+    | Readonly<{ targetKind: 'ActionClass'; workspaceId: string; actionClass: string }>
+    | Readonly<{ targetKind: 'Tenant'; tenantId: string }>;
+  proposedPolicy: PolicyV1;
+  rationale: string;
+  diff: readonly PolicyChangeDiffEntryV1[];
+  runEffect: 'FutureRunsOnly' | 'ActiveAndFutureRuns';
+  effectiveFromIso: string;
+  expiresAtIso?: string;
+  approvalId?: string;
+  approvalRequired?: boolean;
+  replayReportRequired?: boolean;
+  supersedesPolicyChangeId?: string;
+}>;
+
+export type ApprovePolicyChangeRequest = Readonly<{
+  approvalId: string;
+  rationale: string;
+}>;
+
+export type PolicyChangeOutput = Readonly<{
+  policyChangeId: string;
+  status: 'PendingApproval' | 'Applied' | 'Rejected' | 'RolledBack' | 'Superseded';
+  approvalRequired: boolean;
+}>;
+
+export type PolicyChangeRecord = Readonly<{
+  schemaVersion: 1;
+  policyChangeId: string;
+  policyId: string;
+  workspaceId: string;
+  operation: ProposePolicyChangeRequest['operation'];
+  risk: ProposePolicyChangeRequest['risk'];
+  status: PolicyChangeOutput['status'];
+  scope: ProposePolicyChangeRequest['scope'];
+  proposedPolicy: PolicyV1;
+  proposedAtIso: string;
+  proposedByUserId: string;
+  rationale: string;
+  diff: readonly PolicyChangeDiffEntryV1[];
+  runEffect: ProposePolicyChangeRequest['runEffect'];
+  effectiveFromIso: string;
+  approval: Readonly<{ approvalRequired: boolean; approvalId?: string }>;
 }>;
 
 interface ProblemDetails {
@@ -197,6 +274,10 @@ export class ControlPlaneClient {
 
   public getCockpitExtensionContext(workspaceId: string): Promise<CockpitExtensionContextResponse> {
     return this.request(`/v1/workspaces/${pathSegment(workspaceId)}/cockpit/extension-context`);
+  }
+
+  public listToolCatalog(workspaceId: string): Promise<ToolCatalogResponse> {
+    return this.request(`/v1/workspaces/${pathSegment(workspaceId)}/tool-catalog`);
   }
 
   public getApproval(workspaceId: string, approvalId: string): Promise<ApprovalSummary> {
@@ -395,6 +476,58 @@ export class ControlPlaneClient {
       method: 'POST',
       body: JSON.stringify(body),
     });
+  }
+
+  public listPolicyChanges(
+    workspaceId: string,
+    request: CursorPaginationRequest & { policyId: string },
+  ): Promise<CursorPage<PolicyChangeRecord>> {
+    const path = `/v1/workspaces/${pathSegment(workspaceId)}/policy-changes`;
+    return this.request(
+      `${path}${queryString({
+        policyId: request.policyId,
+        limit: request.limit,
+        cursor: request.cursor,
+      })}`,
+    );
+  }
+
+  public getPolicyChange(workspaceId: string, policyChangeId: string): Promise<PolicyChangeRecord> {
+    return this.request(
+      `/v1/workspaces/${pathSegment(workspaceId)}/policy-changes/${pathSegment(policyChangeId)}`,
+    );
+  }
+
+  public proposePolicyChange(
+    workspaceId: string,
+    body: ProposePolicyChangeRequest,
+    options: { idempotencyKey?: string } = {},
+  ): Promise<PolicyChangeOutput> {
+    const headers = new Headers();
+    if (options.idempotencyKey) {
+      headers.set('Idempotency-Key', options.idempotencyKey);
+    }
+    return this.request(`/v1/workspaces/${pathSegment(workspaceId)}/policy-changes`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(body),
+    });
+  }
+
+  public approvePolicyChange(
+    workspaceId: string,
+    policyChangeId: string,
+    body: ApprovePolicyChangeRequest,
+  ): Promise<PolicyChangeOutput> {
+    return this.request(
+      `/v1/workspaces/${pathSegment(workspaceId)}/policy-changes/${pathSegment(
+        policyChangeId,
+      )}/approve`,
+      {
+        method: 'POST',
+        body: JSON.stringify(body),
+      },
+    );
   }
 
   public listDerivedArtifacts(

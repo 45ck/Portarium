@@ -19,6 +19,7 @@ import type { ApprovalSummary } from '@portarium/cockpit-types';
 // ---------------------------------------------------------------------------
 
 const ALL_PENDING = APPROVALS.filter((a) => a.status === 'Pending');
+const _mockWriteToClipboard = vi.hoisted(() => vi.fn());
 
 // Mutable state shared with the mock factory below
 let _mockApprovals: ApprovalSummary[] = [...APPROVALS];
@@ -78,6 +79,14 @@ vi.mock('@/hooks/queries/use-workflows', () => ({
   useWorkflows: vi.fn(() => ({ data: undefined })),
   useWorkflow: vi.fn(() => ({ data: undefined })),
 }));
+
+vi.mock('@/lib/native-bridge', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/native-bridge')>();
+  return {
+    ...actual,
+    writeToClipboard: _mockWriteToClipboard,
+  };
+});
 
 // ---------------------------------------------------------------------------
 
@@ -162,6 +171,8 @@ beforeEach(() => {
   _mockPendingCount = 0;
   _mockRefetch.mockClear();
   _mockSubmitDecision.mockClear();
+  _mockWriteToClipboard.mockReset();
+  _mockWriteToClipboard.mockResolvedValue(undefined);
   vi.mocked(useApproval).mockClear();
   vi.mocked(usePlan).mockClear();
   vi.mocked(useRun).mockClear();
@@ -241,6 +252,18 @@ describe('Approvals triage page', () => {
     expect(await screen.findByRole('heading', { name: 'Approvals', level: 1 })).toBeTruthy();
   });
 
+  it('renders the phone swipe approval surface without the queue sidebar', async () => {
+    await renderApprovalsRoute('/approvals/swipe');
+
+    expect(await screen.findByRole('heading', { name: 'Approval Swipe', level: 1 })).toBeTruthy();
+    expect(screen.queryByRole('heading', { name: 'Approvals', level: 2 })).toBeNull();
+    const queueLink = screen
+      .getAllByRole('link', { name: /queue/i })
+      .find((link) => link.getAttribute('href') === '/approvals');
+    expect(queueLink).toBeTruthy();
+    expect(await screen.findAllByText(ALL_PENDING[0]!.prompt, { exact: false })).toBeTruthy();
+  });
+
   it('shows the first pending approval prompt in the triage deck', async () => {
     await renderApprovalsRoute();
 
@@ -248,6 +271,37 @@ describe('Approvals triage page', () => {
     // The prompt appears in both the list panel and the triage card; findAllByText
     // succeeds when one or more elements match.
     expect(await screen.findAllByText(firstPending.prompt, { exact: false })).toBeTruthy();
+  });
+
+  it('marks approval text regions as selectable for copy and paste', async () => {
+    await renderApprovalsRoute();
+
+    const firstPending = ALL_PENDING[0]!;
+    const matchingPrompts = await screen.findAllByText(firstPending.prompt, { exact: false });
+    const copyRegionPrompt = matchingPrompts.find((node) =>
+      node.closest('[data-approval-copy-region]'),
+    );
+
+    expect(copyRegionPrompt).toBeTruthy();
+  });
+
+  it('copies a structured approval packet from the triage card', async () => {
+    await renderApprovalsRoute();
+
+    const firstPending = ALL_PENDING[0]!;
+    fireEvent.click(await screen.findByRole('button', { name: 'Copy approval' }));
+
+    await waitFor(() => {
+      expect(_mockWriteToClipboard).toHaveBeenCalledTimes(1);
+    });
+
+    const copiedText = _mockWriteToClipboard.mock.calls[0]?.[0] as string;
+    expect(copiedText).toContain('Approval Gate');
+    expect(copiedText).toContain(`Approval ID: ${firstPending.approvalId}`);
+    expect(copiedText).toContain(`Prompt: ${firstPending.prompt}`);
+    expect(copiedText).toContain('Policy Rule');
+    expect(copiedText).toContain('Agent Action Proposal');
+    expect(await screen.findByRole('button', { name: 'Copied' })).toBeTruthy();
   });
 
   it('renders Approve, Deny, and Skip action buttons for pending approvals', async () => {
@@ -408,6 +462,9 @@ describe('Approvals triage page', () => {
     {
       label: 'approving',
       action: async () => {
+        fireEvent.change(screen.getByLabelText(/decision rationale/i), {
+          target: { value: 'Approved after reviewing evidence' },
+        });
         const group = screen.getByRole('group', { name: /make approval decision/i });
         await userEvent.click(within(group).getByRole('button', { name: /^approve$/i }));
       },
@@ -415,7 +472,9 @@ describe('Approvals triage page', () => {
     {
       label: 'denying',
       action: async () => {
-        await userEvent.type(screen.getByLabelText(/decision rationale/i), 'Reject risky spend');
+        fireEvent.change(screen.getByLabelText(/decision rationale/i), {
+          target: { value: 'Reject risky spend' },
+        });
         const group = screen.getByRole('group', { name: /make approval decision/i });
         await userEvent.click(within(group).getByRole('button', { name: /deny/i }));
       },
@@ -619,6 +678,10 @@ describe('Approvals triage page', () => {
     {
       label: 'approving',
       action: async () => {
+        await userEvent.type(
+          screen.getByLabelText(/decision rationale/i),
+          'Approved after reviewing evidence',
+        );
         const group = screen.getByRole('group', { name: /make approval decision/i });
         await userEvent.click(within(group).getByRole('button', { name: /^approve$/i }));
       },
@@ -746,5 +809,62 @@ describe('Approvals triage page', () => {
     expect(await screen.findByRole('alert')).toBeTruthy();
     expect(screen.queryAllByText(firstPending.prompt, { exact: false }).length).toBeGreaterThan(0);
     expect(_mockSubmitDecision).not.toHaveBeenCalled();
+  });
+
+  it('keeps the active approval in place when Approve is clicked without rationale', async () => {
+    const firstPending = ALL_PENDING[0]!;
+    const secondPending = ALL_PENDING[1]!;
+    _mockApprovals = [firstPending, secondPending];
+
+    await renderApprovalsRoute();
+
+    expect(await screen.findAllByText(firstPending.prompt, { exact: false })).toBeTruthy();
+
+    const group = screen.getByRole('group', { name: /make approval decision/i });
+    await userEvent.click(within(group).getByRole('button', { name: /^approve$/i }));
+
+    expect(await screen.findByRole('alert')).toBeTruthy();
+    expect(screen.queryAllByText(firstPending.prompt, { exact: false }).length).toBeGreaterThan(0);
+    expect(screen.getByText('1 of 2 pending')).toBeTruthy();
+    expect(_mockSubmitDecision).not.toHaveBeenCalled();
+  });
+
+  it('restores a card when the approval decision submit fails', async () => {
+    const firstPending = ALL_PENDING[0]!;
+    const secondPending = ALL_PENDING[1]!;
+    _mockApprovals = [firstPending, secondPending];
+    _mockSubmitDecision.mockRejectedValueOnce(new Error('approval service rejected the decision'));
+
+    await renderApprovalsRoute();
+
+    expect(await screen.findAllByText(firstPending.prompt, { exact: false })).toBeTruthy();
+    await userEvent.type(
+      screen.getByLabelText(/decision rationale/i),
+      'Approved after checking evidence',
+    );
+    const group = screen.getByRole('group', { name: /make approval decision/i });
+    await userEvent.click(within(group).getByRole('button', { name: /^approve$/i }));
+    const confirmButton = screen.queryByRole('button', { name: /^confirm$/i });
+    if (confirmButton) {
+      await userEvent.click(confirmButton);
+    }
+
+    await waitFor(
+      () => {
+        expect(screen.queryByText('2 of 2 pending')).toBeTruthy();
+      },
+      { timeout: 2000 },
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: /skip/i }));
+
+    await waitFor(() => {
+      expect(_mockSubmitDecision).toHaveBeenCalledTimes(1);
+    });
+    await waitFor(() => {
+      expect(screen.queryAllByText(firstPending.prompt, { exact: false }).length).toBeGreaterThan(
+        0,
+      );
+    });
   });
 });

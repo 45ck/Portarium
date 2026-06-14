@@ -47,7 +47,7 @@
     "title": "Forbidden",
     "status": 403,
     "detail": "Maker-checker violation: the deciding user cannot be the same as the requesting user.",
-    "instance": "/v1/workspaces/ws-experiment/approvals/5ad53e62-01ef-4f74-aaa0-de0423e0d542/decide"
+    "instance": "/v1/workspaces/ws-demo/approvals/5ad53e62-01ef-4f74-aaa0-de0423e0d542/decide"
   },
   "operatorApprove": {
     "httpStatus": 200,

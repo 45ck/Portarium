@@ -33,6 +33,12 @@ When present, Cockpit renders the approval packet before the normal review tabs.
 The primary Artifact is shown first, followed by Plan scope, requested
 capabilities, and markdown review docs.
 
+The packet must not be flattened into the approval `prompt` or repeated as the
+top-card title. Cockpit should keep the top card compact and place packet
+detail in the packet/detail surface. Long markdown review docs should be
+collapsed, clipped, or otherwise secondary by default so operators can first
+decide what kind of action they are reviewing.
+
 ## Acceptance Signals
 
 - Creating an approval with a valid packet persists and returns the packet.

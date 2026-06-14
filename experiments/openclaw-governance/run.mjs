@@ -16,7 +16,7 @@ import { runExperiment, assert } from '../shared/experiment-runner.js';
 // ---------------------------------------------------------------------------
 
 const PORTARIUM_URL = process.env['PORTARIUM_URL'] ?? 'http://localhost:3000';
-const WORKSPACE_ID = process.env['PORTARIUM_WORKSPACE_ID'] ?? 'ws-experiment';
+const WORKSPACE_ID = process.env['PORTARIUM_WORKSPACE_ID'] ?? 'ws-demo';
 const BEARER_TOKEN = process.env['PORTARIUM_BEARER_TOKEN'] ?? 'dev-token';
 /** Operator token — must be a different user to satisfy maker-checker. */
 const OPERATOR_TOKEN = process.env['PORTARIUM_OPERATOR_TOKEN'] ?? 'dev-token-operator';

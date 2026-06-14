@@ -4,6 +4,7 @@ import type {
   EvidenceEntry,
   RunSummary,
 } from '@portarium/cockpit-types';
+import { getAgentActionCategoryPresentation } from '@/lib/agent-action-category';
 
 export interface PolicyPanelSummary {
   tierLabel: string;
@@ -124,16 +125,6 @@ export interface AgentActionPanelSummary {
   rationale: string;
 }
 
-const CATEGORY_LABELS: Record<
-  AgentActionProposalMeta['toolCategory'],
-  { label: string; variant: AgentActionPanelSummary['categoryVariant'] }
-> = {
-  ReadOnly: { label: 'Read-only', variant: 'secondary' },
-  Mutation: { label: 'Mutation', variant: 'warning' },
-  Dangerous: { label: 'Dangerous', variant: 'destructive' },
-  Unknown: { label: 'Unknown', variant: 'outline' },
-};
-
 const TIER_LABELS: Record<AgentActionProposalMeta['blastRadiusTier'], string> = {
   Auto: 'Auto',
   Assisted: 'Assisted',
@@ -147,7 +138,7 @@ export function buildAgentActionPanelSummary(
   const proposal = approval.agentActionProposal;
   if (!proposal) return null;
 
-  const cat = CATEGORY_LABELS[proposal.toolCategory] ?? CATEGORY_LABELS['Unknown'];
+  const cat = getAgentActionCategoryPresentation(proposal.toolCategory);
 
   return {
     toolName: proposal.toolName,

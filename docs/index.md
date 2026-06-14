@@ -31,6 +31,7 @@ These docs focus on the core tested governance loop.
 2. [Runtime and environment variables](reference/runtime-and-env.md)
 3. [First-run local integrations](how-to/first-run-local-integrations.md)
 4. [Cockpit demos locally](how-to/run-cockpit-demos-locally.md)
+5. [Cockpit desktop launcher](how-to/cockpit-desktop-launcher.md)
 
 ## Build With Portarium
 

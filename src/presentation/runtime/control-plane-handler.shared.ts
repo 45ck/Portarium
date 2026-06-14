@@ -31,6 +31,7 @@ import type {
   RateLimitStore,
   RunQueryStore,
   RunStore,
+  ToolCatalogSourcePort,
   UnitOfWork,
   WorkforceMemberStore,
   WorkforceQueueStore,
@@ -187,6 +188,8 @@ export type ControlPlaneDeps = Readonly<{
   cockpitWebSessionStore?: CockpitWebSessionStore;
   /** Optional same-origin Cockpit web session configuration. */
   cockpitWebSessionConfig?: CockpitWebSessionConfig;
+  /** Optional tool catalog contributor for connector, bridge, or customer-specific tools. */
+  toolCatalogSource?: ToolCatalogSourcePort;
   /** Optional clock override for testing; defaults to () => new Date(). */
   clock?: () => Date;
 }>;

@@ -131,7 +131,7 @@ These are not features. They are _shape decisions_ that cost almost nothing in v
 
 ### D2. Actor identity is first-class on every entity
 
-**Why for phase 3**: SoD requires distinguishing `human:ajax@aquinus.net` from `agent:triage-v1@portarium`. Reputation tracking requires distinguishing one agent from another. Policy decisions vary by actor type.
+**Why for phase 3**: SoD requires distinguishing `human:operator@example.test` from `agent:triage-v1@portarium`. Reputation tracking requires distinguishing one agent from another. Policy decisions vary by actor type.
 
 **v1 implementation**: every bead, approval, evidence entry, and policy decision has an `actor: Actor` field where `Actor = { kind: 'human' | 'agent', id: string, ... }`. Cryptographic identity (signed tokens, not strings) so spoofing is impossible. Add to schema in v1, even though all v1 actors are humans.
 

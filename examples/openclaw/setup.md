@@ -84,7 +84,7 @@ Create an isolated OpenClaw profile so experiments do not touch your real OpenCl
         "enabled": true,
         "config": {
           "portariumUrl": "http://localhost:3000",
-          "workspaceId": "ws-experiment",
+          "workspaceId": "ws-demo",
           "bearerToken": "dev-token",
           "tenantId": "default",
           "failClosed": true,
@@ -119,7 +119,7 @@ PORTARIUM_DEV_TOKEN=dev-token \
 PORTARIUM_DEV_USER_ID=agent-proposer \
 PORTARIUM_DEV_TOKEN_2=dev-token-operator \
 PORTARIUM_DEV_USER_ID_2=human-operator \
-PORTARIUM_DEV_WORKSPACE_ID=ws-experiment \
+PORTARIUM_DEV_WORKSPACE_ID=ws-demo \
 PORTARIUM_HTTP_PORT=3000 \
 PORTARIUM_APPROVAL_SCHEDULER_DISABLED=true \
 node node_modules/tsx/dist/cli.mjs src/presentation/runtime/control-plane.ts
@@ -143,7 +143,7 @@ curl http://localhost:3000/health
 | `PORTARIUM_DEV_USER_ID`                 | `agent-proposer`     | User ID for agent token                            |
 | `PORTARIUM_DEV_TOKEN_2`                 | `dev-token-operator` | Operator bearer token (approver)                   |
 | `PORTARIUM_DEV_USER_ID_2`               | `human-operator`     | User ID for operator token                         |
-| `PORTARIUM_DEV_WORKSPACE_ID`            | `ws-experiment`      | Workspace seeded with default policy               |
+| `PORTARIUM_DEV_WORKSPACE_ID`            | `ws-demo`            | Workspace seeded with default policy               |
 | `PORTARIUM_HTTP_PORT`                   | `3000`               | HTTP port for the control plane                    |
 | `PORTARIUM_APPROVAL_SCHEDULER_DISABLED` | `true`               | Disable expiry sweeps (not needed for experiments) |
 
@@ -159,7 +159,7 @@ it. This is a security feature, not a misconfiguration.
 
 ```bash
 PORTARIUM_URL=http://localhost:3000 \
-PORTARIUM_WORKSPACE_ID=ws-experiment \
+PORTARIUM_WORKSPACE_ID=ws-demo \
 PORTARIUM_BEARER_TOKEN=dev-token \
 PORTARIUM_OPERATOR_TOKEN=dev-token-operator \
 PORTARIUM_TENANT_ID=default \
@@ -182,10 +182,10 @@ The agent will log `[portarium] Awaiting approval for: exec (approvalId=...)` an
 Then approve from a separate terminal:
 
 ```bash
-curl -X POST "http://localhost:3000/v1/workspaces/ws-experiment/approvals/<approvalId>/decide" \
+curl -X POST "http://localhost:3000/v1/workspaces/ws-demo/approvals/<approvalId>/decide" \
   -H "content-type: application/json" \
   -H "authorization: Bearer dev-token-operator" \
-  -H "x-portarium-workspace-id: ws-experiment" \
+  -H "x-portarium-workspace-id: ws-demo" \
   -H "x-portarium-tenant-id: default" \
   -d '{"decision": "Approved", "rationale": "Operator approved"}'
 ```

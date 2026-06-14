@@ -13,6 +13,8 @@ import { createRoute, useNavigate } from '@tanstack/react-router';
 import { Route as rootRoute } from '../__root';
 import { useAuthStore } from '@/stores/auth-store';
 import { loadOidcConfig, isOidcConfigured } from '@/lib/oidc-client';
+import { isNative } from '@/lib/native-bridge';
+import { shouldAutoStartDevelopmentSession } from './login-auto-start';
 import { Button } from '@/components/ui/button';
 import { ShieldCheck, LogIn, AlertCircle } from 'lucide-react';
 
@@ -33,6 +35,11 @@ function LoginPage() {
   const { status, error, login } = useAuthStore();
   const config = loadOidcConfig();
   const oidcEnabled = isOidcConfigured(config);
+  const autoStartDevSession = shouldAutoStartDevelopmentSession({
+    native: isNative(),
+    oidcEnabled,
+    status,
+  });
   const nextPath = safeNextPath(search.next);
   const loginLabel =
     status === 'authenticating'
@@ -48,6 +55,12 @@ function LoginPage() {
       void navigate({ to: nextPath });
     }
   }, [navigate, nextPath, status]);
+
+  useEffect(() => {
+    if (autoStartDevSession) {
+      void login();
+    }
+  }, [autoStartDevSession, login]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground p-6">

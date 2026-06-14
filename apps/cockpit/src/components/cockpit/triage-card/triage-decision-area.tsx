@@ -27,6 +27,7 @@ export interface TriageDecisionAreaProps {
   reviewFriction: ApprovalCardFriction;
   approveAttempted: boolean;
   approveConfirmArmed: boolean;
+  compact?: boolean;
 }
 
 export function TriageDecisionArea({
@@ -49,6 +50,7 @@ export function TriageDecisionArea({
   reviewFriction,
   approveAttempted,
   approveConfirmArmed,
+  compact = false,
 }: TriageDecisionAreaProps) {
   if (requestChangesMode) {
     return (
@@ -63,7 +65,7 @@ export function TriageDecisionArea({
   }
 
   return (
-    <div className="shrink-0 space-y-3">
+    <div className={cn('shrink-0 space-y-3', compact && 'space-y-2')}>
       <motion.div
         animate={shouldShakeRationale ? { x: [0, 6, -6, 4, -4, 2, 0] } : { x: 0 }}
         transition={shouldShakeRationale ? { duration: 0.35, ease: 'easeInOut' } : { duration: 0 }}
@@ -72,20 +74,20 @@ export function TriageDecisionArea({
           aria-label={`Decision rationale for approval ${approvalId}`}
           className={cn(
             'text-xs min-h-[80px] resize-none',
-            ((denyAttempted && !rationale.trim()) ||
-              (approveAttempted && reviewFriction.requireRationale && !rationale.trim())) &&
+            compact && 'min-h-[56px]',
+            ((denyAttempted && !rationale.trim()) || (approveAttempted && !rationale.trim())) &&
               'border-yellow-500 focus-visible:ring-yellow-500',
           )}
-          placeholder="Decision rationale — optional for approve, required for deny…"
+          placeholder="Decision rationale — required for approve and deny…"
           value={rationale}
           onChange={(e) => onRationaleChange(e.target.value)}
           onFocus={onRationaleFocus}
           onBlur={onRationaleBlur}
         />
       </motion.div>
-      {approveAttempted && reviewFriction.requireRationale && !rationale.trim() ? (
+      {approveAttempted && !rationale.trim() ? (
         <p role="alert" className="text-xs text-yellow-600 font-medium">
-          A rationale is required when approving high-risk Actions.
+          A rationale is required when approving an approval.
         </p>
       ) : approveAttempted && reviewFriction.requireSecondConfirm && !approveConfirmArmed ? (
         <p role="alert" className="text-xs text-yellow-600 font-medium">
@@ -106,14 +108,17 @@ export function TriageDecisionArea({
         </p>
       ) : (
         <p className="text-xs text-muted-foreground">
-          Required when denying <span className="text-red-500">*</span>
+          Required for approve and deny <span className="text-red-500">*</span>
         </p>
       )}
 
       <div
         role="group"
         aria-label="Make approval decision"
-        className="grid grid-cols-2 sm:grid-cols-[1.5fr_1fr_1fr_0.75fr] gap-2"
+        className={cn(
+          'grid grid-cols-2 sm:grid-cols-[1.5fr_1fr_1fr_0.75fr] gap-2',
+          compact && 'grid-cols-4 gap-1.5 sm:grid-cols-4',
+        )}
       >
         <motion.div
           animate={shouldShakeApprove ? { x: [0, 8, -8, 6, -6, 3, 0] } : { x: 0 }}
@@ -121,7 +126,10 @@ export function TriageDecisionArea({
         >
           <Button
             size="sm"
-            className="h-14 w-full flex-col gap-1 bg-green-600 hover:bg-green-700 text-white border-0"
+            className={cn(
+              'h-14 w-full flex-col gap-1 bg-green-600 hover:bg-green-700 text-white border-0',
+              compact && 'h-12 gap-0.5',
+            )}
             disabled={isBlocked || reviewFriction.escalationLock || Boolean(loading)}
             onClick={() => onAction('Approved')}
             title={
@@ -140,7 +148,7 @@ export function TriageDecisionArea({
         <Button
           variant="destructive"
           size="sm"
-          className="h-12 flex-col gap-1"
+          className={cn('h-12 flex-col gap-1', compact && 'gap-0.5')}
           disabled={Boolean(loading)}
           onClick={() => {
             if (!rationale.trim()) {
@@ -158,7 +166,7 @@ export function TriageDecisionArea({
         <Button
           variant="outline"
           size="sm"
-          className="h-12 flex-col gap-1"
+          className={cn('h-12 flex-col gap-1', compact && 'gap-0.5')}
           disabled={Boolean(loading)}
           onClick={() => onAction('RequestChanges')}
           title="Request changes (R)"
@@ -171,7 +179,7 @@ export function TriageDecisionArea({
         <Button
           variant="ghost"
           size="sm"
-          className="h-10 flex-col gap-1 text-muted-foreground"
+          className={cn('h-10 flex-col gap-1 text-muted-foreground', compact && 'h-12 gap-0.5')}
           disabled={Boolean(loading)}
           onClick={() => onAction('Skip')}
           title="Skip (S)"

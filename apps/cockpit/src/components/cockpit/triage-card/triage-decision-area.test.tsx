@@ -77,7 +77,7 @@ describe('TriageDecisionArea', () => {
     );
   });
 
-  it('shows high-risk approval rationale requirement', () => {
+  it('shows approval rationale requirement', () => {
     render(
       <TriageDecisionArea
         {...defaultProps}
@@ -91,7 +91,7 @@ describe('TriageDecisionArea', () => {
       />,
     );
     expect(screen.getByRole('alert').textContent).toContain(
-      'A rationale is required when approving high-risk Actions.',
+      'A rationale is required when approving an approval.',
     );
   });
 
@@ -140,6 +140,12 @@ describe('TriageDecisionArea', () => {
     render(<TriageDecisionArea {...defaultProps} rationale="Not ready" onAction={onAction} />);
     await user.click(screen.getByTitle('Deny (D)'));
     expect(onAction).toHaveBeenCalledWith('Denied');
+  });
+
+  it('describes rationale as required for approve and deny', () => {
+    render(<TriageDecisionArea {...defaultProps} />);
+    expect(screen.getByPlaceholderText(/required for approve and deny/i)).toBeTruthy();
+    expect(screen.getByText(/required for approve and deny/i)).toBeTruthy();
   });
 
   it('renders request changes form when in requestChangesMode', () => {

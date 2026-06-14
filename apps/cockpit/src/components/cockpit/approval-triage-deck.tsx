@@ -16,7 +16,8 @@ const STAMP_THRESHOLD = 0.3;
 const SPRING_SNAP = { type: 'spring' as const, stiffness: 300, damping: 30 };
 const SPRING_EXIT = { type: 'spring' as const, stiffness: 200, damping: 25 };
 
-const EXCLUDED = 'textarea, button, input, [role="tablist"], [role="tab"], select';
+const EXCLUDED =
+  'textarea, button, input, [role="tablist"], [role="tab"], select, [data-approval-copy-region], [data-approval-copy-region] *';
 
 interface ApprovalTriageDeckProps {
   approval: ApprovalSummary;
@@ -312,6 +313,7 @@ export function ApprovalTriageDeck({
           isDragging={isDraggingRef.current}
           onValidationChange={handleValidationChange}
           dragRejection={dragRejection}
+          compact={compact}
           policyLinkedMode={policyLinkedMode}
         />
       </motion.div>

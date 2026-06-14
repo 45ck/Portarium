@@ -57,4 +57,5 @@ export * from './openclaw-management-bridge-port.js';
 export * from './approval-scheduler.js';
 export * from './cockpit-extension-activation-source.js';
 export * from './cockpit-extension-host-contract.js';
+export * from './tool-catalog-source.js';
 export * from './weekly-autonomy-digest-activity-store.js';

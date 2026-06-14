@@ -49,6 +49,10 @@ const TypedLink = Link as React.ComponentType<{
   'aria-label'?: string;
 }>;
 
+function mobileNavigationTarget(item: CockpitShellNavigationItem): string {
+  return item.id === 'approvals' ? '/approvals/swipe' : item.to;
+}
+
 export function MobileBottomNav({
   activeWorkspaceId,
   activePersona,
@@ -95,7 +99,7 @@ export function MobileBottomNav({
             return (
               <TypedLink
                 key={item.id}
-                to={item.to}
+                to={mobileNavigationTarget(item)}
                 className="relative flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 h-full px-0.5"
                 aria-label={item.label}
               >
@@ -220,7 +224,7 @@ export function MobileBottomNav({
                     ) : (
                       <TypedLink
                         key={item.id}
-                        to={item.to}
+                        to={mobileNavigationTarget(item)}
                         className="flex items-center gap-2 px-3 py-2 rounded-md text-sm hover:bg-accent transition-colors"
                         onClick={() => setMoreOpen(false)}
                         aria-label={item.label}

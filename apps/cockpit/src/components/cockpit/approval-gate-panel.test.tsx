@@ -66,4 +66,26 @@ describe('ApprovalGatePanel', () => {
 
     expect(onDecide).toHaveBeenCalledWith('Denied', 'Insufficient evidence');
   });
+
+  it('renders unclassified agent-action category instead of raw Unknown', () => {
+    render(
+      <ApprovalGatePanel
+        approval={{
+          ...BASE_APPROVAL,
+          agentActionProposal: {
+            proposalId: 'prop-1',
+            agentId: 'agent-1',
+            toolName: 'tool.snapshot.review',
+            toolCategory: 'Unknown',
+            blastRadiusTier: 'HumanApprove',
+            rationale: 'Review snapshot-backed proposal before action.',
+          },
+        }}
+        onDecide={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText('Unclassified')).toBeTruthy();
+    expect(screen.queryByText('Unknown')).toBeNull();
+  });
 });

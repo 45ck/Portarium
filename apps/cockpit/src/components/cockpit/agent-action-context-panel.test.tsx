@@ -153,14 +153,15 @@ describe('AgentActionContextPanel', () => {
     expect(screen.getByRole('region', { name: 'Agent action context' })).toBeTruthy();
   });
 
-  it('renders Unknown tool category badge', () => {
+  it('renders Unclassified tool category badge for unknown tool categories', () => {
     const unknown: AgentActionProposalMeta = {
       ...FULL_PROPOSAL,
       toolCategory: 'Unknown',
       blastRadiusTier: 'Auto',
     };
     render(<AgentActionContextPanel proposal={unknown} />);
-    expect(screen.getByText('Unknown')).toBeTruthy();
+    expect(screen.getByText('Unclassified')).toBeTruthy();
+    expect(screen.queryByText('Unknown')).toBeNull();
   });
 
   it('renders Assisted blast-radius tier badge', () => {

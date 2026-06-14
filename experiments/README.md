@@ -76,6 +76,14 @@ experiments/
 - Never overwrite a completed result bundle. For reruns or second attempts, use a
   new versioned attempt directory and compare it with the earlier run.
 
+## Standalone Experiments
+
+- `approval-consumer-reconciler/` models how Cockpit approval decisions are
+  reconciled into review consumption, executor-gated candidates, revision,
+  waiting, or blocked follow-up proposals without making the approval button an
+  executor. It is deterministic and does not call live Portarium, OpenClaw,
+  provider, browser, or executor services.
+
 ## Versioned Suites
 
 Iteration 2 lives under `experiments/iteration-2/`. Its manifest defines the

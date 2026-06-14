@@ -23,9 +23,10 @@ import { EmptyState } from '@/components/cockpit/empty-state';
 import { OfflineSyncBanner } from '@/components/cockpit/offline-sync-banner';
 import { FreshnessBadge } from '@/components/cockpit/freshness-badge';
 import { NotificationBanner } from '@/components/cockpit/notification-banner';
-import { CheckSquare, AlertCircle, RotateCcw } from 'lucide-react';
+import { CheckSquare, AlertCircle, RotateCcw, Smartphone, ListChecks } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CockpitApiError } from '@/lib/control-plane-client';
+import { cn } from '@/lib/utils';
 import type { ApprovalDecisionRequest } from '@portarium/cockpit-types';
 import {
   fromApprovalReturnSearch,
@@ -69,6 +70,51 @@ function approvalLoadErrorCopy(error: unknown): { title: string; detail: string 
   };
 }
 
+function approvalDecisionErrorCopy(error: unknown): { title: string; detail: string } {
+  if (error instanceof CockpitApiError) {
+    if (error.status === 401) {
+      return {
+        title: 'Approval session is not signed in',
+        detail: 'Start or refresh the Cockpit session, then retry the decision.',
+      };
+    }
+    if (error.status === 403) {
+      return {
+        title: 'Approval decision is not allowed',
+        detail: error.problem?.detail ?? error.message,
+      };
+    }
+    if (error.status === 409) {
+      return {
+        title: 'Approval decision conflicted',
+        detail: error.problem?.detail ?? error.message,
+      };
+    }
+    if (error.status === 422) {
+      return {
+        title: 'Approval decision needs more detail',
+        detail: error.problem?.detail ?? error.message,
+      };
+    }
+    return {
+      title: `Approval service returned ${error.status}`,
+      detail: error.problem?.detail ?? error.message,
+    };
+  }
+
+  if (error instanceof TypeError) {
+    return {
+      title: 'Approval service is unreachable',
+      detail: 'The decision was not submitted. Check connectivity and retry.',
+    };
+  }
+
+  return {
+    title: 'Failed to submit approval decision',
+    detail: error instanceof Error ? error.message : 'An unexpected error occurred.',
+  };
+}
+
 interface PendingAction {
   approvalId: string;
   action: TriageAction;
@@ -83,8 +129,13 @@ interface ApprovalsSearch extends PolicyStudioReturnSearch {
   from?: string;
 }
 
-function ApprovalsPage() {
-  const search = Route.useSearch();
+interface ApprovalsPageProps {
+  search: ApprovalsSearch;
+  surface?: 'queue' | 'swipe';
+}
+
+export function ApprovalsPage({ search, surface = 'queue' }: ApprovalsPageProps) {
+  const swipeSurface = surface === 'swipe';
   const policyLinkedMode = shouldShowInternalCockpitSurfaces() && search.from === 'policy-studio';
   const singleCaseApprovalId =
     (search.from === 'notification' || policyLinkedMode) && search.focus ? search.focus : undefined;
@@ -170,6 +221,38 @@ function ApprovalsPage() {
   const { data: runData } = useRun(wsId, linkedRunId);
   const { data: workflowData } = useWorkflow(wsId, runData?.workflowId ?? '');
 
+  const rollbackPendingAction = useCallback(
+    (pa: PendingAction) => {
+      setTriageSkipped((prev) => {
+        const next = new Set(prev);
+        next.delete(pa.approvalId);
+        return next;
+      });
+      setSelectedApprovalId(pa.approvalId);
+      if (singleCaseMode && pa.approvalId === singleCaseApprovalId) {
+        setSingleCaseResult(null);
+      }
+
+      setActionHistory((prev) => {
+        const next = { ...prev };
+        delete next[pa.queueIndex];
+        return next;
+      });
+
+      setSessionStats((prev) => ({
+        total: Math.max(0, prev.total - 1),
+        approved: Math.max(0, prev.approved - (pa.action === 'Approved' ? 1 : 0)),
+        denied: Math.max(0, prev.denied - (pa.action === 'Denied' ? 1 : 0)),
+        changesRequested: Math.max(
+          0,
+          prev.changesRequested - (pa.action === 'RequestChanges' ? 1 : 0),
+        ),
+        skipped: Math.max(0, prev.skipped - (pa.action === 'Skip' ? 1 : 0)),
+      }));
+    },
+    [singleCaseApprovalId, singleCaseMode],
+  );
+
   const commitAction = useCallback(
     (pa: PendingAction) => {
       if (pa.action === 'Skip') return;
@@ -183,11 +266,13 @@ function ApprovalsPage() {
             toast.info('Decision queued for replay when network is available.');
           }
         })
-        .catch(() => {
-          toast.error('Failed to submit approval decision.');
+        .catch((submitError: unknown) => {
+          rollbackPendingAction(pa);
+          const copy = approvalDecisionErrorCopy(submitError);
+          toast.error(copy.title, { description: copy.detail });
         });
     },
-    [submitDecision],
+    [rollbackPendingAction, submitDecision],
   );
 
   useEffect(() => {
@@ -299,33 +384,7 @@ function ApprovalsPage() {
     toast.dismiss(target.toastId);
     pendingActionRef.current = null;
     setPendingAction(null);
-    if (singleCaseMode && target.approvalId === singleCaseApprovalId) {
-      setSingleCaseResult(null);
-    }
-
-    setTriageSkipped((prev) => {
-      const next = new Set(prev);
-      next.delete(target.approvalId);
-      return next;
-    });
-    setSelectedApprovalId(target.approvalId);
-
-    setActionHistory((prev) => {
-      const next = { ...prev };
-      delete next[target.queueIndex];
-      return next;
-    });
-
-    setSessionStats((prev) => ({
-      total: Math.max(0, prev.total - 1),
-      approved: Math.max(0, prev.approved - (target.action === 'Approved' ? 1 : 0)),
-      denied: Math.max(0, prev.denied - (target.action === 'Denied' ? 1 : 0)),
-      changesRequested: Math.max(
-        0,
-        prev.changesRequested - (target.action === 'RequestChanges' ? 1 : 0),
-      ),
-      skipped: Math.max(0, prev.skipped - (target.action === 'Skip' ? 1 : 0)),
-    }));
+    rollbackPendingAction(target);
   }
 
   useEffect(() => {
@@ -345,7 +404,10 @@ function ApprovalsPage() {
     triageChild = (
       <motion.div
         key="loading"
-        className="max-w-xl mx-auto h-64 rounded-xl bg-muted/30 animate-pulse"
+        className={cn(
+          'mx-auto h-64 max-w-xl rounded-xl bg-muted/30 animate-pulse',
+          swipeSurface && 'h-[calc(100dvh-12rem)] min-h-[360px] max-w-md',
+        )}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -551,6 +613,7 @@ function ApprovalsPage() {
           actionHistory={actionHistory}
           undoAvailable={pendingAction !== null}
           onUndo={() => handleUndo()}
+          compact={swipeSurface}
           policyLinkedMode={policyLinkedMode}
         />
       </div>
@@ -562,10 +625,20 @@ function ApprovalsPage() {
   if (isError) {
     const errorCopy = approvalLoadErrorCopy(error);
     return (
-      <div className="p-6 space-y-4">
+      <div className={cn('space-y-4', swipeSurface ? 'mx-auto max-w-md px-3 py-4 sm:px-4' : 'p-6')}>
         <PageHeader
-          title="Approvals"
+          title={swipeSurface ? 'Approval Swipe' : 'Approvals'}
           icon={<EntityIcon entityType="approval" size="md" decorative />}
+          action={
+            swipeSurface ? (
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/approvals">
+                  <ListChecks className="mr-1.5 h-3.5 w-3.5" />
+                  Queue
+                </Link>
+              </Button>
+            ) : null
+          }
         />
         <OfflineSyncBanner
           isOffline={offlineMeta.isOffline}
@@ -591,14 +664,18 @@ function ApprovalsPage() {
 
   const notificationPendingCount = singleCaseMode ? triageQueue.length : pendingItems.length;
   const showNotification =
+    !swipeSurface &&
     notificationPendingCount > 0 &&
     (search.from === 'notification' ||
       (!policyLinkedMode && !singleCaseMode && pendingItems.length > 0));
   const showOfflineSyncBanner =
-    !policyLinkedMode || offlineMeta.isOffline || offlineMeta.isStaleData || pendingCount > 0;
+    (!swipeSurface && !policyLinkedMode) ||
+    offlineMeta.isOffline ||
+    offlineMeta.isStaleData ||
+    pendingCount > 0;
 
   return (
-    <div className="p-6 space-y-4">
+    <div className={cn('space-y-4', swipeSurface ? 'mx-auto max-w-md px-3 py-3 sm:px-4' : 'p-6')}>
       {singleCaseMode ? (
         <motion.div
           className="rounded-lg border border-primary/30 bg-primary/5 p-4"
@@ -648,16 +725,41 @@ function ApprovalsPage() {
         </motion.div>
       ) : null}
       <PageHeader
-        title={singleCaseMode || policyLinkedMode ? 'Approval Review' : 'Approvals'}
+        title={
+          swipeSurface
+            ? 'Approval Swipe'
+            : singleCaseMode || policyLinkedMode
+              ? 'Approval Review'
+              : 'Approvals'
+        }
         description={
-          policyLinkedMode
-            ? 'Focused policy-linked review for the live case that led to the staged Policy draft.'
-            : singleCaseMode
-              ? 'Single-case review opened from a notification or deep link.'
-              : undefined
+          swipeSurface
+            ? undefined
+            : policyLinkedMode
+              ? 'Focused policy-linked review for the live case that led to the staged Policy draft.'
+              : singleCaseMode
+                ? 'Single-case review opened from a notification or deep link.'
+                : undefined
         }
         icon={<EntityIcon entityType="approval" size="md" decorative />}
         status={<FreshnessBadge offlineMeta={offlineMeta} isFetching={isLoading || isFlushing} />}
+        action={
+          swipeSurface ? (
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/approvals">
+                <ListChecks className="mr-1.5 h-3.5 w-3.5" />
+                Queue
+              </Link>
+            </Button>
+          ) : !singleCaseMode && !policyLinkedMode ? (
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/approvals/swipe">
+                <Smartphone className="mr-1.5 h-3.5 w-3.5" />
+                Swipe
+              </Link>
+            </Button>
+          ) : null
+        }
       />
       {showOfflineSyncBanner ? (
         <OfflineSyncBanner
@@ -671,12 +773,14 @@ function ApprovalsPage() {
       {currentApproval && triageQueue.length > 0 ? (
         <div
           className={
-            policyLinkedMode || singleCaseMode
-              ? 'grid gap-4'
-              : 'grid min-w-0 gap-4 overflow-hidden lg:grid-cols-[320px_minmax(0,1fr)]'
+            swipeSurface
+              ? 'grid gap-3'
+              : policyLinkedMode || singleCaseMode
+                ? 'grid gap-4'
+                : 'grid min-w-0 gap-4 overflow-hidden lg:grid-cols-[320px_minmax(0,1fr)]'
           }
         >
-          {!policyLinkedMode && !singleCaseMode ? (
+          {!swipeSurface && !policyLinkedMode && !singleCaseMode ? (
             <aside className="hidden lg:block rounded-xl border border-border bg-card overflow-hidden min-h-[640px]">
               <ApprovalListPanel
                 items={triageQueue}
@@ -695,16 +799,22 @@ function ApprovalsPage() {
   );
 }
 
+export function validateApprovalsSearch(search: Record<string, unknown>): ApprovalsSearch {
+  const policyStudioReturnSearch = validatePolicyStudioReturnSearch(search);
+  return {
+    focus: typeof search.focus === 'string' ? search.focus : undefined,
+    from: typeof search.from === 'string' ? search.from : undefined,
+    ...policyStudioReturnSearch,
+  };
+}
+
+function ApprovalsRouteComponent() {
+  return <ApprovalsPage search={Route.useSearch()} />;
+}
+
 export const Route = createRoute({
   getParentRoute: () => rootRoute,
   path: '/approvals',
-  component: ApprovalsPage,
-  validateSearch: (search: Record<string, unknown>): ApprovalsSearch => {
-    const policyStudioReturnSearch = validatePolicyStudioReturnSearch(search);
-    return {
-      focus: typeof search.focus === 'string' ? search.focus : undefined,
-      from: typeof search.from === 'string' ? search.from : undefined,
-      ...policyStudioReturnSearch,
-    };
-  },
+  component: ApprovalsRouteComponent,
+  validateSearch: validateApprovalsSearch,
 });

@@ -87,7 +87,7 @@ describe('ApprovalListPanel — agentActionProposal metadata display', () => {
     expect(screen.getByText('Dangerous')).toBeTruthy();
   });
 
-  it('renders Unknown badge for unknown tool categories', () => {
+  it('renders Unclassified badge for unclassified tool categories', () => {
     renderPanel([
       {
         ...BASE_APPROVAL_WITH_PROPOSAL,
@@ -97,7 +97,8 @@ describe('ApprovalListPanel — agentActionProposal metadata display', () => {
         },
       },
     ]);
-    expect(screen.getByText('Unknown')).toBeTruthy();
+    expect(screen.getByText('Unclassified')).toBeTruthy();
+    expect(screen.queryByText('Unknown')).toBeNull();
   });
 
   it('does not render bot icon or category badge when agentActionProposal is absent', () => {

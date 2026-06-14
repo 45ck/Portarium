@@ -31,6 +31,7 @@ import { Route as workflowBuilderRoute } from './routes/workflows/builder';
 
 // Approvals
 import { Route as approvalsRoute } from './routes/approvals/index';
+import { Route as approvalSwipeRoute } from './routes/approvals/swipe';
 import { Route as approvalDetailRoute } from './routes/approvals/$approvalId';
 
 // Evidence
@@ -108,6 +109,7 @@ export const routeTree = rootRoute.addChildren([
   workflowEditRoute,
   workflowBuilderRoute,
   approvalsRoute,
+  approvalSwipeRoute,
   approvalDetailRoute,
   evidenceRoute,
   engineeringRoute,

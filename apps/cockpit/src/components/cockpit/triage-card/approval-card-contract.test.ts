@@ -115,6 +115,117 @@ describe('buildApprovalCardContract', () => {
     expect(contract.fields.evidence.value).toContain('chain verified');
   });
 
+  it('keeps packet-only OpenClaw approval cards compact and avoids duplicate intent', () => {
+    const prompt =
+      'OpenClaw approval required: email_query on email-tenant:tenant-account-alert-watch. authority A3. environment hosted-private. proposal standing-read-attention-review-tenant-account-alert-watch-attention-5dcf004b298556ae. Review latest standing-read monitor attention item: Tenant mailbox account/security signal. Severity: medium. Reason: Bounded standing-read query matched 4 visible redacted/hashable signals. Required review: Review the scoped redacted result through OpenClaw/Portarium before drafting any action proposal.';
+    const contract = buildApprovalCardContract({
+      approval: {
+        ...APPROVAL,
+        prompt,
+        agentActionProposal: undefined,
+        approvalPacket: {
+          schemaVersion: 1,
+          packetId: 'packet-openclaw-1',
+          artifacts: [
+            {
+              artifactId: 'artifact-openclaw-1',
+              title: 'OpenClaw approval request',
+              mimeType: 'application/json',
+              role: 'primary',
+            },
+          ],
+          reviewDocs: [{ title: 'Review brief', markdown: '# Review' }],
+          requestedCapabilities: [
+            {
+              capabilityId: 'openclaw.email_query',
+              reason: 'Review redacted monitor signal before any follow-up proposal.',
+              required: true,
+            },
+          ],
+          planScope: {
+            planId: 'plan-openclaw-1',
+            summary: prompt,
+            actionIds: ['action-openclaw-1'],
+            plannedEffectIds: ['effect-openclaw-1'],
+          },
+        },
+      },
+      plannedEffects: [],
+      evidenceEntries: [evidence()],
+    });
+
+    expect(contract.fields.proposedAction.value).toBe(
+      'Review monitor item: Tenant mailbox account/security signal',
+    );
+    expect(contract.fields.intent.value).toBe(
+      'Review packet scope and decide operator intent only.',
+    );
+  });
+
+  it('uses a distinct approval packet plan scope as the intent fallback', () => {
+    const contract = buildApprovalCardContract({
+      approval: {
+        ...APPROVAL,
+        prompt: 'Review monitor item: Tenant mailbox account/security signal',
+        agentActionProposal: undefined,
+        approvalPacket: {
+          schemaVersion: 1,
+          packetId: 'packet-openclaw-2',
+          artifacts: [
+            {
+              artifactId: 'artifact-openclaw-2',
+              title: 'OpenClaw approval request',
+              mimeType: 'application/json',
+              role: 'primary',
+            },
+          ],
+          reviewDocs: [{ title: 'Review brief', markdown: '# Review' }],
+          requestedCapabilities: [
+            {
+              capabilityId: 'openclaw.email_query',
+              reason: 'Review redacted monitor signal before any follow-up proposal.',
+              required: true,
+            },
+          ],
+          planScope: {
+            planId: 'plan-openclaw-2',
+            summary:
+              'Decide whether OpenClaw may review the redacted tenant signal and draft bounded follow-up proposals only.',
+            actionIds: ['action-openclaw-2'],
+            plannedEffectIds: ['effect-openclaw-2'],
+          },
+        },
+      },
+      plannedEffects: [],
+      evidenceEntries: [evidence()],
+    });
+
+    expect(contract.fields.intent.value).toBe(
+      'Decide whether OpenClaw may review the redacted tenant signal and draft bounded follow-up proposals only.',
+    );
+    expect(contract.fields.intent.evidenceSource).toBe('ApprovalPacket');
+  });
+
+  it('summarizes repeated OpenClaw rationale text instead of rendering an essay tile', () => {
+    const longRationale =
+      'OpenClaw approval required: email_query on email-tenant:tenant-account-alert-watch. authority A3. environment hosted-private. proposal standing-read-attention-review-tenant-account-alert-watch-attention-5dcf004b298556ae. Review latest standing-read monitor attention item: Tenant mailbox account/security signal. Severity: medium. Reason: Bounded standing-read query matched 4 visible redacted/hashable signals. Required review: Review the scoped redacted result through OpenClaw/Portarium before drafting any action proposal.';
+
+    const contract = buildApprovalCardContract({
+      approval: {
+        ...APPROVAL,
+        prompt: longRationale,
+        rationale: longRationale,
+        agentActionProposal: undefined,
+      },
+      plannedEffects: [],
+      evidenceEntries: [evidence()],
+    });
+
+    expect(contract.fields.rationale.value).toBe(
+      'Review monitor item: Tenant mailbox account/security signal',
+    );
+  });
+
   it('escalates irreversible or dangerous approvals into high-risk deep review friction', () => {
     const contract = buildApprovalCardContract({
       approval: {

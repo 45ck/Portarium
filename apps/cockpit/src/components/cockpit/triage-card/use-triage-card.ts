@@ -81,8 +81,8 @@ export function useTriageCard(options: UseTriageCardOptions) {
     if (cardContract.friction.escalationLock) {
       return cardContract.friction.lockReason ?? 'Approval is locked by governance policy';
     }
-    if (cardContract.friction.requireRationale && !hasRationale) {
-      return 'Rationale is required to approve high-risk Actions';
+    if (!hasRationale) {
+      return 'Rationale is required to approve';
     }
     if (cardContract.friction.requireSecondConfirm && !approveConfirmArmed) {
       return 'Second confirmation is required to approve high-risk Actions';
@@ -142,9 +142,7 @@ export function useTriageCard(options: UseTriageCardOptions) {
       if (action === 'Approved') {
         if (approveBlockReason) {
           setApproveAttempted(true);
-          setShakeTarget(
-            cardContract.friction.requireRationale && !hasRationale ? 'rationale' : 'approve',
-          );
+          setShakeTarget(!hasRationale ? 'rationale' : 'approve');
           if (isBlocked || cardContract.friction.escalationLock) {
             setFlashSodBanner(true);
             setTimeout(() => setFlashSodBanner(false), 800);

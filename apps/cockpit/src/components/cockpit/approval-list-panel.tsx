@@ -14,16 +14,7 @@ import { ApprovalStatusBadge } from '@/components/cockpit/approval-status-badge'
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Bot, Search } from 'lucide-react';
-
-const CATEGORY_BADGE: Record<
-  string,
-  { variant: 'secondary' | 'warning' | 'destructive' | 'outline'; label: string }
-> = {
-  ReadOnly: { variant: 'secondary', label: 'Read-only' },
-  Mutation: { variant: 'warning', label: 'Mutation' },
-  Dangerous: { variant: 'destructive', label: 'Dangerous' },
-  Unknown: { variant: 'outline', label: 'Unknown' },
-};
+import { getAgentActionCategoryPresentation } from '@/lib/agent-action-category';
 
 interface ApprovalListPanelProps {
   items: ApprovalSummary[];
@@ -147,11 +138,15 @@ export function ApprovalListPanel({
                             {a.agentActionProposal.toolName}
                           </span>
                           {(() => {
-                            const cat =
-                              CATEGORY_BADGE[a.agentActionProposal.toolCategory] ??
-                              CATEGORY_BADGE['Unknown']!;
+                            const cat = getAgentActionCategoryPresentation(
+                              a.agentActionProposal.toolCategory,
+                            );
                             return (
-                              <Badge variant={cat.variant} className="text-[9px] h-4 px-1 shrink-0">
+                              <Badge
+                                variant={cat.variant}
+                                className="text-[9px] h-4 px-1 shrink-0"
+                                title={cat.guidance}
+                              >
                                 {cat.label}
                               </Badge>
                             );

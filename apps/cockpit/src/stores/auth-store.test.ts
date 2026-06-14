@@ -1,8 +1,13 @@
+// @vitest-environment jsdom
+
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { ControlPlaneClient } from '@/lib/control-plane-client';
 import { AUTH_REFRESH_TOKEN_KEY, readStoredBearerToken } from '@/lib/auth-token';
+import { DATASET_STORAGE_KEY } from '@/lib/cockpit-runtime';
 import { QUERY_CACHE_STORAGE_KEY, queryClient } from '@/lib/query-client';
 import { useAuthStore } from './auth-store';
+import { useUIStore } from './ui-store';
 
 const nativeBridgeMock = vi.hoisted(() => {
   const secureStore = new Map<string, string>();
@@ -199,6 +204,11 @@ beforeEach(() => {
     claims: null,
     error: null,
   });
+  useUIStore.setState({
+    activeWorkspaceId: 'ws-local-dev',
+    activeDataset: 'platform-showcase',
+    activePersona: 'Operator',
+  });
 });
 
 describe('useAuthStore cache isolation', () => {
@@ -245,6 +255,7 @@ describe('useAuthStore cache isolation', () => {
 
   it('initializes web auth from the HttpOnly web session endpoint', async () => {
     nativeBridgeMock.native = false;
+    useUIStore.setState({ activeWorkspaceId: 'stale-ws' });
     webSessionMock.currentSession = {
       authenticated: true,
       claims: {
@@ -264,7 +275,31 @@ describe('useAuthStore cache isolation', () => {
       token: null,
       claims: { sub: 'web-user', workspaceId: 'web-ws' },
     });
+    expect(useUIStore.getState()).toMatchObject({
+      activeDataset: 'live',
+      activeWorkspaceId: 'web-ws',
+    });
+    expect(localStorage.getItem(DATASET_STORAGE_KEY)).toBe('live');
     expect(nativeBridgeMock.secureGet).not.toHaveBeenCalled();
+  });
+
+  it('aligns the active workspace when creating a development web session', async () => {
+    nativeBridgeMock.native = false;
+    oidcMock.configured = false;
+    useUIStore.setState({ activeWorkspaceId: 'stale-ws' });
+
+    await useAuthStore.getState().login();
+
+    expect(useAuthStore.getState()).toMatchObject({
+      status: 'authenticated',
+      token: null,
+      claims: { sub: 'dev-user', workspaceId: 'dev-ws' },
+    });
+    expect(useUIStore.getState()).toMatchObject({
+      activeDataset: 'live',
+      activeWorkspaceId: 'dev-ws',
+    });
+    expect(localStorage.getItem(DATASET_STORAGE_KEY)).toBe('live');
   });
 
   it('clears legacy browser tokens when no web session exists', async () => {
@@ -312,6 +347,7 @@ describe('useAuthStore cache isolation', () => {
 
   it('establishes web auth via the session endpoint without storing tokens', async () => {
     nativeBridgeMock.native = false;
+    useUIStore.setState({ activeWorkspaceId: 'stale-ws' });
     seedCache();
 
     await useAuthStore.getState().handleCallback('https://app.test/auth/callback?code=code-1');
@@ -321,6 +357,11 @@ describe('useAuthStore cache isolation', () => {
       token: null,
       claims: { sub: 'web-user', workspaceId: 'web-ws' },
     });
+    expect(useUIStore.getState()).toMatchObject({
+      activeDataset: 'live',
+      activeWorkspaceId: 'web-ws',
+    });
+    expect(localStorage.getItem(DATASET_STORAGE_KEY)).toBe('live');
     expect(webSessionMock.establishWebSession).toHaveBeenCalledWith({
       code: 'code-1',
       state: 'state-1',
@@ -394,6 +435,52 @@ describe('useAuthStore cache isolation', () => {
     expect(nativeBridgeMock.secureRemove).not.toHaveBeenCalled();
     expect(useAuthStore.getState().status).toBe('unauthenticated');
     expectCacheCleared();
+  });
+
+  it('keeps a confirmed web session when a stale request reports 401', async () => {
+    nativeBridgeMock.native = false;
+    webSessionMock.currentSession = {
+      authenticated: true,
+      claims: {
+        sub: 'web-user',
+        workspaceId: 'web-ws',
+        roles: ['operator'],
+        personas: [],
+        capabilities: [],
+        apiScopes: [],
+      },
+    };
+    useAuthStore.setState({
+      status: 'authenticated',
+      token: null,
+      claims: webSessionMock.currentSession.claims,
+      error: null,
+    });
+    const client = new ControlPlaneClient({
+      fetchImpl: vi.fn(() =>
+        Promise.resolve(
+          new Response(JSON.stringify({ title: 'Unauthorized', status: 401 }), {
+            status: 401,
+            headers: { 'content-type': 'application/json' },
+          }),
+        ),
+      ) as typeof fetch,
+    });
+
+    await expect(client.listApprovals('web-ws')).rejects.toMatchObject({ status: 401 });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(webSessionMock.fetchCurrentWebSession).toHaveBeenCalled();
+    expect(useAuthStore.getState()).toMatchObject({
+      status: 'authenticated',
+      token: null,
+      claims: { sub: 'web-user', workspaceId: 'web-ws' },
+      error: null,
+    });
+    expect(useUIStore.getState()).toMatchObject({
+      activeDataset: 'live',
+      activeWorkspaceId: 'web-ws',
+    });
   });
 
   it('purges local tenant data even when web logout endpoint fails', async () => {

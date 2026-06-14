@@ -47,7 +47,7 @@ and the agent is unblocked exactly when the operator approves it.
 **Run:**
 
 ```bash
-PORTARIUM_URL=http://localhost:3000 PORTARIUM_WORKSPACE_ID=ws-experiment \
+PORTARIUM_URL=http://localhost:3000 PORTARIUM_WORKSPACE_ID=ws-demo \
 PORTARIUM_BEARER_TOKEN=dev-token PORTARIUM_OPERATOR_TOKEN=dev-token-operator \
 PORTARIUM_TENANT_ID=default \
 node node_modules/tsx/dist/cli.mjs experiments/openclaw-governance/run.mjs

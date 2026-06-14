@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 
 import { beforeEach, describe, expect, it } from 'vitest';
+import { DATASET_STORAGE_KEY } from '@/lib/cockpit-runtime';
 import { QUERY_CACHE_STORAGE_KEY, queryClient } from '@/lib/query-client';
 import { useUIStore } from '@/stores/ui-store';
 
@@ -36,5 +37,20 @@ describe('useUIStore workspace cache isolation', () => {
 
   it('defaults triage to the plain view when no preference is stored', () => {
     expect(useUIStore.getState().triageViewMode).toBe('default');
+  });
+
+  it('switches to the authenticated live workspace from a web session', async () => {
+    localStorage.setItem(DATASET_STORAGE_KEY, 'platform-showcase');
+    localStorage.setItem(QUERY_CACHE_STORAGE_KEY, '{"cached":true}');
+
+    useUIStore.getState().setAuthenticatedWorkspaceId(' ws-demo ');
+    await Promise.resolve();
+
+    expect(useUIStore.getState()).toMatchObject({
+      activeDataset: 'live',
+      activeWorkspaceId: 'ws-demo',
+    });
+    expect(localStorage.getItem(DATASET_STORAGE_KEY)).toBe('live');
+    expect(localStorage.getItem(QUERY_CACHE_STORAGE_KEY)).toBeNull();
   });
 });

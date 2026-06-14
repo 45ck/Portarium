@@ -305,7 +305,7 @@ const PAGE_CASES = [
   { path: '/workforce/wfm-001', heading: 'Dana Approver' },
   { path: '/workforce/queues', heading: 'Queues' },
   { path: '/workforce/coverage', heading: 'Coverage' },
-  { path: '/config/agents', heading: 'Agents' },
+  { path: '/config/agents', heading: 'Live Agents' },
   { path: '/config/adapters', heading: 'Adapters' },
   { path: '/config/credentials', heading: 'Credentials' },
   { path: '/config/users', heading: 'Users' },

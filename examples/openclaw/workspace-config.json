@@ -60,7 +60,7 @@
         "enabled": true,
         "config": {
           "portariumUrl": "http://localhost:3000",
-          "workspaceId": "ws-experiment",
+          "workspaceId": "ws-demo",
           "bearerToken": "dev-token",
           "tenantId": "default",
           "failClosed": true,

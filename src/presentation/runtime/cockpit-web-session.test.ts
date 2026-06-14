@@ -102,6 +102,54 @@ describe('cockpit web session helpers', () => {
     }
   });
 
+  it('accepts cross-site Fetch Metadata when the Origin is explicitly allowlisted', () => {
+    const previousCorsAllowedOrigins = process.env['PORTARIUM_CORS_ALLOWED_ORIGINS'];
+    process.env['PORTARIUM_CORS_ALLOWED_ORIGINS'] = 'http://localhost:11355';
+    try {
+      const req = makeRequest(
+        {
+          [WEB_SESSION_REQUEST_HEADER]: '1',
+          host: '127.0.0.1:18080',
+          origin: 'http://localhost:11355',
+          'sec-fetch-site': 'cross-site',
+        },
+        'POST',
+      );
+
+      expect(isUnsafeSessionRequestAllowed(req)).toBe(true);
+    } finally {
+      if (previousCorsAllowedOrigins === undefined) {
+        delete process.env['PORTARIUM_CORS_ALLOWED_ORIGINS'];
+      } else {
+        process.env['PORTARIUM_CORS_ALLOWED_ORIGINS'] = previousCorsAllowedOrigins;
+      }
+    }
+  });
+
+  it('rejects cross-site Fetch Metadata when the Origin is not trusted', () => {
+    const previousCorsAllowedOrigins = process.env['PORTARIUM_CORS_ALLOWED_ORIGINS'];
+    delete process.env['PORTARIUM_CORS_ALLOWED_ORIGINS'];
+    try {
+      const req = makeRequest(
+        {
+          [WEB_SESSION_REQUEST_HEADER]: '1',
+          host: '127.0.0.1:18080',
+          origin: 'https://evil.example',
+          'sec-fetch-site': 'cross-site',
+        },
+        'POST',
+      );
+
+      expect(isUnsafeSessionRequestAllowed(req)).toBe(false);
+    } finally {
+      if (previousCorsAllowedOrigins === undefined) {
+        delete process.env['PORTARIUM_CORS_ALLOWED_ORIGINS'];
+      } else {
+        process.env['PORTARIUM_CORS_ALLOWED_ORIGINS'] = previousCorsAllowedOrigins;
+      }
+    }
+  });
+
   it('requires the request marker for cookie-authenticated mutations', async () => {
     const store = new InMemoryCockpitWebSessionStore();
     const record = store.create({

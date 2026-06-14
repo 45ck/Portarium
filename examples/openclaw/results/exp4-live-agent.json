@@ -14,7 +14,7 @@
     {
       "step": 1,
       "event": "plugin_registered",
-      "log": "[portarium] Plugin registered — governing ws-experiment at http://localhost:3000 (failClosed=false)"
+      "log": "[portarium] Plugin registered — governing ws-demo at http://localhost:3000 (failClosed=false)"
     },
     {
       "step": 2,
@@ -30,7 +30,7 @@
     {
       "step": 4,
       "event": "operator_decision",
-      "action": "POST /v1/workspaces/ws-experiment/approvals/031f27e2-48e1-4a8c-a64a-a53de668facd/decide",
+      "action": "POST /v1/workspaces/ws-demo/approvals/031f27e2-48e1-4a8c-a64a-a53de668facd/decide",
       "body": { "decision": "Approved", "rationale": "Operator approves listing tmp directory" },
       "response": {
         "status": 200,

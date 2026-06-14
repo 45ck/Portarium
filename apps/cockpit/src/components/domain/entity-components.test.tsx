@@ -4,16 +4,16 @@ import { EntityIcon } from '@/components/domain/entity-icon';
 import { EntityImage } from '@/components/domain/entity-image';
 
 describe('EntityIcon', () => {
-  it('renders a generated icon image for known domain entities', () => {
+  it('renders a crisp UI symbol for known domain entities', () => {
     const html = renderToStaticMarkup(<EntityIcon entityType="robot" />);
-    expect(html).toContain('img');
-    expect(html).toContain('/assets/icons/domain/robot-ground.png');
+    expect(html).toContain('svg');
+    expect(html).not.toContain('/assets/icons/domain/robot-ground.png');
   });
 
-  it('renders canonical object icon images', () => {
+  it('renders canonical object symbols without generated PNG assets', () => {
     const html = renderToStaticMarkup(<EntityIcon entityType="party" />);
-    expect(html).toContain('img');
-    expect(html).toContain('/assets/icons/domain/party.png');
+    expect(html).toContain('svg');
+    expect(html).not.toContain('/assets/icons/domain/party.png');
   });
 
   it('falls back to lucide icon for unknown entity type mapping', () => {
@@ -32,6 +32,6 @@ describe('EntityImage', () => {
   it('falls back to icon placeholder when image id is missing', () => {
     const html = renderToStaticMarkup(<EntityImage entityId="agent-missing" />);
     expect(html).toContain('placeholder');
-    expect(html).toContain('img');
+    expect(html).toContain('svg');
   });
 });

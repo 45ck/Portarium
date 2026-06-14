@@ -23,6 +23,13 @@ Fields:
 - `dueAtIso?`: optional ISO-8601/RFC3339 UTC timestamp string (SLA timer)
 - `status`: `ApprovalStatus`
 
+`prompt` is the compact decision label. It must be suitable for the top of an
+Approval Gate card, notification, queue row, or mobile review surface. It should
+name the action and target, not embed full review prose, packet markdown,
+policy rationale, evidence dumps, logs, or execution plans. Long-form review
+material belongs in `ApprovalPacketV1`, Plan/evidence context, or derived
+Cockpit review-depth fields.
+
 Decision fields (only when `status` is not `Pending`):
 
 - `decidedAtIso`: ISO-8601/RFC3339 UTC timestamp string

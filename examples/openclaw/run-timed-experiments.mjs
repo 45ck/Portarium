@@ -17,7 +17,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const RESULTS_DIR = resolve(__dirname, 'results');
 
 const BASE_URL = process.env.PORTARIUM_URL || 'http://localhost:3000';
-const WORKSPACE = 'ws-experiment';
+const WORKSPACE = 'ws-demo';
 const AGENT_TOKEN = 'dev-token';
 const OPERATOR_TOKEN = 'dev-token-operator';
 

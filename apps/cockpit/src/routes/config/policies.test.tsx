@@ -269,13 +269,13 @@ describe('Policy Studio route', () => {
     await renderPoliciesRoute('/config/policies/studio');
 
     expect(await screen.findByRole('heading', { name: 'Policy Studio' })).toBeTruthy();
-    expect(await screen.findByText(/Outbound Payment Approval/i)).toBeTruthy();
+    expect((await screen.findAllByText(/Outbound Payment Approval/i)).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Current Rule/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Proposed Diff/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Expected Impact And Simulation/i)).toBeTruthy();
-    expect(screen.getByText(/Backend policy lifecycle mutation is not wired/i)).toBeTruthy();
-    const publishButton = screen.getByRole('button', { name: /Publish policy change/i });
-    expect(publishButton instanceof HTMLButtonElement && publishButton.disabled).toBe(true);
+    expect(screen.getByText(/create real Control Plane policy-change records/i)).toBeTruthy();
+    const proposalButton = screen.getByRole('button', { name: /Propose policy change/i });
+    expect(proposalButton instanceof HTMLButtonElement && proposalButton.disabled).toBe(false);
     expect(screen.queryByText(/Simulation lab/i)).toBeNull();
     expect(screen.queryByText(/Runtime precedent to policy/i)).toBeNull();
   });
@@ -289,7 +289,7 @@ describe('Policy Studio route', () => {
     await userEvent.click(
       screen.getByLabelText(/Treat matching future actions as policy-blocked/i),
     );
-    await userEvent.type(screen.getByLabelText(/Rationale/i), 'Escalate payouts.');
+    await userEvent.type(screen.getByLabelText(/^Rationale$/i), 'Escalate payouts.');
 
     expect(screen.getAllByText(/Policy-blocked/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Risky change/i)).toBeTruthy();
@@ -328,11 +328,12 @@ describe('Policy Studio route', () => {
     await renderPoliciesRoute('/config/policies/studio');
 
     expect(await screen.findByRole('heading', { name: 'Policy Studio' })).toBeTruthy();
-    expect(await screen.findByText(/Outbound Payment Approval/i)).toBeTruthy();
+    expect((await screen.findAllByText(/Outbound Payment Approval/i)).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Current Rule/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Proposed Diff/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Expected Impact And Simulation/i)).toBeTruthy();
-    expect(screen.getByText(/Backend policy lifecycle mutation is not wired/i)).toBeTruthy();
+    expect(screen.getByText(/create real Control Plane policy-change records/i)).toBeTruthy();
+    expect(screen.getByRole('button', { name: /Propose policy change/i })).toBeTruthy();
     expect(screen.queryByText(/Simulation lab/i)).toBeNull();
     expect(screen.queryByText(/Runtime precedent to policy/i)).toBeNull();
   });
@@ -345,7 +346,7 @@ describe('Policy Studio route', () => {
     );
 
     expect(await screen.findByRole('heading', { name: 'Policy Studio' })).toBeTruthy();
-    expect(await screen.findByText(/Outbound Payment Approval/i)).toBeTruthy();
+    expect((await screen.findAllByText(/Outbound Payment Approval/i)).length).toBeGreaterThan(0);
     expect(screen.queryByText(/Persistent cron creation request/i)).toBeNull();
     expect(screen.queryByText(/Current live case/i)).toBeNull();
     expect(screen.queryByText(/Future default draft/i)).toBeNull();
@@ -360,7 +361,7 @@ describe('Policy Studio route', () => {
     await userEvent.click(
       screen.getByLabelText(/Treat matching future actions as policy-blocked/i),
     );
-    await userEvent.type(screen.getByLabelText(/Rationale/i), 'Keep destructive paths manual.');
+    await userEvent.type(screen.getByLabelText(/^Rationale$/i), 'Keep destructive paths manual.');
 
     expect(screen.getAllByText(/Policy-blocked/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Risky change/i)).toBeTruthy();

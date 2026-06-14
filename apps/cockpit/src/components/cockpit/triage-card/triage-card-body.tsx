@@ -72,7 +72,10 @@ export function TriageCardBody({
       />
 
       <ModeErrorBoundary modeKey={triageViewMode}>
-        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain rounded-lg">
+        <div
+          className="flex-1 min-h-0 overflow-y-auto overscroll-contain rounded-lg select-text cursor-auto"
+          data-approval-copy-region
+        >
           <AnimatePresence mode="wait">
             <motion.div
               key={triageViewMode}

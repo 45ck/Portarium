@@ -39,6 +39,44 @@ describe('ControlPlaneClient', () => {
     expect(init.credentials).toBe('omit');
   });
 
+  it('posts policy-change approval requests to the apply endpoint', async () => {
+    const fetchImpl = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            policyChangeId: 'pc-1',
+            status: 'Applied',
+            approvalRequired: true,
+          }),
+          {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          },
+        ),
+    );
+    const client = new ControlPlaneClient({
+      baseUrl: 'https://api.example.test',
+      getBearerToken: () => 'token-123',
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+
+    await client.approvePolicyChange('ws-1', 'pc-1', {
+      approvalId: 'approval-1',
+      rationale: 'Checker reviewed the policy-controller diff.',
+    });
+
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchImpl.mock.calls[0] as unknown as [string, RequestInit];
+    const headers = new Headers(init.headers);
+    expect(url).toBe('https://api.example.test/v1/workspaces/ws-1/policy-changes/pc-1/approve');
+    expect(headers.get('Authorization')).toBe('Bearer token-123');
+    expect(init.method).toBe('POST');
+    expect(JSON.parse(String(init.body))).toEqual({
+      approvalId: 'approval-1',
+      rationale: 'Checker reviewed the policy-controller diff.',
+    });
+  });
+
   it('fetches cockpit extension context with bearer auth', async () => {
     const fetchImpl = vi.fn(
       async () =>
@@ -78,6 +116,38 @@ describe('ControlPlaneClient', () => {
     );
     expect(headers.get('Authorization')).toBe('Bearer token-123');
     expect(init.credentials).toBe('omit');
+  });
+
+  it('fetches the workspace tool catalog', async () => {
+    const fetchImpl = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            schemaVersion: 1,
+            workspaceId: 'ws-1',
+            issuedAtIso: '2026-05-01T00:00:00.000Z',
+            items: [],
+          }),
+          {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          },
+        ),
+    );
+    const client = new ControlPlaneClient({
+      baseUrl: 'https://api.example.test',
+      getBearerToken: () => 'token-123',
+      fetchImpl: fetchImpl as unknown as typeof fetch,
+    });
+
+    await client.listToolCatalog('workspace with spaces');
+
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchImpl.mock.calls[0] as unknown as [string, RequestInit];
+    const headers = new Headers(init.headers);
+    expect(url).toBe('https://api.example.test/v1/workspaces/workspace%20with%20spaces/tool-catalog');
+    expect(headers.get('Authorization')).toBe('Bearer token-123');
+    expect(init.method).toBeUndefined();
   });
 
   it('normalizes problem+json responses into CockpitApiError', async () => {

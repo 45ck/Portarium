@@ -20,6 +20,15 @@ describe('classifyOpenClawToolBlastRadiusV1', () => {
     expect(policy.minimumTier).toBe('HumanApprove');
   });
 
+  it.each(['portarium_run_start', 'portarium_run_cancel', 'portarium_approval_submit'])(
+    'classifies Portarium state-changing tool %s as HumanApprove',
+    (toolName) => {
+      const policy = classifyOpenClawToolBlastRadiusV1(toolName);
+      expect(policy.category).toBe('Mutation');
+      expect(policy.minimumTier).toBe('HumanApprove');
+    },
+  );
+
   it('classifies dangerous tools as ManualOnly', () => {
     const policy = classifyOpenClawToolBlastRadiusV1('shell.exec');
     expect(policy.category).toBe('Dangerous');

@@ -16,6 +16,7 @@ const CSP_DIRECTIVES = {
   fontSrc: "font-src 'self'",
 } as const;
 
+const DEFAULT_FRAME_SOURCES = ["'self'"] as const;
 const CSP_META_PATTERN = /(<meta\s+http-equiv="Content-Security-Policy"\s+content=")[^"]*(")/;
 
 export function hasCockpitContentSecurityPolicy(html: string): boolean {
@@ -33,19 +34,31 @@ export function normalizeCockpitCspConnectMode(rawMode?: string): CockpitCspConn
 }
 
 export function buildCockpitContentSecurityPolicy(
-  options: { apiBaseUrl?: string; connectMode?: CockpitCspConnectMode } = {},
+  options: {
+    apiBaseUrl?: string;
+    connectMode?: CockpitCspConnectMode;
+    operatorFrameOrigins?: readonly string[];
+  } = {},
 ): string {
   const connectSources = new Set<string>(
     options.connectMode === 'local-only' ? ["'self'"] : PRODUCTION_CONNECT_SOURCES,
   );
-  const localApiOrigin = localHttpApiOriginFromUrl(options.apiBaseUrl);
-  if (localApiOrigin) connectSources.add(localApiOrigin);
+  for (const localApiOrigin of localHttpApiOriginsFromUrl(options.apiBaseUrl)) {
+    connectSources.add(localApiOrigin);
+  }
+
+  const frameSources = new Set<string>(DEFAULT_FRAME_SOURCES);
+  for (const origin of options.operatorFrameOrigins ?? []) {
+    const safeOrigin = safeCockpitFrameOriginFromUrl(origin);
+    if (safeOrigin) frameSources.add(safeOrigin);
+  }
 
   return [
     CSP_DIRECTIVES.defaultSrc,
     CSP_DIRECTIVES.scriptSrc,
     CSP_DIRECTIVES.styleSrc,
     `connect-src ${[...connectSources].join(' ')}`,
+    `frame-src ${[...frameSources].join(' ')}`,
     CSP_DIRECTIVES.imgSrc,
     CSP_DIRECTIVES.fontSrc,
   ].join('; ');
@@ -89,6 +102,57 @@ export function localHttpApiOriginFromUrl(rawUrl?: string): string | null {
   }
 
   return parsed.origin;
+}
+
+export function localHttpApiOriginsFromUrl(rawUrl?: string): string[] {
+  const origin = localHttpApiOriginFromUrl(rawUrl);
+  if (!origin) return [];
+
+  return expandLoopbackOriginAliases(origin);
+}
+
+export function parseCockpitOperatorFrameOrigins(rawValue?: string): string[] {
+  return [
+    ...new Set(
+      (rawValue ?? '')
+        .split(/[;,\n]/)
+        .map((entry) => safeCockpitFrameOriginFromUrl(entry))
+        .filter((origin): origin is string => Boolean(origin)),
+    ),
+  ];
+}
+
+export function safeCockpitFrameOriginFromUrl(rawUrl?: string): string | null {
+  const trimmed = rawUrl?.trim();
+  if (!trimmed) return null;
+
+  let parsed: URL;
+  try {
+    parsed = new URL(trimmed);
+  } catch {
+    return null;
+  }
+
+  if (parsed.username || parsed.password) return null;
+  if (parsed.protocol === 'https:') return parsed.origin;
+  if (parsed.protocol !== 'http:') return null;
+
+  return localHttpApiOriginFromUrl(parsed.origin);
+}
+
+function expandLoopbackOriginAliases(origin: string): string[] {
+  const parsed = new URL(origin);
+  const port = parsed.port ? `:${parsed.port}` : '';
+  const hostname = parsed.hostname.toLowerCase();
+
+  if (hostname === '127.0.0.1') {
+    return [origin, `http://localhost${port}`];
+  }
+  if (hostname === 'localhost') {
+    return [origin, `http://127.0.0.1${port}`];
+  }
+
+  return [origin];
 }
 
 function escapeHtmlAttribute(value: string): string {

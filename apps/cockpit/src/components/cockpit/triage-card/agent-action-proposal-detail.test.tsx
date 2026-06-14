@@ -81,6 +81,17 @@ describe('AgentActionProposalDetail', () => {
     expect(screen.getByText('Dangerous')).toBeTruthy();
   });
 
+  it('renders unclassified category guidance for unknown tool categories', () => {
+    const proposal: AgentActionProposalMeta = {
+      ...BASE_PROPOSAL,
+      toolCategory: 'Unknown',
+    };
+    render(<AgentActionProposalDetail proposal={proposal} />);
+    expect(screen.getByText('Unclassified')).toBeTruthy();
+    expect(screen.queryByText('Unknown')).toBeNull();
+    expect(screen.getByText(/backend did not match this tool/i)).toBeTruthy();
+  });
+
   it('renders Auto tier correctly', () => {
     const proposal: AgentActionProposalMeta = {
       ...BASE_PROPOSAL,

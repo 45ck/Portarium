@@ -418,17 +418,24 @@ function isTrustedUnsafeRequestContext(
   config: CockpitWebSessionConfig | undefined,
 ): boolean {
   const fetchSite = firstHeader(req.headers['sec-fetch-site'])?.toLowerCase();
-  if (
+  const hasCrossSiteFetchMetadata =
     fetchSite &&
     fetchSite !== 'same-origin' &&
     fetchSite !== 'same-site' &&
-    fetchSite !== 'none'
-  ) {
-    return false;
-  }
+    fetchSite !== 'none';
 
+  return isTrustedUnsafeRequestOrigin(req, config, {
+    requireOrigin: Boolean(hasCrossSiteFetchMetadata),
+  });
+}
+
+function isTrustedUnsafeRequestOrigin(
+  req: IncomingMessage,
+  config: CockpitWebSessionConfig | undefined,
+  options: Readonly<{ requireOrigin: boolean }>,
+): boolean {
   const origin = firstHeader(req.headers.origin);
-  if (!origin) return true;
+  if (!origin) return !options.requireOrigin;
 
   const host = firstHeader(req.headers['x-forwarded-host']) ?? firstHeader(req.headers.host);
   if (!host) return false;

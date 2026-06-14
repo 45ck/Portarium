@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { RouterProvider, createMemoryHistory } from '@tanstack/react-router';
 import { createCockpitRouter } from '@/router';
 import { queryClient } from '@/lib/query-client';
@@ -145,29 +145,43 @@ afterAll(() => {
 });
 
 describe('Agent detail operator UI', () => {
-  it('lists the OpenClaw gateway instance with the workspace agents', async () => {
+  it('lists the OpenClaw gateway instance with the live agents', async () => {
     await renderAgentRoute('/config/agents');
 
-    expect(await screen.findByRole('heading', { name: 'Agents' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'Live Agents' })).toBeTruthy();
     expect(await screen.findByText('OpenClaw Gateway Demo')).toBeTruthy();
     expect(await screen.findByText('agent-openclaw-gateway-demo')).toBeTruthy();
   });
 
-  it('renders the hosted OpenClaw operator surface for the gateway agent', async () => {
+  it('renders the hosted OpenClaw operator iframe surface for the gateway agent', async () => {
     await renderAgentRoute('/config/agents/agent-openclaw-gateway-demo');
 
     expect(await screen.findByRole('heading', { name: 'OpenClaw Gateway Demo' })).toBeTruthy();
     expect(screen.getByText('OpenClaw Operator UI')).toBeTruthy();
-    expect(screen.getByText('Direct tunnel')).toBeTruthy();
-    expect(screen.getByText('Read-only')).toBeTruthy();
+    expect(screen.getAllByText('Direct tunnel').length).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByText('Read-only').length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByText('Surface')).toBeTruthy();
+    expect(screen.getByText('Mode')).toBeTruthy();
+    expect(screen.getByText('embedded')).toBeTruthy();
     expect(screen.getByText('No executor access from Cockpit')).toBeTruthy();
     expect(screen.getByText('A4/A5 execution')).toBeTruthy();
 
-    const iframe = screen.getByTitle('OpenClaw Gateway Demo operator UI');
-    expect(iframe.getAttribute('src')).toBe('http://127.0.0.1:19037/chat?session=main');
-    expect(iframe.getAttribute('sandbox')).toBe(
-      'allow-forms allow-popups allow-same-origin allow-scripts',
-    );
+    const openLink = screen.getByRole('link', { name: 'Open' });
+    expect(openLink.getAttribute('href')).toBe('http://localhost:19037/chat?session=main');
+    expect(openLink.getAttribute('target')).toBe('_blank');
+    const reloadButton = screen.getByRole('button', { name: 'Reload OpenClaw Operator UI' });
+    expect(reloadButton).toBeTruthy();
+    const iframe = screen.getByTestId('operator-ui-frame');
+    expect(iframe.getAttribute('title')).toBe('OpenClaw Gateway Demo operator UI');
+    expect(iframe.getAttribute('src')).toBe('http://localhost:19037/chat?session=main');
+    expect(iframe.getAttribute('sandbox')).toBeNull();
+    expect(iframe.getAttribute('allow')).toContain('clipboard-write');
+    expect(screen.queryByText('Operator surface unavailable for embedded display.')).toBeNull();
+
+    fireEvent.click(reloadButton);
+    const reloadedIframe = screen.getByTestId('operator-ui-frame');
+    expect(reloadedIframe).not.toBe(iframe);
+    expect(reloadedIframe.getAttribute('src')).toBe('http://localhost:19037/chat?session=main');
   });
 
   it('does not render the operator surface for ordinary agents', async () => {

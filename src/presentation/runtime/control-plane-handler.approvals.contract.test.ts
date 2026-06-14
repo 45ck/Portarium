@@ -728,6 +728,33 @@ describe('POST /approvals/:approvalId/decide', () => {
     expect(events).toEqual([]);
   });
 
+  it('returns 200 when denying an agent-action approval with no linked proposal', async () => {
+    const broadcast = new InMemoryEventStreamBroadcast();
+    const events: WorkspaceStreamEvent[] = [];
+    broadcast.subscribe(WORKSPACE_ID, (e) => events.push(e));
+
+    await startWith({
+      approvals: [AGENT_ACTION_APPROVAL],
+      agentActionProposal: null,
+      eventStream: broadcast,
+    });
+
+    const res = await fetch(decideUrl('approval-agent-contract-1'), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        decision: 'Denied',
+        rationale: 'Proposal link is missing; deny to clear the orphan card.',
+      }),
+    });
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { approvalId: string; status: string };
+    expect(body.approvalId).toBe('approval-agent-contract-1');
+    expect(body.status).toBe('Denied');
+    expect(events).toHaveLength(1);
+    expect(events[0]!.type).toBe('com.portarium.approval.ApprovalDenied');
+  });
+
   it('returns 200 when an agent-action approval has a matching linked proposal', async () => {
     await startWith({
       approvals: [AGENT_ACTION_APPROVAL],

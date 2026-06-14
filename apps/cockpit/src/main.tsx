@@ -11,51 +11,12 @@ import {
   rollbackCockpitPwa,
 } from './lib/pwa-registration';
 import { toast } from 'sonner';
+import { installLiveFetchShim } from '@/lib/live-fetch-shim';
 import './index.css';
-
-const FETCH_SHIM_KEY = '__portarium_live_fetch_shim_installed__';
-const WEB_SESSION_REQUEST_HEADER = 'X-Portarium-Request';
-
-type WindowWithFetchShimFlag = Window & {
-  [FETCH_SHIM_KEY]?: boolean;
-};
 
 type CockpitMockWorker = {
   start(options: { onUnhandledRequest: 'bypass' }): unknown;
 };
-
-function installLiveFetchShim(): void {
-  if (typeof window === 'undefined') return;
-  const fetchShimWindow = window as WindowWithFetchShimFlag;
-  if (fetchShimWindow[FETCH_SHIM_KEY] === true) return;
-
-  const rawBaseUrl = (import.meta.env.VITE_PORTARIUM_API_BASE_URL ?? '').trim();
-  if (!rawBaseUrl) return;
-  const baseUrl = rawBaseUrl.endsWith('/') ? rawBaseUrl.slice(0, -1) : rawBaseUrl;
-  const nativeFetch = window.fetch.bind(window);
-
-  window.fetch = (input: RequestInfo | URL, init?: RequestInit) => {
-    if (typeof input !== 'string') {
-      return nativeFetch(input, init);
-    }
-
-    const isApiPath = input.startsWith('/v1/') || input.startsWith('/auth/');
-    const url = isApiPath ? `${baseUrl}${input}` : input;
-    if (!isApiPath) {
-      return nativeFetch(url, init);
-    }
-
-    const headers = new Headers(init?.headers);
-    const method = (init?.method ?? 'GET').toUpperCase();
-    const isUnsafeMethod = method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS';
-    if (isUnsafeMethod && !headers.has(WEB_SESSION_REQUEST_HEADER)) {
-      headers.set(WEB_SESSION_REQUEST_HEADER, '1');
-    }
-    return nativeFetch(url, { ...init, credentials: init?.credentials ?? 'include', headers });
-  };
-
-  fetchShimWindow[FETCH_SHIM_KEY] = true;
-}
 
 function startCockpitMockWorker(worker: CockpitMockWorker, timeoutMs = 8000): Promise<void> {
   return new Promise((resolve, reject) => {

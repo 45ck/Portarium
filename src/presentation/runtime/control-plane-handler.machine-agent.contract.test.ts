@@ -976,7 +976,9 @@ describe('OpenClaw integration: create → connect → display → run lifecycle
       policyTier?: string;
       operatorUi?: {
         label?: string;
+        mode?: string;
         embedUrl?: string;
+        externalUrl?: string;
         readOnly?: boolean;
         deniedOperations?: string[];
       };
@@ -985,7 +987,9 @@ describe('OpenClaw integration: create → connect → display → run lifecycle
     expect(body.machineId).toBe('machine-1');
     expect(body.policyTier).toBe('HumanApprove');
     expect(body.operatorUi?.label).toBe('OpenClaw Operator UI');
+    expect(body.operatorUi?.mode).toBe('embedded');
     expect(body.operatorUi?.embedUrl).toBe('http://127.0.0.1:19037/chat?session=main');
+    expect(body.operatorUi?.externalUrl).toBe('http://127.0.0.1:19037/chat?session=main');
     expect(body.operatorUi?.readOnly).toBe(true);
     expect(body.operatorUi?.deniedOperations).toEqual(['A4/A5 execution']);
   });

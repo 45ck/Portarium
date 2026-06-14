@@ -25,13 +25,13 @@ Export the following before running the experiment:
 | Variable                 | Default                 | Purpose                                 |
 | ------------------------ | ----------------------- | --------------------------------------- |
 | `PORTARIUM_URL`          | `http://localhost:3000` | Base URL of the Portarium control plane |
-| `PORTARIUM_WORKSPACE_ID` | `ws-experiment`         | Workspace to create the proposal in     |
+| `PORTARIUM_WORKSPACE_ID` | `ws-demo`               | Workspace to create the proposal in     |
 | `PORTARIUM_BEARER_TOKEN` | `dev-token`             | Bearer token accepted by the dev server |
 | `PORTARIUM_TENANT_ID`    | `default`               | Tenant header value                     |
 
 ```bash
 export PORTARIUM_URL=http://localhost:3000
-export PORTARIUM_WORKSPACE_ID=ws-experiment
+export PORTARIUM_WORKSPACE_ID=ws-demo
 export PORTARIUM_BEARER_TOKEN=dev-token
 export PORTARIUM_TENANT_ID=default
 ```

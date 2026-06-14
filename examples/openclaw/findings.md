@@ -146,7 +146,7 @@ hook registration mechanism and cannot make tool calls without going through the
 
 - **In-memory control plane:** Data does not survive process restart. Production deployments
   use PostgreSQL for durability.
-- **Single workspace:** All tool calls go to `ws-experiment`. Production uses per-agent workspaces.
+- **Single workspace:** All tool calls go to `ws-demo`. Production uses per-agent workspaces.
 - **No capability registry:** Tool-specific policy tiers (e.g. `exec` = Auto, `send_email` = HumanApprove)
   are not configured — all tools default to `HumanApprove` via `defaultExecutionTier`.
 - **No OpenFGA authorization:** The `DEV_STUB_STORES` path uses permissive in-memory authorization.

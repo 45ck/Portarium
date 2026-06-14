@@ -168,7 +168,7 @@ describe('approval context panel summary helpers', () => {
       expect(result.categoryVariant).toBe('destructive');
     });
 
-    it('correctly maps Unknown toolCategory', () => {
+    it('maps Unknown toolCategory to the unclassified review label', () => {
       const approval: ApprovalSummary = {
         ...BASE_APPROVAL,
         agentActionProposal: {
@@ -181,7 +181,7 @@ describe('approval context panel summary helpers', () => {
         },
       };
       const result = buildAgentActionPanelSummary(approval)!;
-      expect(result.categoryLabel).toBe('Unknown');
+      expect(result.categoryLabel).toBe('Unclassified');
       expect(result.categoryVariant).toBe('outline');
     });
 

@@ -25,12 +25,12 @@ instructed to do so.
 DEV_STUB_STORES=true NODE_ENV=development ENABLE_DEV_AUTH=true \
   PORTARIUM_DEV_TOKEN=dev-token PORTARIUM_DEV_USER_ID=agent-proposer \
   PORTARIUM_DEV_TOKEN_2=dev-token-operator PORTARIUM_DEV_USER_ID_2=human-operator \
-  PORTARIUM_DEV_WORKSPACE_ID=ws-experiment \
+  PORTARIUM_DEV_WORKSPACE_ID=ws-demo \
   PORTARIUM_HTTP_PORT=3000 PORTARIUM_APPROVAL_SCHEDULER_DISABLED=true \
   node node_modules/tsx/dist/cli.mjs src/presentation/runtime/control-plane.ts &
 
 # 2. Run the automated governance experiment
-PORTARIUM_URL=http://localhost:3000 PORTARIUM_WORKSPACE_ID=ws-experiment \
+PORTARIUM_URL=http://localhost:3000 PORTARIUM_WORKSPACE_ID=ws-demo \
   PORTARIUM_BEARER_TOKEN=dev-token PORTARIUM_OPERATOR_TOKEN=dev-token-operator \
   PORTARIUM_TENANT_ID=default \
   node node_modules/tsx/dist/cli.mjs experiments/openclaw-governance/run.mjs
@@ -41,10 +41,10 @@ OPENCLAW_CONFIG_PATH="C:/Users/<YOU>/.openclaw-portarium-dev/openclaw.json" \
   --message "List files in C:/tmp"
 
 # 4. In another terminal — approve (or deny) the suspended tool call
-curl -X POST "http://localhost:3000/v1/workspaces/ws-experiment/approvals/<approvalId>/decide" \
+curl -X POST "http://localhost:3000/v1/workspaces/ws-demo/approvals/<approvalId>/decide" \
   -H "content-type: application/json" \
   -H "authorization: Bearer dev-token-operator" \
-  -H "x-portarium-workspace-id: ws-experiment" \
+  -H "x-portarium-workspace-id: ws-demo" \
   -H "x-portarium-tenant-id: default" \
   -d '{"decision": "Approved", "rationale": "Operator approved"}'
 ```
