@@ -33,6 +33,50 @@ describe('ApprovalShell', () => {
     expect(screen.getByText('Deploy marketing campaign to production')).toBeTruthy();
   });
 
+  it('renders cleaned approval title instead of object-placeholder prompt', () => {
+    render(
+      <ApprovalShell
+        approval={{
+          ...BASE_APPROVAL,
+          prompt: 'Review monitor item: [object Object]',
+          approvalPacket: {
+            schemaVersion: 1,
+            packetId: 'packet-monitor-shell',
+            artifacts: [
+              {
+                artifactId: 'artifact-monitor-shell',
+                title: 'OpenClaw approval request',
+                mimeType: 'application/json',
+                role: 'primary',
+              },
+            ],
+            reviewDocs: [{ title: 'Review brief', markdown: '# Review' }],
+            requestedCapabilities: [
+              {
+                capabilityId: 'openclaw.email_query',
+                reason: 'Review redacted monitor signal before any follow-up proposal.',
+                required: true,
+              },
+            ],
+            planScope: {
+              planId: 'plan-monitor-shell',
+              summary:
+                'OpenClaw approval required: email_query on tenant-mailbox:account-security-watch. Review latest standing-read monitor attention item: Tenant mailbox account/security signal. Severity: medium.',
+              actionIds: ['action-monitor-shell'],
+              plannedEffectIds: ['effect-monitor-shell'],
+            },
+          },
+        }}
+        onDecide={vi.fn()}
+      >
+        <p>payload content</p>
+      </ApprovalShell>,
+    );
+
+    expect(screen.getByText('Review monitor item: Tenant mailbox account/security signal')).toBeTruthy();
+    expect(screen.queryByText(/object Object/)).toBeNull();
+  });
+
   it('renders the approval ID', () => {
     render(
       <ApprovalShell approval={BASE_APPROVAL} onDecide={vi.fn()}>

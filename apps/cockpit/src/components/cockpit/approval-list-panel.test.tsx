@@ -115,6 +115,45 @@ describe('ApprovalListPanel — agentActionProposal metadata display', () => {
     expect(screen.getByText('Approve deployment to production?')).toBeTruthy();
   });
 
+  it('renders real monitor titles for stale object-placeholder prompts', () => {
+    renderPanel([
+      {
+        ...BASE_APPROVAL,
+        prompt: 'Review monitor item: [object Object]',
+        approvalPacket: {
+          schemaVersion: 1,
+          packetId: 'packet-monitor-1',
+          artifacts: [
+            {
+              artifactId: 'artifact-monitor-1',
+              title: 'OpenClaw approval request',
+              mimeType: 'application/json',
+              role: 'primary',
+            },
+          ],
+          reviewDocs: [{ title: 'Review brief', markdown: '# Review' }],
+          requestedCapabilities: [
+            {
+              capabilityId: 'openclaw.email_query',
+              reason: 'Review redacted monitor signal before any follow-up proposal.',
+              required: true,
+            },
+          ],
+          planScope: {
+            planId: 'plan-monitor-1',
+            summary:
+              'OpenClaw approval required: email_query on tenant-learning:admin-workflow-watch. Review latest standing-read monitor attention item: Tenant learning admin signal. Severity: medium.',
+            actionIds: ['action-monitor-1'],
+            plannedEffectIds: ['effect-monitor-1'],
+          },
+        },
+      },
+    ]);
+
+    expect(screen.getByText('Review monitor item: Tenant learning admin signal')).toBeTruthy();
+    expect(screen.queryByText(/object Object/)).toBeNull();
+  });
+
   it('marks and scrolls the selected approval row', () => {
     render(
       <ApprovalListPanel

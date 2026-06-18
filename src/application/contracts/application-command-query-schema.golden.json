@@ -91,7 +91,7 @@
       "types": {
         "input": {
           "name": "CreateApprovalInput",
-          "sha256": "0d713ae257bd422781f0d1b481e48b4c100be2333aef7a3918df008cb3784685"
+          "sha256": "c060425772fd8bfefe7d8eebbc3638c70d5862fe2a66f04ee5138260dc33d663"
         },
         "output": {
           "name": "CreateApprovalOutput",

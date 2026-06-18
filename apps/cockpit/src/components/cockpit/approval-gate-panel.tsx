@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Bot, Zap, AlertTriangle, Eye } from 'lucide-react';
 import { getAgentActionCategoryPresentation } from '@/lib/agent-action-category';
+import { summarizeApprovalTitle } from '@/components/cockpit/triage-card/approval-card-contract';
 
 const TIER_CONFIG = {
   Auto: {
@@ -47,6 +48,7 @@ export function ApprovalGatePanel({ approval, onDecide, loading }: ApprovalGateP
   const [rationale, setRationale] = useState('');
   const [denyAttempted, setDenyAttempted] = useState(false);
   const isPending = approval.status === 'Pending';
+  const title = summarizeApprovalTitle(approval, 260);
 
   const sodEval = approval.sodEvaluation ?? DEFAULT_SOD_EVALUATION;
   const isBlocked = sodEval.state === 'blocked-self' || sodEval.state === 'blocked-role';
@@ -61,7 +63,7 @@ export function ApprovalGatePanel({ approval, onDecide, loading }: ApprovalGateP
       </CardHeader>
       <CardContent className="space-y-3">
         <div className="rounded-md bg-muted/40 border border-border p-3 text-xs italic text-muted-foreground">
-          {approval.prompt}
+          {title}
         </div>
         <div className="text-xs space-y-1">
           {approval.assigneeUserId && (

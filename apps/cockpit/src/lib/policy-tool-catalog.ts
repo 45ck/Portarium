@@ -15,6 +15,7 @@ export const RUNTIME_TOOL_ROUTE_SEEDS: readonly PolicyControllerToolRoute[] = [
     decision: 'allow',
     description: 'Health and policy status reads.',
     riskCategory: 'ReadOnly',
+    minimumExecutionTier: 'Auto',
     source: 'runtime-seed',
   },
   {
@@ -23,10 +24,11 @@ export const RUNTIME_TOOL_ROUTE_SEEDS: readonly PolicyControllerToolRoute[] = [
     toolName: 'openclaw.context_pack.build',
     provider: 'Gateway',
     actionClass: 'context-pack',
-    currentDecision: 'sandbox',
-    decision: 'sandbox',
+    currentDecision: 'allow',
+    decision: 'allow',
     description: 'Builds a summary from approved evidence pointers.',
     riskCategory: 'ReadOnly',
+    minimumExecutionTier: 'Auto',
     source: 'runtime-seed',
   },
   {
@@ -35,10 +37,11 @@ export const RUNTIME_TOOL_ROUTE_SEEDS: readonly PolicyControllerToolRoute[] = [
     toolName: 'openclaw.browser.query',
     provider: 'Gateway',
     actionClass: 'browser-query',
-    currentDecision: 'approval',
-    decision: 'approval',
+    currentDecision: 'allow',
+    decision: 'allow',
     description: 'Runs a narrow browser read through a governed gateway.',
-    riskCategory: 'Dangerous',
+    riskCategory: 'ReadOnly',
+    minimumExecutionTier: 'Auto',
     source: 'runtime-seed',
   },
   {
@@ -51,6 +54,7 @@ export const RUNTIME_TOOL_ROUTE_SEEDS: readonly PolicyControllerToolRoute[] = [
     decision: 'allow',
     description: 'One-at-a-time approved source read through a private bridge.',
     riskCategory: 'ReadOnly',
+    minimumExecutionTier: 'Auto',
     source: 'runtime-seed',
   },
   {
@@ -63,6 +67,7 @@ export const RUNTIME_TOOL_ROUTE_SEEDS: readonly PolicyControllerToolRoute[] = [
     decision: 'allow',
     description: 'Creates a review packet without executing the requested action.',
     riskCategory: 'ReadOnly',
+    minimumExecutionTier: 'Auto',
     source: 'runtime-seed',
   },
   {
@@ -75,6 +80,7 @@ export const RUNTIME_TOOL_ROUTE_SEEDS: readonly PolicyControllerToolRoute[] = [
     decision: 'deny',
     description: 'Calls a tool that can change an external or live system.',
     riskCategory: 'Dangerous',
+    minimumExecutionTier: 'ManualOnly',
     source: 'runtime-seed',
   },
 ];
@@ -92,6 +98,7 @@ export function toolCatalogRoutesFromItems(
     decision: item.recommendedDecision,
     description: item.description,
     riskCategory: item.riskCategory,
+    minimumExecutionTier: item.minimumExecutionTier,
     source: 'catalog',
   }));
 }
@@ -102,11 +109,16 @@ export function mergeCatalogToolRoutes(
 ): PolicyControllerToolRoute[] {
   if (catalogRoutes.length === 0) return [...currentRoutes];
 
-  const currentByToolName = new Map(currentRoutes.map((tool) => [tool.toolName, tool]));
+  const currentById = new Map(currentRoutes.map((tool) => [tool.id, tool]));
+  const nonCatalogCurrentByToolName = new Map(
+    currentRoutes.filter((tool) => tool.source !== 'catalog').map((tool) => [tool.toolName, tool]),
+  );
+  const mergedCurrentIds = new Set<string>();
   const catalogToolNames = new Set(catalogRoutes.map((tool) => tool.toolName));
   const mergedCatalogRoutes = catalogRoutes.map((tool) => {
-    const existing = currentByToolName.get(tool.toolName);
+    const existing = currentById.get(tool.id) ?? nonCatalogCurrentByToolName.get(tool.toolName);
     if (!existing) return tool;
+    mergedCurrentIds.add(existing.id);
     return {
       ...tool,
       currentDecision: existing.currentDecision,
@@ -114,7 +126,9 @@ export function mergeCatalogToolRoutes(
     };
   });
 
-  const localOnlyRoutes = currentRoutes.filter((tool) => !catalogToolNames.has(tool.toolName));
+  const localOnlyRoutes = currentRoutes.filter(
+    (tool) => !mergedCurrentIds.has(tool.id) && !catalogToolNames.has(tool.toolName),
+  );
   return [...mergedCatalogRoutes, ...localOnlyRoutes];
 }
 
@@ -134,7 +148,7 @@ export function decisionForCatalogRisk(
 
 function catalogRouteId(item: ToolCatalogItem): string {
   const slug =
-    item.toolName
+    (item.toolId || `${item.source}:${item.provider}:${item.toolName}`)
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '') || item.toolId;

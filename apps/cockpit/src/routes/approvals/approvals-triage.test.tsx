@@ -31,6 +31,11 @@ let _mockOfflineMeta: OfflineQueryMeta = {
   isStaleData: false,
   dataSource: 'network',
 };
+let _mockApprovalDetailOfflineMeta: OfflineQueryMeta = {
+  isOffline: false,
+  isStaleData: false,
+  dataSource: 'network',
+};
 let _mockPendingCount = 0;
 const _mockRefetch = vi.fn();
 const _mockSubmitDecision = vi.fn().mockResolvedValue({ queued: false });
@@ -48,6 +53,7 @@ vi.mock('@/hooks/queries/use-approvals', () => ({
     isLoading: false,
     isError: false,
     error: null,
+    offlineMeta: _mockApprovalDetailOfflineMeta,
   })),
   useApprovalDecision: vi.fn(),
 }));
@@ -164,6 +170,11 @@ beforeEach(() => {
   _mockIsLoading = false;
   _mockIsError = false;
   _mockOfflineMeta = {
+    isOffline: false,
+    isStaleData: false,
+    dataSource: 'network',
+  };
+  _mockApprovalDetailOfflineMeta = {
     isOffline: false,
     isStaleData: false,
     dataSource: 'network',
@@ -581,6 +592,28 @@ describe('Approvals triage page', () => {
     expect(await screen.findByText('1 of 1 pending')).toBeTruthy();
     const matchingPrompts = await screen.findAllByText(focused.prompt, { exact: false });
     expect(matchingPrompts.length).toBeGreaterThan(0);
+  });
+
+  it('renders a focused notification approval when the queue list is still loading', async () => {
+    const focused = ALL_PENDING[1]!;
+    _mockIsLoading = true;
+    _mockApprovals = [];
+    _mockOfflineMeta = {
+      isOffline: false,
+      isStaleData: false,
+      dataSource: 'none',
+    };
+    _mockApprovalDetails = { [focused.approvalId]: focused };
+
+    await renderApprovalsRoute(
+      `/approvals?focus=${encodeURIComponent(focused.approvalId)}&from=notification`,
+    );
+
+    expect(await screen.findByText(/focused approval review/i)).toBeTruthy();
+    expect(await screen.findByText('1 of 1 pending')).toBeTruthy();
+    const matchingPrompts = await screen.findAllByText(focused.prompt, { exact: false });
+    expect(matchingPrompts.length).toBeGreaterThan(0);
+    expect(screen.queryByText(/waiting for data/i)).toBeNull();
   });
 
   it('does not fetch linked run or plan records for agent-action proposal approvals', async () => {

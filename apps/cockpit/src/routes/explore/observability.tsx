@@ -27,6 +27,7 @@ import {
   type AgentSessionObservation,
   type EvidenceChainHealth,
 } from '@/lib/agent-observability';
+import { summarizeApprovalTitle } from '@/components/cockpit/triage-card/approval-card-contract';
 
 function postureBadge(posture: AgentSessionObservation['posture']) {
   switch (posture) {
@@ -311,7 +312,7 @@ export function AgentObservabilityBoard({ title = 'Mission Control' }: { title?:
                         params={{ approvalId: approval.approvalId }}
                         className="line-clamp-2 text-sm font-medium text-primary hover:underline"
                       >
-                        {approval.prompt}
+                        {summarizeApprovalTitle(approval)}
                       </Link>
                       <p className="mt-1 text-[11px] text-muted-foreground">
                         {approval.agentActionProposal?.agentId ?? approval.requestedByUserId} ·{' '}

@@ -61,6 +61,8 @@ const CREATE_APPROVAL_REQUEST_FIELDS = new Set([
   'assigneeUserId',
   'dueAtIso',
   'approvalPacket',
+  'policyRule',
+  'agentActionProposal',
 ]);
 
 function isApprovalStatusQueryValue(value: string): value is ApprovalStatus {
@@ -192,6 +194,9 @@ async function enrichApprovalWithProposal(
   approval: ApprovalV1,
 ): Promise<Record<string, unknown>> {
   const plain = { ...approval } as Record<string, unknown>;
+  if (plain['agentActionProposal'] !== undefined) {
+    return plain;
+  }
   try {
     const proposal = await store.getProposalByApprovalId(
       tenantId,
@@ -456,6 +461,10 @@ export async function handleCreateApproval(args: ApprovalHandlerArgs): Promise<v
       : {}),
     ...(typeof record['dueAtIso'] === 'string' ? { dueAtIso: record['dueAtIso'] } : {}),
     ...(approvalPacket ? { approvalPacket } : {}),
+    ...(record['policyRule'] !== undefined ? { policyRule: record['policyRule'] } : {}),
+    ...(record['agentActionProposal'] !== undefined
+      ? { agentActionProposal: record['agentActionProposal'] }
+      : {}),
     ...(idempotencyKey ? { idempotencyKey } : {}),
   } as Parameters<typeof createApproval>[2] & { idempotencyKey?: string });
 

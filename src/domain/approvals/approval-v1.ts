@@ -14,6 +14,7 @@ import {
   type WorkspaceId as WorkspaceIdType,
 } from '../primitives/index.js';
 import {
+  parseEnumValue,
   parseRecord,
   parseIsoDate,
   readInteger,
@@ -34,6 +35,32 @@ export type EscalationStepV1 = Readonly<{
   afterHours: number;
 }>;
 
+const EXECUTION_TIERS = ['Auto', 'Assisted', 'HumanApprove', 'ManualOnly'] as const;
+const POLICY_IRREVERSIBILITY = ['full', 'partial', 'none'] as const;
+const TOOL_RISK_CATEGORIES = ['ReadOnly', 'Mutation', 'Dangerous', 'Unknown'] as const;
+
+export type ExecutionTierV1 = (typeof EXECUTION_TIERS)[number];
+export type PolicyIrreversibilityV1 = (typeof POLICY_IRREVERSIBILITY)[number];
+export type ToolRiskCategoryV1 = (typeof TOOL_RISK_CATEGORIES)[number];
+
+export type ApprovalViewPolicyRuleV1 = Readonly<{
+  ruleId: string;
+  trigger: string;
+  tier: ExecutionTierV1;
+  blastRadius: readonly string[];
+  irreversibility: PolicyIrreversibilityV1;
+}>;
+
+export type ApprovalViewAgentActionProposalMetaV1 = Readonly<{
+  proposalId: string;
+  agentId: string;
+  machineId?: string;
+  toolName: string;
+  toolCategory: ToolRiskCategoryV1;
+  blastRadiusTier: ExecutionTierV1;
+  rationale: string;
+}>;
+
 type ApprovalBaseV1 = Readonly<{
   schemaVersion: 1;
   approvalId: ApprovalIdType;
@@ -48,6 +75,8 @@ type ApprovalBaseV1 = Readonly<{
   dueAtIso?: string;
   escalationChain?: readonly EscalationStepV1[];
   approvalPacket?: ApprovalPacketV1;
+  policyRule?: ApprovalViewPolicyRuleV1;
+  agentActionProposal?: ApprovalViewAgentActionProposalMetaV1;
 }>;
 
 export type ApprovalPendingV1 = Readonly<
@@ -129,6 +158,14 @@ function parseApprovalBaseV1(value: Record<string, unknown>): ApprovalBaseV1 {
   const approvalPacketRaw = value['approvalPacket'];
   const approvalPacket =
     approvalPacketRaw === undefined ? undefined : parseApprovalPacketV1(approvalPacketRaw);
+  const policyRuleRaw = value['policyRule'];
+  const policyRule =
+    policyRuleRaw === undefined ? undefined : parseApprovalViewPolicyRuleV1(policyRuleRaw);
+  const agentActionProposalRaw = value['agentActionProposal'];
+  const agentActionProposal =
+    agentActionProposalRaw === undefined
+      ? undefined
+      : parseApprovalViewAgentActionProposalMetaV1(agentActionProposalRaw);
 
   return {
     schemaVersion: 1,
@@ -144,6 +181,8 @@ function parseApprovalBaseV1(value: Record<string, unknown>): ApprovalBaseV1 {
     ...(dueAtIso ? { dueAtIso } : {}),
     ...(escalationChain ? { escalationChain } : {}),
     ...(approvalPacket ? { approvalPacket } : {}),
+    ...(policyRule ? { policyRule } : {}),
+    ...(agentActionProposal ? { agentActionProposal } : {}),
   };
 }
 
@@ -204,6 +243,70 @@ function parseEscalationStep(value: unknown, pathLabel: string): EscalationStepV
   const afterHours = readInteger(record, 'afterHours', ApprovalParseError);
   if (afterHours <= 0) throw new ApprovalParseError('afterHours must be > 0');
   return { stepOrder, escalateToUserId, afterHours };
+}
+
+function parseStringArray(value: unknown, label: string): readonly string[] {
+  if (!Array.isArray(value)) {
+    throw new ApprovalParseError(`${label} must be an array.`);
+  }
+  return value.map((item, index) => {
+    if (typeof item !== 'string' || item.trim() === '') {
+      throw new ApprovalParseError(`${label}[${index}] must be a non-empty string.`);
+    }
+    return item;
+  });
+}
+
+export function parseApprovalViewPolicyRuleV1(value: unknown): ApprovalViewPolicyRuleV1 {
+  const record = readRecord(value, 'policyRule', ApprovalParseError);
+  return {
+    ruleId: readString(record, 'ruleId', ApprovalParseError, { path: 'policyRule' }),
+    trigger: readString(record, 'trigger', ApprovalParseError, { path: 'policyRule' }),
+    tier: parseEnumValue(record['tier'], 'policyRule.tier', EXECUTION_TIERS, ApprovalParseError),
+    blastRadius: parseStringArray(record['blastRadius'], 'policyRule.blastRadius'),
+    irreversibility: parseEnumValue(
+      record['irreversibility'],
+      'policyRule.irreversibility',
+      POLICY_IRREVERSIBILITY,
+      ApprovalParseError,
+    ),
+  };
+}
+
+export function parseApprovalViewAgentActionProposalMetaV1(
+  value: unknown,
+): ApprovalViewAgentActionProposalMetaV1 {
+  const record = readRecord(value, 'agentActionProposal', ApprovalParseError);
+  const machineId = readOptionalString(record, 'machineId', ApprovalParseError, {
+    path: 'agentActionProposal',
+  });
+  return {
+    proposalId: readString(record, 'proposalId', ApprovalParseError, {
+      path: 'agentActionProposal',
+    }),
+    agentId: readString(record, 'agentId', ApprovalParseError, {
+      path: 'agentActionProposal',
+    }),
+    ...(machineId ? { machineId } : {}),
+    toolName: readString(record, 'toolName', ApprovalParseError, {
+      path: 'agentActionProposal',
+    }),
+    toolCategory: parseEnumValue(
+      record['toolCategory'],
+      'agentActionProposal.toolCategory',
+      TOOL_RISK_CATEGORIES,
+      ApprovalParseError,
+    ),
+    blastRadiusTier: parseEnumValue(
+      record['blastRadiusTier'],
+      'agentActionProposal.blastRadiusTier',
+      EXECUTION_TIERS,
+      ApprovalParseError,
+    ),
+    rationale: readString(record, 'rationale', ApprovalParseError, {
+      path: 'agentActionProposal',
+    }),
+  };
 }
 
 function parseOptionalId<T>(

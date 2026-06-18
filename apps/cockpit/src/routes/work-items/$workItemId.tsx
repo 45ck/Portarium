@@ -16,6 +16,7 @@ import { ApprovalStatusBadge } from '@/components/cockpit/approval-status-badge'
 import { SorRefPill } from '@/components/cockpit/sor-ref-pill';
 import { EvidenceTimeline } from '@/components/cockpit/evidence-timeline';
 import { OwnerPicker } from '@/components/cockpit/owner-picker';
+import { summarizeApprovalTitle } from '@/components/cockpit/triage-card/approval-card-contract';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -212,7 +213,7 @@ function WorkItemDetailPage() {
                         className="flex items-start justify-between gap-2 py-1.5 px-2 rounded-md hover:bg-muted/50 transition-colors"
                       >
                         <div className="min-w-0 flex-1">
-                          <p className="text-xs truncate">{a.prompt}</p>
+                          <p className="text-xs truncate">{summarizeApprovalTitle(a)}</p>
                         </div>
                         <ApprovalStatusBadge status={a.status} />
                       </Link>

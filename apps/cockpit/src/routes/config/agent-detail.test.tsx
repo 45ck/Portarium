@@ -153,18 +153,18 @@ describe('Agent detail operator UI', () => {
     expect(await screen.findByText('agent-openclaw-gateway-demo')).toBeTruthy();
   });
 
-  it('renders the hosted OpenClaw operator iframe surface for the gateway agent', async () => {
+  it('renders the hosted OpenClaw operator iframe as the focused gateway surface', async () => {
     await renderAgentRoute('/config/agents/agent-openclaw-gateway-demo');
 
     expect(await screen.findByRole('heading', { name: 'OpenClaw Gateway Demo' })).toBeTruthy();
     expect(screen.getByText('OpenClaw Operator UI')).toBeTruthy();
-    expect(screen.getAllByText('Direct tunnel').length).toBeGreaterThanOrEqual(2);
-    expect(screen.getAllByText('Read-only').length).toBeGreaterThanOrEqual(2);
-    expect(screen.getByText('Surface')).toBeTruthy();
-    expect(screen.getByText('Mode')).toBeTruthy();
-    expect(screen.getByText('embedded')).toBeTruthy();
-    expect(screen.getByText('No executor access from Cockpit')).toBeTruthy();
-    expect(screen.getByText('A4/A5 execution')).toBeTruthy();
+    expect(screen.getByText('Direct tunnel')).toBeTruthy();
+    expect(screen.getByText('Read-only')).toBeTruthy();
+    expect(screen.queryByText('Surface')).toBeNull();
+    expect(screen.queryByText('Boundary')).toBeNull();
+    expect(screen.queryByText('Denied Operations')).toBeNull();
+    expect(screen.queryByText('Agent ID')).toBeNull();
+    expect(screen.queryByText('No executor access from Cockpit')).toBeNull();
 
     const openLink = screen.getByRole('link', { name: 'Open' });
     expect(openLink.getAttribute('href')).toBe('http://localhost:19037/chat?session=main');
@@ -177,6 +177,22 @@ describe('Agent detail operator UI', () => {
     expect(iframe.getAttribute('sandbox')).toBeNull();
     expect(iframe.getAttribute('allow')).toContain('clipboard-write');
     expect(screen.queryByText('Operator surface unavailable for embedded display.')).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Details' }));
+    expect(await screen.findByText('Surface')).toBeTruthy();
+    expect(screen.getByText('Mode')).toBeTruthy();
+    expect(screen.getByText('embedded')).toBeTruthy();
+    expect(screen.getByText('Boundary')).toBeTruthy();
+    expect(screen.getByText('Denied Operations')).toBeTruthy();
+    expect(screen.getByText('No executor access from Cockpit')).toBeTruthy();
+    expect(screen.getByText('A4/A5 execution')).toBeTruthy();
+    expect(screen.getByText('Agent ID')).toBeTruthy();
+    expect(screen.getByText('agent-openclaw-gateway-demo')).toBeTruthy();
+    expect(screen.getByText('Agent Metadata')).toBeTruthy();
+    expect(screen.getByText('Connected Machine')).toBeTruthy();
+    expect(screen.getByText('Capabilities')).toBeTruthy();
+    expect(screen.getByText('Used by Workflows')).toBeTruthy();
+    expect(screen.getByText('Recent Runs')).toBeTruthy();
 
     fireEvent.click(reloadButton);
     const reloadedIframe = screen.getByTestId('operator-ui-frame');

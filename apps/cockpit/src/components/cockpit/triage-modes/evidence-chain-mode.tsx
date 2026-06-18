@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { ChainIntegrityBanner } from '@/components/cockpit/chain-integrity-banner';
 import { EvidenceCategoryBadge } from '@/components/cockpit/evidence-category-badge';
+import { VisualEvidenceTimeline } from '@/components/cockpit/visual-evidence-timeline';
 import {
   CheckCircle2,
   XCircle,
@@ -301,6 +302,8 @@ export function EvidenceChainMode({
       <ChainIntegrityBanner status={chainStatus} />
 
       <EvidenceAdequacy entries={evidenceEntries} />
+
+      <VisualEvidenceTimeline evidenceEntries={evidenceEntries} variant="detail" />
 
       <div className="max-h-[240px] sm:max-h-[320px] overflow-y-auto space-y-0 pr-1">
         {chain.map((item, i) => (

@@ -25,12 +25,15 @@ import type {
   PolicyRule,
   DecisionHistoryEntry,
   ApprovalPacket,
+  ApprovalPacketDecisionView,
 } from '@portarium/cockpit-types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { AgentActionContextPanel } from '@/components/cockpit/agent-action-context-panel';
 import { PolicyPrecedentMode } from '@/components/cockpit/triage-modes/policy-precedent-mode';
+import { summarizeApprovalTitle } from '@/components/cockpit/triage-card/approval-card-contract';
+import { VisualEvidenceTimeline } from '@/components/cockpit/visual-evidence-timeline';
 import { cn } from '@/lib/utils';
 import {
   Link2,
@@ -292,6 +295,46 @@ function EffectsList({ effects }: { effects: PlanEffect[] }) {
   );
 }
 
+function PacketDecisionView({ view }: { view: ApprovalPacketDecisionView }) {
+  return (
+    <div className="rounded-md border border-border p-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <Badge variant="secondary">{view.label}</Badge>
+        {view.kind && (
+          <Badge variant="outline" className="font-mono text-[10px]">
+            {view.kind}
+          </Badge>
+        )}
+        <span className="text-[11px] font-medium text-muted-foreground">{view.stance}</span>
+      </div>
+      <p className="mt-2 text-xs leading-relaxed">{view.summary}</p>
+      {view.items && view.items.length > 0 && (
+        <div className="mt-2 grid gap-1.5 sm:grid-cols-2">
+          {view.items.map((item, index) => (
+            <div
+              key={`${item.label}-${index}`}
+              className="rounded border border-border px-2 py-1.5"
+            >
+              <p className="text-[10px] font-semibold uppercase text-muted-foreground">
+                {item.label}
+              </p>
+              <p className="mt-0.5 text-xs">{item.value}</p>
+            </div>
+          ))}
+        </div>
+      )}
+      {view.diagram && (
+        <pre
+          aria-label={`${view.label} diagram`}
+          className="mt-2 max-h-48 overflow-auto rounded border border-border bg-muted/20 p-2 font-mono text-[11px] leading-relaxed text-muted-foreground"
+        >
+          {view.diagram}
+        </pre>
+      )}
+    </div>
+  );
+}
+
 function ApprovalPacketPanel({ packet }: { packet: ApprovalPacket }) {
   const primaryArtifact = packet.artifacts.find((artifact) => artifact.role === 'primary');
   const supportingArtifacts = packet.artifacts.filter((artifact) => artifact.role !== 'primary');
@@ -335,6 +378,12 @@ function ApprovalPacketPanel({ packet }: { packet: ApprovalPacket }) {
             ))}
           </div>
         )}
+        <VisualEvidenceTimeline
+          evidenceEntries={[]}
+          approvalPacket={packet}
+          variant="compact"
+          className="pt-1"
+        />
       </div>
 
       <div className="grid gap-3 md:grid-cols-3 lg:grid-cols-1">
@@ -389,6 +438,20 @@ function ApprovalPacketPanel({ packet }: { packet: ApprovalPacket }) {
             ))}
           </div>
         </div>
+
+        {packet.decisionViews && packet.decisionViews.length > 0 && (
+          <div className="rounded-md border border-border p-3">
+            <div className="flex items-center gap-2 text-xs font-semibold">
+              <GitBranch className="h-4 w-4 text-muted-foreground" />
+              Custom Views
+            </div>
+            <div className="mt-2 space-y-2">
+              {packet.decisionViews.map((view) => (
+                <PacketDecisionView key={view.id} view={view} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );
@@ -460,9 +523,19 @@ export function ApprovalReviewPanel({
   const [rationale, setRationale] = useState('');
   const [denyAttempted, setDenyAttempted] = useState(false);
   const history = approval.decisionHistory ?? [];
+  const title = summarizeApprovalTitle(approval, 240);
 
   const tabContent: Record<ReviewTab, React.ReactNode> = {
-    evidence: <EvidenceTimeline entries={evidenceEntries} />,
+    evidence: (
+      <div className="space-y-4">
+        <VisualEvidenceTimeline
+          evidenceEntries={evidenceEntries}
+          approvalPacket={approval.approvalPacket}
+          variant="detail"
+        />
+        <EvidenceTimeline entries={evidenceEntries} />
+      </div>
+    ),
     policy: <PolicyEvaluationList evaluations={policyEvaluations} />,
     effects: <EffectsList effects={plannedEffects} />,
     discussion: <DiscussionPanel history={history} />,
@@ -507,7 +580,7 @@ export function ApprovalReviewPanel({
             {approval.status}
           </Badge>
         </div>
-        <p className="text-base font-semibold leading-snug">{approval.prompt}</p>
+        <p className="text-base font-semibold leading-snug">{title}</p>
         <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
           <span>
             By <span className="font-medium text-foreground">{approval.requestedByUserId}</span>

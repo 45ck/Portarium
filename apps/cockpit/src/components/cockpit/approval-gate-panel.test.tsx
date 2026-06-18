@@ -88,4 +88,33 @@ describe('ApprovalGatePanel', () => {
     expect(screen.getByText('Unclassified')).toBeTruthy();
     expect(screen.queryByText('Unknown')).toBeNull();
   });
+
+  it('renders recovered monitor title instead of object placeholder prompt', () => {
+    render(
+      <ApprovalGatePanel
+        approval={{
+          ...BASE_APPROVAL,
+          prompt: 'Review monitor item: [object Object]',
+          approvalPacket: {
+            schemaVersion: 1,
+            packetId: 'packet-monitor-proof',
+            artifacts: [],
+            reviewDocs: [],
+            requestedCapabilities: [],
+            planScope: {
+              planId: 'plan-monitor-proof',
+              summary:
+                'Review latest standing-read monitor attention item: Tenant learning admin signal.',
+              actionIds: ['action-monitor-proof'],
+              plannedEffectIds: ['effect-monitor-proof'],
+            },
+          },
+        }}
+        onDecide={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText('Review monitor item: Tenant learning admin signal')).toBeTruthy();
+    expect(screen.queryByText(/\[object Object\]/i)).toBeNull();
+  });
 });

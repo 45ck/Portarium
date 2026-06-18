@@ -19,6 +19,45 @@ describe('parseApprovalV1: happy path', () => {
     expect(approval.status).toBe('Pending');
   });
 
+  it('parses approval policy and agent action metadata', () => {
+    const approval = parseApprovalV1({
+      schemaVersion: 1,
+      approvalId: 'approval-policy-1',
+      workspaceId: 'ws-1',
+      runId: 'run-1',
+      planId: 'plan-1',
+      prompt: 'Approve bounded browser evidence capture.',
+      requestedAtIso: '2026-02-17T00:00:00.000Z',
+      requestedByUserId: 'user-1',
+      status: 'Pending',
+      policyRule: {
+        ruleId: 'policy-browser-read',
+        trigger: 'Bounded browser read with visual evidence capture',
+        tier: 'HumanApprove',
+        blastRadius: ['1 browser page', '1 evidence artifact'],
+        irreversibility: 'none',
+      },
+      agentActionProposal: {
+        proposalId: 'proposal-browser-read',
+        agentId: 'agent-1',
+        machineId: 'machine-1',
+        toolName: 'browser.capture',
+        toolCategory: 'ReadOnly',
+        blastRadiusTier: 'HumanApprove',
+        rationale: 'Capture visual proof after approval.',
+      },
+    });
+
+    expect(approval.policyRule).toMatchObject({
+      tier: 'HumanApprove',
+      blastRadius: ['1 browser page', '1 evidence artifact'],
+    });
+    expect(approval.agentActionProposal).toMatchObject({
+      toolName: 'browser.capture',
+      toolCategory: 'ReadOnly',
+    });
+  });
+
   it('parses an approved decision', () => {
     const approval = parseApprovalV1({
       schemaVersion: 1,

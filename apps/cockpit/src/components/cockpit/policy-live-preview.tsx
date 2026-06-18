@@ -7,6 +7,7 @@ import type {
   SodConstraint,
 } from '@portarium/cockpit-types';
 import { ExecutionTierBadge } from '@/components/cockpit/execution-tier-badge';
+import { summarizeApprovalTitle } from '@/components/cockpit/triage-card/approval-card-contract';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
@@ -181,7 +182,7 @@ function LivePolicyPreview({
               className="rounded-lg border border-border bg-background p-3"
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="text-sm font-medium">{approval.prompt}</p>
+                <p className="text-sm font-medium">{summarizeApprovalTitle(approval)}</p>
                 <ImpactBadge outcome={outcome} />
               </div>
               <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">

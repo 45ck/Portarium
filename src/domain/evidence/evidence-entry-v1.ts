@@ -41,6 +41,23 @@ export type EvidencePayloadRef = Readonly<{
   uri: string;
   contentType?: string;
   sha256?: HashSha256;
+  artifactId?: string;
+  thumbnailUri?: string;
+  fullUri?: string;
+  thumbnailUrl?: string | null;
+  fullUrl?: string | null;
+  sourceFamily?: string;
+  sourceId?: string;
+  dataClass?: string;
+  retention?: string;
+  displayPolicy?: string;
+  caption?: string;
+  capturedAtIso?: string;
+  capturedAtUtc?: string;
+  runId?: string;
+  approvalId?: string;
+  messageId?: string;
+  correlationId?: string;
 }>;
 
 export type EvidenceEntryV1 = Readonly<{

@@ -15,6 +15,7 @@ import { EntityIcon } from '@/components/domain/entity-icon';
 import { type TriageAction } from '@/components/cockpit/triage-card';
 import { ApprovalTriageDeck } from '@/components/cockpit/approval-triage-deck';
 import { ApprovalListPanel } from '@/components/cockpit/approval-list-panel';
+import { summarizeApprovalTitle } from '@/components/cockpit/triage-card/approval-card-contract';
 import {
   TriageCompleteState,
   type TriageSessionStats,
@@ -180,6 +181,7 @@ export function ApprovalsPage({ search, surface = 'queue' }: ApprovalsPageProps)
   const singleCaseApproval = singleCaseApprovalId
     ? (items.find((approval) => approval.approvalId === singleCaseApprovalId) ?? null)
     : null;
+  const hasFocusedSingleCaseApproval = singleCaseMode && singleCaseApproval !== null;
   const singleCasePendingApproval =
     singleCaseApproval?.status === 'Pending' ? singleCaseApproval : null;
   const genericTriageQueue = pendingItems.filter((a) => !triageSkipped.has(a.approvalId));
@@ -400,7 +402,7 @@ export function ApprovalsPage({ search, surface = 'queue' }: ApprovalsPageProps)
 
   let triageChild: React.ReactNode;
 
-  if (isLoading || isFocusedApprovalLoading) {
+  if ((isLoading && !hasFocusedSingleCaseApproval) || isFocusedApprovalLoading) {
     triageChild = (
       <motion.div
         key="loading"
@@ -621,8 +623,10 @@ export function ApprovalsPage({ search, surface = 'queue' }: ApprovalsPageProps)
   }
 
   const triageContent = <AnimatePresence mode="wait">{triageChild}</AnimatePresence>;
+  const effectiveOfflineMeta =
+    singleCaseMode && focusedDetailApproval ? focusedApprovalQuery.offlineMeta : offlineMeta;
 
-  if (isError) {
+  if (isError && !hasFocusedSingleCaseApproval) {
     const errorCopy = approvalLoadErrorCopy(error);
     return (
       <div className={cn('space-y-4', swipeSurface ? 'mx-auto max-w-md px-3 py-4 sm:px-4' : 'p-6')}>
@@ -641,9 +645,9 @@ export function ApprovalsPage({ search, surface = 'queue' }: ApprovalsPageProps)
           }
         />
         <OfflineSyncBanner
-          isOffline={offlineMeta.isOffline}
-          isStaleData={offlineMeta.isStaleData}
-          lastSyncAtIso={offlineMeta.lastSyncAtIso}
+          isOffline={effectiveOfflineMeta.isOffline}
+          isStaleData={effectiveOfflineMeta.isStaleData}
+          lastSyncAtIso={effectiveOfflineMeta.lastSyncAtIso}
           pendingOutboxCount={pendingCount}
           decisionContext="approval-review"
         />
@@ -670,8 +674,8 @@ export function ApprovalsPage({ search, surface = 'queue' }: ApprovalsPageProps)
       (!policyLinkedMode && !singleCaseMode && pendingItems.length > 0));
   const showOfflineSyncBanner =
     (!swipeSurface && !policyLinkedMode) ||
-    offlineMeta.isOffline ||
-    offlineMeta.isStaleData ||
+    effectiveOfflineMeta.isOffline ||
+    effectiveOfflineMeta.isStaleData ||
     pendingCount > 0;
 
   return (
@@ -712,7 +716,9 @@ export function ApprovalsPage({ search, surface = 'queue' }: ApprovalsPageProps)
                 Opened from Policy Studio
               </div>
               <div className="text-sm font-medium">
-                {focusedApproval?.prompt ?? 'Return to the staged policy draft when you are done.'}
+                {focusedApproval
+                  ? summarizeApprovalTitle(focusedApproval)
+                  : 'Return to the staged policy draft when you are done.'}
               </div>
               <p className="text-sm text-muted-foreground">{policyStudioFocusDescription}</p>
             </div>
@@ -742,7 +748,9 @@ export function ApprovalsPage({ search, surface = 'queue' }: ApprovalsPageProps)
                 : undefined
         }
         icon={<EntityIcon entityType="approval" size="md" decorative />}
-        status={<FreshnessBadge offlineMeta={offlineMeta} isFetching={isLoading || isFlushing} />}
+        status={
+          <FreshnessBadge offlineMeta={effectiveOfflineMeta} isFetching={isLoading || isFlushing} />
+        }
         action={
           swipeSurface ? (
             <Button variant="outline" size="sm" asChild>
@@ -763,9 +771,9 @@ export function ApprovalsPage({ search, surface = 'queue' }: ApprovalsPageProps)
       />
       {showOfflineSyncBanner ? (
         <OfflineSyncBanner
-          isOffline={offlineMeta.isOffline}
-          isStaleData={offlineMeta.isStaleData}
-          lastSyncAtIso={offlineMeta.lastSyncAtIso}
+          isOffline={effectiveOfflineMeta.isOffline}
+          isStaleData={effectiveOfflineMeta.isStaleData}
+          lastSyncAtIso={effectiveOfflineMeta.lastSyncAtIso}
           pendingOutboxCount={pendingCount}
           decisionContext="approval-review"
         />

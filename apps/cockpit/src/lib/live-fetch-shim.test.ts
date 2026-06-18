@@ -28,9 +28,9 @@ describe('installLiveFetchShim', () => {
       '1',
     );
 
-    await window.fetch('/v1/workspaces/ws-experiment/agents');
+    await window.fetch('/v1/workspaces/ws-demo/agents');
     expect(nativeFetch.mock.calls[1]?.[0]).toBe(
-      'http://localhost:18080/v1/workspaces/ws-experiment/agents',
+      'http://localhost:18080/v1/workspaces/ws-demo/agents',
     );
     expect(nativeFetch.mock.calls[1]?.[1]?.credentials).toBe('include');
   });

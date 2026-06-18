@@ -27,7 +27,7 @@ describe('policy-tool-catalog', () => {
 
     expect(routes).toEqual([
       {
-        id: 'catalog-portarium-run-start',
+        id: 'catalog-portarium-mcp-portarium-run-start',
         label: 'Run Start',
         toolName: 'portarium_run_start',
         provider: 'Portarium MCP',
@@ -36,9 +36,11 @@ describe('policy-tool-catalog', () => {
         decision: 'approval',
         description: 'Start a new workflow run in a workspace.',
         riskCategory: 'Mutation',
+        minimumExecutionTier: 'HumanApprove',
         source: 'catalog',
       },
     ]);
+    expect(routes[0]?.id).toBe('catalog-portarium-mcp-portarium-run-start');
   });
 
   it('merges catalog routes while preserving local decisions and seed rows', () => {
@@ -72,6 +74,34 @@ describe('policy-tool-catalog', () => {
       toolName: 'calvin.standing_cloud_browser_query',
       source: 'runtime-seed',
     });
+  });
+
+  it('keeps same-name catalog tools distinct when their catalog ids differ', () => {
+    const catalogRoutes = toolCatalogRoutesFromItems([
+      CATALOG_TOOL,
+      {
+        ...CATALOG_TOOL,
+        toolId: 'openclaw-plugin:portarium_run_start',
+        provider: 'OpenClaw plugin alias',
+        source: 'openclaw-plugin',
+      },
+    ]);
+
+    const merged = mergeCatalogToolRoutes(catalogRoutes, [
+      {
+        ...catalogRoutes[1]!,
+        decision: 'deny',
+      },
+    ]);
+
+    expect(merged).toHaveLength(2);
+    expect(new Set(merged.map((route) => route.id)).size).toBe(2);
+    expect(merged.map((route) => route.provider)).toEqual([
+      'Portarium MCP',
+      'OpenClaw plugin alias',
+    ]);
+    expect(merged[0]?.decision).toBe('approval');
+    expect(merged[1]?.decision).toBe('deny');
   });
 
   it.each([

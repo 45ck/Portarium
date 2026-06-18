@@ -8,6 +8,7 @@ import type {
 import { hasChainBreak } from '@/components/cockpit/triage-modes/lib/chain-verification';
 
 export const APPROVAL_CARD_CONTRACT_NAME = 'ApprovalCardReviewDepthV1';
+const MONITOR_ATTENTION_FALLBACK = 'Review monitor attention item';
 
 export type ApprovalCardRiskTier = 'low' | 'elevated' | 'high';
 export type ApprovalCardReviewDepth = 'fast-triage' | 'deep-review' | 'escalation-lock';
@@ -69,8 +70,56 @@ function compactList(values: readonly string[], empty: string): string {
   return list.length > 0 ? list.join(', ') : empty;
 }
 
-function compactText(value: string, maxLength: number): string {
-  const text = value.replace(/\s+/g, ' ').trim();
+function textFromUnknown(value: unknown, fallback = ''): string {
+  if (value == null) return fallback;
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean' || typeof value === 'bigint') {
+    return String(value);
+  }
+  if (Array.isArray(value)) {
+    return value.map((item) => textFromUnknown(item)).filter(Boolean).join(', ') || fallback;
+  }
+  if (typeof value !== 'object') return fallback;
+
+  const record = value as Record<string, unknown>;
+  for (const key of [
+    'label',
+    'title',
+    'displayLabel',
+    'name',
+    'summary',
+    'description',
+    'reason',
+    'requiredAction',
+    'intent',
+  ]) {
+    const text = textFromUnknown(record[key]);
+    if (text) return text;
+  }
+
+  const profileId = textFromUnknown(record.profileId ?? record.profile_id);
+  const source = textFromUnknown(record.source);
+  if (profileId && source) return `${profileId}:${source}`;
+  if (source) return source;
+  if (profileId) return profileId;
+
+  return textFromUnknown(record.id ?? record.approvalId ?? record.proposalId, fallback);
+}
+
+function removeObjectPlaceholders(value: string): string {
+  return value
+    .replace(/\[object Object\]/gi, '')
+    .replace(/\s+([.;,:])/g, '$1')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function isMissingObjectLabel(value: string): boolean {
+  return /\[object Object\]/i.test(value) || removeObjectPlaceholders(value).length === 0;
+}
+
+function compactText(value: unknown, maxLength: number): string {
+  const text = removeObjectPlaceholders(textFromUnknown(value).replace(/\s+/g, ' ').trim());
   if (text.length <= maxLength) return text;
   return `${text.slice(0, maxLength - 3)}...`;
 }
@@ -87,11 +136,18 @@ function sameMeaning(left: string, right: string): boolean {
   return normalizedText(left) === normalizedText(right);
 }
 
-export function summarizeApprovalPrompt(value: string, maxLength = 180): string {
-  const text = value.replace(/\s+/g, ' ').trim();
+export function summarizeApprovalPrompt(value: unknown, maxLength = 180): string {
+  const text = textFromUnknown(value).replace(/\s+/g, ' ').trim();
   const monitorMatch = /Review latest standing-read monitor attention item:\s*([^.;]+)/i.exec(text);
   if (monitorMatch?.[1]) {
+    if (isMissingObjectLabel(monitorMatch[1])) return MONITOR_ATTENTION_FALLBACK;
     return compactText(`Review monitor item: ${monitorMatch[1]}`, maxLength);
+  }
+
+  const legacyMonitorMatch = /Review monitor item:\s*([^.;]+)/i.exec(text);
+  if (legacyMonitorMatch?.[1]) {
+    if (isMissingObjectLabel(legacyMonitorMatch[1])) return MONITOR_ATTENTION_FALLBACK;
+    return compactText(`Review monitor item: ${legacyMonitorMatch[1]}`, maxLength);
   }
 
   const openClawMatch = /^OpenClaw approval required:\s*([^.;]+)/i.exec(text);
@@ -107,8 +163,58 @@ function approvalPacketPlanSummary(approval: ApprovalSummary): string | undefine
   return summary ? summarizeApprovalPrompt(summary, 240) : undefined;
 }
 
+export function summarizeApprovalTitle(approval: ApprovalSummary, maxLength = 180): string {
+  const prompt = summarizeApprovalPrompt(approval.prompt, maxLength);
+  if (prompt !== MONITOR_ATTENTION_FALLBACK) return prompt;
+
+  const packetSummary = approvalPacketPlanSummary(approval);
+  if (packetSummary && packetSummary !== MONITOR_ATTENTION_FALLBACK) {
+    return compactText(packetSummary, maxLength);
+  }
+
+  return prompt;
+}
+
 function policySystems(approval: ApprovalSummary): string[] {
   return (approval.policyRule?.blastRadius ?? []).filter((item) => !/\brecords?\b/i.test(item));
+}
+
+function approvalPacketSystems(approval: ApprovalSummary): string[] {
+  const packet = approval.approvalPacket;
+  if (!packet) return [];
+
+  const artifactSystems = (packet.artifacts ?? [])
+    .map((artifact) => {
+      const family = artifact.sourceFamily?.trim();
+      const sourceId = artifact.sourceId?.trim();
+      if (family && sourceId) return `${family}:${sourceId}`;
+      return family || sourceId || '';
+    })
+    .filter(Boolean);
+
+  const capabilities = (packet.requestedCapabilities ?? []).map((capability) =>
+    capability.capabilityId.trim(),
+  );
+
+  return unique([...artifactSystems, ...capabilities]);
+}
+
+function approvalPacketPlannedCounts(approval: ApprovalSummary): {
+  actionCount: number;
+  effectCount: number;
+} {
+  const scope = approval.approvalPacket?.planScope;
+  return {
+    actionCount: scope?.actionIds?.length ?? 0,
+    effectCount: scope?.plannedEffectIds?.length ?? 0,
+  };
+}
+
+function approvalPacketPrimaryCapability(approval: ApprovalSummary): string | undefined {
+  const capability =
+    approval.approvalPacket?.requestedCapabilities?.find((item) => item.required) ??
+    approval.approvalPacket?.requestedCapabilities?.[0];
+  return capability?.capabilityId?.trim() || undefined;
 }
 
 function parsePolicyRecordCount(approval: ApprovalSummary): number | undefined {
@@ -172,8 +278,16 @@ function describeIntent(
   return { value: summarizeApprovalPrompt(approval.prompt), evidenceSource: 'ApprovalSummary' };
 }
 
-function describeEvidence(entries: readonly EvidenceEntry[]): string {
-  if (entries.length === 0) return 'No linked evidence entries';
+function describeEvidence(entries: readonly EvidenceEntry[], approval: ApprovalSummary): string {
+  if (entries.length === 0) {
+    const packetArtifacts =
+      approval.approvalPacket?.artifacts?.filter((artifact) => artifact.role !== 'primary') ?? [];
+    const visualTimelineCount = approval.approvalPacket?.visualEvidenceTimeline?.length ?? 0;
+    if (packetArtifacts.length > 0 || visualTimelineCount > 0) {
+      return `${packetArtifacts.length} packet artifact(s); ${visualTimelineCount} visual timeline item(s)`;
+    }
+    return 'No linked evidence entries';
+  }
   if (hasChainBreak([...entries])) return `${entries.length} entries; chain integrity warning`;
 
   const attachmentCount = entries.reduce((sum, entry) => sum + (entry.payloadRefs?.length ?? 0), 0);
@@ -201,15 +315,26 @@ function describeRationale(approval: ApprovalSummary): string {
   const rationale =
     approval.agentActionProposal?.rationale ??
     approval.rationale ??
+    approval.approvalPacket?.operatorBrief?.recommendation ??
+    approval.approvalPacket?.operatorBrief?.whyGated ??
     'No rationale supplied with this Approval Gate';
   return summarizeApprovalPrompt(rationale, 240);
 }
 
 function describePolicyResult(approval: ApprovalSummary, run?: RunSummary): string {
-  const tier = approval.policyRule?.tier ?? run?.executionTier ?? 'No policy tier available';
+  const tier = approval.policyRule?.tier ?? run?.executionTier;
+  if (!tier && approval.approvalPacket) {
+    const authority = approval.approvalPacket.operatorBrief?.authority?.trim();
+    if (authority) return `Approval packet authority: ${authority}`;
+
+    const capability = approvalPacketPrimaryCapability(approval);
+    if (capability) return `Approval packet requires ${capability}`;
+  }
+
+  const resultTier = tier ?? 'No policy tier available';
   const trigger = approval.policyRule?.trigger ? ` via ${approval.policyRule.trigger}` : '';
   const sod = approval.sodEvaluation?.state ? `; SoD ${approval.sodEvaluation.state}` : '';
-  return `${tier}${trigger}${sod}`;
+  return `${resultTier}${trigger}${sod}`;
 }
 
 function describeReversibility(approval: ApprovalSummary): string {
@@ -217,15 +342,31 @@ function describeReversibility(approval: ApprovalSummary): string {
   if (irreversibility === 'full') return 'Irreversible';
   if (irreversibility === 'partial') return 'Partially reversible';
   if (irreversibility === 'none') return 'Reversible';
+
+  const rollback = approval.approvalPacket?.operatorBrief?.rollback?.trim();
+  if (rollback) return `Stop path: ${compactText(rollback, 160)}`;
+
   return 'No reversibility declared';
 }
 
 function describeBlastRadius(approval: ApprovalSummary, effects: readonly PlanEffect[]): string {
   const recordCount = parsePolicyRecordCount(approval) ?? effects.length;
+  const packetCounts = approvalPacketPlannedCounts(approval);
   const systems = compactList(
-    [...effects.map((effect) => effect.target.sorName), ...policySystems(approval)],
+    [
+      ...effects.map((effect) => effect.target.sorName),
+      ...policySystems(approval),
+      ...approvalPacketSystems(approval),
+    ],
     'No external system declared',
   );
+
+  if (recordCount === 0 && (packetCounts.actionCount > 0 || packetCounts.effectCount > 0)) {
+    return `${systems}; ${packetCounts.actionCount} planned Action${
+      packetCounts.actionCount === 1 ? '' : 's'
+    }, ${packetCounts.effectCount} planned effect${packetCounts.effectCount === 1 ? '' : 's'}`;
+  }
+
   return `${systems}; ${recordCount} planned record${recordCount === 1 ? '' : 's'}`;
 }
 
@@ -235,6 +376,7 @@ function collectEscalationReasons(input: BuildApprovalCardContractInput): string
   const systemCount = unique([
     ...plannedEffects.map((effect) => effect.target.sorName),
     ...policySystems(approval),
+    ...approvalPacketSystems(approval),
   ]).length;
   const recordCount = parsePolicyRecordCount(approval) ?? plannedEffects.length;
 
@@ -335,6 +477,7 @@ export function buildApprovalCardContract(
       ...plannedEffects.map((effect) => effect.target.sorName),
       ...policySystems(approval),
       ...(workflow?.actions.map((action) => action.portFamily) ?? []),
+      ...approvalPacketSystems(approval),
     ],
     'No external system declared',
   );
@@ -378,7 +521,7 @@ export function buildApprovalCardContract(
       },
       evidence: {
         label: 'Evidence',
-        value: describeEvidence(evidenceEntries),
+        value: describeEvidence(evidenceEntries, approval),
         evidenceSource: 'Evidence',
       },
       rationale: {

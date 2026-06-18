@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { Bot, Search } from 'lucide-react';
 import { getAgentActionCategoryPresentation } from '@/lib/agent-action-category';
+import { summarizeApprovalTitle } from '@/components/cockpit/triage-card/approval-card-contract';
 
 interface ApprovalListPanelProps {
   items: ApprovalSummary[];
@@ -50,6 +51,7 @@ export function ApprovalListPanel({
       const q = search.toLowerCase();
       result = result.filter(
         (a) =>
+          summarizeApprovalTitle(a).toLowerCase().includes(q) ||
           a.prompt.toLowerCase().includes(q) ||
           a.approvalId.toLowerCase().includes(q) ||
           (a.agentActionProposal?.toolName.toLowerCase().includes(q) ?? false),
@@ -111,6 +113,7 @@ export function ApprovalListPanel({
               {filtered.map((a) => {
                 const isActive = a.approvalId === selectedId;
                 const isOverdue = Boolean(a.dueAtIso && new Date(a.dueAtIso) < new Date());
+                const title = summarizeApprovalTitle(a);
                 return (
                   <motion.li
                     key={a.approvalId}
@@ -130,7 +133,9 @@ export function ApprovalListPanel({
                       )}
                       onClick={() => onSelect(a.approvalId)}
                     >
-                      <p className="text-xs font-medium truncate leading-tight">{a.prompt}</p>
+                      <p className="text-xs font-medium truncate leading-tight" title={title}>
+                        {title}
+                      </p>
                       {a.agentActionProposal && (
                         <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                           <Bot className="h-3 w-3 text-primary shrink-0" />

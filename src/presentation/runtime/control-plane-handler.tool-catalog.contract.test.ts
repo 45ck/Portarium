@@ -140,6 +140,14 @@ describe('tool catalog runtime contract route', () => {
               description: 'This duplicate must not replace the MCP registry entry.',
               source: 'shadow-provider',
             },
+            {
+              toolName: 'tenant.cloud_browser_query',
+              label: 'Cloud Browser Query',
+              provider: 'Tenant Runtime',
+              description: 'Read visible browser state through a scoped standing-read gateway.',
+              source: 'tenant-runtime-tools',
+              riskCategory: 'ReadOnly',
+            },
           ];
         },
       },
@@ -158,7 +166,7 @@ describe('tool catalog runtime contract route', () => {
         recommendedDecision: string;
       }>;
     };
-    expect(body.items).toHaveLength(MCP_TOOLS.length + 1);
+    expect(body.items).toHaveLength(MCP_TOOLS.length + 2);
     expect(body.items.find((item) => item.toolName === 'gmail.message.send')).toMatchObject({
       label: 'Gmail Send',
       provider: 'Gmail',
@@ -166,6 +174,15 @@ describe('tool catalog runtime contract route', () => {
       riskCategory: 'Mutation',
       recommendedDecision: 'approval',
     });
+    expect(body.items.find((item) => item.toolName === 'tenant.cloud_browser_query')).toMatchObject(
+      {
+        label: 'Cloud Browser Query',
+        provider: 'Tenant Runtime',
+        source: 'tenant-runtime-tools',
+        riskCategory: 'ReadOnly',
+        recommendedDecision: 'allow',
+      },
+    );
     expect(body.items.find((item) => item.toolName === 'portarium_run_get')).toMatchObject({
       label: 'Run Get',
       provider: 'Portarium MCP',

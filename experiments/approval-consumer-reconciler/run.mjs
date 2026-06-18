@@ -16,9 +16,9 @@ import { runExperiment, assert } from '../shared/experiment-runner.js';
 
 const EXPERIMENT_NAME = 'approval-consumer-reconciler';
 const SAFE_EXECUTABLE_ACTIONS = new Set([
-  'calvin.status',
-  'calvin.cloud_cost_status',
-  'vibecord.safe_status',
+  'tenant.status',
+  'tenant.cost_status',
+  'example.safe_status',
   'safe_status',
 ]);
 
@@ -93,7 +93,7 @@ function isStandingReadMonitorReview(approval) {
 function hasExactScopedBrowserQuery(approval) {
   const scope = /** @type {Record<string, unknown>} */ (approval.scope ?? {});
   return (
-    actionTypeOf(approval) === 'calvin.cloud_browser_query' &&
+    actionTypeOf(approval) === 'tenant.cloud_browser_query' &&
     authorityOf(approval) === 'A3' &&
     scope.scopeHashMatches === true &&
     scope.redactedOutput === true &&
@@ -276,24 +276,24 @@ const fixtures = [
     status: 'Approved',
     actionType: 'standing_read_attention_review',
     authorityLevel: 'A3',
-    target: 'uon:standing-read-monitor',
+    target: 'learning-platform:standing-read-monitor',
     plan: { origin: 'standing-read-monitor' },
   },
   {
     approvalId: 'appr-safe-status-1',
     status: 'Approved',
-    actionType: 'calvin.status',
+    actionType: 'tenant.status',
     authorityLevel: 'A0',
-    target: 'calvin-runtime',
+    target: 'tenant-runtime',
   },
   {
     approvalId: 'appr-scoped-browser-1',
     status: 'Approved',
-    actionType: 'calvin.cloud_browser_query',
+    actionType: 'tenant.cloud_browser_query',
     authorityLevel: 'A3',
-    target: 'uon-canvas-dashboard',
+    target: 'learning-dashboard',
     scope: {
-      profileId: 'uon',
+      profileId: 'learning-platform',
       queryTerms: ['census date'],
       redactedOutput: true,
       scopeHashMatches: true,
@@ -304,7 +304,7 @@ const fixtures = [
     status: 'Approved',
     actionType: 'email_query',
     authorityLevel: 'A3',
-    target: 'email-uon-outlook:uon-outlook-priority-watch',
+    target: 'email-learning-platform:priority-watch',
     plan: { origin: 'standing-read-monitor' },
   },
   {
@@ -318,30 +318,30 @@ const fixtures = [
   {
     approvalId: 'appr-pending-1',
     status: 'Pending',
-    actionType: 'calvin.status',
+    actionType: 'tenant.status',
     authorityLevel: 'A0',
-    target: 'calvin-runtime',
+    target: 'tenant-runtime',
   },
   {
     approvalId: 'appr-revision-1',
     status: 'RequestChanges',
-    actionType: 'calvin.status',
+    actionType: 'tenant.status',
     authorityLevel: 'A0',
-    target: 'calvin-runtime',
+    target: 'tenant-runtime',
   },
   {
     approvalId: 'appr-denied-1',
     status: 'Denied',
-    actionType: 'calvin.status',
+    actionType: 'tenant.status',
     authorityLevel: 'A0',
-    target: 'calvin-runtime',
+    target: 'tenant-runtime',
   },
   {
     approvalId: 'appr-duplicate-1',
     status: 'Approved',
-    actionType: 'calvin.status',
+    actionType: 'tenant.status',
     authorityLevel: 'A0',
-    target: 'calvin-runtime',
+    target: 'tenant-runtime',
   },
 ];
 

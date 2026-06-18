@@ -1,4 +1,5 @@
 import type {
+  ApprovalPacketDecisionView,
   ApprovalSummary,
   EvidenceEntry,
   PlanEffect,
@@ -6,6 +7,7 @@ import type {
   WorkflowSummary,
 } from '@portarium/cockpit-types';
 import { getAgentActionCategoryPresentation } from '@/lib/agent-action-category';
+import { summarizeApprovalPrompt, summarizeApprovalTitle } from './approval-card-contract';
 
 export interface BuildApprovalClipboardTextInput {
   approval: ApprovalSummary;
@@ -24,6 +26,57 @@ function formatTarget(effect: PlanEffect): string {
   return `${effect.target.sorName} ${effect.target.externalType} ${display}`;
 }
 
+function appendDecisionView(
+  lines: string[],
+  view: ApprovalPacketDecisionView,
+  index: number,
+): void {
+  lines.push(
+    `${index + 1}. ${view.label}: ${view.summary}`,
+    `   Stance: ${view.stance}`,
+    `   Notes: ${view.bullets.join('; ')}`,
+  );
+  if (view.kind) {
+    lines.push(`   Kind: ${view.kind}`);
+  }
+  if (view.items && view.items.length > 0) {
+    lines.push(
+      `   Items: ${view.items
+        .map((item) => `${item.label}=${item.value}${item.tone ? ` (${item.tone})` : ''}`)
+        .join('; ')}`,
+    );
+  }
+  if (view.diagram) {
+    lines.push(`   Diagram: ${summarizeApprovalPrompt(view.diagram, 600)}`);
+  }
+}
+
+function appendApprovalPacketBrief(lines: string[], approval: ApprovalSummary): void {
+  const packet = approval.approvalPacket;
+  if (!packet) return;
+  const brief = packet.operatorBrief;
+  if (brief) {
+    lines.push(
+      '',
+      'Approval Brief',
+      `Action: ${brief.action}`,
+      `Why gated: ${brief.whyGated}`,
+      `Recommendation: ${brief.recommendation}`,
+      `Risk: ${brief.risk}`,
+      `Rollback: ${brief.rollback}`,
+      `What approving allows: ${brief.whatApprovingAllows.join('; ')}`,
+      `What approving does not allow: ${brief.whatApprovingDoesNotAllow.join('; ')}`,
+      `User-visible consequence: ${brief.userVisibleConsequence}`,
+    );
+  }
+  if (packet.decisionViews && packet.decisionViews.length > 0) {
+    lines.push('', 'Decision Views');
+    packet.decisionViews.forEach((view, index) => {
+      appendDecisionView(lines, view, index);
+    });
+  }
+}
+
 export function buildApprovalClipboardText({
   approval,
   plannedEffects,
@@ -35,7 +88,7 @@ export function buildApprovalClipboardText({
     'Approval Gate',
     `Approval ID: ${approval.approvalId}`,
     `Status: ${approval.status}`,
-    `Prompt: ${approval.prompt}`,
+    `Prompt: ${summarizeApprovalTitle(approval, 240)}`,
     `Requested by: ${approval.requestedByUserId}`,
     `Assignee: ${optionalValue(approval.assigneeUserId)}`,
     `Requested at: ${approval.requestedAtIso}`,
@@ -60,6 +113,8 @@ export function buildApprovalClipboardText({
   if (workflow) {
     lines.push('', 'Workflow', `Name: ${workflow.name}`, `Version: ${workflow.version}`);
   }
+
+  appendApprovalPacketBrief(lines, approval);
 
   if (approval.policyRule) {
     lines.push(

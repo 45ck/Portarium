@@ -26,6 +26,7 @@ import { RunInterventionPanel } from '@/components/cockpit/run-intervention-pane
 import { RelatedEntities } from '@/components/cockpit/related-entities';
 import type { RelatedEntity } from '@/components/cockpit/related-entities';
 import { ApprovalStatusBadge } from '@/components/cockpit/approval-status-badge';
+import { summarizeApprovalTitle } from '@/components/cockpit/triage-card/approval-card-contract';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -482,7 +483,7 @@ function RunDetailPage() {
                   className="flex items-start justify-between gap-2 py-1.5 px-2 rounded-md hover:bg-muted/50 transition-colors"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs truncate">{a.prompt}</p>
+                    <p className="text-xs truncate">{summarizeApprovalTitle(a)}</p>
                     <p className="text-[11px] text-muted-foreground font-mono">{a.approvalId}</p>
                   </div>
                   <ApprovalStatusBadge status={a.status} />

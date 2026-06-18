@@ -1,4 +1,11 @@
-import type { ApprovalPacket, ExternalObjectRef, WorkItemSla, WorkItemSummary } from './types.js';
+import type {
+  AgentActionProposalMeta,
+  ApprovalPacket,
+  ExternalObjectRef,
+  PolicyRule,
+  WorkItemSla,
+  WorkItemSummary,
+} from './types.js';
 
 export interface AssignHumanTaskRequest {
   workforceMemberId?: string;
@@ -55,6 +62,8 @@ export interface CreateApprovalRequest {
   assigneeUserId?: string;
   dueAtIso?: string;
   approvalPacket?: ApprovalPacket;
+  policyRule?: PolicyRule;
+  agentActionProposal?: AgentActionProposalMeta;
 }
 
 export interface StartRunCommand {

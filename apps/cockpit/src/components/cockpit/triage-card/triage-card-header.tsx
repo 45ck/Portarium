@@ -28,7 +28,7 @@ import { ActorBadge } from './actor-badge';
 import { SorBadge } from './sor-badge';
 import { HeaderProvenanceTrail } from './header-provenance-trail';
 import { buildApprovalClipboardText } from './approval-clipboard';
-import { summarizeApprovalPrompt } from './approval-card-contract';
+import { summarizeApprovalTitle } from './approval-card-contract';
 import { cn } from '@/lib/utils';
 
 function resolveAgentDisplayName(agentId: string): string {
@@ -106,7 +106,7 @@ export function TriageCardHeader({
   const CopyIcon = copyState === 'copied' ? Check : copyState === 'failed' ? AlertTriangle : Copy;
   const copyLabel =
     copyState === 'copied' ? 'Copied' : copyState === 'failed' ? 'Copy failed' : 'Copy approval';
-  const displayPrompt = summarizeApprovalPrompt(approval.prompt, compact ? 140 : 220);
+  const displayPrompt = summarizeApprovalTitle(approval, compact ? 140 : 220);
 
   return (
     <>

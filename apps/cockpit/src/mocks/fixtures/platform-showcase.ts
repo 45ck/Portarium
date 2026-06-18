@@ -207,6 +207,161 @@ export const APPROVALS: ApprovalSummary[] = [
       blastRadius: ['Connector Registry', '1 adapter'],
       irreversibility: 'partial',
     },
+    approvalPacket: {
+      schemaVersion: 1,
+      packetId: 'packet-showcase-adapter-retry',
+      operatorBrief: {
+        schemaVersion: 1,
+        action: 'Retry the degraded connector sync in read-only mode.',
+        whyGated:
+          'The connector touched a degraded system and the operator must confirm the retry boundary before Portarium resumes the run.',
+        whatApprovingAllows: [
+          'Retry the connector read using the approved backoff window.',
+          'Attach the retry result to the existing run evidence chain.',
+        ],
+        whatApprovingDoesNotAllow: [
+          'No credential rotation, writes, exports, or external notifications.',
+        ],
+        risk: 'Moderate operational risk: repeated retries could mask the degradation or create noisy evidence if the boundary is wrong.',
+        rollback:
+          'Cancel the retry, keep the current evidence chain, and leave the connector in paused-review state.',
+        recommendation: 'Approve only if the retry stays read-only and records fresh evidence.',
+        userVisibleConsequence:
+          'The approval resumes a read-only connector retry and does not mutate any system of record.',
+        authority: 'workspace approval gate for a read-only adapter retry',
+      },
+      decisionViews: [
+        {
+          id: 'recommended-path',
+          label: 'Recommended path',
+          stance: 'Decision brief',
+          summary: 'Approve only if the retry remains read-only and evidence-backed.',
+          bullets: [
+            'The degraded sync has evidence already attached to the run.',
+            'The requested action does not rotate credentials or write provider data.',
+          ],
+          kind: 'recommendation',
+        },
+        {
+          id: 'why-request-changes',
+          label: 'Why request changes',
+          stance: 'Operator challenge',
+          summary:
+            'Request changes if the retry plan expands beyond read-only access or lacks a fresh evidence checkpoint.',
+          bullets: [
+            'The operator should see the exact retry window before approving.',
+            'Any new write, export, or notification needs a separate approval.',
+          ],
+          kind: 'scope',
+          items: [
+            {
+              label: 'Boundary',
+              value: 'Read-only retry for one adapter run.',
+              tone: 'info',
+            },
+          ],
+        },
+        {
+          id: 'risk-boundary',
+          label: 'Risk boundary',
+          stance: 'Policy guardrail',
+          summary: 'The approval is narrow: retry once, capture evidence, then stop.',
+          bullets: [
+            'Credential material is not displayed or rotated.',
+            'Provider records are not mutated by this approval.',
+          ],
+          kind: 'risk',
+          items: [
+            {
+              label: 'Denied',
+              value: 'Credential rotation and system-of-record writes.',
+              tone: 'critical',
+            },
+            {
+              label: 'Allowed',
+              value: 'One read-only connector retry with evidence capture.',
+              tone: 'success',
+            },
+          ],
+        },
+        {
+          id: 'approval-flow',
+          label: 'Approval flow',
+          stance: 'Mermaid view',
+          summary:
+            'The operator can inspect the run state, risk boundary, and evidence before deciding.',
+          bullets: [
+            'The approval records human intent but does not bypass downstream policy gates.',
+          ],
+          kind: 'flow',
+          diagram:
+            'flowchart LR\n  proposal["Connector retry proposal"] --> policy["Policy gate"]\n  policy --> cockpit["Cockpit approval views"]\n  cockpit --> evidence["Evidence checkpoint"]\n  evidence --> executor["Read-only retry executor"]',
+          items: [
+            {
+              label: 'Executor gate',
+              value: 'The retry still runs through the read-only execution boundary.',
+              tone: 'warning',
+            },
+          ],
+        },
+      ],
+      artifacts: [
+        {
+          artifactId: 'artifact-showcase-adapter-retry-brief',
+          title: 'Connector retry approval packet',
+          mimeType: 'application/json',
+          role: 'primary',
+          evidenceId: 'evd-showcase-4002',
+          dataClass: 'tenant-demo',
+          retention: 'demo-fixture',
+          displayPolicy: 'metadata-only',
+        },
+        {
+          artifactId: 'artifact-showcase-adapter-retry-snapshot',
+          title: 'Degraded sync evidence snapshot',
+          mimeType: 'image/png',
+          role: 'decision-evidence',
+          evidenceId: 'evd-showcase-4002',
+          uri: 'visual-evidence://showcase/adapter-retry-snapshot',
+          evidenceKind: 'Snapshot',
+          sourceFamily: 'ControlPlane',
+          sourceId: 'adapter-docs-primary',
+          dataClass: 'tenant-demo',
+          retention: 'demo-fixture',
+          displayPolicy: 'metadata-only',
+          caption: 'Metadata-only snapshot proving the degraded sync was reviewed.',
+          capturedAtIso: '2026-04-14T08:03:00Z',
+          runId: 'run-showcase-2001',
+          approvalId: 'apr-showcase-3001',
+        },
+      ],
+      reviewDocs: [
+        {
+          title: 'Review brief',
+          markdown:
+            '# Review brief\n\nConfirm the connector retry is read-only, scoped to the degraded sync run, and evidence-backed before approving.',
+        },
+      ],
+      requestedCapabilities: [
+        {
+          capabilityId: 'adapter.retry.readonly',
+          reason: 'Run a single read-only retry for the degraded connector sync.',
+          required: true,
+        },
+        {
+          capabilityId: 'evidence.attach',
+          reason: 'Attach the retry result to the existing run evidence chain.',
+          required: true,
+        },
+      ],
+      planScope: {
+        planId: 'plan-showcase-5001',
+        summary:
+          'Retry one degraded connector sync in read-only mode and attach the result to the existing evidence chain.',
+        actionIds: ['action-showcase-readonly-retry'],
+        plannedEffectIds: ['eff-showcase-1'],
+      },
+    },
   },
   {
     schemaVersion: 1,

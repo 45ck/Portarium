@@ -8,6 +8,7 @@ import { ApprovalStatusBadge } from '@/components/cockpit/approval-status-badge'
 import { SodBanner, DEFAULT_SOD_EVALUATION } from './sod-banner';
 import { cn } from '@/lib/utils';
 import { CheckCircle2, XCircle, RotateCcw, Clock, AlertTriangle, User } from 'lucide-react';
+import { summarizeApprovalTitle } from '@/components/cockpit/triage-card/approval-card-contract';
 
 // ---------------------------------------------------------------------------
 // Props
@@ -78,6 +79,7 @@ export function ApprovalShell({ approval, onDecide, loading, children }: Approva
   const isBlocked = sodEval.state === 'blocked-self' || sodEval.state === 'blocked-role';
   const isOverdue = Boolean(approval.dueAtIso && new Date(approval.dueAtIso) < new Date());
   const history = approval.decisionHistory ?? [];
+  const title = summarizeApprovalTitle(approval, 240);
 
   return (
     <div className="flex flex-col h-full overflow-hidden rounded-xl border border-border bg-card shadow-md">
@@ -104,7 +106,7 @@ export function ApprovalShell({ approval, onDecide, loading, children }: Approva
                 {approval.approvalId}
               </span>
             </div>
-            <p className="text-sm font-semibold leading-snug">{approval.prompt}</p>
+            <p className="text-sm font-semibold leading-snug">{title}</p>
 
             {/* Actor line */}
             <div className="flex items-center gap-2 mt-2 text-[11px]">

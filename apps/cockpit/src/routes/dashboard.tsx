@@ -21,6 +21,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { WorkItemSummary, ApprovalSummary, RunSummary } from '@portarium/cockpit-types';
 import { isCockpitShellGlobalActionVisible } from '@/lib/shell/navigation';
 import { useActiveCockpitShellProfile } from '@/lib/shell/active-profile-context';
+import { summarizeApprovalTitle } from '@/components/cockpit/triage-card/approval-card-contract';
 
 function DashboardPage() {
   const { activeWorkspaceId: wsId, startRunOpen, setStartRunOpen } = useUIStore();
@@ -211,7 +212,7 @@ function DashboardPage() {
                 {pendingApprovalsList.slice(0, 5).map((a) => (
                   <div key={a.approvalId} className="flex items-start justify-between gap-2 py-1">
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs truncate">{a.prompt}</p>
+                      <p className="text-xs truncate">{summarizeApprovalTitle(a)}</p>
                       <p className="text-[11px] text-muted-foreground">
                         {a.dueAtIso
                           ? `Due: ${format(new Date(a.dueAtIso), 'MMM d, yyyy HH:mm')}`

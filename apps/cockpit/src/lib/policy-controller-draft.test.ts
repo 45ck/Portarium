@@ -28,8 +28,11 @@ const TOOL_ROUTES: readonly PolicyControllerToolRoute[] = [
     toolName: 'gmail.message.send',
     provider: 'Gmail',
     actionClass: 'external-executor',
+    riskCategory: 'Dangerous',
+    minimumExecutionTier: 'ManualOnly',
     currentDecision: 'deny',
     decision: 'approval',
+    source: 'custom',
     custom: true,
   },
 ];
@@ -81,10 +84,13 @@ describe('policy-controller-draft', () => {
         toolName: 'gmail.message.send',
         provider: 'Gmail',
         actionClass: 'external-executor',
+        riskCategory: 'Dangerous',
+        minimumExecutionTier: 'ManualOnly',
         currentDecision: 'deny',
         decision: 'approval',
         policyDecision: 'require_approval',
         executionTier: 'HumanApprove',
+        source: 'custom',
         custom: true,
       },
     ]);
@@ -133,6 +139,8 @@ describe('policy-controller-draft', () => {
       toolRoutes: [
         expect.objectContaining({
           toolName: 'gmail.message.send',
+          riskCategory: 'Dangerous',
+          minimumExecutionTier: 'ManualOnly',
           currentDecision: 'deny',
           decision: 'approval',
         }),
@@ -154,6 +162,8 @@ describe('policy-controller-draft', () => {
         toolName: 'calvin.standing_cloud_browser_query',
         provider: 'OpenClaw bridge',
         actionClass: 'standing-read',
+        riskCategory: 'ReadOnly',
+        minimumExecutionTier: 'Auto',
         currentDecision: 'approval',
         decision: 'allow',
       },

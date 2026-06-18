@@ -6,6 +6,7 @@ import {
   localHttpApiOriginFromUrl,
   localHttpApiOriginsFromUrl,
   normalizeCockpitCspConnectMode,
+  parseCockpitImageOrigins,
   parseCockpitOperatorFrameOrigins,
   replaceCockpitContentSecurityPolicy,
   safeCockpitFrameOriginFromUrl,
@@ -80,6 +81,22 @@ describe('Cockpit CSP', () => {
       }),
     ).toBe(
       "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.portarium.io wss://events.portarium.io; frame-src 'self' http://127.0.0.1:19037; img-src 'self' data:; font-src 'self'",
+    );
+  });
+
+  it('adds only safe configured image origins for visual evidence', () => {
+    expect(
+      parseCockpitImageOrigins(
+        'http://127.0.0.1:18081/visual-evidence, http://localhost:18081, http://0.0.0.0:18081, http://user:pass@127.0.0.1:18081',
+      ),
+    ).toEqual(['http://127.0.0.1:18081', 'http://localhost:18081']);
+
+    expect(
+      buildCockpitContentSecurityPolicy({
+        imageOrigins: ['http://127.0.0.1:18081/visual-evidence'],
+      }),
+    ).toBe(
+      "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.portarium.io wss://events.portarium.io; frame-src 'self'; img-src 'self' data: http://127.0.0.1:18081 http://localhost:18081; font-src 'self'",
     );
   });
 

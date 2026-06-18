@@ -10,6 +10,7 @@ import { DiffApprovalSurface } from '@/components/cockpit/diff-approval-surface'
 import { EmptyState } from '@/components/cockpit/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EntityIcon } from '@/components/domain/entity-icon';
+import { summarizeApprovalTitle } from '@/components/cockpit/triage-card/approval-card-contract';
 import { shouldShowInternalCockpitSurfaces } from '@/lib/shell/navigation';
 
 interface BeadApprovalSearch {
@@ -98,7 +99,7 @@ function BeadApprovalPage() {
       }
       policyRationale={
         selectedApproval.agentActionProposal?.rationale ??
-        selectedApproval.prompt ??
+        summarizeApprovalTitle(selectedApproval) ??
         'This bead has a proposed change that requires operator review.'
       }
       blastRadius={selectedApproval.policyRule?.blastRadius.join(', ') ?? 'Unknown scope'}

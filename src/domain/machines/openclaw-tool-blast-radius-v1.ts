@@ -41,19 +41,24 @@ const TIER_RANK: Readonly<Record<ExecutionTier, number>> = {
 const DANGEROUS_PATTERNS: readonly RegExp[] = [
   /(^|[:._-])(shell|terminal|powershell|bash|cmd)([:._-]|$)/i,
   /(^|[:._-])(system|os)([:._-])?(exec|command|process)([:._-]|$)/i,
-  /(^|[:._-])(browser|playwright|puppeteer|selenium)([:._-]|$)/i,
+  /(^|[:._-])(playwright|puppeteer|selenium)([:._-]|$)/i,
+  /(^|[:._-])browser([:._-])(navigate|click|type|control|execute|automation)([:._-]|$)/i,
   /(^|[:._-])(package|tool)([:._-])?(install|update|remove)([:._-]|$)/i,
+  /(^|[:._-])(delete|remove|transfer|charge|refund)([:._-]|$)/i,
+  /(^|[:._-])(credential|secret|token|vault|password[-_]?manager)([:._-])?(materialize|export|unlock|provision)([:._-]|$)/i,
+  /(^|[:._-])(executor|execute)([:._-]|$)/i,
 ];
 
 const MUTATION_PATTERNS: readonly RegExp[] = [
-  /(^|[:._-])(write|create|update|delete|remove|send|post|put|patch)([:._-]|$)/i,
-  /(^|[:._-])(start|cancel|submit|register|deregister|heartbeat)([:._-]|$)/i,
-  /(^|[:._-])(trigger|invoke|deploy|publish|approve|transfer|charge|refund)([:._-]|$)/i,
+  /(^|[:._-])(write|create|update|send|post|put|patch)([:._-]|$)/i,
+  /(^|[:._-])(start|cancel|submit|register|deregister)([:._-]|$)/i,
+  /(^|[:._-])(trigger|invoke|deploy|publish|approve|open|login|prepare)([:._-]|$)/i,
 ];
 
 const READ_ONLY_PATTERNS: readonly RegExp[] = [
-  /(^|[:._-])(read|get|list|search|lookup|query|fetch|inspect|validate)([:._-]|$)/i,
-  /(^|[:._-])(classify|summarize|extract|analyze)([:._-]|$)/i,
+  /(^|[:._-])(read|get|list|search|lookup|query|fetch|inspect|validate|status)([:._-]|$)/i,
+  /(^|[:._-])(classify|summarize|summary|brief|extract|analyze|review|check|eval)([:._-]|$)/i,
+  /(^|[:._-])(report|monitor|coverage|inventory|context|evidence|metadata|discover|discovery|capture|heartbeat|readiness|digest)([:._-]|$)/i,
 ];
 
 const EXACT_TOOL_POLICIES: Readonly<
@@ -139,13 +144,22 @@ export function classifyOpenClawToolBlastRadiusV1(
     };
   }
 
+  if (matchesAny(normalized, READ_ONLY_PATTERNS)) {
+    return {
+      toolName: normalized,
+      category: 'ReadOnly',
+      minimumTier: 'Auto',
+      rationale: 'Read-only, status, query, evidence, and analysis tools are allowed in Auto tier.',
+    };
+  }
+
   if (matchesAny(normalized, DANGEROUS_PATTERNS)) {
     return {
       toolName: normalized,
       category: 'Dangerous',
       minimumTier: 'ManualOnly',
       rationale:
-        'Dangerous tools can execute host commands or automation and must remain ManualOnly.',
+        'Dangerous tools can execute host commands, expose credentials, destroy data, or move money and must remain ManualOnly.',
     };
   }
 
@@ -155,15 +169,6 @@ export function classifyOpenClawToolBlastRadiusV1(
       category: 'Mutation',
       minimumTier: 'HumanApprove',
       rationale: 'Mutating tools can change external state and require HumanApprove or stricter.',
-    };
-  }
-
-  if (matchesAny(normalized, READ_ONLY_PATTERNS)) {
-    return {
-      toolName: normalized,
-      category: 'ReadOnly',
-      minimumTier: 'Auto',
-      rationale: 'Read-only or analysis tools are allowed in Auto tier.',
     };
   }
 

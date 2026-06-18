@@ -3,6 +3,7 @@ import type { ExecutionTier } from '@/components/cockpit/policy-live-preview';
 import type { PolicyV1, ProposePolicyChangeRequest } from '@/lib/control-plane-client';
 
 export type PolicyControllerDecision = 'allow' | 'sandbox' | 'approval' | 'deny';
+export type PolicyControllerToolRiskCategory = 'ReadOnly' | 'Mutation' | 'Dangerous' | 'Unknown';
 
 export type PolicyControllerActionClass = Readonly<{
   id: string;
@@ -19,7 +20,8 @@ export type PolicyControllerToolRoute = Readonly<{
   currentDecision: PolicyControllerDecision;
   decision: PolicyControllerDecision;
   description?: string;
-  riskCategory?: 'ReadOnly' | 'Mutation' | 'Dangerous' | 'Unknown';
+  riskCategory?: PolicyControllerToolRiskCategory;
+  minimumExecutionTier?: ExecutionTier;
   source?: 'catalog' | 'runtime-seed' | 'custom' | string;
   custom?: boolean;
 }>;
@@ -52,10 +54,13 @@ export type PolicyControllerDraftPacket = Readonly<{
     toolName: string;
     provider: string;
     actionClass: string;
+    riskCategory?: PolicyControllerToolRiskCategory;
+    minimumExecutionTier?: ExecutionTier;
     currentDecision: PolicyControllerDecision;
     decision: PolicyControllerDecision;
     policyDecision: string;
     executionTier: ExecutionTier;
+    source?: string;
     custom: boolean;
   }>[];
   settings: Readonly<{
@@ -106,10 +111,15 @@ export function buildPolicyControllerDraftPacket(
             toolName: tool.toolName,
             provider: tool.provider,
             actionClass: tool.actionClass,
+            ...(tool.riskCategory ? { riskCategory: tool.riskCategory } : {}),
+            ...(tool.minimumExecutionTier
+              ? { minimumExecutionTier: tool.minimumExecutionTier }
+              : {}),
             currentDecision: tool.currentDecision,
             decision: tool.decision,
             policyDecision: DECISION_POLICY[tool.decision],
             executionTier: DECISION_TIER[tool.decision],
+            ...(tool.source ? { source: tool.source } : {}),
             custom: tool.custom === true,
           })),
         }
@@ -162,10 +172,27 @@ function requiresHighRiskPolicyApproval(packet: PolicyControllerDraftPacket): bo
     if (actionClass === 'browser-query') return decision === 'allow';
     return false;
   };
+  const toolRiskRequiresApproval = (
+    riskCategory: PolicyControllerToolRiskCategory | undefined,
+    minimumExecutionTier: ExecutionTier | undefined,
+    decision: PolicyControllerDecision,
+  ) => {
+    if (riskCategory === 'Dangerous') return decision !== 'deny';
+    if (minimumExecutionTier === 'ManualOnly') return decision !== 'deny';
+    if (riskCategory === 'Mutation') return decision === 'allow' || decision === 'sandbox';
+    if (minimumExecutionTier === 'HumanApprove') {
+      return decision === 'allow' || decision === 'sandbox';
+    }
+    return false;
+  };
 
   return (
     packet.routes.some((route) => routeRequiresApproval(route.actionClass, route.decision)) ||
-    (packet.toolRoutes ?? []).some((tool) => routeRequiresApproval(tool.actionClass, tool.decision))
+    (packet.toolRoutes ?? []).some(
+      (tool) =>
+        routeRequiresApproval(tool.actionClass, tool.decision) ||
+        toolRiskRequiresApproval(tool.riskCategory, tool.minimumExecutionTier, tool.decision),
+    )
   );
 }
 

@@ -12,7 +12,6 @@ const CSP_DIRECTIVES = {
   defaultSrc: "default-src 'self'",
   scriptSrc: "script-src 'self'",
   styleSrc: "style-src 'self' 'unsafe-inline'",
-  imgSrc: "img-src 'self' data:",
   fontSrc: "font-src 'self'",
 } as const;
 
@@ -37,6 +36,7 @@ export function buildCockpitContentSecurityPolicy(
   options: {
     apiBaseUrl?: string;
     connectMode?: CockpitCspConnectMode;
+    imageOrigins?: readonly string[];
     operatorFrameOrigins?: readonly string[];
   } = {},
 ): string {
@@ -53,13 +53,21 @@ export function buildCockpitContentSecurityPolicy(
     if (safeOrigin) frameSources.add(safeOrigin);
   }
 
+  const imageSources = new Set<string>(["'self'", 'data:']);
+  for (const origin of options.imageOrigins ?? []) {
+    const safeOrigins = safeCockpitImageOriginsFromUrl(origin);
+    for (const safeOrigin of safeOrigins) {
+      imageSources.add(safeOrigin);
+    }
+  }
+
   return [
     CSP_DIRECTIVES.defaultSrc,
     CSP_DIRECTIVES.scriptSrc,
     CSP_DIRECTIVES.styleSrc,
     `connect-src ${[...connectSources].join(' ')}`,
     `frame-src ${[...frameSources].join(' ')}`,
-    CSP_DIRECTIVES.imgSrc,
+    `img-src ${[...imageSources].join(' ')}`,
     CSP_DIRECTIVES.fontSrc,
   ].join('; ');
 }
@@ -122,6 +130,16 @@ export function parseCockpitOperatorFrameOrigins(rawValue?: string): string[] {
   ];
 }
 
+export function parseCockpitImageOrigins(rawValue?: string): string[] {
+  return [
+    ...new Set(
+      (rawValue ?? '')
+        .split(/[;,\n]/)
+        .flatMap((entry) => safeCockpitImageOriginsFromUrl(entry)),
+    ),
+  ];
+}
+
 export function safeCockpitFrameOriginFromUrl(rawUrl?: string): string | null {
   const trimmed = rawUrl?.trim();
   if (!trimmed) return null;
@@ -138,6 +156,24 @@ export function safeCockpitFrameOriginFromUrl(rawUrl?: string): string | null {
   if (parsed.protocol !== 'http:') return null;
 
   return localHttpApiOriginFromUrl(parsed.origin);
+}
+
+function safeCockpitImageOriginsFromUrl(rawUrl?: string): string[] {
+  const trimmed = rawUrl?.trim();
+  if (!trimmed) return [];
+
+  let parsed: URL;
+  try {
+    parsed = new URL(trimmed);
+  } catch {
+    return [];
+  }
+
+  if (parsed.username || parsed.password) return [];
+  if (parsed.protocol === 'https:') return [parsed.origin];
+  if (parsed.protocol !== 'http:') return [];
+
+  return localHttpApiOriginsFromUrl(parsed.origin);
 }
 
 function expandLoopbackOriginAliases(origin: string): string[] {

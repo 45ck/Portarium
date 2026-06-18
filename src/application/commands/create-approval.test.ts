@@ -375,6 +375,51 @@ describe('createApproval', () => {
     });
   });
 
+  it('creates approval with policy and agent action metadata', async () => {
+    const result = await createApproval(
+      { authorization, clock, idGenerator, approvalStore, unitOfWork, eventPublisher },
+      toAppContext({
+        tenantId: 'tenant-1',
+        principalId: 'user-1',
+        correlationId: 'corr-1',
+        roles: ['operator'],
+      }),
+      {
+        ...VALID_INPUT,
+        policyRule: {
+          ruleId: 'policy-browser-read',
+          trigger: 'Bounded browser read with visual evidence capture',
+          tier: 'HumanApprove',
+          blastRadius: ['1 browser page', '1 evidence artifact'],
+          irreversibility: 'none',
+        },
+        agentActionProposal: {
+          proposalId: 'proposal-browser-read',
+          agentId: 'agent-1',
+          machineId: 'machine-1',
+          toolName: 'browser.capture',
+          toolCategory: 'ReadOnly',
+          blastRadiusTier: 'HumanApprove',
+          rationale: 'Capture visual proof after approval.',
+        },
+      },
+    );
+
+    expect(result.ok).toBe(true);
+    const savedApproval = (approvalStore.saveApproval as ReturnType<typeof vi.fn>).mock
+      .calls[0]?.[1] as Record<string, unknown>;
+    expect(savedApproval['policyRule']).toMatchObject({
+      ruleId: 'policy-browser-read',
+      tier: 'HumanApprove',
+      irreversibility: 'none',
+    });
+    expect(savedApproval['agentActionProposal']).toMatchObject({
+      proposalId: 'proposal-browser-read',
+      toolName: 'browser.capture',
+      toolCategory: 'ReadOnly',
+    });
+  });
+
   it('rejects an invalid approval packet', async () => {
     const result = await createApproval(
       { authorization, clock, idGenerator, approvalStore, unitOfWork, eventPublisher },

@@ -9,6 +9,7 @@ import {
   KeyRound,
   LockKeyhole,
   Route,
+  Search,
   Server,
   Settings2,
   ShieldAlert,
@@ -34,6 +35,7 @@ import {
   buildPolicyControllerProposal,
   type PolicyControllerActionClass,
   type PolicyControllerDecision,
+  type PolicyControllerToolRiskCategory,
   type PolicyControllerToolRoute,
 } from '@/lib/policy-controller-draft';
 import { usePolicyChanges, useProposePolicyChange } from '@/hooks/queries/use-policy-changes';
@@ -45,8 +47,9 @@ import {
 } from '@/lib/policy-tool-catalog';
 import { cn } from '@/lib/utils';
 
-type ControllerMode = 'tools' | 'groups' | 'presets' | 'gateway';
+type ControllerMode = 'tools' | 'risk' | 'groups' | 'presets' | 'gateway';
 type DecisionKey = PolicyControllerDecision;
+type RiskFilter = PolicyControllerToolRiskCategory | 'all';
 
 type PolicyControllerPrototypeProps = {
   workspaceId: string;
@@ -70,6 +73,7 @@ type CustomToolDraft = {
   toolName: string;
   provider: string;
   actionClass: string;
+  riskCategory: PolicyControllerToolRiskCategory;
   decision: DecisionKey;
 };
 
@@ -115,6 +119,39 @@ const DECISIONS: Record<DecisionKey, DecisionDefinition> = {
     tone: 'border-rose-300 bg-rose-50 text-rose-900 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-200',
     helper: 'Blocked by policy.',
   },
+};
+
+const RISK_CATEGORIES: readonly PolicyControllerToolRiskCategory[] = [
+  'ReadOnly',
+  'Mutation',
+  'Dangerous',
+  'Unknown',
+];
+
+const RISK_LABELS: Record<PolicyControllerToolRiskCategory, string> = {
+  ReadOnly: 'Read-only',
+  Mutation: 'Mutation',
+  Dangerous: 'High risk',
+  Unknown: 'Unknown risk',
+};
+
+const RISK_DESCRIPTIONS: Record<PolicyControllerToolRiskCategory, string> = {
+  ReadOnly: 'Status, search, list, lookup, query, report, evidence, metadata, and analysis tools.',
+  Mutation:
+    'Tools that can send, publish, start, cancel, submit, register, open sessions, or change state.',
+  Dangerous:
+    'Tools that can run shell or executor actions, expose credentials, destroy data, move money, or perform other high-risk execution.',
+  Unknown: 'Unclassified tools that should stay reviewed until the catalog is explicit.',
+};
+
+const RISK_BADGE_TONE: Record<PolicyControllerToolRiskCategory, string> = {
+  ReadOnly:
+    'border-sky-300 bg-sky-50 text-sky-900 dark:border-sky-900/60 dark:bg-sky-950/30 dark:text-sky-200',
+  Mutation:
+    'border-amber-300 bg-amber-50 text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200',
+  Dangerous:
+    'border-rose-300 bg-rose-50 text-rose-900 dark:border-rose-900/60 dark:bg-rose-950/30 dark:text-rose-200',
+  Unknown: 'border-border bg-muted/50 text-muted-foreground',
 };
 
 const ACTION_CLASSES: ActionClass[] = [
@@ -232,6 +269,7 @@ function emptyCustomToolDraft(): CustomToolDraft {
     toolName: '',
     provider: 'Custom',
     actionClass: 'external-executor',
+    riskCategory: 'Unknown',
     decision: 'approval',
   };
 }
@@ -274,6 +312,14 @@ function DecisionBadge({ decision }: { decision: DecisionKey }) {
   );
 }
 
+function RiskBadge({ riskCategory }: { riskCategory: PolicyControllerToolRiskCategory }) {
+  return (
+    <Badge variant="outline" className={cn('border text-[11px]', RISK_BADGE_TONE[riskCategory])}>
+      {RISK_LABELS[riskCategory]}
+    </Badge>
+  );
+}
+
 function countRoutes(routes: Record<string, DecisionKey>) {
   return ACTION_CLASSES.reduce<Record<DecisionKey, number>>(
     (counts, action) => {
@@ -282,6 +328,57 @@ function countRoutes(routes: Record<string, DecisionKey>) {
     },
     { allow: 0, sandbox: 0, approval: 0, deny: 0 },
   );
+}
+
+function countToolDecisions(toolRoutes: readonly ToolRouteState[]) {
+  return toolRoutes.reduce<Record<DecisionKey, number>>(
+    (counts, tool) => {
+      counts[tool.decision] += 1;
+      return counts;
+    },
+    { allow: 0, sandbox: 0, approval: 0, deny: 0 },
+  );
+}
+
+function riskCategoryForTool(tool: ToolRouteState): PolicyControllerToolRiskCategory {
+  return tool.riskCategory ?? 'Unknown';
+}
+
+function isToolMatch(tool: ToolRouteState, search: string, riskFilter: RiskFilter): boolean {
+  const riskCategory = riskCategoryForTool(tool);
+  if (riskFilter !== 'all' && riskCategory !== riskFilter) return false;
+
+  const normalizedSearch = search.trim().toLowerCase();
+  if (!normalizedSearch) return true;
+
+  return [
+    tool.label,
+    tool.toolName,
+    tool.provider,
+    tool.actionClass,
+    tool.description ?? '',
+    tool.source ?? '',
+    riskCategory,
+    RISK_LABELS[riskCategory],
+  ].some((value) => value.toLowerCase().includes(normalizedSearch));
+}
+
+function highRiskToolCount(toolRoutes: readonly ToolRouteState[]): number {
+  return toolRoutes.filter((tool) => riskCategoryForTool(tool) === 'Dangerous').length;
+}
+
+function minimumExecutionTierForRisk(
+  riskCategory: PolicyControllerToolRiskCategory,
+): ExecutionTier {
+  switch (riskCategory) {
+    case 'ReadOnly':
+      return 'Auto';
+    case 'Mutation':
+    case 'Unknown':
+      return 'HumanApprove';
+    case 'Dangerous':
+      return 'ManualOnly';
+  }
 }
 
 function currentPresetLabel(routes: Record<string, DecisionKey>): string {
@@ -358,6 +455,37 @@ function RouteSummary({ routes }: { routes: Record<string, DecisionKey> }) {
           <span className="font-medium">{gatedPercent}%</span>
         </div>
         <Progress value={gatedPercent} className="mt-2 h-2" />
+      </div>
+    </div>
+  );
+}
+
+function ToolRouteSummary({ toolRoutes }: { toolRoutes: readonly ToolRouteState[] }) {
+  const counts = countToolDecisions(toolRoutes);
+  const total = Math.max(toolRoutes.length, 1);
+  const gatedPercent = Math.round(((counts.approval + counts.deny) / total) * 100);
+  const highRiskCount = highRiskToolCount(toolRoutes);
+
+  return (
+    <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(220px,0.42fr)]">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <MetricTile label="Allow" value={counts.allow} decision="allow" />
+        <MetricTile label="Sandbox" value={counts.sandbox} decision="sandbox" />
+        <MetricTile label="Approval" value={counts.approval} decision="approval" />
+        <MetricTile label="Deny" value={counts.deny} decision="deny" />
+      </div>
+      <div className="rounded-md border border-border p-3">
+        <div className="flex items-center justify-between gap-3 text-xs">
+          <span className="text-muted-foreground">Guarded tool routes</span>
+          <span className="font-medium">{gatedPercent}%</span>
+        </div>
+        <Progress value={gatedPercent} className="mt-2 h-2" />
+        <div className="mt-3 flex items-center justify-between gap-3 text-xs">
+          <span className="text-muted-foreground">High risk</span>
+          <Badge variant="outline" className={RISK_BADGE_TONE.Dangerous}>
+            {highRiskCount}
+          </Badge>
+        </div>
       </div>
     </div>
   );
@@ -524,21 +652,33 @@ function toolSourceLabel(tool: ToolRouteState): string {
 function ToolRoutesOption({
   toolRoutes,
   customTool,
+  toolSearch,
+  riskFilter,
   catalogCount,
   catalogStatus,
   setToolDecision,
+  setManyToolDecisions,
   setCustomTool,
+  setToolSearch,
+  setRiskFilter,
   addCustomTool,
 }: {
   toolRoutes: readonly ToolRouteState[];
   customTool: CustomToolDraft;
+  toolSearch: string;
+  riskFilter: RiskFilter;
   catalogCount: number;
   catalogStatus: 'loading' | 'loaded' | 'unavailable';
   setToolDecision: (toolId: string, decision: DecisionKey) => void;
+  setManyToolDecisions: (toolIds: readonly string[], decision: DecisionKey) => void;
   setCustomTool: (draft: CustomToolDraft) => void;
+  setToolSearch: (search: string) => void;
+  setRiskFilter: (risk: RiskFilter) => void;
   addCustomTool: () => void;
 }) {
   const canAddCustomTool = customTool.toolName.trim().length > 0;
+  const visibleToolRoutes = toolRoutes.filter((tool) => isToolMatch(tool, toolSearch, riskFilter));
+  const visibleToolIds = visibleToolRoutes.map((tool) => tool.id);
 
   return (
     <div className="space-y-4">
@@ -546,17 +686,78 @@ function ToolRoutesOption({
         <div>
           <div className="font-medium">Tool routes</div>
           <p className="mt-1 text-xs text-muted-foreground">
-            Set the draft decision for each registered or local runtime tool.
+            Set the draft decision for every registered, contributed, or custom runtime tool.
           </p>
         </div>
-        <Badge variant="outline">
-          {catalogStatus === 'loaded'
-            ? `Catalog ${catalogCount}`
-            : catalogStatus === 'loading'
-              ? 'Catalog loading'
-              : 'Catalog unavailable'}
-        </Badge>
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant="outline">
+            {catalogStatus === 'loaded'
+              ? `Catalog ${catalogCount}`
+              : catalogStatus === 'loading'
+                ? 'Catalog loading'
+                : 'Catalog unavailable'}
+          </Badge>
+          <Badge variant="outline">{toolRoutes.length} tool routes</Badge>
+        </div>
       </div>
+
+      <ToolRouteSummary toolRoutes={toolRoutes} />
+
+      <div className="grid gap-3 rounded-md border border-border p-3 lg:grid-cols-[minmax(220px,0.9fr)_180px_minmax(300px,1fr)]">
+        <div className="space-y-1.5">
+          <Label htmlFor="tool-route-search">Search tools</Label>
+          <div className="relative">
+            <Search
+              className="pointer-events-none absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground"
+              aria-hidden="true"
+            />
+            <Input
+              id="tool-route-search"
+              value={toolSearch}
+              onChange={(event) => setToolSearch(event.target.value)}
+              className="pl-8"
+              placeholder="portarium, browser, approval, github..."
+            />
+          </div>
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="tool-route-risk-filter">Risk</Label>
+          <select
+            id="tool-route-risk-filter"
+            value={riskFilter}
+            onChange={(event) => setRiskFilter(event.target.value as RiskFilter)}
+            className="border-input h-9 w-full rounded-md border bg-background px-3 text-sm"
+          >
+            <option value="all">All risk tiers</option>
+            {RISK_CATEGORIES.map((riskCategory) => (
+              <option key={riskCategory} value={riskCategory}>
+                {RISK_LABELS[riskCategory]}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="space-y-1.5">
+          <Label>Apply to visible tools</Label>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {(Object.keys(DECISIONS) as DecisionKey[]).map((decision) => (
+              <Button
+                key={decision}
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={visibleToolIds.length === 0}
+                onClick={() => setManyToolDecisions(visibleToolIds, decision)}
+              >
+                {DECISIONS[decision].shortLabel}
+              </Button>
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Showing {visibleToolRoutes.length} of {toolRoutes.length}.
+          </p>
+        </div>
+      </div>
+
       <div className="overflow-hidden rounded-md border border-border">
         <div className="hidden grid-cols-[minmax(240px,1fr)_minmax(150px,0.45fr)_96px_112px_minmax(360px,0.95fr)] border-b border-border bg-muted/40 px-3 py-2 text-xs font-medium text-muted-foreground lg:grid">
           <span>Tool</span>
@@ -565,7 +766,12 @@ function ToolRoutesOption({
           <span>Current</span>
           <span>Draft route</span>
         </div>
-        {toolRoutes.map((tool) => (
+        {visibleToolRoutes.length === 0 ? (
+          <div className="px-3 py-8 text-center text-sm text-muted-foreground">
+            No tools match the current filter.
+          </div>
+        ) : null}
+        {visibleToolRoutes.map((tool) => (
           <div
             key={tool.id}
             className="grid gap-3 border-b border-border px-3 py-3 last:border-b-0 lg:grid-cols-[minmax(240px,1fr)_minmax(150px,0.45fr)_96px_112px_minmax(360px,0.95fr)]"
@@ -573,7 +779,10 @@ function ToolRoutesOption({
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="font-medium">{tool.label}</span>
-                {tool.riskCategory ? <Badge variant="outline">{tool.riskCategory}</Badge> : null}
+                <RiskBadge riskCategory={riskCategoryForTool(tool)} />
+                {tool.minimumExecutionTier ? (
+                  <ExecutionTierBadge tier={tool.minimumExecutionTier} />
+                ) : null}
               </div>
               <p className="mt-1 break-all font-mono text-xs text-muted-foreground">
                 {tool.toolName}
@@ -613,7 +822,7 @@ function ToolRoutesOption({
           <Wrench className="h-4 w-4 text-primary" aria-hidden="true" />
           Custom tool route
         </div>
-        <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(160px,0.7fr)_minmax(220px,1fr)_minmax(140px,0.55fr)_minmax(160px,0.6fr)_auto]">
+        <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(160px,0.7fr)_minmax(220px,1fr)_minmax(140px,0.55fr)_minmax(150px,0.55fr)_minmax(160px,0.6fr)_auto]">
           <div className="space-y-1.5">
             <Label htmlFor="custom-tool-label">Display name</Label>
             <Input
@@ -642,6 +851,26 @@ function ToolRoutesOption({
             />
           </div>
           <div className="space-y-1.5">
+            <Label htmlFor="custom-tool-risk">Risk</Label>
+            <select
+              id="custom-tool-risk"
+              value={customTool.riskCategory}
+              onChange={(event) =>
+                setCustomTool({
+                  ...customTool,
+                  riskCategory: event.target.value as PolicyControllerToolRiskCategory,
+                })
+              }
+              className="border-input h-9 w-full rounded-md border bg-background px-3 text-sm"
+            >
+              {RISK_CATEGORIES.map((riskCategory) => (
+                <option key={riskCategory} value={riskCategory}>
+                  {RISK_LABELS[riskCategory]}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-1.5">
             <Label htmlFor="custom-tool-action-class">Default group</Label>
             <select
               id="custom-tool-action-class"
@@ -668,6 +897,110 @@ function ToolRoutesOption({
               Add tool
             </Button>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RiskPostureOption({
+  toolRoutes,
+  setManyToolDecisions,
+  focusRiskTools,
+}: {
+  toolRoutes: readonly ToolRouteState[];
+  setManyToolDecisions: (toolIds: readonly string[], decision: DecisionKey) => void;
+  focusRiskTools: (riskCategory: PolicyControllerToolRiskCategory) => void;
+}) {
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-3 lg:grid-cols-4">
+        {RISK_CATEGORIES.map((riskCategory) => {
+          const tools = toolRoutes.filter((tool) => riskCategoryForTool(tool) === riskCategory);
+          const counts = countToolDecisions(tools);
+          return (
+            <div key={riskCategory} className="rounded-md border border-border p-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <RiskBadge riskCategory={riskCategory} />
+                  <div className="mt-3 text-2xl font-semibold">{tools.length}</div>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  disabled={tools.length === 0}
+                  onClick={() => focusRiskTools(riskCategory)}
+                >
+                  View
+                </Button>
+              </div>
+              <p className="mt-3 min-h-12 text-xs text-muted-foreground">
+                {RISK_DESCRIPTIONS[riskCategory]}
+              </p>
+              <div className="mt-4 grid grid-cols-2 gap-1 text-[11px] text-muted-foreground">
+                <span>{counts.allow} allow</span>
+                <span>{counts.sandbox} sandbox</span>
+                <span>{counts.approval} approval</span>
+                <span>{counts.deny} deny</span>
+              </div>
+              <div className="mt-4 grid grid-cols-2 gap-2">
+                {(Object.keys(DECISIONS) as DecisionKey[]).map((decision) => (
+                  <Button
+                    key={decision}
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    disabled={tools.length === 0}
+                    onClick={() =>
+                      setManyToolDecisions(
+                        tools.map((tool) => tool.id),
+                        decision,
+                      )
+                    }
+                  >
+                    {DECISIONS[decision].shortLabel}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="rounded-md border border-border p-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <div className="font-medium">High risk posture</div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              High-risk tools can be denied entirely, held for approval, limited to sandbox, or
+              explicitly allowed when the workspace owner chooses that posture.
+            </p>
+          </div>
+          <RiskBadge riskCategory="Dangerous" />
+        </div>
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          {toolRoutes
+            .filter((tool) => riskCategoryForTool(tool) === 'Dangerous')
+            .map((tool) => (
+              <div
+                key={tool.id}
+                className="grid gap-3 rounded-md border border-border p-3 sm:grid-cols-[minmax(0,1fr)_auto]"
+              >
+                <div className="min-w-0">
+                  <div className="font-medium">{tool.label}</div>
+                  <p className="mt-1 break-all font-mono text-xs text-muted-foreground">
+                    {tool.toolName}
+                  </p>
+                </div>
+                <DecisionBadge decision={tool.decision} />
+              </div>
+            ))}
+          {highRiskToolCount(toolRoutes) === 0 ? (
+            <div className="rounded-md border border-border p-3 text-sm text-muted-foreground">
+              No high-risk tools are currently in the catalog.
+            </div>
+          ) : null}
         </div>
       </div>
     </div>
@@ -812,6 +1145,8 @@ export function PolicyControllerPrototype({
     ...RUNTIME_TOOL_ROUTE_SEEDS,
   ]);
   const [customTool, setCustomTool] = useState<CustomToolDraft>(() => emptyCustomToolDraft());
+  const [toolSearch, setToolSearch] = useState('');
+  const [riskFilter, setRiskFilter] = useState<RiskFilter>('all');
   const [strictEvidence, setStrictEvidence] = useState(true);
   const [dryRunExecutors, setDryRunExecutors] = useState(true);
   const [rationale, setRationale] = useState(
@@ -820,7 +1155,7 @@ export function PolicyControllerPrototype({
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'failed'>('idle');
   const selectedPolicyId = selectedPolicy.policyId;
   const selectedPolicyName = selectedPolicy.name;
-  const summary = useMemo(() => countRoutes(routes), [routes]);
+  const summary = useMemo(() => countToolDecisions(toolRoutes), [toolRoutes]);
   const toolCatalogQuery = useToolCatalog(workspaceId);
   const catalogToolRoutes = useMemo(
     () => toolCatalogRoutesFromItems(toolCatalogQuery.data?.items ?? []),
@@ -880,6 +1215,13 @@ export function PolicyControllerPrototype({
     );
   };
 
+  const setManyToolDecisions = (toolIds: readonly string[], decision: DecisionKey) => {
+    const toolIdSet = new Set(toolIds);
+    setToolRoutes((current) =>
+      current.map((tool) => (toolIdSet.has(tool.id) ? { ...tool, decision } : tool)),
+    );
+  };
+
   const applyPreset = (decisions: Record<string, DecisionKey>) => {
     setRoutes({ ...decisions });
     setToolRoutes((current) =>
@@ -903,6 +1245,8 @@ export function PolicyControllerPrototype({
         toolName,
         provider: customTool.provider.trim() || 'Custom',
         actionClass: customTool.actionClass,
+        riskCategory: customTool.riskCategory,
+        minimumExecutionTier: minimumExecutionTierForRisk(customTool.riskCategory),
         currentDecision: 'deny',
         decision: customTool.decision,
         source: 'custom',
@@ -910,6 +1254,12 @@ export function PolicyControllerPrototype({
       },
     ]);
     setCustomTool(emptyCustomToolDraft());
+  };
+
+  const focusRiskTools = (riskCategory: PolicyControllerToolRiskCategory) => {
+    setToolSearch('');
+    setRiskFilter(riskCategory);
+    setMode('tools');
   };
 
   const handleCopyDraft = async () => {
@@ -991,6 +1341,10 @@ export function PolicyControllerPrototype({
               <Wrench className="h-4 w-4" aria-hidden="true" />
               Tools
             </TabsTrigger>
+            <TabsTrigger value="risk">
+              <ShieldAlert className="h-4 w-4" aria-hidden="true" />
+              Risk
+            </TabsTrigger>
             <TabsTrigger value="groups">
               <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
               Groups
@@ -1009,6 +1363,8 @@ export function PolicyControllerPrototype({
             <ToolRoutesOption
               toolRoutes={toolRoutes}
               customTool={customTool}
+              toolSearch={toolSearch}
+              riskFilter={riskFilter}
               catalogCount={toolCatalogQuery.data?.items.length ?? 0}
               catalogStatus={
                 toolCatalogQuery.isError
@@ -1018,8 +1374,19 @@ export function PolicyControllerPrototype({
                     : 'loaded'
               }
               setToolDecision={setToolDecision}
+              setManyToolDecisions={setManyToolDecisions}
               setCustomTool={setCustomTool}
+              setToolSearch={setToolSearch}
+              setRiskFilter={setRiskFilter}
               addCustomTool={addCustomTool}
+            />
+          </TabsContent>
+
+          <TabsContent value="risk" className="mt-4">
+            <RiskPostureOption
+              toolRoutes={toolRoutes}
+              setManyToolDecisions={setManyToolDecisions}
+              focusRiskTools={focusRiskTools}
             />
           </TabsContent>
 

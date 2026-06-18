@@ -77,11 +77,11 @@ Example:
 powershell -ExecutionPolicy Bypass -File scripts\desktop\portarium-cockpit-desktop.ps1 `
   -Mode Install `
   -TargetUrl "http://127.0.0.1:11355/config/agents/agent-openclaw-gateway-demo" `
-  -AppName "Calvin Portarium" `
-  -ShortcutName "Calvin Portarium" `
-  -StartMenuGroup "Calvin Ops" `
+  -AppName "Acme Portarium" `
+  -ShortcutName "Acme Portarium" `
+  -StartMenuGroup "Acme Ops" `
   -ShortcutCommandPath "powershell.exe" `
-  -ShortcutCommandArguments "-NoProfile -ExecutionPolicy Bypass -File `"E:\calvin-ops\scripts\portarium-desktop-app.ps1`" -Mode Launch -Root `"E:\calvin-ops`" -Target Agent"
+  -ShortcutCommandArguments "-NoProfile -ExecutionPolicy Bypass -File `"C:\PortariumDeployment\launch-cockpit.ps1`" -Mode Launch -Target Agent"
 ```
 
 That pattern keeps readiness, tunnels, identity, and policy gates in the deployment wrapper, while the open-source launcher owns only the desktop shell mechanics.

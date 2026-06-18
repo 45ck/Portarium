@@ -7,6 +7,7 @@ import {
   buildCockpitContentSecurityPolicy,
   hasCockpitContentSecurityPolicy,
   normalizeCockpitCspConnectMode,
+  parseCockpitImageOrigins,
   parseCockpitOperatorFrameOrigins,
   replaceCockpitContentSecurityPolicy,
   type CockpitCspConnectMode,
@@ -24,6 +25,7 @@ const portariumDomainPrimitivesSource = resolve(__dirname, '../../src/domain/pri
 function cockpitContentSecurityPolicyPlugin(
   apiBaseUrl: string | undefined,
   connectMode: CockpitCspConnectMode,
+  imageOrigins: readonly string[],
   operatorFrameOrigins: readonly string[],
 ): Plugin {
   return {
@@ -33,7 +35,12 @@ function cockpitContentSecurityPolicyPlugin(
 
       return replaceCockpitContentSecurityPolicy(
         html,
-        buildCockpitContentSecurityPolicy({ apiBaseUrl, connectMode, operatorFrameOrigins }),
+        buildCockpitContentSecurityPolicy({
+          apiBaseUrl,
+          connectMode,
+          imageOrigins,
+          operatorFrameOrigins,
+        }),
       );
     },
   };
@@ -49,6 +56,7 @@ export default defineConfig(({ mode }) => {
   const operatorFrameOrigins = parseCockpitOperatorFrameOrigins(
     env['VITE_COCKPIT_OPERATOR_FRAME_ORIGINS'],
   );
+  const imageOrigins = parseCockpitImageOrigins(env['VITE_COCKPIT_IMAGE_ORIGINS']);
   const localExtensionAliases = parseLocalExtensionAliases(
     env['VITE_COCKPIT_LOCAL_EXTENSION_ALIASES'],
   );
@@ -56,7 +64,12 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [
-      cockpitContentSecurityPolicyPlugin(apiBaseUrl, cspConnectMode, operatorFrameOrigins),
+      cockpitContentSecurityPolicyPlugin(
+        apiBaseUrl,
+        cspConnectMode,
+        imageOrigins,
+        operatorFrameOrigins,
+      ),
       react(),
       tailwindcss(),
     ],

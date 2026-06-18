@@ -33,6 +33,7 @@ import { buildAgentObservabilityModel } from '@/lib/agent-observability';
 import { cn } from '@/lib/utils';
 import { shouldShowInternalCockpitSurfaces } from '@/lib/shell/navigation';
 import type { ApprovalSummary, RunSummary } from '@portarium/cockpit-types';
+import { summarizeApprovalTitle } from '@/components/cockpit/triage-card/approval-card-contract';
 
 const ACTIVE_RUN_STATUSES = new Set<RunSummary['status']>([
   'Pending',
@@ -226,7 +227,7 @@ function MissionControlRoute() {
                           params={{ approvalId: approval.approvalId }}
                           className="line-clamp-2 text-sm font-medium text-primary hover:underline"
                         >
-                          {approval.prompt}
+                          {summarizeApprovalTitle(approval)}
                         </Link>
                         <ApprovalStatusBadge status={approval.status} />
                       </div>

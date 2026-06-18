@@ -61,6 +61,11 @@ The approval-card draft tool must:
 6. preserve exact scope, policy decision, evidence, risk, authority, expiry, and
    rollback or handoff information.
 
+Drafted approval packets may include tenant-neutral custom review views, such
+as a flow diagram, risk matrix, evidence map, or operator-input checklist. These
+views are Cockpit-visible review context only; they must not make approval-card
+drafting executable or collapse the separate executor gate.
+
 ## Executor Gate
 
 The executor gate must:

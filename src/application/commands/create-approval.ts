@@ -11,7 +11,9 @@ import {
   type WorkspaceId as WorkspaceIdType,
 } from '../../domain/primitives/index.js';
 import {
+  parseApprovalViewAgentActionProposalMetaV1,
   parseApprovalPacketV1,
+  parseApprovalViewPolicyRuleV1,
   type ApprovalPendingV1,
   type EscalationStepV1,
 } from '../../domain/approvals/index.js';
@@ -57,6 +59,8 @@ export type CreateApprovalInput = Readonly<{
   dueAtIso?: string;
   escalationChain?: readonly CreateApprovalEscalationStepInput[];
   approvalPacket?: unknown;
+  policyRule?: unknown;
+  agentActionProposal?: unknown;
 }>;
 
 export type CreateApprovalOutput = Readonly<{
@@ -151,6 +155,26 @@ function validateInput(input: CreateApprovalInput): Err<CreateApprovalError> | n
       });
     }
   }
+  if (input.policyRule !== undefined) {
+    try {
+      parseApprovalViewPolicyRuleV1(input.policyRule);
+    } catch (error) {
+      return err({
+        kind: 'ValidationFailed',
+        message: error instanceof Error ? error.message : 'policyRule must be valid.',
+      });
+    }
+  }
+  if (input.agentActionProposal !== undefined) {
+    try {
+      parseApprovalViewAgentActionProposalMetaV1(input.agentActionProposal);
+    } catch (error) {
+      return err({
+        kind: 'ValidationFailed',
+        message: error instanceof Error ? error.message : 'agentActionProposal must be valid.',
+      });
+    }
+  }
   return null;
 }
 
@@ -206,6 +230,16 @@ function buildPendingApproval(
     ...(escalationChain ? { escalationChain } : {}),
     ...(input.approvalPacket
       ? { approvalPacket: parseApprovalPacketV1(input.approvalPacket) }
+      : {}),
+    ...(input.policyRule !== undefined
+      ? { policyRule: parseApprovalViewPolicyRuleV1(input.policyRule) }
+      : {}),
+    ...(input.agentActionProposal !== undefined
+      ? {
+          agentActionProposal: parseApprovalViewAgentActionProposalMetaV1(
+            input.agentActionProposal,
+          ),
+        }
       : {}),
     status: 'Pending',
   };

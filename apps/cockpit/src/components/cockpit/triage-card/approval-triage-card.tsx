@@ -119,7 +119,7 @@ export function ApprovalTriageCard({
       <div className="relative">
         <div
           className={cn(
-            'relative rounded-xl border border-border bg-card shadow-md overflow-hidden flex flex-col h-[calc(100vh-12rem)] min-h-[480px]',
+            'relative rounded-xl border border-border bg-card shadow-md overflow-hidden flex flex-col h-[calc(100vh-12rem)] min-h-[820px]',
             compact && 'h-[calc(100dvh-15.5rem)] min-h-[360px] max-h-[500px]',
           )}
           style={{ zIndex: 2 }}

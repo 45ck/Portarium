@@ -92,7 +92,7 @@ export interface ArtifactV1 {
   createdAtIso: string;
 }
 
-export type ApprovalPacketArtifactRole = 'primary' | 'supporting';
+export type ApprovalPacketArtifactRole = 'primary' | 'supporting' | 'decision-evidence';
 
 export interface ApprovalPacketArtifactRef {
   artifactId: string;
@@ -102,6 +102,23 @@ export interface ApprovalPacketArtifactRef {
   evidenceId?: string;
   uri?: string;
   sha256?: string;
+  thumbnailUri?: string;
+  fullUri?: string;
+  thumbnailUrl?: string | null;
+  fullUrl?: string | null;
+  evidenceKind?: 'Artifact' | 'Snapshot' | 'Diff' | 'Log';
+  sourceFamily?: string;
+  sourceId?: string;
+  dataClass?: string;
+  retention?: string;
+  displayPolicy?: string;
+  caption?: string;
+  capturedAtIso?: string;
+  capturedAtUtc?: string;
+  runId?: string;
+  approvalId?: string;
+  messageId?: string;
+  correlationId?: string;
 }
 
 export interface ApprovalPacketReviewDoc {
@@ -122,10 +139,59 @@ export interface ApprovalPacketPlanScope {
   plannedEffectIds: string[];
 }
 
+export interface ApprovalPacketOperatorBrief {
+  schemaVersion?: 1;
+  action: string;
+  whyGated: string;
+  whatApprovingAllows: string[];
+  whatApprovingDoesNotAllow: string[];
+  risk: string;
+  rollback: string;
+  recommendation: string;
+  userVisibleConsequence: string;
+  authority?: string;
+}
+
+export type ApprovalPacketDecisionViewKind =
+  | 'recommendation'
+  | 'flow'
+  | 'risk'
+  | 'scope'
+  | 'evidence'
+  | 'operator-input'
+  | 'custom';
+
+export type ApprovalPacketDecisionViewItemTone =
+  | 'neutral'
+  | 'info'
+  | 'success'
+  | 'warning'
+  | 'critical';
+
+export interface ApprovalPacketDecisionViewItem {
+  label: string;
+  value: string;
+  tone?: ApprovalPacketDecisionViewItemTone;
+}
+
+export interface ApprovalPacketDecisionView {
+  id: string;
+  label: string;
+  stance: string;
+  summary: string;
+  bullets: string[];
+  kind?: ApprovalPacketDecisionViewKind;
+  diagram?: string;
+  items?: ApprovalPacketDecisionViewItem[];
+}
+
 export interface ApprovalPacket {
   schemaVersion: 1;
   packetId: string;
+  operatorBrief?: ApprovalPacketOperatorBrief;
+  decisionViews?: ApprovalPacketDecisionView[];
   artifacts: ApprovalPacketArtifactRef[];
+  visualEvidenceTimeline?: ApprovalPacketArtifactRef[];
   reviewDocs: ApprovalPacketReviewDoc[];
   requestedCapabilities: ApprovalPacketRequestedCapability[];
   planScope: ApprovalPacketPlanScope;
@@ -524,6 +590,23 @@ export interface EvidencePayloadRef {
   uri: string;
   contentType?: string;
   sha256?: string;
+  artifactId?: string;
+  thumbnailUri?: string;
+  fullUri?: string;
+  thumbnailUrl?: string | null;
+  fullUrl?: string | null;
+  sourceFamily?: string;
+  sourceId?: string;
+  dataClass?: string;
+  retention?: string;
+  displayPolicy?: string;
+  caption?: string;
+  capturedAtIso?: string;
+  capturedAtUtc?: string;
+  runId?: string;
+  approvalId?: string;
+  messageId?: string;
+  correlationId?: string;
 }
 
 export interface EvidenceActorUser {
@@ -785,6 +868,9 @@ export interface CreateApprovalRequest {
   prompt: string;
   assigneeUserId?: string;
   dueAtIso?: string;
+  approvalPacket?: ApprovalPacket;
+  policyRule?: PolicyRule;
+  agentActionProposal?: AgentActionProposalMeta;
 }
 
 export interface CredentialGrantV1 {

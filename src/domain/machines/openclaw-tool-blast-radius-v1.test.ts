@@ -41,6 +41,32 @@ describe('classifyOpenClawToolBlastRadiusV1', () => {
     expect(policy.minimumTier).toBe('ManualOnly');
   });
 
+  it.each([
+    'tenant.cloud_browser_status',
+    'tenant.cloud_browser_query',
+    'tenant.cloud_browser_capture',
+    'tenant.password_manager_status',
+    'tenant.auth_material_discover_metadata',
+    'tenant.visual_evidence_search',
+    'portarium_agent_heartbeat',
+  ])('classifies read-like sensitive tool %s as Auto', (toolName) => {
+    const policy = classifyOpenClawToolBlastRadiusV1(toolName);
+    expect(policy.category).toBe('ReadOnly');
+    expect(policy.minimumTier).toBe('Auto');
+  });
+
+  it.each([
+    'tenant.cloud_browser_open',
+    'tenant.cloud_browser_prepare_login',
+    'gmail.message.send',
+    'portarium_run_start',
+    'portarium_approval_submit',
+  ])('classifies effectful non-destructive tool %s as HumanApprove', (toolName) => {
+    const policy = classifyOpenClawToolBlastRadiusV1(toolName);
+    expect(policy.category).toBe('Mutation');
+    expect(policy.minimumTier).toBe('HumanApprove');
+  });
+
   it('defaults unknown tools to HumanApprove', () => {
     const policy = classifyOpenClawToolBlastRadiusV1('custom_tool');
     expect(policy.category).toBe('Unknown');

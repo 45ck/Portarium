@@ -23,6 +23,7 @@ import { HumanTaskStatusBadge } from '@/components/cockpit/human-task-status-bad
 import { HumanTaskDrawer } from '@/components/cockpit/human-task-drawer';
 import { SystemStateBanner } from '@/components/cockpit/system-state-banner';
 import { KpiRow } from '@/components/cockpit/kpi-row';
+import { summarizeApprovalTitle } from '@/components/cockpit/triage-card/approval-card-contract';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { ApprovalSummary, RunSummary, HumanTaskSummary } from '@portarium/cockpit-types';
@@ -64,6 +65,7 @@ function PendingApprovalRow({
   onClick: () => void;
 }) {
   const isOverdue = approval.dueAtIso && new Date(approval.dueAtIso) < new Date();
+  const prompt = summarizeApprovalTitle(approval);
   return (
     <button
       type="button"
@@ -72,7 +74,9 @@ function PendingApprovalRow({
     >
       <CheckSquare className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
       <div className="flex-1 min-w-0 space-y-0.5">
-        <p className="text-sm truncate">{approval.prompt}</p>
+        <p className="text-sm truncate" title={prompt}>
+          {prompt}
+        </p>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
           <span className="font-mono">{approval.approvalId}</span>
           {approval.assigneeUserId && <span>Assignee: {approval.assigneeUserId}</span>}

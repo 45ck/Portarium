@@ -6,7 +6,12 @@ import type {
   RunSummary,
   WorkflowSummary,
 } from '@portarium/cockpit-types';
-import { APPROVAL_CARD_CONTRACT_NAME, buildApprovalCardContract } from './approval-card-contract';
+import {
+  APPROVAL_CARD_CONTRACT_NAME,
+  buildApprovalCardContract,
+  summarizeApprovalPrompt,
+  summarizeApprovalTitle,
+} from './approval-card-contract';
 
 const APPROVAL: ApprovalSummary = {
   schemaVersion: 1,
@@ -206,6 +211,92 @@ describe('buildApprovalCardContract', () => {
     expect(contract.fields.intent.evidenceSource).toBe('ApprovalPacket');
   });
 
+  it('uses approval packet metadata to fill sparse OpenClaw summary fields', () => {
+    const contract = buildApprovalCardContract({
+      approval: {
+        ...APPROVAL,
+        prompt: 'Review cloud browser query: provider notifications page visual proof',
+        policyRule: undefined,
+        agentActionProposal: undefined,
+        rationale: undefined,
+        approvalPacket: {
+          schemaVersion: 1,
+          packetId: 'packet-provider-proof',
+          operatorBrief: {
+            schemaVersion: 1,
+            action: 'Open only the provider notifications page and store one private screenshot.',
+            whyGated: 'This uses a VM-private browser profile for a live provider account.',
+            whatApprovingAllows: ['Open the exact notifications URL.'],
+            whatApprovingDoesNotAllow: ['No messages, applications, uploads, or raw screenshot return.'],
+            risk: 'Sensitive read with private visual evidence.',
+            rollback: 'Let the approval expire or deny it in Cockpit.',
+            recommendation: 'Approve only if the exact URL and screenshot scope match the test.',
+            userVisibleConsequence: 'Approval records intent only.',
+            authority: 'A3 hosted-private cloud-browser read',
+          },
+          artifacts: [
+            {
+              artifactId: 'artifact-card',
+              title: 'OpenClaw approval request',
+              mimeType: 'application/json',
+              role: 'primary',
+            },
+            {
+              artifactId: 'planned-visual',
+              title: 'Expected VM-private visual evidence after approval',
+              mimeType: 'application/vnd.portarium.visual-evidence-plan+json',
+              role: 'decision-evidence',
+              sourceFamily: 'tenant-private-cloud-browser',
+              sourceId: 'provider-notifications',
+              displayPolicy: 'metadata-only',
+            },
+          ],
+          visualEvidenceTimeline: [
+            {
+              artifactId: 'planned-visual',
+              title: 'Expected VM-private visual evidence after approval',
+              mimeType: 'application/vnd.portarium.visual-evidence-plan+json',
+              role: 'decision-evidence',
+              sourceFamily: 'tenant-private-cloud-browser',
+              sourceId: 'provider-notifications',
+              displayPolicy: 'metadata-only',
+            },
+          ],
+          reviewDocs: [{ title: 'Review brief', markdown: '# Review' }],
+          requestedCapabilities: [
+            {
+              capabilityId: 'openclaw.cloud_browser_query',
+              reason: 'Exact LinkedIn notifications proof after approval.',
+              required: true,
+            },
+          ],
+          planScope: {
+            planId: 'plan-provider-proof',
+            summary: 'Review the exact provider notifications visual proof scope.',
+            actionIds: ['action-provider-proof'],
+            plannedEffectIds: ['effect-provider-proof'],
+          },
+        },
+      },
+      plannedEffects: [],
+      evidenceEntries: [],
+    });
+
+    expect(contract.fields.systemsTouched.value).toContain(
+      'tenant-private-cloud-browser:provider-notifications',
+    );
+    expect(contract.fields.systemsTouched.value).toContain('openclaw.cloud_browser_query');
+    expect(contract.fields.policyResult.value).toBe(
+      'Approval packet authority: A3 hosted-private cloud-browser read',
+    );
+    expect(contract.fields.blastRadius.value).toContain('1 planned Action, 1 planned effect');
+    expect(contract.fields.reversibility.value).toContain('Let the approval expire');
+    expect(contract.fields.evidence.value).toBe('1 packet artifact(s); 1 visual timeline item(s)');
+    expect(contract.fields.rationale.value).toBe(
+      'Approve only if the exact URL and screenshot scope match the test.',
+    );
+  });
+
   it('summarizes repeated OpenClaw rationale text instead of rendering an essay tile', () => {
     const longRationale =
       'OpenClaw approval required: email_query on email-tenant:tenant-account-alert-watch. authority A3. environment hosted-private. proposal standing-read-attention-review-tenant-account-alert-watch-attention-5dcf004b298556ae. Review latest standing-read monitor attention item: Tenant mailbox account/security signal. Severity: medium. Reason: Bounded standing-read query matched 4 visible redacted/hashable signals. Required review: Review the scoped redacted result through OpenClaw/Portarium before drafting any action proposal.';
@@ -224,6 +315,63 @@ describe('buildApprovalCardContract', () => {
     expect(contract.fields.rationale.value).toBe(
       'Review monitor item: Tenant mailbox account/security signal',
     );
+  });
+
+  it('does not render object placeholders in monitor approval summaries', () => {
+    expect(
+      summarizeApprovalPrompt(
+        'Review latest standing-read monitor attention item: [object Object]. Severity: medium.',
+      ),
+    ).toBe('Review monitor attention item');
+    expect(summarizeApprovalPrompt('Review monitor item: [object Object]')).toBe(
+      'Review monitor attention item',
+    );
+  });
+
+  it('summarizes object-shaped approval text by its real label', () => {
+    expect(
+      summarizeApprovalPrompt({
+        label: 'Tenant finance cashflow/bills signal',
+        source: 'tenant-finance-cashflow-watch',
+      }),
+    ).toBe('Tenant finance cashflow/bills signal');
+  });
+
+  it('uses approval packet summary to recover real monitor names for stale prompt titles', () => {
+    expect(
+      summarizeApprovalTitle({
+        ...APPROVAL,
+        prompt: 'Review monitor item: [object Object]',
+        agentActionProposal: undefined,
+        approvalPacket: {
+          schemaVersion: 1,
+          packetId: 'packet-openclaw-stale',
+          artifacts: [
+            {
+              artifactId: 'artifact-openclaw-stale',
+              title: 'OpenClaw approval request',
+              mimeType: 'application/json',
+              role: 'primary',
+            },
+          ],
+          reviewDocs: [{ title: 'Review brief', markdown: '# Review' }],
+          requestedCapabilities: [
+            {
+              capabilityId: 'openclaw.email_query',
+              reason: 'Review redacted monitor signal before any follow-up proposal.',
+              required: true,
+            },
+          ],
+          planScope: {
+            planId: 'plan-openclaw-stale',
+            summary:
+              'OpenClaw approval required: email_query on tenant-finance:cashflow-watch. Review latest standing-read monitor attention item: Tenant finance cashflow/bills signal. Severity: medium.',
+            actionIds: ['action-openclaw-stale'],
+            plannedEffectIds: ['effect-openclaw-stale'],
+          },
+        },
+      }),
+    ).toBe('Review monitor item: Tenant finance cashflow/bills signal');
   });
 
   it('escalates irreversible or dangerous approvals into high-risk deep review friction', () => {

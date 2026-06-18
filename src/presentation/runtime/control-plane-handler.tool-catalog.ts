@@ -115,7 +115,11 @@ export async function handleListToolCatalog(args: ToolCatalogArgs): Promise<void
     }
   }
 
-  const body = buildToolCatalogResponse(workspaceId, deps.clock?.() ?? new Date(), contributedTools);
+  const body = buildToolCatalogResponse(
+    workspaceId,
+    deps.clock?.() ?? new Date(),
+    contributedTools,
+  );
   const etag = computeETag(body);
   res.setHeader('ETag', etag);
   if (checkIfNoneMatch(req, etag)) {
@@ -165,7 +169,9 @@ function toolCatalogItemFromMcpTool(tool: (typeof MCP_TOOLS)[number]): ToolCatal
 function toolCatalogItemFromSourceTool(tool: ToolCatalogSourceTool): ToolCatalogItem {
   const risk = classifyOpenClawToolBlastRadiusV1(tool.toolName);
   const riskCategory = tool.riskCategory ?? risk.category;
-  const minimumExecutionTier = tool.minimumExecutionTier ?? risk.minimumTier;
+  const minimumExecutionTier =
+    tool.minimumExecutionTier ??
+    (tool.riskCategory ? minimumExecutionTierForRisk(riskCategory) : risk.minimumTier);
   return {
     schemaVersion: 1,
     toolId: tool.toolId ?? `${tool.source}:${tool.toolName}`,
@@ -177,7 +183,8 @@ function toolCatalogItemFromSourceTool(tool: ToolCatalogSourceTool): ToolCatalog
     actionClass: tool.actionClass ?? actionClassForRisk(riskCategory),
     riskCategory,
     minimumExecutionTier,
-    recommendedDecision: tool.recommendedDecision ?? recommendedDecisionForTier(minimumExecutionTier),
+    recommendedDecision:
+      tool.recommendedDecision ?? recommendedDecisionForTier(minimumExecutionTier),
     inputSchema: tool.inputSchema ?? { type: 'object', additionalProperties: true },
   };
 }
@@ -202,6 +209,18 @@ function actionClassForRisk(category: OpenClawToolRiskCategoryV1): string {
       return 'external-executor';
     case 'Unknown':
       return 'approval-draft';
+  }
+}
+
+function minimumExecutionTierForRisk(category: OpenClawToolRiskCategoryV1): ExecutionTier {
+  switch (category) {
+    case 'ReadOnly':
+      return 'Auto';
+    case 'Mutation':
+    case 'Unknown':
+      return 'HumanApprove';
+    case 'Dangerous':
+      return 'ManualOnly';
   }
 }
 

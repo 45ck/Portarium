@@ -386,6 +386,46 @@ describe('POST /approvals', () => {
     expect(body.approvalPacket?.planScope?.actionIds).toEqual(['action-render', 'action-publish']);
   });
 
+  it('accepts and returns approval policy and agent action metadata', async () => {
+    await startWith();
+
+    const res = await fetch(createUrl(), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        runId: 'run-1',
+        planId: 'plan-1',
+        prompt: 'Need approval',
+        policyRule: {
+          ruleId: 'policy-browser-read',
+          trigger: 'Bounded browser read with visual evidence capture',
+          tier: 'HumanApprove',
+          blastRadius: ['1 browser page', '1 evidence artifact'],
+          irreversibility: 'none',
+        },
+        agentActionProposal: {
+          proposalId: 'proposal-browser-read',
+          agentId: 'agent-1',
+          machineId: 'machine-1',
+          toolName: 'browser.capture',
+          toolCategory: 'ReadOnly',
+          blastRadiusTier: 'HumanApprove',
+          rationale: 'Capture visual proof after approval.',
+        },
+      }),
+    });
+
+    expect(res.status).toBe(201);
+    const body = (await res.json()) as {
+      policyRule?: { tier?: string; blastRadius?: string[] };
+      agentActionProposal?: { toolName?: string; toolCategory?: string };
+    };
+    expect(body.policyRule?.tier).toBe('HumanApprove');
+    expect(body.policyRule?.blastRadius).toEqual(['1 browser page', '1 evidence artifact']);
+    expect(body.agentActionProposal?.toolName).toBe('browser.capture');
+    expect(body.agentActionProposal?.toolCategory).toBe('ReadOnly');
+  });
+
   it('returns 422 when the approval packet is malformed', async () => {
     await startWith();
 

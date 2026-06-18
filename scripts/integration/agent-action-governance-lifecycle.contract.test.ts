@@ -341,12 +341,12 @@ describe('Denied approval flow', () => {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
-        agentId: 'agent-deleter',
-        actionKind: 'data:delete',
-        toolName: 'record:delete',
+        agentId: 'agent-updater',
+        actionKind: 'data:update',
+        toolName: 'record:update',
         executionTier: 'HumanApprove',
         policyIds: ['pol-gov-1'],
-        rationale: 'Delete operation requires approval.',
+        rationale: 'Update operation requires approval.',
       }),
     });
 

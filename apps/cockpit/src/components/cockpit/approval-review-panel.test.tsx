@@ -150,6 +150,18 @@ describe('ApprovalReviewPanel — rendering', () => {
                 sha256: 'sha256-abc',
               },
             ],
+            decisionViews: [
+              {
+                id: 'approval-flow',
+                label: 'Approval flow',
+                stance: 'Mermaid/UML view',
+                summary: 'The card records intent before any separate executor gate.',
+                bullets: ['No execution happens from the view.'],
+                kind: 'flow',
+                diagram: 'flowchart LR\n  card["Approval card"] --> gate["Executor gate"]',
+                items: [{ label: 'Gate', value: 'Separate executor gate.', tone: 'warning' }],
+              },
+            ],
             reviewDocs: [{ title: 'Review brief', markdown: '# Review\nCheck the artifact.' }],
             requestedCapabilities: [
               {
@@ -175,6 +187,9 @@ describe('ApprovalReviewPanel — rendering', () => {
     expect(screen.getByText('marketing.campaign.write')).toBeTruthy();
     expect(screen.getByText('action-publish')).toBeTruthy();
     expect(screen.getByText('effect-2')).toBeTruthy();
+    expect(screen.getByText('Custom Views')).toBeTruthy();
+    expect(screen.getByText('Approval flow')).toBeTruthy();
+    expect(screen.getByLabelText('Approval flow diagram').textContent).toContain('flowchart LR');
   });
 });
 

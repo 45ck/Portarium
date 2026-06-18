@@ -31,6 +31,63 @@ async function submitApproval(page: Page) {
   }
 }
 
+async function clickPacketView(page: Page, name: string) {
+  const clickTarget = await page.evaluate((buttonName) => {
+    const regions = Array.from(
+      document.querySelectorAll<HTMLElement>('[data-approval-review-scroll]'),
+    );
+
+    for (const region of regions) {
+      const button = Array.from(region.querySelectorAll<HTMLButtonElement>('button')).find(
+        (candidate) => candidate.textContent?.trim() === buttonName,
+      );
+
+      if (button) {
+        button.scrollIntoView({ block: 'center', inline: 'nearest' });
+        const after = button.getBoundingClientRect();
+        const y = after.top + after.height / 2;
+        if (y < 16 || y > window.innerHeight - 16) {
+          window.scrollBy({
+            top: y - window.innerHeight / 2,
+            behavior: 'instant',
+          });
+        }
+        const visible = button.getBoundingClientRect();
+        const visibleX = visible.left + visible.width / 2;
+        const visibleY = visible.top + visible.height / 2;
+        const hit = document.elementFromPoint(visibleX, visibleY);
+        const hitMatchesButton = hit === button || button.contains(hit);
+
+        if (!hitMatchesButton) {
+          throw new Error(
+            `Packet view button ${buttonName} is covered by ${
+              hit?.tagName.toLowerCase() ?? 'nothing'
+            } "${hit?.textContent?.trim().replace(/\s+/g, ' ').slice(0, 80) ?? ''}"`,
+          );
+        }
+
+        return true;
+      }
+    }
+
+    const knownButtons = regions.flatMap((region) =>
+      Array.from(region.querySelectorAll<HTMLButtonElement>('button')).map((button) =>
+        button.textContent?.trim(),
+      ),
+    );
+    throw new Error(
+      `Packet view button ${buttonName} was not found. Known buttons: ${knownButtons.join(', ')}`,
+    );
+  }, name);
+
+  expect(clickTarget).toBe(true);
+  await page.getByRole('button', { name, exact: true }).click();
+  await expect(page.getByRole('button', { name, exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+}
+
 test.describe('Approval flow — smoke', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to root; MSW boots in the background as a service worker.
@@ -55,6 +112,42 @@ test.describe('Approval flow — smoke', () => {
     await expect(approveButton).toBeVisible({ timeout: 15_000 });
   });
 
+  test('seeded approval exposes custom Flow, Debate, Risk, and Evidence views', async ({
+    page,
+  }) => {
+    await page.goto('/approvals?tab=triage&focus=apr-showcase-3001');
+
+    await expect(page.getByText('Approval packet detail')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText('packet-showcase-adapter-retry')).toBeVisible();
+
+    await clickPacketView(page, 'Flow');
+    await expect(page.getByText('Approval flow')).toBeVisible();
+    await expect(page.getByLabel('Approval flow diagram')).toContainText('flowchart LR');
+    await expect(page.getByText('Executor gate')).toBeVisible();
+
+    await clickPacketView(page, 'Debate');
+    await expect(page.getByText('Recommended path')).toBeVisible();
+    await expect(page.getByText('Why request changes')).toBeVisible();
+    await expect(page.getByText('Read-only retry for one adapter run.')).toBeVisible();
+
+    await clickPacketView(page, 'Risk');
+    await expect(page.getByText('Approving allows')).toBeVisible();
+    await expect(
+      page.getByText('Retry the connector read using the approved backoff window.'),
+    ).toBeVisible();
+    await expect(
+      page.getByText('No credential rotation, writes, exports, or external notifications.'),
+    ).toBeVisible();
+    await expect(page.getByText('Risk boundary')).toBeVisible();
+
+    await clickPacketView(page, 'Evidence');
+    await expect(page.getByRole('heading', { name: 'Visual evidence' }).last()).toBeVisible();
+    await expect(page.getByText('Plan scope')).toBeVisible();
+    await expect(page.getByText('Capabilities')).toBeVisible();
+    await expect(page.getByText('artifact-showcase-adapter-retry-snapshot')).toBeVisible();
+    await expect(page.getByText('adapter.retry.readonly')).toBeVisible();
+  });
+
   test('approve a pending approval advances the triage deck', async ({ page }) => {
     await page.goto('/approvals');
 
@@ -63,9 +156,7 @@ test.describe('Approval flow — smoke', () => {
     await expect(decisionGroup).toBeVisible({ timeout: 15_000 });
 
     // Capture the rationale textarea aria-label to track which approval is current.
-    const rationaleTextarea = page.getByPlaceholder(
-      'Decision rationale — optional for approve, required for deny…',
-    );
+    const rationaleTextarea = page.getByLabel(/^Decision rationale for approval /);
     await expect(rationaleTextarea).toBeVisible();
 
     // Fill in a rationale (good practice even though optional for Approve).
@@ -93,9 +184,7 @@ test.describe('Approval flow — smoke', () => {
 
     await page.goto('/approvals');
 
-    const rationaleTextarea = page.getByPlaceholder(
-      'Decision rationale — optional for approve, required for deny…',
-    );
+    const rationaleTextarea = page.getByLabel(/^Decision rationale for approval /);
     await expect(rationaleTextarea).toBeVisible({ timeout: 15_000 });
     await rationaleTextarea.fill('Approved via smoke test');
 

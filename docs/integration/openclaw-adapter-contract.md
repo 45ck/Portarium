@@ -51,6 +51,8 @@ themselves. A draft flow must include:
 - rollback or handoff
 - expiry and cap, where relevant
 - Cockpit mirror status
+- optional custom review views, such as flow diagrams, risk matrices, evidence
+  maps, or operator-input checklists, rendered as review context only
 
 If the adapter cannot prove that the card shown in Cockpit is the same card the
 executor is about to use, the executor must fail closed and require the card to
