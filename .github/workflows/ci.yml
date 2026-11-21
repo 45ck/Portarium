@@ -36,7 +36,8 @@ jobs:
           path: reports/domain-atlas/
 
   pr:
-    runs-on: ubuntu-latest
+    # Keep the runner compatible with the pinned Playwright 1.58.2 browser bundles.
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
 
     services:
