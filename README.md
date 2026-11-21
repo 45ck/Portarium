@@ -181,3 +181,8 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a PR.
 ## License
 
 Released under the [MIT License](LICENSE).
+
+## Development and CI cost
+
+Follow [AGENTS.md](AGENTS.md) and the [CI cost guide](docs/how-to/ci-costs.md)
+for focused local checks, candidate batching, retry warnings and required QA.
